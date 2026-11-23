@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import nconf from 'nconf';
 import passport from 'passport';
 import * as platformHealthMetrics from '../../../src/telemetry/platformHealthMetrics';
@@ -19,6 +19,7 @@ import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 import { checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
 import { sessionAuthenticateUser } from '../../../src/modules/user/user-domain';
 import { AuthenticationProviderError } from '../../../src/modules/authenticationProvider/providers-logger';
+import { AuthType, EnvStrategyType, PROVIDERS, type ProviderConfiguration } from '../../../src/modules/authenticationProvider/providers-configuration';
 
 vi.mock('../../../src/http/ipWhitelistMiddleware', async (importOriginal) => {
   const actual: object = await importOriginal();
@@ -45,6 +46,15 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
 });
 
 const baseUrl = getBaseUrl();
+
+// One SSO provider and the two form providers, as registered at startup
+const AUTH_PROVIDERS: ProviderConfiguration[] = [
+  { name: 'oidc', type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: 'oidc' },
+  { name: 'local', type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LOCAL, provider: 'local' },
+  { name: 'ldap', type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LDAP, provider: 'ldap' },
+];
+const registerAuthProviders = () => PROVIDERS.splice(0, PROVIDERS.length, ...AUTH_PROVIDERS);
+const clearAuthProviders = () => PROVIDERS.splice(0, PROVIDERS.length);
 
 describe('httpPlatform: decodeStoragePath function', () => {
   it('should decode encoded path segments containing spaces and accents', () => {
@@ -617,6 +627,11 @@ describe('httpPlatform: /auth/:provider/callback', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(sessionAuthenticateUser).mockResolvedValue(undefined as any);
+    registerAuthProviders();
+  });
+
+  afterEach(() => {
+    clearAuthProviders();
   });
 
   it('should authenticate the session when the IP is allowed', async () => {
@@ -661,12 +676,12 @@ describe('httpPlatform: /auth/:provider/callback', () => {
     expect(res.redirect).toHaveBeenCalledTimes(1);
   });
 
-  // The local provider is served by the login form only
-  it('should refuse the local provider', async () => {
+  // The form providers are served by the login form only
+  it.each(['local', 'ldap', 'unknown'])('should refuse the %s provider', async (provider) => {
     mockProviderCallback(null, loggedUser);
     vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(false);
     const handler = await setupCallbackHandler();
-    const req = { ...buildRequest(), params: { provider: 'local' } };
+    const req = { ...buildRequest(), params: { provider } };
     const res = buildResponse();
 
     await handler?.(req, res, vi.fn());
@@ -713,19 +728,36 @@ describe('httpPlatform: /auth/:provider', () => {
     return loginRoute?.[1];
   };
 
+  const buildRequest = (provider: string) => ({ params: { provider }, query: {}, body: {}, session: {}, headers: {} }) as any;
+  const buildResponse = () => ({ status: vi.fn().mockReturnThis(), send: vi.fn(), cookie: vi.fn() }) as any;
+
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  // The local provider is served by the login form only
-  it('should refuse the local provider', async () => {
+    registerAuthProviders();
     vi.spyOn(passport, '_strategy' as any).mockReturnValue({});
     vi.spyOn(passport, 'authenticate').mockImplementation((() => vi.fn()) as any);
-    const handler = await setupLoginHandler();
-    const req = { params: { provider: 'local' }, query: {}, body: {}, session: {}, headers: {} } as any;
-    const res = { status: vi.fn().mockReturnThis(), send: vi.fn(), cookie: vi.fn() } as any;
+  });
 
-    handler?.(req, res, vi.fn());
+  afterEach(() => {
+    clearAuthProviders();
+  });
+
+  it('should start the login of an SSO provider', async () => {
+    const handler = await setupLoginHandler();
+    const res = buildResponse();
+
+    handler?.(buildRequest('oidc'), res, vi.fn());
+
+    expect(passport.authenticate).toHaveBeenCalledWith('oidc', expect.anything(), expect.any(Function));
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  // The form providers are served by the login form only
+  it.each(['local', 'ldap', 'unknown'])('should refuse the %s provider', async (provider) => {
+    const handler = await setupLoginHandler();
+    const res = buildResponse();
+
+    handler?.(buildRequest(provider), res, vi.fn());
 
     expect(passport.authenticate).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(503);

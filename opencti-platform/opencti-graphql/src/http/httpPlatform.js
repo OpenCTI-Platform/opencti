@@ -63,7 +63,7 @@ import {
   postChatbotMessageFeedback,
   deleteChatbotMessageFeedback,
 } from './httpChatbotProxy';
-import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { AuthType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
@@ -74,8 +74,8 @@ import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
 
-// The passport routes serve the redirect-based providers: the local provider is served by the login form only
-const isServedByPassportRoutes = (provider) => provider !== LOCAL_STRATEGY_IDENTIFIER;
+// The passport routes serve the redirect-based providers (SSO) only: the form providers are served by the login form
+const isServedByPassportRoutes = (provider) => PROVIDERS.some((p) => p.provider === provider && p.type === AuthType.AUTH_SSO);
 
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
