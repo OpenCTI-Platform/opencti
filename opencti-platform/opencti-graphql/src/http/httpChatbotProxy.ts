@@ -760,7 +760,7 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     try {
       await checkDraftInContext(context);
     } catch (draftErr: unknown) {
-      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr });
+      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr, request_id: getRequestId(res) });
       res.status(400).json({ error: isUserFacingError(draftErr) ? (draftErr as Error).message : 'Invalid draft context' });
       return;
     }
@@ -882,11 +882,11 @@ const upstreamDetail = async ({ data }: HttpResponseError, fallback: string): Pr
 };
 
 /** An upstream refusal (unknown artifact, render not finished) answers the user; only the rest is a platform failure. */
-const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null) => {
+const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null, requestId: string | undefined) => {
   if (httpErr && httpErr.status < 500) {
-    logApp.warn(message, { cause, status: httpErr.status });
+    logApp.warn(message, { cause, status: httpErr.status, request_id: requestId });
   } else {
-    logApp.error(message, { cause });
+    logApp.error(message, { cause, request_id: requestId });
   }
 };
 
@@ -895,7 +895,7 @@ const artifactHeaders = async (req: Express.Request, res: Express.Response, cont
   try {
     await checkDraftInContext(context);
   } catch (draftErr: unknown) {
-    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr });
+    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr, request_id: getRequestId(res) });
     res.status(400).json({ error: isUserFacingError(draftErr) ? (draftErr as Error).message : 'Invalid draft context' });
     return null;
   }
@@ -931,7 +931,7 @@ export const getChatbotArtifact = async (req: Express.Request, res: Express.Resp
     if (signal?.aborted) return;
     const { message } = e as Error;
     const httpErr = getResponseError(e);
-    logArtifactFailure('Error in chatbot artifact read', e, httpErr);
+    logArtifactFailure('Error in chatbot artifact read', e, httpErr, getRequestId(res));
     if (httpErr) {
       const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
@@ -992,7 +992,7 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
     if (signal?.aborted) return;
     const { message } = e as Error;
     const httpErr = getResponseError(e);
-    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
+    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr, getRequestId(res));
     if (httpErr) {
       const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
@@ -1091,7 +1091,7 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
     } else {
       const httpErr = getResponseError(e);
       if (httpErr) {
-        logApp.error('XTM One error response', { status: httpErr.status, data: JSON.stringify(httpErr.data) });
+        logApp.error('XTM One error response', { status: httpErr.status, data: JSON.stringify(httpErr.data), request_id: getRequestId(res) });
         const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
         setCookieError(res, message);
         res.status(200).json({ content: '', status: 'error', error, code: httpErr.status, request_id: getRequestId(res) });
@@ -1210,7 +1210,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     try {
       await checkDraftInContext(context);
     } catch (draftErr: unknown) {
-      logApp.warn('Agent stream rejected due to invalid draft context', { cause: draftErr });
+      logApp.warn('Agent stream rejected due to invalid draft context', { cause: draftErr, request_id: getRequestId(res) });
       res.status(400).json({ error: isUserFacingError(draftErr) ? (draftErr as Error).message : 'Invalid draft context' });
       return;
     }
@@ -1392,6 +1392,7 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
         cguStatus: settings.filigran_chatbot_ai_cgu_status,
         isLicenseValidated,
         chatbotUrl: XTM_ONE_CHATBOT_URL,
+        request_id: getRequestId(res),
       });
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;

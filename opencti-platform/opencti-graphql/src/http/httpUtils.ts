@@ -562,6 +562,7 @@ export const logMalformedRequest = (req: Request, error: any, message = 'Malform
     contentLength: req.headers['content-length'],
     workId: req.headers['opencti-work-id'],
     draftId: req.headers['opencti-draft-id'],
+    request_id: req.res ? getRequestId(req.res) : undefined,
   });
 };
 

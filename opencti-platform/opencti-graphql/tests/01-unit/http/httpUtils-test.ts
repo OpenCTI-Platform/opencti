@@ -613,6 +613,11 @@ describe('httpUtils: logMalformedRequest', () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
+  it('should carry the request id returned to the caller', () => {
+    logMalformedRequest(mockRequest({ res: { locals: { requestId: 'req-42' } } }), uploadError());
+    expect(loggedMeta().request_id).toBe('req-42');
+  });
+
   it('should default to the http message and accept a caller supplied one', () => {
     logMalformedRequest(mockRequest(), uploadError());
     expect(infoSpy.mock.calls[0][0]).toBe('Malformed http request call');
