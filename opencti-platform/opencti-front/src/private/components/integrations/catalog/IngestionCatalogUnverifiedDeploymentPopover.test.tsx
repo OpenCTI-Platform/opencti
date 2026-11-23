@@ -19,22 +19,22 @@ describe('IngestionCatalogUnverifiedDeploymentPopover', () => {
   it('keeps Deploy disabled until the acknowledgement is checked', () => {
     renderPopover();
     expect(screen.getByRole('button', { name: 'Deploy' })).toBeDisabled();
-    fireEvent.click(screen.getByRole('checkbox'));
-    expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+    fireEvent.click(screen.getByRole('checkbox', { name: ACK_LABEL }));
+    expect(screen.getByRole('checkbox', { name: ACK_LABEL })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('button', { name: 'Deploy' })).toBeEnabled();
   });
 
   it('toggles once when the label is clicked', () => {
     renderPopover();
     fireEvent.click(screen.getByText(ACK_LABEL));
-    expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('checkbox', { name: ACK_LABEL })).toHaveAttribute('aria-checked', 'true');
     fireEvent.click(screen.getByText(ACK_LABEL));
-    expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('checkbox', { name: ACK_LABEL })).toHaveAttribute('aria-checked', 'false');
   });
 
   it('deploys and closes once acknowledged', () => {
     const { onClose, onDeploy } = renderPopover();
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('checkbox', { name: ACK_LABEL }));
     fireEvent.click(screen.getByRole('button', { name: 'Deploy' }));
     expect(onDeploy).toHaveBeenCalledTimes(1);
     expect(onClose).toHaveBeenCalledTimes(1);

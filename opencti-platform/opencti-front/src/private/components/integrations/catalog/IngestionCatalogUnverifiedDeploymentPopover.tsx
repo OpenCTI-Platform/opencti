@@ -4,7 +4,6 @@ import Dialog from '@common/dialog/Dialog';
 import { DialogActions, Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import Button from '@common/button/Button';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { Checkbox } from '@filigran/design-system';
 
 type IngestionCatalogUnverifiedDeploymentPopoverProps = {
@@ -42,16 +41,9 @@ const IngestionCatalogUnverifiedDeploymentPopover: React.FC<IngestionCatalogUnve
         // The message slot scrolls (overflow: auto) and would clip the checkbox and its focus ring.
         slotProps={{ message: { sx: { overflow: 'visible' } } }}
       >
-        <FormControlLabel
-          // MUI's `-11px` offsets its own Checkbox padding, which the library's has not.
-          sx={{ margin: 0, gap: 1 }}
-          control={(
-            <Checkbox
-              aria-label={acknowledgeLabel}
-              checked={isAcknowledged}
-              onCheckedChange={(state) => setIsAcknowledged(state === true)}
-            />
-          )}
+        <Checkbox
+          checked={isAcknowledged}
+          onCheckedChange={(state) => setIsAcknowledged(state === true)}
           label={acknowledgeLabel}
         />
       </Alert>
