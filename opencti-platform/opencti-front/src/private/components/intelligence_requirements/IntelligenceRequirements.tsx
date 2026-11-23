@@ -49,8 +49,8 @@ const IntelligenceRequirements = () => {
   const queryRef = useQueryLoading<IntelligenceRequirementsLinesQuery>(intelligenceRequirementsLinesQuery, queryPaginationOptions);
   const [toDelete, setToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  // One create entry point: "Create a requirement", whose menu holds "Create with AI". It sits in the header row,
-  // not in the table toolbar, so the toolbar never runs past a 1080 px viewport.
+  // One create entry point: "Create a requirement", whose menu holds "Create with AI", at the right end of the
+  // toolbar as on the other lists (DataTable and ListCards createButton).
   const createButton = <IrAiAssistedCreation />;
   const viewButtons = [
     <ViewSwitchingButtons key="switching_buttons" handleChangeView={helpers.handleChangeView} currentView={viewStorage.view} />,
@@ -117,7 +117,8 @@ const IntelligenceRequirements = () => {
         entityTypes={[ENTITY_TYPE]}
         searchContextFinal={{ entityTypes: [ENTITY_TYPE] }}
         additionalHeaderToggleButtons={viewButtons}
-        actions={(row: IntelligenceRequirementsLine_node$data) => (
+        createButton={createButton}
+        actions={(row: IntelligenceRequirementsLine_node$data) => row.currentUserAccessRight === 'admin' && (
           <IconButton
             aria-label={t_i18n('Delete')}
             onClick={(e: React.MouseEvent) => {
@@ -149,6 +150,7 @@ const IntelligenceRequirements = () => {
       filters={viewStorage.filters}
       paginationOptions={queryPaginationOptions}
       numberOfElements={viewStorage.numberOfElements}
+      createButton={createButton}
     >
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
@@ -160,10 +162,7 @@ const IntelligenceRequirements = () => {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), current: true }]} />
-        {createButton}
-      </div>
+      <Breadcrumbs elements={[{ label: t_i18n('Intelligence requirements'), current: true }]} />
       {viewStorage.view === 'cards' ? renderCards() : renderList()}
       <IrDeleteDialog
         ir={toDelete}

@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, one {# no cumple las condiciones del alcance} other {# no cumplen las condiciones del alcance}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, one {# puntuación recalculada} other {# puntuaciones recalculadas}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, one {# actualizada} other {# actualizadas}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Aproximadamente # evento por procesar (estimación)} other {Aproximadamente # eventos por procesar (estimación)}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Aproximadamente # evento por procesar (estimación)} other {Aproximadamente # eventos por procesar (estimación)}}",
+  "info_authorizedmembers_intelligence_requirement": "Los requisitos de inteligencia admiten la restricción de acceso. De forma predeterminada, son visibles para todos y solo los gestiona su creador. Puede editar permite a un miembro clasificar las entidades y la bandeja de entrada; Puede gestionar también le permite cambiar la configuración, los miembros y eliminarlo. Estos accesos también requieren las capacidades correspondientes.",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "Si ambas entidades son de interés para un requisito de inteligencia seleccionado, se conserva el objetivo",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "Si no se selecciona ningún requisito de inteligencia, el playbook escucha todos los requisitos de inteligencia"
 }

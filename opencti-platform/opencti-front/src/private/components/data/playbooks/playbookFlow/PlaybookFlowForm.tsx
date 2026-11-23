@@ -42,6 +42,7 @@ import PlaybookFlowFieldBoolean from './playbookFlowFields/PlaybookFlowFieldBool
 import PlaybookFlowFieldCaseTemplates from './playbookFlowFields/PlaybookFlowFieldCaseTemplates';
 import PlaybookFlowFieldFilters from './playbookFlowFields/PlaybookFlowFieldFilters';
 import PlaybookFlowFieldInPirFilters from './playbookFlowFields/PlaybookFlowFieldInPirFilters';
+import PlaybookFlowFieldRequirementFilters from './playbookFlowFields/PlaybookFlowFieldRequirementFilters';
 import PlaybookFlowFieldNumber from './playbookFlowFields/PlaybookFlowFieldNumber';
 import PlaybookFlowFieldOrganizations from './playbookFlowFields/PlaybookFlowFieldOrganizations';
 import PlaybookFlowFieldPeriod from './playbookFlowFields/PlaybookFlowFieldPeriod';
@@ -269,6 +270,9 @@ const PlaybookFlowForm = ({
                   if (propName === 'inPirFilters') {
                     return <PlaybookFlowFieldInPirFilters key={propName} />;
                   }
+                  if (propName === 'requirementFilters') {
+                    return <PlaybookFlowFieldRequirementFilters key={propName} />;
+                  }
                   if (propName === 'targets') {
                     return <PlaybookFlowFieldTargets key={propName} required={requiredProperties.includes(propName)} />;
                   }
@@ -321,7 +325,9 @@ const PlaybookFlowForm = ({
                   if (property.type === 'boolean') {
                     let helperText = '';
                     if (propName === 'create_rel') {
-                      helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
+                      helperText = componentId === 'PLAYBOOK_DATA_STREAM_INTELLIGENCE_REQUIREMENT'
+                        ? t_i18n('If both entities are of interest for a selected intelligence requirement, then the target is kept')
+                        : t_i18n('If both entities are of interest for selected PIR, then the target is kept');
                     }
                     return (
                       <PlaybookFlowFieldBoolean

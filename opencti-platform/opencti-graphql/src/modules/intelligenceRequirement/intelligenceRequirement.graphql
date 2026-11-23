@@ -384,7 +384,9 @@ type Query {
   ): IntelligenceRequirementConnection @auth(for: [PIRAPI])}
 
 type Mutation {
-  intelligenceRequirementAdd(input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])}
+  intelligenceRequirementAdd(input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementUpdate(id: ID!, input: IntelligenceRequirementInput!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementStatusUpdate(id: ID!, status: IntelligenceRequirementStatus!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])  intelligenceRequirementDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])
+  intelligenceRequirementEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): IntelligenceRequirement @auth(for: [PIRAPI_PIRUPDATE])
+}
 
 # region entities of a requirement (matches)
 enum IrMatchStatus {

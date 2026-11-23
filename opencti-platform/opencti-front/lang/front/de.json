@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, one {# erfüllt die Bedingungen des Umfangs nicht} other {# erfüllen die Bedingungen des Umfangs nicht}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, one {# neu bewertet} other {# neu bewertet}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, one {# aktualisiert} other {# aktualisiert}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Etwa # Ereignis zu verarbeiten (Schätzung)} other {Etwa # Ereignisse zu verarbeiten (Schätzung)}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Etwa # Ereignis zu verarbeiten (Schätzung)} other {Etwa # Ereignisse zu verarbeiten (Schätzung)}}",
+  "info_authorizedmembers_intelligence_requirement": "Nachrichtendienstliche Anforderungen unterstützen Zugriffsbeschränkungen. Standardmäßig sind sie für alle sichtbar und nur von ihrem Ersteller verwaltbar. Bearbeiten erlaubt einem Mitglied, die Entitäten und den Posteingang zu sichten; Verwalten erlaubt zusätzlich, die Konfiguration und die Mitglieder zu ändern und sie zu löschen. Diese Zugriffe erfordern außerdem die entsprechenden Berechtigungen.",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "Wenn beide Entitäten für eine ausgewählte nachrichtendienstliche Anforderung von Interesse sind, wird das Ziel beibehalten",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "Wenn keine nachrichtendienstliche Anforderung ausgewählt ist, hört das Playbook auf alle nachrichtendienstlichen Anforderungen"
 }

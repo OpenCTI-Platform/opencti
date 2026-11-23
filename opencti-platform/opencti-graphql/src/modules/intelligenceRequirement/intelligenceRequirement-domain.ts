@@ -13,7 +13,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import { SYSTEM_USER, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
-import type { EditInput, IntelligenceRequirementInput } from '../../generated/graphql';
+import type { EditInput, IntelligenceRequirementInput, MemberAccessInput } from '../../generated/graphql';
 import { FunctionalError } from '../../config/errors';
 import {
   type BasicStoreEntityIntelligenceRequirement,
@@ -27,6 +27,8 @@ import { checkRequirementHealth } from './intelligenceRequirement-health';
 import { generateRequirementBrief, markBriefStarted } from './intelligenceRequirement-brief';
 import { markRequirementDeleted, markRequirementRescan } from './intelligenceRequirement-lifecycle';
 import { invalidateInRequirementEntityIds } from './intelligenceRequirementMatch-domain';
+import { IR_ACCESS_EDIT, IR_ACCESS_MANAGE, loadRequirementWithAccess } from './intelligenceRequirement-access';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const rescanStartEventId = (rescanDays: number) => `${now() - (rescanDays * 24 * 3600 * 1000)}-0`;
 
@@ -67,8 +69,8 @@ export const intelligenceRequirementAdd = async (context: AuthContext, user: Aut
  * the stream is read again from the rescan window, so that a wider scope brings them in.
  */
 export const intelligenceRequirementUpdate = async (context: AuthContext, user: AuthUser, id: string, input: IntelligenceRequirementInput) => {
-  const existing = await findById(context, user, id);
-  if (!existing) throw FunctionalError('Intelligence requirement not found', { id });
+  // The definition of a requirement belongs to its managers ("Can manage"); "Can edit" is the triage of its content
+  const existing = await loadRequirementWithAccess(context, user, id, IR_ACCESS_MANAGE) as BasicStoreEntityIntelligenceRequirement;
   const attributes = serializeIntelligenceRequirementInput(input);
   const editInputs: EditInput[] = Object.entries(attributes).map(([key, value]) => ({ key, value: Array.isArray(value) ? value : [value] }));
   const scopeChanged = existing.ir_scope_criteria !== attributes.ir_scope_criteria || existing.ir_subject_groups !== attributes.ir_subject_groups;
@@ -88,6 +90,7 @@ export const intelligenceRequirementUpdate = async (context: AuthContext, user: 
 };
 
 export const intelligenceRequirementStatusUpdate = async (context: AuthContext, user: AuthUser, id: string, status: string) => {
+  await loadRequirementWithAccess(context, user, id, IR_ACCESS_MANAGE);
   return editInternalObject<StoreEntityIntelligenceRequirement>(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT, [{ key: 'ir_status', value: [status] }]);
 };
 
@@ -115,6 +118,7 @@ const DELETE_SWEEP_DELAY = 30 * 1000;
  * The engine stops writing into it at once; a second sweep removes what a batch in flight may still have written.
  */
 export const intelligenceRequirementDelete = async (context: AuthContext, user: AuthUser, id: string) => {
+  await loadRequirementWithAccess(context, user, id, IR_ACCESS_MANAGE);
   markRequirementDeleted(id);
   invalidateInRequirementEntityIds(id);
   const deleted = await deleteInternalObject(context, user, id, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT);
@@ -125,6 +129,20 @@ export const intelligenceRequirementDelete = async (context: AuthContext, user: 
       .catch((err) => logApp.error('[OPENCTI-MODULE] Intelligence requirement deletion sweep error', { cause: err, requirement: id }));
   }, DELETE_SWEEP_DELAY);
   return deleted;
+};
+
+/**
+ * Authorized members of a requirement ("Can view", "Can edit", "Can manage"), changed by its managers only.
+ */
+export const intelligenceRequirementEditAuthorizedMembers = async (context: AuthContext, user: AuthUser, id: string, input: MemberAccessInput[]) => {
+  await loadRequirementWithAccess(context, user, id, IR_ACCESS_MANAGE);
+  return editAuthorizedMembers(context, user, {
+    entityId: id,
+    input,
+    requiredCapabilities: ['PIRAPI_PIRUPDATE'],
+    entityType: ENTITY_TYPE_INTELLIGENCE_REQUIREMENT,
+    busTopicKey: ABSTRACT_INTERNAL_OBJECT,
+  });
 };
 
 /**
@@ -235,8 +253,7 @@ export const intelligenceRequirementHealthCheck = async (context: AuthContext, u
 
 // AI brief on demand (also generated at the frequency of the requirement by the manager)
 export const intelligenceRequirementBriefGenerate = async (context: AuthContext, user: AuthUser, id: string) => {
-  const ir = await findById(context, user, id);
-  if (!ir) throw FunctionalError('Intelligence requirement not found', { id });
+  const ir = await loadRequirementWithAccess(context, user, id, IR_ACCESS_EDIT) as BasicStoreEntityIntelligenceRequirement;
   const item = await generateRequirementBrief(context, user, ir, 'manual');
   if (!item) throw FunctionalError('The brief could not be generated: XTM One, an identity or an agent bound to the cti.pir_insight intent is missing', { id });
   await markBriefStarted(context, user, id);

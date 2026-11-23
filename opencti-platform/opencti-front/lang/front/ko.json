@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, other {범위 조건을 충족하지 않는 항목 #개}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, other {점수 재계산 #개}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, other {업데이트 #개}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, other {처리할 이벤트 약 #개 (추정)}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, other {처리할 이벤트 약 #개 (추정)}}",
+  "info_authorizedmembers_intelligence_requirement": "인텔리전스 요구사항은 접근 제한을 지원합니다. 기본적으로 모든 사용자가 볼 수 있으며 생성자만 관리할 수 있습니다. 편집 가능 멤버는 엔터티와 받은편지함을 분류할 수 있고, 관리 가능 멤버는 구성과 멤버를 변경하고 삭제할 수도 있습니다. 이러한 접근에는 해당 권한도 필요합니다.",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "두 엔터티 모두 선택한 인텔리전스 요구사항의 관심 대상이면 대상이 유지됩니다",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "선택된 인텔리전스 요구사항이 없으면 플레이북은 모든 인텔리전스 요구사항을 수신합니다"
 }

@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, other {# 件がスコープ条件を満たさない}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, other {# 件のスコアを再計算}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, other {# 件更新}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, other {処理待ちのイベント約 # 件（推定）}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, other {処理待ちのイベント約 # 件（推定）}}",
+  "info_authorizedmembers_intelligence_requirement": "インテリジェンス要件はアクセス制限に対応しています。既定では全員が閲覧でき、作成者のみが管理できます。編集可能なメンバーはエンティティと受信トレイをトリアージでき、管理可能なメンバーは設定とメンバーの変更および削除もできます。これらのアクセスには対応する権限も必要です。",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "両方のエンティティが選択したインテリジェンス要件の対象である場合、ターゲットは保持されます",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "インテリジェンス要件が選択されていない場合、プレイブックはすべてのインテリジェンス要件をリッスンします"
 }

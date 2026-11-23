@@ -30,6 +30,7 @@ export const intelligenceRequirementLineFragment = graphql`
     ir_status
     created_at
     creators { id name }
+    currentUserAccessRight
     ir_entities_count
     ir_inbox_open_count
     ir_activity(days: 7) { date value }

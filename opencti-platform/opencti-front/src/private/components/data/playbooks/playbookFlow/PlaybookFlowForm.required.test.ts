@@ -15,6 +15,7 @@ const read = (relative: string) => readFileSync(path.resolve(relative), 'utf8')
 const EXEMPT: Record<string, string> = {
   PlaybookFlowFieldAccessRestrictions: 'an access table with its own add-member form, it renders no field label',
   PlaybookFlowFieldInPirFilters: 'a PIR filter editor, never in a required list',
+  PlaybookFlowFieldRequirementFilters: 'a requirement selector, never in a required list (none selected: every requirement)',
   PlaybookFlowFieldFilters: 'a filter editor; a missing filter is an empty filter group, not an empty field',
   PlaybookFlowFieldActions: 'a list of action rows, each row validates its own fields',
   PlaybookFlowFieldBoolean: 'a switch always holds a value',

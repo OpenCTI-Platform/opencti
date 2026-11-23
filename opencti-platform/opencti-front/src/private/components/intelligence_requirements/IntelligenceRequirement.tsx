@@ -4,6 +4,7 @@ import { Link, Route, Routes, useLocation, useNavigate, useParams } from 'react-
 import { Badge, Chip, Paper, Tabs, TabsList, TabsTrigger, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
+import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
@@ -19,6 +20,9 @@ import IrAiInsight from './IrAiInsight';
 import IrDeleteDialog from './IrDeleteDialog';
 import { IntelligenceRequirementConfigurationTab } from './configuration/IntelligenceRequirementConfiguration';
 import type { IntelligenceRequirementQuery } from './__generated__/IntelligenceRequirementQuery.graphql';
+import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 // Page of a requirement: the same output screens for every question (Overview, Entities, Inbox).
 
@@ -32,6 +36,25 @@ const requirementQuery = graphql`
       ir_status
       ir_inbox_open_count
       ir_subject_groups { id name kind keywords entities { id representative { main } } }
+      ...IntelligenceRequirementMembersFragment @relay(mask: false)
+    }
+  }
+`;
+
+// Authorized members of a requirement (Can view, Can edit, Can manage), as on the other restricted objects
+export const intelligenceRequirementMembersFragment = graphql`
+  fragment IntelligenceRequirementMembersFragment on IntelligenceRequirement {
+    creators { id name entity_type }
+    currentUserAccessRight
+    authorizedMembers { id name entity_type access_right member_id groups_restriction { id name } }
+  }
+`;
+
+const editAuthorizedMembersMutation = graphql`
+  mutation IntelligenceRequirementEditAuthorizedMembersMutation($id: ID!, $input: [MemberAccessInput!]!) {
+    intelligenceRequirementEditAuthorizedMembers(id: $id, input: $input) {
+      id
+      ...IntelligenceRequirementMembersFragment @relay(mask: false)
     }
   }
 `;
@@ -45,6 +68,7 @@ const IntelligenceRequirement = () => {
   const [deleting, setDeleting] = useState(false);
   const data = useLazyLoadQuery<IntelligenceRequirementQuery>(requirementQuery, { id: irId }, { fetchPolicy: 'network-only' });
   const ir = data.intelligenceRequirement;
+  const { canManage } = useGetCurrentUserAccessRight(ir?.currentUserAccessRight);
   setTitle(ir?.name ?? t_i18n('Intelligence requirements'));
   if (!ir) return <div>{t_i18n('This intelligence requirement does not exist')}</div>;
   const base = `/dashboard/intelligence_requirements/${ir.id}`;
@@ -69,7 +93,21 @@ const IntelligenceRequirement = () => {
         </Box>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <IrAiInsight irId={ir.id} />
-          <Button variant="secondary" intent="destructive" onClick={() => setDeleting(true)}>{t_i18n('Delete')}</Button>
+          <Security matchAll needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
+            <FormAuthorizedMembersDialog
+              id={ir.id}
+              owner={ir.creators?.[0]}
+              mutation={editAuthorizedMembersMutation}
+              authorizedMembers={authorizedMembersToOptions(ir.authorizedMembers)}
+              canDeactivate={false}
+              // Requirements are viewable by everyone by default, the line must stay visible to remove it
+              showAllMembersLine
+              customInfoMessage={t_i18n('info_authorizedmembers_intelligence_requirement')}
+            />
+          </Security>
+          <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canManage}>
+            <Button variant="secondary" intent="destructive" onClick={() => setDeleting(true)}>{t_i18n('Delete')}</Button>
+          </Security>
         </Box>
       </Box>
       <Paper padding={16}>

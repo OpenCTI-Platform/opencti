@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, one {# rescored} other {# rescored}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, one {# updated} other {# updated}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}",
+  "info_authorizedmembers_intelligence_requirement": "Intelligence requirements support Access Restriction. By default, they are viewable by everyone and only manageable by their creator. Can edit lets a member triage the entities and the inbox; Can manage also lets them change the configuration, the members and delete it. These accesses also require the corresponding capabilities.",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "If both entities are of interest for a selected intelligence requirement, then the target is kept",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "If no intelligence requirement is selected, the playbook listens to every intelligence requirement"
 }

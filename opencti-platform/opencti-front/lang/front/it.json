@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, one {# non soddisfa le condizioni dell'ambito} other {# non soddisfano le condizioni dell'ambito}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, one {# punteggio ricalcolato} other {# punteggi ricalcolati}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, one {# aggiornata} other {# aggiornate}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Circa # evento da elaborare (stima)} other {Circa # eventi da elaborare (stima)}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Circa # evento da elaborare (stima)} other {Circa # eventi da elaborare (stima)}}",
+  "info_authorizedmembers_intelligence_requirement": "I requisiti di intelligence supportano la restrizione di accesso. Per impostazione predefinita sono visibili a tutti e gestibili solo dal loro creatore. Può modificare consente a un membro di valutare le entità e la casella in arrivo; Può gestire consente anche di cambiare la configurazione, i membri e di eliminarlo. Questi accessi richiedono anche le capacità corrispondenti.",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "Se entrambe le entità sono di interesse per un requisito di intelligence selezionato, il target viene mantenuto",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "Se non è selezionato alcun requisito di intelligence, il playbook ascolta tutti i requisiti di intelligence"
 }

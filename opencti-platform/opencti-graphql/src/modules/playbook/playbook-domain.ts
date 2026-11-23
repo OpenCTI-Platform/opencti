@@ -200,10 +200,16 @@ const XTM_ONE_DEPENDENT_COMPONENT_IDS: ReadonlySet<string> = new Set([
   'PLAYBOOK_AI_AGENT_SEND_COMPONENT',
 ]);
 
+// Steps kept registered so the playbooks that still hold them run, but no longer offered in the picker:
+// "Listen PIR events" is replaced by "Listen intelligence requirement events" (the migration 1795536000000 rewrites
+// the playbooks that started on a PIR).
+const RETIRED_COMPONENT_IDS: ReadonlySet<string> = new Set(['PLAYBOOK_DATA_STREAM_PIR']);
+
 export const availableComponents = async (context: AuthContext) => {
   await checkEnterpriseEdition(context);
   const xtmOneConfigured = xtmOneClient.isConfigured();
   return Object.values(PLAYBOOK_COMPONENTS).filter((component) => {
+    if (RETIRED_COMPONENT_IDS.has(component.id)) return false;
     return xtmOneConfigured || !XTM_ONE_DEPENDENT_COMPONENT_IDS.has(component.id);
   });
 };

@@ -10135,6 +10135,7 @@ type Mutation {
   """
   intelligenceRequirementBriefGenerate(id: ID!): IntelligenceRequirementItem
   intelligenceRequirementDelete(id: ID!): ID
+  intelligenceRequirementEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): IntelligenceRequirement
   """
   Run the health checks of a requirement now; returns the number of health items raised
   """

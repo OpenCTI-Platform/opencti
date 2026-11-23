@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, other {# 个不满足范围条件}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, other {# 个分数已重新计算}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, other {# 个已更新}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, other {约 # 个待处理事件（估计）}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, other {约 # 个待处理事件（估计）}}",
+  "info_authorizedmembers_intelligence_requirement": "情报需求支持访问限制。默认情况下，所有人可查看，仅其创建者可管理。可编辑的成员可以分拣实体和收件箱；可管理的成员还可以更改配置、成员并将其删除。这些访问权限还需要相应的能力。",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "如果两个实体都与所选情报需求相关，则保留目标",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "如果未选择情报需求，剧本将监听所有情报需求"
 }

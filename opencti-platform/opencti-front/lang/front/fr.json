@@ -7365,5 +7365,8 @@
   "{count, plural, one {# not meeting the scope conditions} other {# not meeting the scope conditions}}": "{count, plural, one {# ne remplissant pas les conditions du périmètre} other {# ne remplissant pas les conditions du périmètre}}",
   "{count, plural, one {# rescored} other {# rescored}}": "{count, plural, one {# score recalculé} other {# scores recalculés}}",
   "{count, plural, one {# updated} other {# updated}}": "{count, plural, one {# mise à jour} other {# mises à jour}}",
-  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Environ # événement à traiter (estimation)} other {Environ # événements à traiter (estimation)}}"
+  "{count, plural, one {About # event to process (estimate)} other {About # events to process (estimate)}}": "{count, plural, one {Environ # événement à traiter (estimation)} other {Environ # événements à traiter (estimation)}}",
+  "info_authorizedmembers_intelligence_requirement": "Les besoins en renseignement prennent en charge la restriction d'accès. Par défaut, ils sont visibles par tous et gérables uniquement par leur créateur. Peut modifier permet à un membre de trier les entités et la boîte de réception ; Peut gérer lui permet aussi de changer la configuration, les membres et de le supprimer. Ces accès nécessitent aussi les capacités correspondantes.",
+  "If both entities are of interest for a selected intelligence requirement, then the target is kept": "Si les deux entités sont d'intérêt pour un besoin en renseignement sélectionné, la cible est conservée",
+  "If no intelligence requirement is selected, the playbook listens to every intelligence requirement": "Si aucun besoin en renseignement n'est sélectionné, le playbook écoute tous les besoins en renseignement"
 }
