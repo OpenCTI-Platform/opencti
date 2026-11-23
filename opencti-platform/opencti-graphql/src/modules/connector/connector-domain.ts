@@ -456,7 +456,13 @@ export const computeManagerConnectorExcerpt = async (_context: AuthContext, _use
 };
 
 const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration') ?? 604800;
-const COMPOSER_TOKEN_NAME = 'Composer managed token';
+// One token per connector: managed connectors running as the same user must not revoke each other's token
+// The name is for display only: the token is identified by its managed_by fields, which no user can set
+const composerTokenName = (connectorId: string) => `Composer managed token (connector: ${connectorId})`;
+const isComposerToken = (connectorId: string) => (token: UserApiToken) => token.managed_by_type === ENTITY_TYPE_CONNECTOR && token.managed_by_id === connectorId;
+const composerTokenKey = (connectorId: string, userId: string) => `composer:connector:${connectorId}:token:${userId}`;
+// Held to issue a connector's token and to revoke it on deletion: connectors no longer share tokens, one lock per connector
+const composerTokenLockId = (connectorId: string) => `manager-configuration-${connectorId}`;
 interface CachedComposerToken {
   key_fingerprint: string;
   token_id: string;
@@ -485,18 +491,21 @@ const loadRequestConnectorManager = (context: AuthContext) => {
   return manager;
 };
 const computeConnectorTokenConfiguration = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
+  const connectorId = connectorEntity.internal_id;
   const userId = connectorEntity.connector_user_id;
-  // Connectors sharing a user share its tokens, and the record too when they share the catalog: one lock per user
-  const resourceId = `composer-token-${userId}`;
+  const resourceId = composerTokenLockId(connectorId);
   let lock;
   try {
+    if (!userId) {
+      throw FunctionalError('Managed connector user not found', { connectorId, userId });
+    }
     const manager = await loadRequestConnectorManager(context);
     if (!manager) {
-      throw FunctionalError('No connector manager registered', { connectorId: connectorEntity.internal_id });
+      throw FunctionalError('No connector manager registered', { connectorId });
     }
     lock = await lockResources([resourceId]);
     const redisClient = getClientBase();
-    const key = `composer:${connectorEntity.catalog_id}:token:${userId}`;
+    const key = composerTokenKey(connectorId, userId);
     const keyFingerprint = shortHash(manager.public_key);
     const cachedValue = await redisClient.get(key);
     const cached = cachedValue ? parseCachedComposerToken(cachedValue) : null;
@@ -514,19 +523,60 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
       await redisClient.expire(key, COMPOSER_TOKEN_REDIS_EXPIRATION);
       return servable.encrypted_token;
     }
-    // Revoke the token of the record, never one another connector of the user may serve.
-    // A value cached before the record format (a bare encrypted token) has no token id: its token is the first one with the name
-    const previousToken = cached
-      ? findUserToken(storedUser, (token) => token.id === cached.token_id)
-      : cachedValue && findUserToken(storedUser, (token) => token.name === COMPOSER_TOKEN_NAME);
-    if (previousToken) {
-      await revokeUserTokenByAdmin(context, SYSTEM_USER, userId, previousToken.id);
+    if (!storedUser) {
+      throw FunctionalError('Managed connector user not found', { connectorId, userId });
     }
-    const { token_id, plaintext_token } = await addUserTokenByAdmin(context, SYSTEM_USER, userId, { name: COMPOSER_TOKEN_NAME } as any);
+    // A configuration read can hold a connector loaded before its deletion: never issue a token for a deleted connector
+    const liveConnector = await storeLoadById(context, SYSTEM_USER, connectorId, ENTITY_TYPE_CONNECTOR);
+    if (!liveConnector) {
+      throw FunctionalError('Managed connector not found', { connectorId });
+    }
+    // Revoke every token of this connector, and only of this connector: no other connector of the user serves them
+    const connectorTokens = (storedUser.api_tokens ?? []).filter(isComposerToken(connectorId));
+    for (const token of connectorTokens) {
+      await revokeUserTokenByAdmin(context, SYSTEM_USER, userId, token.id);
+    }
+    const { token_id, plaintext_token } = await addUserTokenByAdmin(
+      context,
+      SYSTEM_USER,
+      userId,
+      { name: composerTokenName(connectorId) },
+      { type: ENTITY_TYPE_CONNECTOR, id: connectorId },
+    );
     const encryptedToken = encryptValue(manager.public_key, plaintext_token);
     const record: CachedComposerToken = { key_fingerprint: keyFingerprint, token_id, encrypted_token: encryptedToken };
     await redisClient.setex(key, COMPOSER_TOKEN_REDIS_EXPIRATION, JSON.stringify(record));
     return encryptedToken;
+  } catch (error) {
+    if ((error as { name?: string }).name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [resourceId] });
+    }
+    throw error;
+  } finally {
+    await lock?.unlock();
+  }
+};
+
+// Under the token lock, with the user read from the database (the users cache can miss a token just issued):
+// a configuration read in flight cannot leave a valid token behind for a deleted connector
+const revokeConnectorToken = async (context: AuthContext, connectorEntity: BasicStoreEntityConnector) => {
+  if (!connectorEntity.connector_user_id) {
+    return;
+  }
+  const resourceId = composerTokenLockId(connectorEntity.internal_id);
+  let lock;
+  try {
+    lock = await lockResources([resourceId]);
+    const targetUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, connectorEntity.connector_user_id, ENTITY_TYPE_USER);
+    if (!targetUser) {
+      return;
+    }
+    // Every token of this connector: a stale users cache can have let configuration reads issue several
+    const connectorTokens = (targetUser.api_tokens ?? []).filter(isComposerToken(connectorEntity.internal_id));
+    for (const token of connectorTokens) {
+      await revokeUserTokenByAdmin(context, SYSTEM_USER, targetUser.internal_id, token.id);
+    }
+    await getClientBase().del(composerTokenKey(connectorEntity.internal_id, targetUser.internal_id));
   } catch (error) {
     if ((error as { name?: string }).name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [resourceId] });
@@ -1111,6 +1161,14 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
   } catch (err) {
     // Best effort: orphan errors are never read and expire anyway
     logApp.warn('[OPENCTI-MODULE] Unable to delete connector errors', { cause: err, connectorId });
+  }
+  if (isManagedConnector(element)) {
+    try {
+      await revokeConnectorToken(context, element);
+    } catch (err) {
+      // Best effort: the connector is already deleted, its token can still be revoked from the user
+      logApp.warn('[OPENCTI-MODULE] Unable to revoke managed connector token', { cause: err, connectorId });
+    }
   }
   await publishUserAction({
     user,
