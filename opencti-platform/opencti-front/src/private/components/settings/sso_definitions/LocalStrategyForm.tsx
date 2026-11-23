@@ -275,13 +275,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             type="checkbox"
             name="api_basic_auth_enabled"
             label={t_i18n('Allow API Basic authentication')}
-            helpertext={(
-              <>
-                {t_i18n('Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.')}
-                {/* Basic authentication checks a local password: the back end refuses it without the local authentication */}
-                {!values.enabled && ` ${t_i18n('While local authentication is disabled, API Basic authentication is refused.')}`}
-              </>
-            )}
+            helpertext={t_i18n('Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.')}
             containerstyle={{ marginTop: 20 }}
           />
           <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>

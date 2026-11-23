@@ -27,7 +27,6 @@ Basic authentication is controlled by the **Allow API Basic authentication** swi
 
 - A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled.
 - While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated: a GraphQL request gets the error `You must be logged in to do this.`
-- Basic authentication checks a local password, so it is also refused while the local authentication is disabled, unless `APP__AUTHENTICATION__FORCE_LOCAL` is `true`. This applies to upgraded platforms too (see [breaking changes](../deployment/breaking-changes.md#api-basic-authentication)).
 
 ### Generate a token
 

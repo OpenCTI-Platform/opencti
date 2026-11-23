@@ -7,60 +7,34 @@ import { BYPASS, SYSTEM_USER } from '../../../../src/utils/access';
 import type { AuthContext } from '../../../../src/types/user';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
 
-const { forceLocal } = vi.hoisted(() => ({ forceLocal: { value: false } }));
-
 vi.mock('../../../../src/database/cache');
 vi.mock('../../../../src/database/redis'); // to prevent connection attempts
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
   elLoadBy: vi.fn(),
 }));
-vi.mock('../../../../src/modules/authenticationProvider/providers-configuration', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/authenticationProvider/providers-configuration')>()),
-  isLocalAuthForcedEnabledFromEnv: () => forceLocal.value,
-}));
 vi.mock('../../../../src/config/conf', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/config/conf')>()),
   logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }));
 
-type BasicAuthSettings = Pick<BasicStoreSettings, 'api_basic_auth_enabled' | 'local_auth'>;
+type BasicAuthSettings = Pick<BasicStoreSettings, 'api_basic_auth_enabled'>;
 
-const LOCAL_AUTH_ON = { enabled: true } as BasicStoreSettings['local_auth'];
-const LOCAL_AUTH_OFF = { enabled: false } as BasicStoreSettings['local_auth'];
 const USE_API_TOKEN = /use an API token/;
 
 describe('API Basic authentication setting', () => {
-  beforeEach(() => {
-    forceLocal.value = false;
-  });
-
   it('should refuse Basic auth when the setting is disabled', () => {
-    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: false, local_auth: LOCAL_AUTH_ON })).toThrow(USE_API_TOKEN);
+    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: false })).toThrow(USE_API_TOKEN);
   });
 
   it('should accept Basic auth when the setting is enabled', () => {
-    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: true, local_auth: LOCAL_AUTH_ON })).not.toThrow();
+    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: true })).not.toThrow();
   });
 
   it('should read a missing setting as enabled, as on the platforms created before it', () => {
-    const settings: BasicAuthSettings = { local_auth: LOCAL_AUTH_ON };
+    const settings: BasicAuthSettings = {};
     expect(isApiBasicAuthEnabled(settings)).toBe(true);
     expect(() => checkApiBasicAuthAllowed(settings)).not.toThrow();
-  });
-
-  it('should refuse Basic auth when the local authentication is disabled', () => {
-    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: true, local_auth: LOCAL_AUTH_OFF })).toThrow(USE_API_TOKEN);
-  });
-
-  it('should accept Basic auth when the local authentication is disabled but forced by force_local', () => {
-    forceLocal.value = true;
-    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: true, local_auth: LOCAL_AUTH_OFF })).not.toThrow();
-  });
-
-  it('should still refuse Basic auth with force_local when the setting is disabled', () => {
-    forceLocal.value = true;
-    expect(() => checkApiBasicAuthAllowed({ api_basic_auth_enabled: false, local_auth: LOCAL_AUTH_OFF })).toThrow(USE_API_TOKEN);
   });
 });
 
@@ -77,12 +51,11 @@ describe('authenticateUserByBasicAuth with the setting', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    forceLocal.value = false;
   });
 
   // The refusal does not depend on the account: it comes before the account is even loaded, so BYPASS cannot get through
   it('should refuse a BYPASS user before loading the account or checking the password', async () => {
-    mockSettings({ api_basic_auth_enabled: false, local_auth: LOCAL_AUTH_ON });
+    mockSettings({ api_basic_auth_enabled: false });
     await expect(authenticateUserByBasicAuth(context, req, credentials)).rejects.toThrow(USE_API_TOKEN);
     // login() loads the user first: it was never reached, so the attempt is not counted either
     expect(Engine.elLoadBy).not.toHaveBeenCalled();
@@ -90,7 +63,7 @@ describe('authenticateUserByBasicAuth with the setting', () => {
   });
 
   it('should check the password when the setting is enabled', async () => {
-    mockSettings({ api_basic_auth_enabled: true, local_auth: LOCAL_AUTH_ON });
+    mockSettings({ api_basic_auth_enabled: true });
     // No user is found, so login() refuses the credentials
     await expect(authenticateUserByBasicAuth(context, req, credentials)).rejects.toThrow('Bad login or password');
     expect(Engine.elLoadBy).toHaveBeenCalled();

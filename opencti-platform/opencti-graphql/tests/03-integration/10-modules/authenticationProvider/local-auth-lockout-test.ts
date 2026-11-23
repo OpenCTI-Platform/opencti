@@ -580,7 +580,7 @@ describe('Local authentication lockout', () => {
   });
 
   // With the local auth disabled, the login form cannot log in with a password: its attempts must not lock
-  // an account that logs in with another provider. Basic auth is refused before the password is checked, so it is not counted either
+  // an account that logs in with another provider. Basic auth still checks the password, so it is still counted
   describe('Local auth disabled', () => {
     beforeEach(async () => {
       await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
@@ -598,10 +598,9 @@ describe('Local authentication lockout', () => {
       expect(await accountStatusOf(LOCKOUT_USER.email)).toEqual('Active');
     });
 
-    it('should refuse Basic auth without counting the attempt', async () => {
-      await expect(authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_USER.email, password: WRONG_PASSWORD }))
-        .rejects.toThrow('Local authentication is disabled on this platform, use an API token');
-      expect(await failuresOf(API_USER.email)).toEqual(0);
+    it('should still count the Basic auth failures', async () => {
+      await expectBadCredentials(authenticateUserByBasicAuth(testContext, buildRequest(), { username: API_USER.email, password: WRONG_PASSWORD }));
+      expect(await failuresOf(API_USER.email)).toEqual(1);
     });
   });
 

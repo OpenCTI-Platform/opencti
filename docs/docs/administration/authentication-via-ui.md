@@ -79,7 +79,6 @@ In the local authentication drawer, the **Allow API Basic authentication** switc
 
 - A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled: disable it once your scripts and integrations use API tokens.
 - While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated, and it is not counted as a failed login attempt.
-- Basic authentication checks a local password, so it is also refused while the local authentication is disabled, unless `APP__AUTHENTICATION__FORCE_LOCAL` is `true`. This applies to upgraded platforms too: a platform with the local authentication disabled stops accepting Basic authentication at upgrade (see [breaking changes](../deployment/breaking-changes.md#api-basic-authentication)).
 
 #### Define password policy
 

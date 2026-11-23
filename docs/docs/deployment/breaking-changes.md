@@ -10,7 +10,6 @@ This table regroups all the breaking changes introduced, with the corresponding 
 
 | Change                                                                                                              | Deprecated in | Changed in |
 |:--------------------------------------------------------------------------------------------------------------------|:--------------|:-----------|
-| [API Basic authentication refused without the local authentication](#api-basic-authentication)                     | -             | next release |
 | [Elasticsearch 9 support and search engine client detection](#elasticsearch-9)                                      | -             | 7.261103.0 |
 | [Removal of filter script](#filter-script-api)                                                                      | -             | 7.260401.0 |
 | [SSO, cryptography and tokens management](#cryptography-and-tokens-management)                                      | -             | 7.260224.0 |
@@ -21,16 +20,6 @@ This table regroups all the breaking changes introduced, with the corresponding 
 | [Promote Observable API](#change-to-the-observable-promote-API)                                                     | 6.2           | 6.8        |
 | [SAML authentication parameters](#change-to-SAML-authentication)                                                    |               | 6.2        |
 | [Major changes to Filtering API](#new-filtering-API)                                                                |               | 5.12       |
-
-<a id="api-basic-authentication"></a>
-### API Basic authentication refused without the local authentication
-HTTP Basic authentication on the API (`Authorization: Basic ...`) checks a local password. It is now refused while the
-local authentication is disabled, unless `APP__AUTHENTICATION__FORCE_LOCAL` is `true`. A platform that disabled the local
-authentication, for example to log in with SSO only, stops accepting Basic authentication at upgrade: move the scripts
-and integrations that still use it to [API tokens](../reference/api.md#authentication).
-
-The other platforms keep accepting Basic authentication at upgrade. A new platform starts with it disabled.
-See [API Basic authentication](../administration/authentication-via-ui.md#api-basic-authentication).
 
 <a id="elasticsearch-9"></a>
 ### Elasticsearch 9 support and search engine client detection
