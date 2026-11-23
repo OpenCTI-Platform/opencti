@@ -30,6 +30,8 @@ import type { IrEntitiesTypesQuery } from './__generated__/IrEntitiesTypesQuery.
 
 const ENTITY_TYPE = 'IntelligenceRequirementMatch';
 const MAX_BULK_TRIAGE = 15;
+// The rows of the table have no page: the row and its chevron open the match drawer
+export const irEntitiesRowLink = (): string | undefined => undefined;
 
 const requirementQuery = graphql`
   query IrEntitiesRequirementQuery($id: ID!) {
@@ -456,6 +458,9 @@ const IrEntities = ({ irId }: { irId: string }) => {
           searchContextFinal={{ entityTypes: [ENTITY_TYPE] }}
           icon={(line: Line) => <ItemIcon type={line.match_entity_type} size="small" />}
           onLineClick={(line: Line) => setSelected(line)}
+          // A row is a match of the requirement, not a knowledge entity: it has no page of its own (the default link
+          // read /entities/null/<id>). Without a link the row chevron falls through to the row click, which opens the drawer.
+          getComputeLink={irEntitiesRowLink}
         />
       )}
       <IrMatchDrawer

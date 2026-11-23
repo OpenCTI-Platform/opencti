@@ -6116,7 +6116,7 @@
   "Threat landscape": "Panorama de amenazas",
   "Threat landscape description ...": "Cree un PIR dedicado a rastrear las amenazas en función de las ubicaciones y los sectores a los que se dirigen. Este PIR debería ayudarle a identificar el malware, los patrones de ataque, las vulnerabilidades y los contenedores correspondientes que debería examinar con carácter prioritario.",
   "Threat map": "Mapa de amenazas",
-  "Threat map explanations...": "Entidades marcadas por este PIR, situadas según su puntuación PIR (vertical) y su última actualización (horizontal). Cada tipo tiene su propio color y forma; un marcador numerado agrupa entidades del mismo tipo cercanas en fecha y puntuación. Pase el ratón sobre un marcador para ver las entidades y los criterios que cumplen, haga clic para abrir la entidad.",
+  "Threat map explanations...": "Entidades de este requisito, situadas según su puntuación (vertical) y su último hecho (horizontal). Cada tipo tiene su propio color y forma; un marcador numerado agrupa entidades del mismo tipo cercanas en fecha y puntuación. Pase el ratón sobre un marcador para ver las entidades y los criterios que cumplen, haga clic para abrir los detalles.",
   "Threat origin (coming soon)": "Origen de las amenazas (próximamente)",
   "Threat origin description ...": "Cree un PIR dedicado al seguimiento de amenazas en función de su origen. Este PIR debería ayudarle a identificar el malware, los patrones de ataque, las vulnerabilidades y los contenedores correspondientes que debería examinar de forma prioritaria.",
   "Threat with full customization (coming soon)": "Amenaza con personalización completa (próximamente)",

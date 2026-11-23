@@ -6116,7 +6116,7 @@
   "Threat landscape": "Threat landscape",
   "Threat landscape description ...": "Create a PIR dedicated to tracking threats based on locations and sectors that they target. This PIR should help you identify corresponding malware, attack patterns, vulnerabilities, and containers that you should examine as a priority.",
   "Threat map": "Threat map",
-  "Threat map explanations...": "Entities flagged by this PIR, placed by PIR score (vertical) and last refresh date (horizontal). Each type has its own colour and shape; a numbered marker is a cluster of entities of one type close in time and score. Hover a marker for the entities and the criteria they match, click to open the entity.",
+  "Threat map explanations...": "Entities of this requirement, placed by score (vertical) and last fact (horizontal). Each type has its own colour and shape; a numbered marker is a cluster of entities of one type close in time and score. Hover a marker for the entities and the criteria they match, click to open the details.",
   "Threat origin (coming soon)": "Threat origin (coming soon)",
   "Threat origin description ...": "Create a PIR dedicated to tracking threats based on their origins. This PIR should help you identify corresponding malware, attack patterns, vulnerabilities, and containers that you should examine as a priority.",
   "Threat with full customization (coming soon)": "Threat with full customization (coming soon)",

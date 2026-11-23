@@ -19,19 +19,19 @@ import type { Theme } from '../../../../../components/Theme';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import { onActivationKey } from '../../../../../utils/domEvent';
-import { PirThreatMapTypeStyle } from './pirThreatMapUtils';
-import PirThreatMapShape from './PirThreatMapShape';
+import { IrThreatMapTypeStyle } from './irThreatMapUtils';
+import IrThreatMapShape from './IrThreatMapShape';
 
-interface PirThreatMapLegendProps {
+interface IrThreatMapLegendProps {
   entityTypes: string[];
   onFilter: (entityTypes: string[]) => void;
   // Colour and shape of each type as the map draws it.
-  typeStyles?: Record<string, PirThreatMapTypeStyle>;
+  typeStyles?: Record<string, IrThreatMapTypeStyle>;
   // Entities per type on the map, shown next to the label.
   counts?: Record<string, number>;
 }
 
-const PirThreatMapLegend = ({ entityTypes, onFilter, typeStyles, counts }: PirThreatMapLegendProps) => {
+const IrThreatMapLegend = ({ entityTypes, onFilter, typeStyles, counts }: IrThreatMapLegendProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [disabledTypes, setDisabledTypes] = useState<string[]>([]);
@@ -74,7 +74,7 @@ const PirThreatMapLegend = ({ entityTypes, onFilter, typeStyles, counts }: PirTh
             aria-pressed={!disabledTypes.includes(type)}
             onKeyDown={onActivationKey(() => toggleType(type))}
           >
-            <PirThreatMapShape
+            <IrThreatMapShape
               shape={style?.shape ?? 'circle'}
               color={style?.color ?? itemColor(type)}
               size={10}
@@ -90,4 +90,4 @@ const PirThreatMapLegend = ({ entityTypes, onFilter, typeStyles, counts }: PirTh
   );
 };
 
-export default PirThreatMapLegend;
+export default IrThreatMapLegend;

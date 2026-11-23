@@ -6116,7 +6116,7 @@
   "Threat landscape": "Paysage des menaces",
   "Threat landscape description ...": "Créez un PIR dédié au suivi des menaces en fonction des lieux et des secteurs qu'elles ciblent. Ce PIR devrait vous aider à identifier les logiciels malveillants, les schémas d'attaque, les vulnérabilités et les conteneurs correspondants que vous devriez examiner en priorité.",
   "Threat map": "Carte des menaces",
-  "Threat map explanations...": "Entités signalées par ce PIR, placées selon leur score PIR (vertical) et leur date de dernière mise à jour (horizontal). Chaque type a sa couleur et sa forme ; un marqueur numéroté regroupe des entités d'un même type proches en date et en score. Survolez un marqueur pour voir les entités et les critères correspondants, cliquez pour ouvrir l'entité.",
+  "Threat map explanations...": "Entités de ce besoin, placées selon leur score (vertical) et leur dernier fait (horizontal). Chaque type a sa couleur et sa forme ; un marqueur numéroté regroupe des entités d'un même type proches en date et en score. Survolez un marqueur pour voir les entités et les critères qu'elles remplissent, cliquez pour ouvrir le détail.",
   "Threat origin (coming soon)": "Origine des menaces (à venir)",
   "Threat origin description ...": "Créer un PIR dédié au suivi des menaces en fonction de leur origine. Ce PIR devrait vous aider à identifier les logiciels malveillants, les schémas d'attaque, les vulnérabilités et les conteneurs correspondants que vous devriez examiner en priorité.",
   "Threat with full customization (coming soon)": "Menace avec personnalisation complète (à venir)",

@@ -10,9 +10,10 @@ import { IR_KIQS_ENABLED } from '../configuration/irConstants';
 import { IrInboxItem } from './IrInbox';
 import IrMatchDrawer, { type IrMatchData } from './IrMatchDrawer';
 import IrTimelinePreview from './IrTimelinePreview';
+import IrThreatMap from './threat_map/IrThreatMap';
 import type { IrOverviewQuery } from './__generated__/IrOverviewQuery.graphql';
 
-// Overview: the synthesis of the outputs (inbox to review, top entities, key intelligence questions).
+// Overview: the synthesis of the outputs (inbox to review, threat map, top entities, key intelligence questions).
 
 const overviewQuery = graphql`
   query IrOverviewQuery($id: ID!) {
@@ -125,6 +126,9 @@ const IrOverview = ({ irId }: { irId: string }) => {
       </Box>
       <Box sx={{ mb: 2 }}>
         <IrTimelinePreview irId={irId} matches={matches} thresholds={ir?.ir_thresholds ?? []} onOpen={setSelected} />
+      </Box>
+      <Box sx={{ mb: 2 }}>
+        <IrThreatMap matches={matches} onOpen={setSelected} />
       </Box>
       <Box sx={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 2 }}>
         <Paper padding={16}>

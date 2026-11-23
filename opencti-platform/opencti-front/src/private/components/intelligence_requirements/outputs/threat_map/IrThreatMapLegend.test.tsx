@@ -2,12 +2,12 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../../utils/tests/test-render';
-import PirThreatMapLegend from './PirThreatMapLegend';
+import IrThreatMapLegend from './IrThreatMapLegend';
 
-describe('PirThreatMapLegend', () => {
+describe('IrThreatMapLegend', () => {
   it('exposes whether each entity type is shown, and toggles it from the keyboard', async () => {
     const onFilter = vi.fn();
-    const { user } = testRender(<PirThreatMapLegend entityTypes={['Malware', 'Campaign']} onFilter={onFilter} />);
+    const { user } = testRender(<IrThreatMapLegend entityTypes={['Malware', 'Campaign']} onFilter={onFilter} />);
 
     const malware = screen.getByRole('button', { name: 'Malware' });
     expect(malware).toHaveAttribute('aria-pressed', 'true');

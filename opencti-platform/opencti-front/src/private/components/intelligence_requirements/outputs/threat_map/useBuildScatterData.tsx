@@ -14,16 +14,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { useMemo } from 'react';
-import { PirThreatMapFragment$data } from './__generated__/PirThreatMapFragment.graphql';
-import { getNodes } from '../../../../../utils/connection';
 import { minutesBetweenDates } from '../../../../../utils/Time';
-import { ApexPirThreatMapSeries, markerSize, PirThreatMapMarker, PirThreatMapTypeStyle } from './pirThreatMapUtils';
+import { ApexIrThreatMapSeries, IrThreatMapMarker, IrThreatMapTypeStyle, markerSize } from './irThreatMapUtils';
 
 interface UseBuildScatterDataArgs {
-  stixDomainObjects: PirThreatMapFragment$data['stixDomainObjects'];
+  markers: IrThreatMapMarker[];
   // Entity types shown on the map (the legend filter).
   entityTypes: string[];
-  typeStyles: Record<string, PirThreatMapTypeStyle>;
+  typeStyles: Record<string, IrThreatMapTypeStyle>;
   // Entities scoring below it are left out (the score band filter).
   scoreMin?: number;
   // Two entities closer than this in time (minutes) and score are drawn as one cluster.
@@ -33,23 +31,15 @@ interface UseBuildScatterDataArgs {
 const MIN_DIFF_SCORE = 5;
 
 const useBuildScatterData = ({
-  stixDomainObjects,
+  markers,
   entityTypes,
   typeStyles,
   scoreMin = 0,
   clusterMinutes = 1080, // 18h, the 7-day window
 }: UseBuildScatterDataArgs) => {
-  const series: ApexPirThreatMapSeries = useMemo(() => {
-    const groups: PirThreatMapMarker[][] = [];
-    getNodes(stixDomainObjects).forEach((d) => {
-      const item: PirThreatMapMarker = {
-        id: d.id,
-        date: d.refreshed_at,
-        score: d.pirInformation?.pir_score ?? 0,
-        name: d?.representative?.main ?? '',
-        type: d?.entity_type ?? '',
-        matchedCriteria: d.pirInformation?.pir_explanation?.length ?? 0,
-      };
+  const series: ApexIrThreatMapSeries = useMemo(() => {
+    const groups: IrThreatMapMarker[][] = [];
+    markers.forEach((item) => {
       if (!entityTypes.includes(item.type) || item.score < scoreMin) return;
       // A cluster holds one entity type only, so its colour and shape stay meaningful.
       const group = groups.find((g) => g[0].type === item.type
@@ -77,7 +67,7 @@ const useBuildScatterData = ({
         }],
       };
     });
-  }, [stixDomainObjects, entityTypes, typeStyles, scoreMin, clusterMinutes]);
+  }, [markers, entityTypes, typeStyles, scoreMin, clusterMinutes]);
 
   const markerSizes = useMemo(() => series.map((s) => markerSize(s.data[0].meta.size)), [series]);
   const markerShapes = useMemo(() => series.map((s) => typeStyles[s.data[0].meta.type]?.shape ?? 'circle'), [series, typeStyles]);

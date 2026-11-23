@@ -14,16 +14,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { PirThreatMapShape as Shape } from './pirThreatMapUtils';
+import { IrThreatMapShape as Shape } from './irThreatMapUtils';
 
-interface PirThreatMapShapeProps {
+interface IrThreatMapShapeProps {
   shape: Shape;
   color: string;
   size?: number;
 }
 
 // The marker of an entity type as the map draws it, for the legend and the tooltip.
-const PirThreatMapShape = ({ shape, color, size = 12 }: PirThreatMapShapeProps) => {
+const IrThreatMapShape = ({ shape, color, size = 12 }: IrThreatMapShapeProps) => {
   let path: React.ReactNode;
   switch (shape) {
     case 'square':
@@ -48,4 +48,4 @@ const PirThreatMapShape = ({ shape, color, size = 12 }: PirThreatMapShapeProps) 
   );
 };
 
-export default PirThreatMapShape;
+export default IrThreatMapShape;

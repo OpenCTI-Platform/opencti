@@ -15,39 +15,40 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { CSSProperties, MouseEventHandler } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Link } from 'react-router';
 import { Box } from '@mui/material';
 import type { Theme } from '../../../../../components/Theme';
-import { PirThreatMapMarker, PirThreatMapTypeStyle } from './pirThreatMapUtils';
+import { IrThreatMapMarker, IrThreatMapTypeStyle } from './irThreatMapUtils';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
-import { useComputeLink } from '../../../../../utils/hooks/useAppData';
-import PirThreatMapShape from './PirThreatMapShape';
+import { onActivationKey } from '../../../../../utils/domEvent';
+import IrThreatMapShape from './IrThreatMapShape';
 
-interface PirThreatMapTooltipProps {
-  data?: PirThreatMapMarker[];
-  typeStyles?: Record<string, PirThreatMapTypeStyle>;
+interface IrThreatMapTooltipProps {
+  data?: IrThreatMapMarker[];
+  typeStyles?: Record<string, IrThreatMapTypeStyle>;
+  // Opens the match drawer of the requirement for one row.
+  onOpen: (matchId: string) => void;
   onMouseLeave?: MouseEventHandler;
   x: number;
   y: number;
 }
 
-export const PIR_THREAT_MAP_TOOLTIP_MAX_ITEMS = 8;
+export const IR_THREAT_MAP_TOOLTIP_MAX_ITEMS = 8;
 
-const PirThreatMapTooltip = ({
+const IrThreatMapTooltip = ({
   data,
   typeStyles,
+  onOpen,
   onMouseLeave,
   x,
   y,
-}: PirThreatMapTooltipProps) => {
+}: IrThreatMapTooltipProps) => {
   const { t_i18n, fsd } = useFormatter();
   const theme = useTheme<Theme>();
-  const computeLink = useComputeLink();
 
   if (!data || data.length === 0) return null;
 
-  const rows = data.slice(0, PIR_THREAT_MAP_TOOLTIP_MAX_ITEMS);
+  const rows = data.slice(0, IR_THREAT_MAP_TOOLTIP_MAX_ITEMS);
   const more = data.length - rows.length;
 
   const wrapperStyle: CSSProperties = {
@@ -78,7 +79,7 @@ const PirThreatMapTooltip = ({
     alignItems: 'center',
     columnGap: theme.spacing(1),
     color: theme.palette.text?.primary,
-    textDecoration: 'none',
+    cursor: 'pointer',
   };
 
   const secondary: CSSProperties = { color: theme.palette.text?.secondary, fontSize: 11 };
@@ -92,21 +93,25 @@ const PirThreatMapTooltip = ({
           </div>
         )}
         {rows.map(({ type, id, name, date, score, matchedCriteria }) => {
-          const link = computeLink({ id, entity_type: type }) ?? '';
           const style = typeStyles?.[type];
           return (
             <Box
               key={id}
+              role="button"
+              tabIndex={0}
+              aria-label={name}
+              onClick={() => onOpen(id)}
+              onKeyDown={onActivationKey(() => onOpen(id))}
               sx={{
                 borderRadius: 1,
                 padding: 0.5,
-                '&:hover': {
+                '&:hover, &:focus-visible': {
                   background: theme.palette.background.shadow,
                 },
               }}
             >
-              <Link to={link} style={rowStyle}>
-                <PirThreatMapShape shape={style?.shape ?? 'circle'} color={style?.color ?? itemColor(type)} />
+              <div style={rowStyle}>
+                <IrThreatMapShape shape={style?.shape ?? 'circle'} color={style?.color ?? itemColor(type)} />
                 <span style={{ overflow: 'hidden' }}>
                   <span style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 600 }}>
                     {name}
@@ -115,8 +120,8 @@ const PirThreatMapTooltip = ({
                     {t_i18n(`entity_${type}`)} · {fsd(date)} · {t_i18n('{count, plural, one {# criterion matched} other {# criteria matched}}', { values: { count: matchedCriteria } })}
                   </span>
                 </span>
-                <span style={{ fontWeight: 700, fontSize: 14 }} aria-label={t_i18n('PIR score')}>{score}</span>
-              </Link>
+                <span style={{ fontWeight: 700, fontSize: 14 }} aria-label={t_i18n('Score')}>{score}</span>
+              </div>
             </Box>
           );
         })}
@@ -130,4 +135,4 @@ const PirThreatMapTooltip = ({
   );
 };
 
-export default PirThreatMapTooltip;
+export default IrThreatMapTooltip;
