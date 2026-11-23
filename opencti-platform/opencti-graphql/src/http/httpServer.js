@@ -81,7 +81,11 @@ export const extractWsSessionContext = async (context) => {
     const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(wsSession?.user.id);
     sessionContext.user = { ...wsSession?.user, ...logged, origin };
-    // A subscription is authenticated by the session as well: its maximum lifetime applies
+    // A subscription is authenticated by the session as well: its maximum lifetime applies.
+    // It is only checked when a subscription is requested: a subscription already open when the session reaches
+    // its maximum lifetime stays alive. This is accepted, as the next HTTP request of the front then fails and sends
+    // the user back to the login page, which closes the WebSocket. The check compares dates only, so it also works
+    // with the copy of the session this connection keeps from its first subscription request.
     if (isSessionOverMaxLifetime(wsSession.user)) {
       await endSessionOverMaxLifetime(req, sessionContext.user);
       throw ForbiddenAccess('User must be authenticated');
