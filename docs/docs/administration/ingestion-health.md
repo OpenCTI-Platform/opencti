@@ -141,7 +141,7 @@ Until then, the ingestion keeps its status: it does not mean that the fix failed
 
 ### User is missing
 
-- **Managed connector**: edit the connector and choose a service account, or create one.
+- **Managed connector**: edit the connector and choose an existing user, preferably a service account.
 - **Self-hosted connector**: the user owning its token was deleted, so the connector cannot authenticate anymore. Set a token of an existing user in `OPENCTI_TOKEN`, preferably a dedicated service account (see [User is not a service account](#user-is-not-a-service-account)), and restart the connector.
 - **Feed or synchronization**: edit it and choose an existing user, preferably a service account.
 
@@ -163,7 +163,13 @@ You can also use another user instead:
 
 ### User is not a service account
 
-A service account is a technical user, without password, that authenticates with its token only (see [Service account](users.md#service-account)). Run each ingestion with its own service account: it no longer depends on a person, and the data it creates is attributed to it.
+A service account is a technical user, without password, that authenticates with its token only and cannot sign in to the interface (see [Service account](users.md#service-account)). Running an ingestion with a service account rather than a person's account:
+
+- **keeps a trace of what the ingestion did**: the data it creates and the changes it makes are attributed to the service account, apart from what people do. You can filter the data, the history and the activity on it;
+- **does not depend on a person**: the ingestion keeps working when this person leaves, changes rights, or has their account locked or disabled;
+- **reaches the restricted data**: a service account is always considered a member of the platform organization, and bypasses the authorized members of an entity. A regular user without the **Bypass all capabilities** capability does not: with a platform organization set (see [Organizations](users.md#organizations)) or with restricted containers, the ingestion cannot see nor update part of the data, and can fail. For instance, an enrichment connector fails on a report restricted to some members.
+
+Use **one service account per ingestion**, for the same reasons: you can tell which connector or feed created which data, give each one only the rights it needs, and revoke the token of one of them without stopping the others.
 
 !!! note "Connectors deployed from the OpenCTI docker template"
 
