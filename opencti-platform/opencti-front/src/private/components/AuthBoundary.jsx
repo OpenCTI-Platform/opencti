@@ -5,6 +5,7 @@ import LtsLicenseRoot from './LtsLicenseRoot';
 import { HighLevelError } from './Error';
 import LoginRoot from '../../public/LoginRoot';
 import withRouter from '../../utils/compat_router/withRouter';
+import { isReloadingForStaleChunk } from '../../utils/staleChunkReload';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {
@@ -18,6 +19,10 @@ class AuthBoundaryComponent extends React.Component {
 
   render() {
     if (this.state.error) {
+      // The page reloads to the new build: no error to show
+      if (isReloadingForStaleChunk(this.state.error)) {
+        return null;
+      }
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);

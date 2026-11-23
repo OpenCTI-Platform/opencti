@@ -6,6 +6,7 @@ import { DedupLogRecordProcessor, RECORDS_SUPPRESSED_EVENT_NAME } from './DedupL
 import type { SuppressedRecords } from './DedupLogRecordProcessor';
 import { GraphQLLogRecordExporter } from './GraphQLLogRecordExporter';
 import { SEVERITY_NUMBERS, logger } from './logger';
+import { isReloadingForStaleChunk } from '../staleChunkReload';
 
 let provider: LoggerProvider | undefined;
 let dropReported = false;
@@ -68,6 +69,10 @@ const onUncaughtError = (event: ErrorEvent) => {
 };
 
 const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+  // The page reloads to the new build: not an error worth reporting
+  if (isReloadingForStaleChunk(event.reason)) {
+    return;
+  }
   logger.error('Unhandled promise rejection', {
     eventName: 'opencti.frontend.unhandled_rejection',
     error: event.reason,
