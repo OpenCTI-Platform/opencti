@@ -6,6 +6,8 @@ import { SYSTEM_USER } from '../../../src/utils/access';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import * as streamHandler from '../../../src/database/stream/stream-handler';
 import { intelligenceRequirementManagerHandler } from '../../../src/manager/intelligenceRequirementManager';
+import * as irEngine from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-engine';
+import * as irPipeline from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-pipeline';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import type { BasicStoreEntity } from '../../../src/types/store';
 
@@ -377,5 +379,24 @@ describe('Intelligence requirement manager: stream processing', () => {
     await intelligenceRequirementManagerHandler();
     const after = (await readMatches(irId)).find((m) => m.match_entity_id === ids.malware);
     expect(after?.match_status).toEqual('removed');
+  });
+
+  it('should keep processing the batch when the evaluation of one candidate fails', async () => {
+    const before = await readMatches(irId);
+    vi.spyOn(irPipeline, 'upsertCandidate').mockRejectedValue(new Error('candidate evaluation failure'));
+    mockStream(buildEvents(ids), 40);
+    await expect(intelligenceRequirementManagerHandler()).resolves.toBeUndefined();
+    const after = await readMatches(irId);
+    expect(after.length).toEqual(before.length);
+  });
+
+  it('should record the processing error of a requirement and keep its position', async () => {
+    const before = await readMatches(irId);
+    const failure = vi.spyOn(irEngine, 'buildEngineState').mockRejectedValue(new Error('engine state failure'));
+    mockStream(buildEvents(ids), 50);
+    await expect(intelligenceRequirementManagerHandler()).resolves.toBeUndefined();
+    expect(failure).toHaveBeenCalled();
+    const after = await readMatches(irId);
+    expect(after.length).toEqual(before.length);
   });
 });
