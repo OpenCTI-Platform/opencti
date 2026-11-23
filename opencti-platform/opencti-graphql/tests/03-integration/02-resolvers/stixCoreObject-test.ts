@@ -717,7 +717,7 @@ describe('StixCoreObjects export resolvers', () => {
 });
 
 describe('regardingOf on the channel side of publishes', () => {
-  const CHANNEL_TYPE = 'regarding-of-publishes-type';
+  const CHANNEL_TYPE = 'Twitter';
   const CHANNEL_ADD_QUERY = gql`
     mutation ChannelAdd($input: ChannelAddInput!) {
       channelAdd(input: $input) { id }
