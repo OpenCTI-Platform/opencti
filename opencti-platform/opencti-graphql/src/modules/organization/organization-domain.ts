@@ -11,6 +11,8 @@ import {
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { verifyCanDeleteOrganization } from '../../database/data-consistency';
+import { lockResources } from '../../lock/master-lock';
+import { getInstanceIds } from '../../schema/identifier';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../schema/stixDomainObject';
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -143,6 +145,32 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
 };
 
 /**
+ * Removes a user id from one organization's administrators.
+ *
+ * The organization is locked across a fresh read and the patch: two administrators deleted at
+ * the same time would otherwise each rewrite the list from the same snapshot, and the second
+ * write would restore the administrator the first one removed. The patch is told it already
+ * holds the lock, so it does not wait on itself.
+ */
+const organizationAdminRemoveId = async (context: AuthContext, organization: BasicStoreEntityOrganization, userId: string) => {
+  const participantIds = getInstanceIds(organization);
+  let lock;
+  try {
+    lock = await lockResources(participantIds);
+    const current = await findById(context, SYSTEM_USER, organization.internal_id);
+    if (!current?.authorized_authorities?.includes(userId)) {
+      return;
+    }
+    const patch = { authorized_authorities: current.authorized_authorities.filter((authority) => authority !== userId) };
+    const { element } = await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_IDENTITY_ORGANIZATION, patch, { locks: participantIds });
+    await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, element, SYSTEM_USER);
+  } finally {
+    if (lock) await lock.unlock();
+  }
+  await organizationUsersCacheRefresh(context, SYSTEM_USER, organization.internal_id);
+};
+
+/**
  * Drops a deleted user from the administrators of every organization that lists it, so that no
  * organization keeps an administrator that cannot be removed any more.
  *
@@ -159,10 +187,7 @@ export const organizationAdminRemoveDeletedUser = async (context: AuthContext, u
   };
   const organizations = await fullEntitiesList<BasicStoreEntityOrganization>(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters });
   for (let i = 0; i < organizations.length; i += 1) {
-    const organization = organizations[i];
-    const authorities = (organization.authorized_authorities ?? []).filter((authority) => authority !== userId);
-    await editAuthorizedAuthorities(context, SYSTEM_USER, organization.id, authorities);
-    await organizationUsersCacheRefresh(context, SYSTEM_USER, organization.id);
+    await organizationAdminRemoveId(context, organizations[i], userId);
   }
 };
 

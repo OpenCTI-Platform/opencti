@@ -1788,8 +1788,6 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   await deleteAllIngestionDeduplicationRulesForUser(context, user, userId);
 
   const deleted = await deleteElementById<StoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
-  // After the deletion, so a refused deletion never strips a live user of its administration
-  await organizationAdminRemoveDeletedUser(context, userId);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
   await publishUserAction({
     user,
@@ -1800,7 +1798,16 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
     context_data: { id: userId, entity_type: ENTITY_TYPE_USER, input: deleted },
   });
   await killUserSessions(userId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user).then(() => userId);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user);
+  // Last, once the user is deleted and its sessions are gone: a refused deletion never strips a
+  // live user of its administration, and a failed clean-up never leaves a session alive. The user
+  // is deleted either way, so a failure is logged rather than reported as a failed deletion.
+  try {
+    await organizationAdminRemoveDeletedUser(context, userId);
+  } catch (err) {
+    logApp.error('Failed to remove a deleted user from the administrators of its organizations', { cause: err, userId });
+  }
+  return userId;
 };
 
 // Organization admins can only manage groups grantable by, and organizations of, their administrated organizations
