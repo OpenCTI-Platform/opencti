@@ -221,6 +221,23 @@ describe('adaptFilterToRegardingOfFilterKey — relationship sides without denor
     ]);
   });
 
+  it('only follows the ids the user can access when ids check is bypassed', async () => {
+    vi.spyOn(engineModule, 'elFindByIds').mockResolvedValue([{ id: 'media-1', entity_type: 'Media-Content' }] as any);
+    const elListSpy = vi.spyOn(engineModule, 'elList').mockResolvedValue([{ fromId: 'channel-1', toId: 'media-1' }] as any);
+    const filter = makeRegardingOfFilter([
+      { key: 'id', values: ['media-1', 'restricted-media'] },
+      { key: 'relationship_type', values: [RELATION_PUBLISHES] },
+    ]);
+    const { newFilterGroup } = await adaptFilterToRegardingOfFilterKey(CONTEXT, USER, filter, true);
+
+    const [, , , opts] = elListSpy.mock.calls[0] as any[];
+    expect(opts.filters.filters).toEqual([{ key: ['toId'], values: ['media-1'] }]);
+    expect(newFilterGroup.filters).toEqual([
+      expect.objectContaining({ values: ['media-1', 'restricted-media'] }),
+      expect.objectContaining({ key: ['internal_id'], values: ['channel-1'] }),
+    ]);
+  });
+
   it('excludes the resolved entities with and mode for not_eq', async () => {
     vi.spyOn(engineModule, 'elFindByIds').mockResolvedValue([{ id: 'media-1', entity_type: 'Media-Content' }] as any);
     vi.spyOn(engineModule, 'elList').mockResolvedValue([{ fromId: 'channel-1', toId: 'media-1' }] as any);

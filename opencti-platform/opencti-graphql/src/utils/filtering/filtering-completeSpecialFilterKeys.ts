@@ -153,6 +153,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
     }
   }
   let ids = idParameter?.values ?? [];
+  const accessibleIds: string[] = [];
   // Limit the number of possible ids in the regardingOf
   if (ids.length > ES_MAX_PAGINATION) {
     throw UnsupportedError('Too much ids specified', { size: ids.length, max: ES_MAX_PAGINATION });
@@ -160,6 +161,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
   if (ids.length > 0) {
     // Keep ids the user has access to
     const filteredEntities = await elFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+    pushAll(accessibleIds, filteredEntities.map((n) => n.id));
     ids = noRegardingOfFilterIdsCheck
       ? ids // if noRegardingOfFilterIdsCheck=true, we keep all the ids, even if the user has not access to them
       : filteredEntities.map((n) => n.id);
@@ -190,6 +192,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
     if (relatedEntities.length > 0) {
       const relatedIds = relatedEntities.map((n) => n.id);
       pushAll(ids, relatedIds);
+      pushAll(accessibleIds, relatedIds);
     } else {
       ids.push('<invalid id>'); // To force empty result in the query result
     }
@@ -216,7 +219,9 @@ export const adaptFilterToRegardingOfFilterKey = async (
     if (directionForced) {
       allowedSides = directionReverse ? [ROLE_FROM] : [ROLE_TO];
     }
-    const unimpactedSideIds = await resolveUnimpactedSideIds(context, user, types ?? [], ids, inferredValues, allowedSides);
+    const unimpactedSideIds = accessibleIds.length > 0
+      ? await resolveUnimpactedSideIds(context, user, types ?? [], accessibleIds, inferredValues, allowedSides)
+      : [];
     if (unimpactedSideIds.length > 0) {
       regardingFilters.push({ key: ['internal_id'], operator: filter.operator, mode, values: unimpactedSideIds, postFilteringTag });
     }
