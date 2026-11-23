@@ -709,6 +709,8 @@
   "Malware types": "Tipos de malware",
   "Manage access restrictions": "Gestionar las restricciones de acceso",
   "Manage advanced access restrictions on entities": "Gestionar restricciones de acceso avanzadas en entidades",
+  "Managed by id": "Gestionado por (ID)",
+  "Managed by type": "Gestionado por (tipo)",
   "Managed connectors and their parameters, without their secrets": "Conectores gestionados y sus parámetros, sin sus secretos",
   "Manager contracts": "Gestor contratos",
   "Manager ID": "ID Gestor",
@@ -1361,6 +1363,5 @@
   "XTM Hub Token": "Token del concentrador XTM",
   "XTM One intent": "Intento de XTM One",
   "XTM One registration manager": "Gestor de inscripciones XTM One",
-  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Gestor de requisitos de inteligencia"
+  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
 }

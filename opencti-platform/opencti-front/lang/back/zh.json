@@ -709,6 +709,8 @@
   "Malware types": "恶意软件类型",
   "Manage access restrictions": "管理访问限制",
   "Manage advanced access restrictions on entities": "管理实体的高级访问限制",
+  "Managed by id": "管理者（ID）",
+  "Managed by type": "管理者（类型）",
   "Managed connectors and their parameters, without their secrets": "托管连接器及其参数（不含机密）",
   "Manager contracts": "管理器合同",
   "Manager ID": "管理者 ID",
@@ -1361,6 +1363,5 @@
   "XTM Hub Token": "XTM 中枢令牌",
   "XTM One intent": "XTM 一个意图",
   "XTM One registration manager": "XTM One 注册管理器",
-  "XTM1 CGU acceptance status": "XTM1 CGU 验收状态",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "情报需求管理器"
+  "XTM1 CGU acceptance status": "XTM1 CGU 验收状态"
 }

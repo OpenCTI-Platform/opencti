@@ -709,6 +709,8 @@
   "Malware types": "ファミリー",
   "Manage access restrictions": "アクセス制限の管理",
   "Manage advanced access restrictions on entities": "エンティティの高度なアクセス制限を管理する",
+  "Managed by id": "管理元（ID）",
+  "Managed by type": "管理元（タイプ）",
   "Managed connectors and their parameters, without their secrets": "管理対象コネクタとそのパラメータ（シークレットを除く）",
   "Manager contracts": "マネージャー契約",
   "Manager ID": "設定",
@@ -1361,6 +1363,5 @@
   "XTM Hub Token": "XTM ハブ・トークン",
   "XTM One intent": "XTMワンの意図",
   "XTM One registration manager": "XTM One登録マネージャー",
-  "XTM1 CGU acceptance status": "XTM1 CGU受入状況",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "インテリジェンス要件マネージャー"
+  "XTM1 CGU acceptance status": "XTM1 CGU受入状況"
 }

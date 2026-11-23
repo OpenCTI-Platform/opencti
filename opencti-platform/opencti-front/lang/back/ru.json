@@ -709,6 +709,8 @@
   "Malware types": "Типы вредоносных программ",
   "Manage access restrictions": "Управление ограничениями доступа",
   "Manage advanced access restrictions on entities": "Управление расширенными ограничениями доступа к сущностям",
+  "Managed by id": "Управляется (ID)",
+  "Managed by type": "Управляется (тип)",
   "Managed connectors and their parameters, without their secrets": "Управляемые коннекторы и их параметры, без секретов",
   "Manager contracts": "Договоры с менеджерами",
   "Manager ID": "Идентификатор менеджера",
@@ -1361,6 +1363,5 @@
   "XTM Hub Token": "Токен концентратора XTM",
   "XTM One intent": "Намерение XTM One",
   "XTM One registration manager": "Менеджер регистрации XTM One",
-  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Менеджер разведывательных требований"
+  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }
