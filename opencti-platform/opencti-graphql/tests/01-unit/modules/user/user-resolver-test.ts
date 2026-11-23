@@ -23,7 +23,6 @@ describe('User resolvers', () => {
       expect(resolveField(meUserResolvers.submenu_show_icons, {})).toEqual(false);
       expect(resolveField(meUserResolvers.submenu_auto_collapse, {})).toEqual(true);
       expect(resolveField(meUserResolvers.monochrome_labels, {})).toEqual(false);
-      expect(resolveField(meUserResolvers.pastel_colours, {})).toEqual(true);
       expect(resolveField(meUserResolvers.unsubscribed_news_feed_types, {})).toEqual([]);
     });
 
@@ -35,7 +34,6 @@ describe('User resolvers', () => {
       expect(resolveField(meUserResolvers.submenu_show_icons, { submenu_show_icons: true })).toEqual(true);
       expect(resolveField(meUserResolvers.submenu_auto_collapse, { submenu_auto_collapse: false })).toEqual(false);
       expect(resolveField(meUserResolvers.monochrome_labels, { monochrome_labels: true })).toEqual(true);
-      expect(resolveField(meUserResolvers.pastel_colours, { pastel_colours: false })).toEqual(false);
       expect(resolveField(meUserResolvers.unsubscribed_news_feed_types, { unsubscribed_news_feed_types: ['alert'] })).toEqual(['alert']);
     });
   });

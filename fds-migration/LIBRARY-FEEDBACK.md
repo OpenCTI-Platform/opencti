@@ -3180,7 +3180,12 @@ row must not blur the input first.
 
 ---
 
-## 85. Pastel is the product default, against `Chip` RULE-07 — a recorded deviation, not a gap
+## 85. Pastel is the product default, against `Chip` RULE-07 — a recorded deviation, not a gap (resolved by 1.13.0)
+
+**Status. Resolved (#20361).** `@filigran/design-system` 1.13.0 (#436, #439)
+draws one chip style (tone fill and a 1px hairline in the tone ink) and makes
+`.pastel` a no-op. OpenCTI pins 1.13.0 and removes the `pastel_colours`
+preference, the Profile switch and the root class: no deviation is left.
 
 **Where.** `useFdsThemeScope.ts` and the user preference `pastel_colours`
 (#20305, #20306). An unset value resolves to `true`, so the document root

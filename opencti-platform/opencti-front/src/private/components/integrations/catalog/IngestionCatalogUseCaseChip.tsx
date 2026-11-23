@@ -1,71 +1,59 @@
 import { Tooltip } from '@mui/material';
-import Chip, { ChipProps } from '@mui/material/Chip';
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
+import Tag from '@common/tag/Tag';
 import type { Theme } from '../../../../components/Theme';
+
+type PaletteName = 'primary' | 'secondary' | 'error' | 'warning' | 'success' | 'info';
 
 interface IngestionCatalogChipProps {
   label: string;
   tooltipLabel?: string;
+  /** Kept for the callers: the design-system chip has a single style (1.13). */
   variant?: 'outlined' | 'filled';
-  color?: 'primary' | 'secondary' | 'error' | 'success' | 'warning' | string;
+  color?: PaletteName | 'default' | string;
   withTooltip?: boolean;
   isInTooltip?: boolean;
   isInlist?: boolean;
 }
 
-interface CustomChipProps extends Omit<ChipProps, 'color'> {
-  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | 'info' | 'default' | string;
-}
+const PALETTE_NAMES: string[] = ['primary', 'secondary', 'error', 'warning', 'success', 'info'];
 
-const CustomChip = ({ color, ...props }: CustomChipProps) => {
-  const validMuiColors = ['primary', 'secondary', 'error', 'warning', 'success', 'info', 'default'];
-  const isMuiColor = color && validMuiColors.includes(color);
-
-  return (
-    <Chip
-      {...props}
-      color={isMuiColor ? (color as ChipProps['color']) : undefined}
-      sx={{
-        ...(color && !isMuiColor && {
-          borderColor: color,
-          color,
-        }),
-        ...props.sx,
-      }}
-    />
-  );
-};
-
+/**
+ * A connector type or use case chip of the ingestion catalog, drawn by the design-system
+ * Chip (one style everywhere: tone fill and hairline in the tone ink). A palette name
+ * resolves to the theme colour, a hex colour is used as is, `default` is the neutral tone.
+ */
 const IngestionCatalogChip = ({
   label,
   tooltipLabel,
-  variant,
   color,
   withTooltip = false,
   isInlist = false,
 }: IngestionCatalogChipProps) => {
   const theme = useTheme<Theme>();
 
-  const tooltipContent = withTooltip ? (tooltipLabel || label) : undefined;
+  const resolvedColor = color && PALETTE_NAMES.includes(color)
+    ? theme.palette[color as PaletteName].main
+    : color && color !== 'default' ? color : undefined;
 
+  const chip = (
+    <Tag
+      label={label}
+      color={resolvedColor}
+      severity={resolvedColor ? undefined : 'neutral'}
+      labelTextTransform="none"
+      disableTooltip
+      style={{ marginRight: isInlist ? theme.spacing(1) : 0 }}
+    />
+  );
+
+  if (!withTooltip) {
+    return chip;
+  }
   return (
-    <Tooltip title={tooltipContent}>
-      <CustomChip
-        variant={variant ?? 'outlined'}
-        size="small"
-        color={color ?? 'default'}
-        sx={{
-          fontSize: 12,
-          lineHeight: '14px',
-          borderRadius: 1,
-          marginRight: isInlist ? theme.spacing(1) : 0,
-          border: `1px solid ${color || theme.palette.chip.main}`,
-          backgroundColor: 'rgba(0, 0, 0, 0.1)',
-          color,
-        }}
-        label={label}
-      />
+    <Tooltip title={tooltipLabel || label}>
+      <span style={{ display: 'inline-flex', minWidth: 0, maxWidth: '100%' }}>{chip}</span>
     </Tooltip>
   );
 };
