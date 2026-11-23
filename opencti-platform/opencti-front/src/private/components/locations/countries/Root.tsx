@@ -8,13 +8,13 @@ import AIInsights from '@components/common/ai/AIInsights';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import Country from './Country';
-import CountryKnowledge from './CountryKnowledge';
+import CountryKnowledge, { COUNTRY_OBSERVABLES_RELATIONSHIP_TYPES } from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCountriesSubscription } from './__generated__/RootCountriesSubscription.graphql';
@@ -47,7 +47,7 @@ const subscription = graphql`
 `;
 
 const countryQuery = graphql`
-  query RootCountryQuery($id: String!) {
+  query RootCountryQuery($id: String!, $observablesFilters: FilterGroup) {
     country(id: $id) {
       id
       entity_type
@@ -60,7 +60,7 @@ const countryQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Country_country
       ...CountryKnowledge_country
       ...FileImportViewer_entity
@@ -129,6 +129,7 @@ const RootCountryComponent = ({ queryRef, countryId }: RootCountryComponentProps
                     'observables',
                   ]}
                   data={country}
+                  observablesRelationshipTypes={COUNTRY_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -220,6 +221,7 @@ const RootCountry = () => {
   const { countryId } = useParams() as { countryId: string };
   const queryRef = useQueryLoading<RootCountryQuery>(countryQuery, {
     id: countryId,
+    observablesFilters: buildObservablesKnowledgeBarFilters(COUNTRY_OBSERVABLES_RELATIONSHIP_TYPES),
   });
   return (
     <>

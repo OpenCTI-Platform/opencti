@@ -13,6 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { removeAccentsAndLowerCase } from '../../../../../utils/String';
 import type { PlaybookCategory } from './__generated__/PlaybookFlow_playbookComponents.graphql';
 import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookComponents, type PlaybookConfig } from '../types/playbook-types';
 import type { PlaybookFlowFormData } from './PlaybookFlowForm';
@@ -48,6 +49,60 @@ export function groupAndSortPlaybookComponents(
     }))
     .filter((g) => g.items.length > 0);
 }
+
+// Keyboard-first palette: keep the components whose translated name or description holds every word
+// of the search, case and accent insensitive. An empty search keeps every group as it is.
+export function filterPlaybookComponentGroups(
+  groups: PlaybookComponentGroup[],
+  search: string,
+  translate: (value: string) => string = (value) => value,
+): PlaybookComponentGroup[] {
+  const words = removeAccentsAndLowerCase(search).split(/\s+/).filter((word) => word.length > 0);
+  if (words.length === 0) return groups;
+  return groups
+    .map(({ category, items }) => ({
+      category,
+      items: items.filter((component) => {
+        const haystack = removeAccentsAndLowerCase(`${translate(component.name)} ${translate(component.description ?? '')} ${component.name}`);
+        return words.every((word) => haystack.includes(word));
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+const isEmptyChoice = (value: unknown): boolean => {
+  if (value === undefined || value === null) return true;
+  if (typeof value === 'string') return value.trim().length === 0;
+  if (Array.isArray(value)) return value.length === 0;
+  return false;
+};
+
+/**
+ * Required fields of a step the user must pick a value for (issue #8353): a required string with
+ * options or a required list. The server refuses a step that leaves one empty, with the same rule.
+ */
+export const requiredChoiceFields = (schema: PlaybookComponentConfigSchema | null | undefined): string[] => {
+  if (!schema?.required || !schema.properties) return [];
+  const properties = schema.properties as Record<string, { type?: string; oneOf?: unknown[] } | undefined>;
+  return schema.required.filter((field) => {
+    const property = properties[field];
+    if (!property) return false;
+    return property.type === 'array' || (property.type === 'string' && Array.isArray(property.oneOf));
+  });
+};
+
+/** The required choices a form's values leave empty. */
+export const missingRequiredChoices = (
+  schema: PlaybookComponentConfigSchema | null | undefined,
+  values: Record<string, unknown>,
+): string[] => requiredChoiceFields(schema).filter((field) => isEmptyChoice(values[field]));
+
+/** Whether one field is a required choice left empty; the per-field form validation reads only that field's value. */
+export const isRequiredChoiceMissing = (
+  schema: PlaybookComponentConfigSchema | null | undefined,
+  field: string,
+  value: unknown,
+): boolean => requiredChoiceFields(schema).includes(field) && isEmptyChoice(value);
 
 export interface NodeData {
   name?: string;

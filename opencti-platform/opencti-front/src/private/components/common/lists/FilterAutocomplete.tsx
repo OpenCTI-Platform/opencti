@@ -21,6 +21,7 @@ export interface FilterOptionValue extends FilterOption {
   type: string;
   parentTypes?: string[];
   group?: string;
+  ranked?: boolean; // found by a search ranked by relevance (see rankOptions)
 }
 
 export interface FilterAutocompleteInputValue {

@@ -34,6 +34,7 @@ import HomeDashboardSettings from '../HomeDashboardSettings';
 import TokenCreationDrawer from './api_tokens/TokenCreationDrawer';
 import TokenList from './api_tokens/TokenList';
 import ProfileLocalStorage from './ProfileLocalStorage';
+import ProfileSearchShortcut from './ProfileSearchShortcut';
 import ProfileOverviewXtmOneMcp from './ProfileOverviewXtmOneMcp';
 import TextareaField from '../../../components/TextareaField';
 import { dateFormatOptions, timeFormatOptions } from '../../../utils/dateDisplay';
@@ -92,6 +93,7 @@ const userValidation = (t) => Yup.object().shape({
   submenu_show_icons: Yup.boolean(),
   submenu_auto_collapse: Yup.boolean(),
   monochrome_labels: Yup.boolean(),
+  pastel_colours: Yup.boolean(),
   unsubscribed_news_feed_types: Yup.array().of(Yup.string()),
 });
 
@@ -214,6 +216,7 @@ const ProfileOverviewComponent = (props) => {
     'submenu_show_icons',
     'submenu_auto_collapse',
     'monochrome_labels',
+    'pastel_colours',
   ];
 
   const initialValues = {
@@ -468,6 +471,19 @@ const ProfileOverviewComponent = (props) => {
                   onChange={(_, value) => handleSubmitField('submenu_auto_collapse', value)}
                 />
               </ListItem>
+              <ListItem style={{ padding: '10px 0 0 0' }}>
+                <ListItemText
+                  primary={t('Pastel colours')}
+                  secondary={t('Show chips in soft pastel fills instead of the standard outlined colours.')}
+                />
+                <Field
+                  component={Switch}
+                  variant="outlined"
+                  name="pastel_colours"
+                  checked={initialValues.pastel_colours ?? true}
+                  onChange={(_, value) => handleSubmitField('pastel_colours', value)}
+                />
+              </ListItem>
               {/* <ListItem style={{ padding: '10px 0 0 0' }}>
                 <ListItemText
                   primary={t('Monochrome labels and entity types')}
@@ -500,6 +516,7 @@ const ProfileOverviewComponent = (props) => {
             </Form>
           )}
         </Formik>
+        <ProfileSearchShortcut />
       </Card>
       {hasKnowledgeAccess ? (
         <Card title={t('Dashboard settings')}>
@@ -663,6 +680,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       submenu_show_icons
       submenu_auto_collapse
       monochrome_labels
+      pastel_colours
       unsubscribed_news_feed_types
       personal_notifiers {
         id

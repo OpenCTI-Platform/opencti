@@ -20,6 +20,12 @@ const renderInput = () => {
 };
 
 describe('BasicFilterInput', () => {
+  it('takes the focus on mount', () => {
+    renderInput();
+
+    expect(screen.getByLabelText('Name')).toHaveFocus();
+  });
+
   it('commits the typed value on Enter', async () => {
     const { user, handleAddSingleValueFilter } = renderInput();
 
@@ -62,5 +68,53 @@ describe('BasicFilterInput', () => {
 
     expect(handleAddSingleValueFilter).toHaveBeenCalledTimes(1);
     expect(handleAddSingleValueFilter).toHaveBeenCalledWith('filter-1', 'emotet');
+  });
+
+  describe('as a sub-filter of a nested filter', () => {
+    const coverageFilter: Filter = { id: 'f1', key: 'coverage_information', operator: 'eq', values: [], mode: 'and' };
+    const renderSubFilterInput = () => {
+      const handleAddSingleValueFilter = vi.fn();
+      const handleChangeSubFilter = vi.fn();
+      const helpers = { handleAddSingleValueFilter, handleChangeSubFilter } as unknown as handleFilterHelpers;
+      const result = testRender(
+        <BasicFilterInput
+          filter={coverageFilter}
+          filterKey="coverage_information"
+          subKey="coverage_score"
+          helpers={helpers}
+          filterValues={[]}
+          label="Score"
+          type="number"
+        />,
+      );
+      return { ...result, handleAddSingleValueFilter, handleChangeSubFilter };
+    };
+
+    it('commits the typed value to the sub-filter on Enter', async () => {
+      const { user, handleAddSingleValueFilter, handleChangeSubFilter } = renderSubFilterInput();
+
+      await user.type(screen.getByLabelText('Score'), '20{Enter}');
+
+      expect(handleChangeSubFilter).toHaveBeenCalledWith('f1', 'coverage_score', { values: ['20'] });
+      expect(handleAddSingleValueFilter).not.toHaveBeenCalled();
+    });
+
+    it('does not take the focus on mount, so a blur does not commit an empty sub-filter', () => {
+      const { handleChangeSubFilter } = renderSubFilterInput();
+
+      expect(screen.getByLabelText('Score')).not.toHaveFocus();
+      expect(handleChangeSubFilter).not.toHaveBeenCalled();
+    });
+
+    it('commits an empty list of values when cleared', async () => {
+      const { user, handleAddSingleValueFilter, handleChangeSubFilter } = renderSubFilterInput();
+
+      await user.type(screen.getByLabelText('Score'), '20');
+      await user.click(screen.getByRole('button', { name: 'Clear' }));
+
+      expect(handleChangeSubFilter).toHaveBeenCalledTimes(1);
+      expect(handleChangeSubFilter).toHaveBeenCalledWith('f1', 'coverage_score', { values: [] });
+      expect(handleAddSingleValueFilter).not.toHaveBeenCalled();
+    });
   });
 });

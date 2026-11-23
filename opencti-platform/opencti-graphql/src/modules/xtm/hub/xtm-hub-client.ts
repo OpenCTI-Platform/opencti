@@ -73,6 +73,7 @@ export const xtmHubClient = {
     try {
       const httpClient = getHttpClient({
         baseURL: HUB_BACKEND_URL,
+        trusted: true,
         responseType: 'json',
       });
 
@@ -104,6 +105,7 @@ export const xtmHubClient = {
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
+      trusted: true,
       responseType: 'json',
     });
     const refresh = async (withPlatformContract: boolean, withCommercialModel: boolean): Promise<HubRefreshAnswer> => {
@@ -178,6 +180,7 @@ export const xtmHubClient = {
     };
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
+      trusted: true,
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',
@@ -222,6 +225,7 @@ export const xtmHubClient = {
 
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
+      trusted: true,
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',
@@ -260,6 +264,7 @@ export const xtmHubClient = {
 
     const httpClient = getHttpClient({
       baseURL: HUB_BACKEND_URL,
+      trusted: true,
       responseType: 'json',
       headers: {
         'Content-Type': 'application/json',

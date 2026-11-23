@@ -1,6 +1,7 @@
 import * as Yup from 'yup';
 import type { CustomFieldsInputQuery$data } from '../private/components/common/custom_fields/__generated__/CustomFieldsInputQuery.graphql';
 import { resolveCustomFieldDefaultValue } from './customFieldDefaults';
+import { removeAccentsAndLowerCase } from './String';
 import type { WidgetColumn, WidgetColumnAttributeType } from './widget/widget';
 
 export type CustomFieldDef = NonNullable<NonNullable<CustomFieldsInputQuery$data['customFieldDefinitionsForEntityType']>['edges']>[number]['node'];
@@ -290,10 +291,7 @@ export const areCustomFieldAliasesValid = (aliases?: readonly (string | undefine
 );
 // The technical name suggested from a label: lowercase, accents removed, any other character replaced
 // by an underscore, starting with a letter (e.g. "Closing reason" gives "closing_reason").
-export const buildCustomFieldNameSuffix = (label: string): string => label
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
+export const buildCustomFieldNameSuffix = (label: string): string => removeAccentsAndLowerCase(label)
   .replace(/[^a-z0-9]+/g, '_')
   .replace(/^[^a-z]+/, '')
   .replace(/_+$/, '');

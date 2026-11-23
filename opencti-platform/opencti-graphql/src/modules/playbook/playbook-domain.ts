@@ -40,8 +40,12 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
-import { type SharingConfiguration } from './components/sharing-component';
+import {
+  assertNodeConfigurationIsComplete,
+  checkPlaybookFiltersAndBuildConfigWithCorrectFilters,
+  deleteLinksAndAllChildren,
+  updateImportedPlaybookDefinitionScope,
+} from './playbook-utils';
 import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
@@ -86,6 +90,63 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
     }
   }
   return filteredPlaybooks;
+};
+
+// Explain why a playbook is not in the list findPlaybooksForEntity returns for an entity.
+// The checks mirror findPlaybooksForEntity in the same order, so the eligibility itself never changes:
+// this only gives the caller the actual reason instead of a generic "does not exist".
+export const PLAYBOOK_NOT_RUNNABLE_REASONS = {
+  NOT_FOUND: 'NOT_FOUND',
+  ENTERPRISE_EDITION_REQUIRED: 'ENTERPRISE_EDITION_REQUIRED',
+  ENTRY_COMPONENT_NOT_MANUAL: 'ENTRY_COMPONENT_NOT_MANUAL',
+  MANUAL_ENROLLMENT_DISABLED: 'MANUAL_ENROLLMENT_DISABLED',
+  ENTITY_NOT_FOUND: 'ENTITY_NOT_FOUND',
+  FILTER_MISMATCH: 'FILTER_MISMATCH',
+} as const;
+
+export const buildPlaybookNotRunnableError = async (context: AuthContext, user: AuthUser, id: string, entityId: string) => {
+  const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
+  const playbook = playbooks.find((p) => p.id === id);
+  if (!playbook) {
+    return FunctionalError('Playbook does not exist', { id, entityId, reason: PLAYBOOK_NOT_RUNNABLE_REASONS.NOT_FOUND });
+  }
+  const isEE = await isEnterpriseEdition(context);
+  if (!isEE) {
+    return FunctionalError(`Playbook ${playbook.name} cannot be run manually: Enterprise Edition is not enabled`, {
+      id,
+      entityId,
+      reason: PLAYBOOK_NOT_RUNNABLE_REASONS.ENTERPRISE_EDITION_REQUIRED,
+    });
+  }
+  const def = playbook.playbook_definition ? JSON.parse(playbook.playbook_definition) as ComponentDefinition : null;
+  const instance = def?.nodes.find((n) => n.id === playbook.playbook_start);
+  const componentId = instance?.component_id;
+  if (!instance || (componentId !== 'PLAYBOOK_INTERNAL_DATA_STREAM' && componentId !== 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
+    return FunctionalError(`Playbook ${playbook.name} cannot be run manually (its entry component is ${componentId ?? 'not defined'})`, {
+      id,
+      entityId,
+      reason: PLAYBOOK_NOT_RUNNABLE_REASONS.ENTRY_COMPONENT_NOT_MANUAL,
+      component: componentId ?? null,
+    });
+  }
+  const { filters, canEnrollManually } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
+  if (!(canEnrollManually ?? true)) {
+    return FunctionalError(`Playbook ${playbook.name} does not allow manual enrollment`, {
+      id,
+      entityId,
+      reason: PLAYBOOK_NOT_RUNNABLE_REASONS.MANUAL_ENROLLMENT_DISABLED,
+    });
+  }
+  const stixEntity = await stixLoadById(context, user, entityId);
+  if (!stixEntity) {
+    return FunctionalError('Entity does not exist', { id, entityId, reason: PLAYBOOK_NOT_RUNNABLE_REASONS.ENTITY_NOT_FOUND });
+  }
+  return FunctionalError(`Entity does not match the entry filter of playbook ${playbook.name}`, {
+    id,
+    entityId,
+    reason: PLAYBOOK_NOT_RUNNABLE_REASONS.FILTER_MISMATCH,
+    filters: filters ? JSON.parse(filters) : null,
+  });
 };
 
 const getEligiblePlaybooksForEnrollment = async (context: AuthContext) => {
@@ -147,37 +208,51 @@ export const availableComponents = async (context: AuthContext) => {
   });
 };
 
+// Steps whose configuration names organizations by id: their names are resolved on read.
+const ORGANIZATION_REFERENCING_COMPONENT_IDS: ReadonlySet<string> = new Set(['PLAYBOOK_SHARING_COMPONENT', 'PLAYBOOK_UNSHARING_COMPONENT']);
+
+type OrganizationReference = string | { label?: string; value: string; deleted?: boolean };
+
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
   await checkEnterpriseEdition(context);
-  if (playbook.playbook_definition && playbook.playbook_definition.includes('PLAYBOOK_SHARING_COMPONENT')) {
-    // parse playbook definition in case there is a sharing with organization component, in order to parse organizations to get their label
-    const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
-    const sharingComponent = definition.nodes.find((n) => n.component_id === 'PLAYBOOK_SHARING_COMPONENT');
-    if (sharingComponent && sharingComponent.configuration) {
-      const sharingConfiguration = JSON.parse(sharingComponent.configuration) as SharingConfiguration;
-      const organizationsIds = sharingConfiguration.organizations.filter((o) => typeof o === 'string');
-      if (organizationsIds.length === 0) {
-        return playbook.playbook_definition; // nothing to map, already mapped
-      }
-      const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsIds, {
-        type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
-        baseData: true,
-        baseFields: ['internal_id', 'name'],
-        toMap: true,
-      }) as unknown as { [k: string]: BasicStoreEntityOrganization };
-      const organizationsWithNames = [];
-      for (let i = 0; i < organizationsIds.length; i += 1) {
-        const orgId = organizationsIds[i];
-        if (organizationsByIds[orgId]) {
-          organizationsWithNames.push({ label: organizationsByIds[orgId].name, value: orgId });
-        }
-      }
-      sharingConfiguration.organizations = organizationsWithNames;
-      sharingComponent.configuration = JSON.stringify(sharingConfiguration);
-      return JSON.stringify(definition);
-    }
+  if (!playbook.playbook_definition) {
+    return playbook.playbook_definition;
   }
-  return playbook.playbook_definition;
+  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const nodes = definition.nodes.filter((n) => ORGANIZATION_REFERENCING_COMPONENT_IDS.has(n.component_id) && n.configuration);
+  if (nodes.length === 0) {
+    return playbook.playbook_definition;
+  }
+  // Every organization a sharing step names is read again (#15012, #15762): a raw id gets its name,
+  // and a label carried by an import or by an organization deleted since is checked against the
+  // platform. One that no longer exists keeps its last known label and is flagged deleted, so the
+  // editor shows that the step has to be set again instead of a name that leads nowhere.
+  const configurations = nodes.map((node) => ({ node, configuration: JSON.parse(node.configuration) as { organizations?: OrganizationReference[] } }));
+  const organizationIds = configurations.flatMap(({ configuration }) => (configuration.organizations ?? [])
+    .map((o) => (typeof o === 'string' ? o : o?.value))
+    .filter((id): id is string => typeof id === 'string' && id.length > 0));
+  if (organizationIds.length === 0) {
+    return playbook.playbook_definition;
+  }
+  const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, [...new Set(organizationIds)], {
+    type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
+    baseData: true,
+    baseFields: ['internal_id', 'name'],
+    toMap: true,
+  }) as unknown as { [k: string]: BasicStoreEntityOrganization };
+  for (let i = 0; i < configurations.length; i += 1) {
+    const { node, configuration } = configurations[i];
+    configuration.organizations = (configuration.organizations ?? []).map((o) => {
+      const id = typeof o === 'string' ? o : o.value;
+      const organization = organizationsByIds[id];
+      if (organization) {
+        return { label: organization.name, value: id };
+      }
+      return { label: typeof o === 'string' ? id : (o.label ?? id), value: id, deleted: true };
+    });
+    node.configuration = JSON.stringify(configuration);
+  }
+  return JSON.stringify(definition);
 };
 
 // Enforce the AI-agent `run_as` guardrail on a node configuration: the
@@ -197,6 +272,96 @@ const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configura
   await assertRunAsUserAllowed(context, user, parsed.run_as);
 };
 
+// A playbook runs from a single entry point: its definition holds at most one
+// parentless node (the entry point), and every link joins two existing nodes,
+// leaving an out port of its source. A definition with several roots cannot
+// run and cannot be laid out by the editor, so no write may store one: every
+// mutation that changes nodes or links checks the result here first.
+// playbookUpdatePositions is the one exception: it only moves nodes, so it
+// cannot create a root, and a legacy definition stays movable while it is repaired.
+export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition) => {
+  const nodes = definition.nodes ?? [];
+  const links = definition.links ?? [];
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
+  links.forEach((link) => {
+    const source = nodeById.get(link.from?.id);
+    if (!source || !nodeById.has(link.to?.id)) {
+      throw FunctionalError('Playbook link must connect existing nodes', { link_id: link.id });
+    }
+    const sourceComponent = PLAYBOOK_COMPONENTS[source.component_id];
+    if (!sourceComponent) {
+      throw FunctionalError('Playbook link source component not found', { link_id: link.id, component_id: source.component_id });
+    }
+    if (!sourceComponent.ports.some((p) => p.id === link.from.port && p.type === 'out')) {
+      throw FunctionalError('Playbook link must leave an out port of its source node', { link_id: link.id, port: link.from.port });
+    }
+  });
+  const linkTargets = new Set(links.map((l) => l.to.id));
+  const roots = nodes.filter((n) => !linkTargets.has(n.id));
+  if (roots.length > 1 || (nodes.length > 0 && roots.length === 0)) {
+    throw FunctionalError('Playbook must have a single entry point: every other node needs a parent', { root_ids: roots.map((n) => n.id) });
+  }
+  // The sole root is the node the playbook starts from: it must be an entry
+  // point component, and an entry point component is never reached by a link.
+  const [root] = roots;
+  if (root && !PLAYBOOK_COMPONENTS[root.component_id]?.is_entry_point) {
+    throw FunctionalError('Playbook root must be an entry point component', { node_id: root.id, component_id: root.component_id });
+  }
+  nodes.forEach((n) => {
+    if (PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point && linkTargets.has(n.id)) {
+      throw FunctionalError('Playbook entry point cannot have a parent', { node_id: n.id });
+    }
+  });
+};
+
+const PLAYBOOK_NODE_FILTER_FIELDS = ['filters', 'applyWithFilters'];
+
+const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
+  if (!rawDefinition) {
+    return;
+  }
+  let definition: ComponentDefinition;
+  try {
+    definition = JSON.parse(rawDefinition) as ComponentDefinition;
+  } catch {
+    throw FunctionalError('Playbook definition is not valid JSON');
+  }
+  // The whole-definition paths (import, duplicate, playbook_definition field
+  // patch) never go through assertNodeConfigurationIsComplete, so each step
+  // configuration string is parsed here: a malformed one would be stored and
+  // only fail when the playbook runs or the editor opens the step.
+  // The filter strings a step carries (filters, applyWithFilters) are parsed
+  // too: a step configuration can be valid JSON around a filter that is not,
+  // which the runtime and the cache only meet later. Syntax only: the keys and
+  // ids a filter names vary per platform and are adjusted after an import.
+  (definition.nodes ?? []).forEach((node) => {
+    if (!node?.configuration) {
+      return;
+    }
+    let configuration: unknown;
+    try {
+      configuration = JSON.parse(node.configuration);
+    } catch {
+      throw FunctionalError('Playbook node configuration is not valid JSON', { node_id: node.id, component_id: node.component_id });
+    }
+    if (!configuration || typeof configuration !== 'object') {
+      return;
+    }
+    PLAYBOOK_NODE_FILTER_FIELDS.forEach((field) => {
+      const value = (configuration as Record<string, unknown>)[field];
+      if (typeof value !== 'string' || value === '') {
+        return;
+      }
+      try {
+        JSON.parse(value);
+      } catch {
+        throw FunctionalError('Playbook node filters are not valid JSON', { node_id: node.id, component_id: node.component_id, field });
+      }
+    });
+  });
+  assertPlaybookDefinitionIsValid(definition);
+};
+
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
@@ -207,9 +372,20 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { input });
   }
+  assertNodeConfigurationIsComplete(relatedComponent, configuration);
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
+  }
+  const { parentNodeId, parentPortId } = input;
+  if (Boolean(parentNodeId) !== Boolean(parentPortId)) {
+    throw FunctionalError('Playbook node parent needs both parentNodeId and parentPortId', { parentNodeId, parentPortId });
+  }
+  if (relatedComponent.is_entry_point && parentNodeId) {
+    throw FunctionalError('Playbook entry point cannot have a parent', { parentNodeId });
+  }
+  if (!relatedComponent.is_entry_point && !parentNodeId) {
+    throw FunctionalError('Playbook node needs a parent: only the entry point has none, give parentNodeId and parentPortId', { component_id: input.component_id });
   }
   const nodeId = uuidv4();
   definition.nodes.push({
@@ -220,6 +396,16 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     configuration, // TODO Check valid json
     description: input.description || undefined,
   });
+  // The node and the link to its parent are written in the same patch, so the
+  // playbook never holds the node without its parent.
+  if (parentNodeId && parentPortId) {
+    definition.links.push({
+      id: uuidv4(),
+      from: { id: parentNodeId, port: parentPortId },
+      to: { id: nodeId },
+    });
+  }
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   if (relatedComponent.is_entry_point) {
     patch.playbook_start = nodeId;
@@ -233,6 +419,9 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const nodesPositions = JSON.parse(positions);
+  // Positions only: nodes and links are kept as stored, so the topology
+  // invariant (assertPlaybookDefinitionIsValid) cannot be broken here and is
+  // not re-checked, which keeps a legacy multi-root playbook movable.
   definition.nodes = definition.nodes.map((n) => {
     const position = nodesPositions.filter((o: { id: string; position: PositionInput }) => o.id === n.id).at(0);
     if (position) {
@@ -264,6 +453,7 @@ export const playbookReplaceNode = async (
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
+  assertNodeConfigurationIsComplete(relatedComponent, configuration);
   const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
@@ -297,6 +487,7 @@ export const playbookReplaceNode = async (
     }
     return n;
   });
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
@@ -319,6 +510,7 @@ export const playbookInsertNode = async (
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
+  assertNodeConfigurationIsComplete(relatedComponent, input.configuration);
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
@@ -333,9 +525,9 @@ export const playbookInsertNode = async (
     configuration: input.configuration ?? '{}', // TODO Check valid json
     description: input.description || undefined,
   });
-  // Replace node with new position
+  // Replace node with new position (an end step goes on a new branch: the child stays where it is)
   definition.nodes = definition.nodes.map((n) => {
-    if (n.id === childNodeId) {
+    if (n.id === childNodeId && relatedComponent.ports.length > 0) {
       return {
         ...n,
         position: {
@@ -376,25 +568,54 @@ export const playbookInsertNode = async (
       }
       return n;
     });
-  } else {
-    // Delete the child node ID
-    definition.nodes = definition.nodes.filter((n) => n.id !== childNodeId);
-    // Also delete all links going to this node (all links from this node are deleted after)
-    definition.links = definition.links.filter((n) => n.to.id !== childNodeId);
-    const linksToDelete = definition.links.filter((n) => n.from.id === childNodeId);
-    const result = deleteLinksAndAllChildren(definition, linksToDelete);
-    definition.nodes = result.nodes;
-    definition.links = result.links;
   }
+  // An end-of-playbook step (no out port) cannot lead to the child: it is added as a new branch
+  // on the same parent port, and the link parent -> child and every step after it are kept.
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => ({ nodeId, linkId }));
 };
 
-export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string) => {
+// Single-step delete: the node goes, and each of its children is linked to each of the node's
+// parents on the same out port, so the steps after it stay wired (an existing link is not
+// duplicated). The entry point has no parent to hand its children to, so it is refused when
+// it has children.
+export const removePlaybookNodeKeepChildren = (definition: ComponentDefinition, nodeId: string): ComponentDefinition => {
+  const node = definition.nodes.find((n) => n.id === nodeId);
+  if (!node) {
+    throw FunctionalError('Playbook node not found', { node_id: nodeId });
+  }
+  const incoming = definition.links.filter((l) => l.to.id === nodeId);
+  const childIds = [...new Set(definition.links.filter((l) => l.from.id === nodeId).map((l) => l.to.id))];
+  if (PLAYBOOK_COMPONENTS[node.component_id]?.is_entry_point && childIds.length > 0) {
+    throw FunctionalError('Playbook entry point cannot be deleted alone: its steps would have no parent', { node_id: nodeId });
+  }
+  const links = definition.links.filter((l) => l.from.id !== nodeId && l.to.id !== nodeId);
+  incoming.forEach((parentLink) => {
+    childIds.forEach((childId) => {
+      const exists = links.some((l) => l.from.id === parentLink.from.id && l.from.port === parentLink.from.port && l.to.id === childId);
+      if (!exists) {
+        links.push({ id: uuidv4(), from: { id: parentLink.from.id, port: parentLink.from.port }, to: { id: childId } });
+      }
+    });
+  });
+  return { ...definition, nodes: definition.nodes.filter((n) => n.id !== nodeId), links };
+};
+
+export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, id: string, nodeId: string, keepChildren?: boolean | null) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
-  const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const parsed = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  if (keepChildren) {
+    const kept = removePlaybookNodeKeepChildren(parsed, nodeId);
+    assertPlaybookDefinitionIsValid(kept);
+    assertPlaybookDefinitionIsAcyclicAndReachable(kept);
+    const keptPatch: any = { playbook_definition: JSON.stringify(kept) };
+    const { element: keptElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, keptPatch);
+    return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, keptElem, user);
+  }
+  const definition = parsed;
   definition.nodes = definition.nodes.filter((n) => n.id !== nodeId);
   // Also delete all links going to this node (all links from this node are deleted after)
   definition.links = definition.links.filter((n) => n.to.id !== nodeId);
@@ -403,6 +624,7 @@ export const playbookDeleteNode = async (context: AuthContext, user: AuthUser, i
   const result = deleteLinksAndAllChildren(definition, linksToDelete);
   definition.nodes = result.nodes;
   definition.links = result.links;
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -443,16 +665,176 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
       id: input.to_node,
     },
   });
+  assertPlaybookDefinitionIsValid(definition);
   const patch = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => linkId);
+};
+
+// Rewiring writes (playbookRelink, playbookMoveNode) change the topology without adding or
+// removing nodes: on top of the single-root invariant, the result must stay acyclic and every
+// node must stay reachable from the entry point.
+export const assertPlaybookDefinitionIsAcyclicAndReachable = (definition: ComponentDefinition) => {
+  const nodes = definition.nodes ?? [];
+  const links = definition.links ?? [];
+  const children = new Map<string, string[]>();
+  links.forEach((l) => {
+    if (!children.has(l.from.id)) children.set(l.from.id, []);
+    children.get(l.from.id)!.push(l.to.id);
+  });
+  const state = new Map<string, 'open' | 'done'>();
+  nodes.forEach((start) => {
+    if (state.has(start.id)) return;
+    const stack = [{ id: start.id, next: 0 }];
+    state.set(start.id, 'open');
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      const out = children.get(frame.id) ?? [];
+      if (frame.next < out.length) {
+        const target = out[frame.next];
+        frame.next += 1;
+        const s = state.get(target);
+        if (s === 'open') {
+          throw FunctionalError('Playbook links cannot form a cycle', { node_id: target });
+        }
+        if (!s) {
+          state.set(target, 'open');
+          stack.push({ id: target, next: 0 });
+        }
+      } else {
+        state.set(frame.id, 'done');
+        stack.pop();
+      }
+    }
+  });
+  const linkTargets = new Set(links.map((l) => l.to.id));
+  const root = nodes.find((n) => !linkTargets.has(n.id));
+  if (!root) return;
+  const reached = new Set([root.id]);
+  const queue = [root.id];
+  while (queue.length) {
+    const current = queue.shift()!;
+    (children.get(current) ?? []).forEach((child) => {
+      if (!reached.has(child)) {
+        reached.add(child);
+        queue.push(child);
+      }
+    });
+  }
+  const orphans = nodes.filter((n) => !reached.has(n.id)).map((n) => n.id);
+  if (orphans.length > 0) {
+    throw FunctionalError('Playbook nodes must stay reachable from the entry point', { node_ids: orphans });
+  }
+};
+
+const assertOutPort = (definition: ComponentDefinition, nodeId: string, portId: string) => {
+  const node = definition.nodes.find((n) => n.id === nodeId);
+  if (!node) {
+    throw FunctionalError('Playbook node not found', { node_id: nodeId });
+  }
+  const port = PLAYBOOK_COMPONENTS[node.component_id]?.ports.find((p) => p.id === portId);
+  if (!port || port.type !== 'out') {
+    throw FunctionalError('Playbook link must leave an out port of its source node', { node_id: nodeId, port: portId });
+  }
+};
+
+const writeRewiredDefinition = async (context: AuthContext, user: AuthUser, id: string, definition: ComponentDefinition) => {
+  assertPlaybookDefinitionIsValid(definition);
+  assertPlaybookDefinitionIsAcyclicAndReachable(definition);
+  const patch = { playbook_definition: JSON.stringify(definition) };
+  const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
+};
+
+// Re-point one link in a single write: its target, and optionally its source node and out port.
+export const playbookRelink = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  linkId: string,
+  toNodeId: string,
+  fromNodeId?: string | null,
+  fromPortId?: string | null,
+) => {
+  await checkEnterpriseEdition(context);
+  if (Boolean(fromNodeId) !== Boolean(fromPortId)) {
+    throw FunctionalError('Playbook relink needs both fromNodeId and fromPortId to change the source', { fromNodeId, fromPortId });
+  }
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+  definition.nodes = definition.nodes ?? [];
+  definition.links = definition.links ?? [];
+  const link = definition.links.find((l) => l.id === linkId);
+  if (!link) {
+    throw FunctionalError('Playbook link not found', { link_id: linkId });
+  }
+  const from = { id: fromNodeId ?? link.from.id, port: fromPortId ?? link.from.port };
+  assertOutPort(definition, from.id, from.port);
+  if (!definition.nodes.some((n) => n.id === toNodeId)) {
+    throw FunctionalError('Playbook node not found', { node_id: toNodeId });
+  }
+  if (from.id === toNodeId) {
+    throw FunctionalError('Playbook links cannot form a cycle', { node_id: toNodeId });
+  }
+  const duplicate = definition.links.some((l) => l.id !== linkId && l.from.id === from.id && l.from.port === from.port && l.to.id === toNodeId);
+  if (duplicate) {
+    throw FunctionalError('Playbook link duplication is not possible', { link_id: linkId });
+  }
+  definition.links = definition.links.map((l) => (l.id === linkId ? { ...l, from, to: { id: toNodeId } } : l));
+  await writeRewiredDefinition(context, user, id, definition);
+  return linkId;
+};
+
+// Move a node and its branch under another out port in a single write: every link reaching the
+// node is replaced by one link from the new parent port. Links leaving the node are kept.
+export const playbookMoveNode = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  nodeId: string,
+  parentNodeId: string,
+  parentPortId: string,
+) => {
+  await checkEnterpriseEdition(context);
+  const playbook = await findById(context, user, id);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
+  definition.nodes = definition.nodes ?? [];
+  definition.links = definition.links ?? [];
+  const node = definition.nodes.find((n) => n.id === nodeId);
+  if (!node) {
+    throw FunctionalError('Playbook node not found', { node_id: nodeId });
+  }
+  if (PLAYBOOK_COMPONENTS[node.component_id]?.is_entry_point) {
+    throw FunctionalError('Playbook entry point cannot have a parent', { node_id: nodeId });
+  }
+  assertOutPort(definition, parentNodeId, parentPortId);
+  if (parentNodeId === nodeId) {
+    throw FunctionalError('Playbook links cannot form a cycle', { node_id: nodeId });
+  }
+  const linkId = uuidv4();
+  definition.links = [
+    ...definition.links.filter((l) => l.to.id !== nodeId),
+    { id: linkId, from: { id: parentNodeId, port: parentPortId }, to: { id: nodeId } },
+  ];
+  await writeRewiredDefinition(context, user, id, definition);
+  return linkId;
 };
 
 export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, id: string, linkId: string) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const linkToDelete = definition.links.find((n) => n.id === linkId);
   definition.links = definition.links.filter((n) => n.id !== linkId);
+  // A link is refused when it is the last one reaching its target: the node
+  // would become a second root. Deleting the node removes it with its subtree.
+  if (linkToDelete && !definition.links.some((n) => n.to.id === linkToDelete.to.id)) {
+    throw FunctionalError('Playbook link cannot be deleted: its target node would be left without a parent, delete the node instead', {
+      link_id: linkId,
+      node_id: linkToDelete.to.id,
+    });
+  }
+  assertPlaybookDefinitionIsValid(definition);
   const patch: any = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -497,6 +879,7 @@ export const playbookEdit = async (context: AuthContext, user: AuthUser, id: str
   const definitionInput = input.find((editInput) => editInput.key === 'playbook_definition');
   if (definitionInput) {
     await assertDefinitionRunAsAllowed(context, user, definitionInput.value?.[0]);
+    assertPlaybookDefinitionStringIsValid(definitionInput.value?.[0]);
   }
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -535,6 +918,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
   // disallowed AI-agent run_as to the importing user so the import cannot set
   // up an impersonation, without hard-failing on now-unknown foreign ids.
   config.playbook_definition = await sanitizeDefinitionRunAs(context, user, updatedPlaybookDefinition);
+  assertPlaybookDefinitionStringIsValid(config.playbook_definition);
 
   const importData = {
     name: config.name,
@@ -567,6 +951,7 @@ export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id
   // disallowed run_as to the user performing the duplication so the copy
   // cannot be used to keep impersonating that user.
   const playbook_definition = (await sanitizeDefinitionRunAs(context, user, playbook.playbook_definition)) ?? undefined;
+  assertPlaybookDefinitionStringIsValid(playbook_definition);
   const newPlaybook = {
     name: `${playbook.name} - copy`,
     description: playbook.description,

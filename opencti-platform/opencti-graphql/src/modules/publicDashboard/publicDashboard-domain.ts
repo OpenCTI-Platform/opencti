@@ -723,6 +723,6 @@ export const publicStixRelationships = async (
   };
 
   // Use standard API
-  return (await findStixRelationPaginated(context, user, parameters) as unknown as BasicConnection<BasicStoreRelation>);
+  return await findStixRelationPaginated(context, user, parameters) as unknown as BasicConnection<BasicStoreRelation>;
 };
 // endregion

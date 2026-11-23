@@ -40,7 +40,9 @@ const ACRONYMS: Record<string, string> = {
 // Keys whose word-by-word reading is not the label a person writes (a slash, a hyphen, a word order)
 const LABEL_OVERRIDES: Record<string, string> = {
   AI_ML_SERVICE: 'AI / ML service',
+  CI_CD_PIPELINE: 'CI/CD pipeline',
   CLOUD_OTHER: 'Other cloud resource',
+  CODE_OTHER: 'Other code asset',
   NETWORK_OTHER: 'Other network device',
   NON_HUMAN_IDENTITY: 'Non-human identity',
   PRINTER_PERIPHERAL: 'Printer or peripheral',

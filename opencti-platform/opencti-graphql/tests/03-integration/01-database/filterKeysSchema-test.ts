@@ -13,6 +13,9 @@ import {
   INPUT_LABELS,
 } from '../../../src/schema/general';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import { RELATION_HAS_COVERED, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../src/modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import {
@@ -267,5 +270,33 @@ describe('Filter keys schema generation testing', async () => {
     expect(filterDefinition?.subEntityTypes[0]).toEqual(ENTITY_TYPE_DRAFT_WORKSPACE);
     // workflow_id is resolved natively: drafts must carry the projected status like any entity with a workflow
     expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_DRAFT_WORKSPACE, X_OPENCTI_WORKFLOW_ID)).toBeDefined();
+  });
+  it('should construct a generic nested filter definition for filterable nested attributes', () => {
+    const definition = filterKeysSchema.get(RELATION_HAS_COVERED)?.get('coverage_information');
+    expect(definition?.type).toEqual('nested_attribute');
+    expect(definition?.label).toEqual('Coverage');
+    // the frontend gives each sub-filter the operators of its type
+    expect(definition?.subFilters?.map((s) => [s.filterKey, s.type, s.label, s.multiple])).toEqual([
+      ['coverage_name', 'vocabulary', 'Coverage name', false],
+      ['coverage_score', 'float', 'Coverage score', false],
+    ]);
+    expect(definition?.subFilters?.[0].elementsForFilterValuesSearch).toEqual(['coverage_ov']);
+    // no 'parent.child' keys for a nested attribute
+    expect(filterKeysSchema.get(RELATION_HAS_COVERED)?.get('coverage_information.coverage_score')).toBeUndefined();
+    // nested attributes with associatedFilterKeys (connections) keep their flattened keys
+    expect(filterKeysSchema.get(RELATION_HAS_COVERED)?.get('fromId')).toBeDefined();
+    expect(filterKeysSchema.get(RELATION_HAS_COVERED)?.get('connections')).toBeUndefined();
+  });
+  it('should expose coverage_information wherever the attribute is registered: has-covered among the relationships', () => {
+    // the attribute is declared on has-covered only, not on the other relationships
+    expect(schemaAttributesDefinition.getAttribute(RELATION_HAS_COVERED, 'coverage_information')).toBeDefined();
+    expect(schemaAttributesDefinition.getAttribute(RELATION_USES, 'coverage_information')).toBeUndefined();
+    expect(filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get('coverage_information')?.subEntityTypes).toEqual([RELATION_HAS_COVERED]);
+    expect(filterKeysSchema.get(RELATION_USES)?.get('coverage_information')).toBeUndefined();
+    // a security coverage result stores its coverage information: it is filterable on it
+    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE_RESULT)?.get('coverage_information')?.type).toEqual('nested_attribute');
+    // a security coverage does not store it any more (its coverage is computed from its results): nothing to filter on
+    expect(schemaAttributesDefinition.getAttribute(ENTITY_TYPE_SECURITY_COVERAGE, 'coverage_information')?.isFilterable).toBe(false);
+    expect(filterKeysSchema.get(ENTITY_TYPE_SECURITY_COVERAGE)?.get('coverage_information')).toBeUndefined();
   });
 });

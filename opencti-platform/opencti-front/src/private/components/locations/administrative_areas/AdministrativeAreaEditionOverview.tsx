@@ -194,7 +194,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<
         id: administrativeArea.id,
         input: inputValues,
         commitMessage:
-            commitMessage && commitMessage.length > 0 ? commitMessage : null,
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {

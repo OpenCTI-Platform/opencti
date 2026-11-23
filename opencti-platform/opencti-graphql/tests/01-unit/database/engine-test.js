@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   buildDenormalizedRefsScriptParams,
-  buildLocalMustFilter,
   buildReplaceScriptParams,
   isTransitoryError,
   isTransitoryNonCircuitBreakingError,
   prepareElementForIndexing,
 } from '../../../src/database/engine';
+import { buildLocalMustFilter } from '../../../src/database/engine-query-builder';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 import * as engineConfig from '../../../src/database/engine-config';
@@ -37,6 +37,12 @@ describe('prepareElementForIndexing testing', () => {
 });
 
 describe('buildLocalMustFilter testing', () => {
+  it('should build a nested match on at least one entry, or on none when negated', () => {
+    const notNil = buildLocalMustFilter({ key: ['coverage_information'], values: [], nested: [] });
+    expect(notNil).toEqual({ nested: { path: 'coverage_information', query: { bool: { must: [], must_not: [] } } } });
+    const nil = buildLocalMustFilter({ key: ['coverage_information'], values: [], nested: [], negateNested: true });
+    expect(nil).toEqual({ bool: { must_not: [notNil] } });
+  });
   it('should buildLocalMustFilter with script be refused by default', () => {
     const scriptFilter = {
       key: ['name'],

@@ -9,6 +9,9 @@ import { CityKnowledge_city$key } from './__generated__/CityKnowledge_city.graph
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const CITY_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'located-at'];
+
 const cityKnowledgeFragment = graphql`
   fragment CityKnowledge_city on City {
     id
@@ -267,7 +270,7 @@ const CityKnowledge = ({ cityData }: { cityData: CityKnowledge_city$key }) => {
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={city.id}
-              relationshipTypes={['related-to', 'located-at']}
+              relationshipTypes={CITY_OBSERVABLES_RELATIONSHIP_TYPES}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}

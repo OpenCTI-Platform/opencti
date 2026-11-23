@@ -6,7 +6,8 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
-import InfrastructureKnowledge from './InfrastructureKnowledge';
+import InfrastructureKnowledge, { INFRASTRUCTURE_OBSERVABLES_RELATIONSHIP_TYPES } from './InfrastructureKnowledge';
+import { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
@@ -43,7 +44,7 @@ const subscription = graphql`
 `;
 
 const infrastructureQuery = graphql`
-  query RootInfrastructureQuery($id: String!) {
+  query RootInfrastructureQuery($id: String!, $observablesFilters: FilterGroup) {
     infrastructure(id: $id) {
       id
       entity_type
@@ -58,7 +59,7 @@ const infrastructureQuery = graphql`
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Infrastructure_infrastructure
-      ...InfrastructureKnowledge_infrastructure
+      ...InfrastructureKnowledge_infrastructure @arguments(observablesFilters: $observablesFilters)
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -180,7 +181,10 @@ const RootInfrastructure = () => {
   const { infrastructureId } = useParams() as { infrastructureId: string };
   const queryRef = useQueryLoading<RootInfrastructureQuery>(
     infrastructureQuery,
-    { id: infrastructureId },
+    {
+      id: infrastructureId,
+      observablesFilters: buildObservablesKnowledgeBarFilters(INFRASTRUCTURE_OBSERVABLES_RELATIONSHIP_TYPES),
+    },
   );
   return (
     <>

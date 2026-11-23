@@ -1,4 +1,5 @@
 import { Node } from 'pdfmake/interfaces';
+import { parseInertHtml } from './inertHtml';
 
 /**
  * Convert html editor page breaks into ones for pdfmake.
@@ -7,8 +8,7 @@ import { Node } from 'pdfmake/interfaces';
  * @returns Same content but with page breaks.
  */
 const addPageBreaks = (content: string) => {
-  const container = document.createElement('div');
-  container.innerHTML = content;
+  const container = parseInertHtml(content);
   container.querySelectorAll('.page-break').forEach((pageBreak) => {
     const pageBreakNext = pageBreak.nextElementSibling;
     if (pageBreakNext) pageBreakNext.classList.add('pdf-pagebreak-before');

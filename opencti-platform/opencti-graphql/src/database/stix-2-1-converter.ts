@@ -931,6 +931,7 @@ const convertSoftwareToStix = (instance: StoreCyberObservable, type: string): SC
       [STIX_EXT_OCTI_SCO]: cleanObject({
         ...stixCyberObject.extensions[STIX_EXT_OCTI_SCO],
         product: instance.x_opencti_product,
+        purl: instance.x_opencti_purl,
       }),
     },
   };

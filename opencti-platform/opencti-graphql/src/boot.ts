@@ -1,10 +1,13 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
 import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkHttpSecurity, checkTlsVerification } from './initialization';
+import { checkOutboundRequests } from './utils/internal-destination';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
 import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
+import { checkDefaultCredentials } from './config/default-credentials';
+import { checkSmtpSecurity } from './database/smtp';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
@@ -39,6 +42,18 @@ const doPlatformStart = async () => {
     checkTlsVerification();
     checkGraphqlSecurity();
     checkHttpSecurity();
+    try {
+      checkDefaultCredentials();
+    } catch (credentialsError) {
+      logApp.error('[OPENCTI] Default credentials check failed', { cause: credentialsError });
+      throw credentialsError;
+    }
+    try {
+      checkOutboundRequests();
+    } catch (outboundRequestsError) {
+      logApp.error('[OPENCTI] Outbound requests configuration is invalid', { cause: outboundRequestsError });
+      throw outboundRequestsError;
+    }
     // Check all dependencies access
     try {
       await checkSystemDependencies();
@@ -67,6 +82,8 @@ const doPlatformStart = async () => {
       logApp.error('[OPENCTI] Platform default initialization failed', { cause: platformError });
       throw platformError;
     }
+    // Needs the settings in cache, to read the SMTP configuration stored in the database
+    await checkSmtpSecurity();
     // Start the platform health monitoring before the API so /health can answer from collected state
     try {
       await startPlatformHealthMonitor();

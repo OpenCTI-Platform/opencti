@@ -1,14 +1,14 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, VocabularyCategory } from '../../generated/graphql';
-import { FilterMode } from '../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { countAllThings, type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY, isVocabularyCategoryEnabled, type StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
-import { getVocabulariesCategories, getVocabularyCategory, openVocabularies, updateElasticVocabularyValue } from './vocabulary-utils';
+import { getVocabulariesCategories, getVocabularyCategory, openVocabularies, systemSubcategoryParentFromDescription, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { normalizeName } from '../../schema/identifier';
@@ -40,8 +40,9 @@ export const findVocabularyPaginated = (context: AuthContext, user: AuthUser, op
     );
   }
   const args = {
-    orderBy: ['order', 'name'], // Default orderBy if none
     ...opts,
+    orderBy: opts.orderBy ?? ['order', 'name'], // Default orderBy if none or null
+    orderMode: opts.orderMode ?? OrderingMode.Asc, // a null orderMode would reach the engine sort and fail
   };
   return pageEntitiesConnection<BasicStoreEntityVocabulary>(context, user, [ENTITY_TYPE_VOCABULARY], {
     ...args,
@@ -58,14 +59,27 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
   if (!isVocabularyCategoryEnabled(vocabularyDefinitions[categoryDefinition.key])) {
     return 0;
   }
+  // A composite field stores the vocabulary value in a sub-attribute of a nested attribute: it needs a nested filter
+  // (the generated category type does not expose `composite`, the definition does)
+  const { fields } = vocabularyDefinitions[vocabulary.category];
+  const plainFields = fields.filter((f) => !f.composite);
+  const compositeFields = fields.filter((f) => f.composite);
+  const usageFilters = [
+    ...(plainFields.length > 0 ? [{ key: plainFields.map((f) => f.key), values: [vocabulary.name] }] : []),
+    ...compositeFields.map((f) => ({
+      key: [f.key],
+      operator: FilterOperator.Eq,
+      mode: FilterMode.Or,
+      values: [{ key: f.composite, operator: FilterOperator.Eq, values: [vocabulary.name] }],
+    })),
+  ];
   return countAllThings(context, user, {
     filters: {
       mode: FilterMode.And,
       filters: [
         { key: ['entity_type'], values: categoryDefinition.entity_types },
-        { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] },
       ],
-      filterGroups: [],
+      filterGroups: [{ mode: FilterMode.Or, filters: usageFilters, filterGroups: [] }],
     },
   });
 };
@@ -90,9 +104,19 @@ const checkVocabularyNameAllowed = (category: VocabularyCategory, name: string) 
 };
 
 // is_hidden is not part of the add input of the API (an entry is hidden by editing it), but the platform stores it on creation
+// An entry of a child category created the way 7.261116.0 documented it, its parent at the end of its description ("(category: HOST)"),
+// gets that parent in parent_name, the field a rename of the parent keeps up to date
+const withParentName = (vocabulary: VocabularyAddInput & { is_hidden?: boolean }) => {
+  if (vocabulary.parent_name || !vocabularyDefinitions[vocabulary.category]?.parent) {
+    return vocabulary;
+  }
+  const parsed = systemSubcategoryParentFromDescription(vocabulary.description);
+  return parsed ? { ...vocabulary, parent_name: parsed.parentName, description: parsed.description } : vocabulary;
+};
+
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput & { is_hidden?: boolean }) => {
   checkVocabularyNameAllowed(vocabulary.category, vocabulary.name);
-  const element = await createEntity(context, user, { ...vocabulary, order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
+  const element = await createEntity(context, user, { ...withParentName(vocabulary), order: vocabulary.order ?? 0 }, ENTITY_TYPE_VOCABULARY);
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
 };
 
@@ -152,7 +176,32 @@ export const deleteVocabulary = async (context: AuthContext, user: AuthUser, voc
   return vocabularyId;
 };
 
+// The categories whose entries name an entry of the given category as their parent (system_subcategory_ov for system_category_ov)
+export const getVocabularyChildCategories = (category: VocabularyCategory) => {
+  return (Object.keys(vocabularyDefinitions) as VocabularyCategory[]).filter((key) => vocabularyDefinitions[key].parent === category);
+};
+
+// A renamed entry keeps its children: every entry of a child category that names the old name as its parent names the new one
+const renameVocabularyParent = async (context: AuthContext, user: AuthUser, category: VocabularyCategory, oldName: string, name: string) => {
+  const childCategories = getVocabularyChildCategories(category);
+  if (childCategories.length === 0 || oldName === name) {
+    return;
+  }
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['category'], values: childCategories }],
+    filterGroups: [],
+  };
+  const children = await findAllVocabularies(context, user, { filters });
+  const orphans = children.filter(({ parent_name }) => parent_name === oldName);
+  for (let index = 0; index < orphans.length; index += 1) {
+    const { element } = await updateAttribute<StoreEntityVocabulary>(context, user, orphans[index].id, ENTITY_TYPE_VOCABULARY, [{ key: 'parent_name', value: [name] }]);
+    await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
+  }
+};
+
 export const editVocabulary = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[], props: Record<string, unknown>) => {
+  let renamed: { category: VocabularyCategory; oldName: string; name: string } | undefined;
   if (input.some(({ key }) => key === 'name')) {
     const name = input.find(({ key }) => key === 'name')?.value[0];
     const oldValue = await findById(context, user, id);
@@ -162,9 +211,13 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
       if (completeCategory) {
         await updateElasticVocabularyValue([oldValue.name], name, completeCategory);
       }
+      renamed = { category: oldValue.category, oldName: oldValue.name, name };
     }
   }
   const { element } = await updateAttribute<StoreEntityVocabulary>(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
+  if (renamed) {
+    await renameVocabularyParent(context, user, renamed.category, renamed.oldName, renamed.name);
+  }
   await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
   return element;
 };

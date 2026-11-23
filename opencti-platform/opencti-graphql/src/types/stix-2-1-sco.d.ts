@@ -523,6 +523,7 @@ export interface StixProcess extends StixCyberObject {
 // name, cpe, swid, languages, vendor, version
 export interface SoftwareExtension extends CyberObjectExtension {
   product: string;
+  purl: string; // optional, Package URL
 }
 export interface StixSoftware extends StixCyberObject {
   name: string;

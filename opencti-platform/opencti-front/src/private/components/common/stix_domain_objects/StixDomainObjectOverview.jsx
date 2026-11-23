@@ -163,10 +163,10 @@ const StixDomainObjectOverview = ({
             <div>
               <Label sx={{
                 mt:
-                    withPattern
-                    || (!withoutMarking && stixDomainObject.objectMarking)
-                      ? 2
-                      : 0,
+                  withPattern
+                  || (!withoutMarking && stixDomainObject.objectMarking)
+                    ? 2
+                    : 0,
               }}
               >{t_i18n('Author')}
               </Label>

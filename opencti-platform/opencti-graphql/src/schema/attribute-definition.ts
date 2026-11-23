@@ -56,7 +56,7 @@ type BasicDefinition = {
 };
 
 type GetRawIdsFn<T extends BasicStoreAttribute> = (item: T, getEntitiesMapFromCache:
-<Z extends BasicStoreIdentifier | StixObject>(type: string) => Promise<ReadonlyMap<string | StixId, Z>>) => Promise<{ id: string; source?: string }[]>;
+  <Z extends BasicStoreIdentifier | StixObject>(type: string) => Promise<ReadonlyMap<string | StixId, Z>>) => Promise<{ id: string; source?: string }[]>;
 
 type RepresentativeFn<T extends BasicStoreAttribute> = (item: T, dict: Record<string, string>, opts: Formating) => string;
 
@@ -518,10 +518,10 @@ export const coverageInformation: NestedObjectAttribute = {
   multiple: true,
   upsert: true,
   upsert_force_replace: true,
-  isFilterable: false, // Filter will be done by a special key
+  isFilterable: true,
   mappings: [
-    { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: true },
   ],
 };
 

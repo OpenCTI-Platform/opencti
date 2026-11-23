@@ -1,19 +1,16 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
-import { filterNavGroups, NavItem, RawNavGroup } from './useNavMenu';
+import { describe, expect, it, vi } from 'vitest';
+import { testRenderHook } from '../../../utils/tests/test-render';
+import useNavMenu, { filterNavGroups, NavItem, RawNavGroup } from './useNavMenu';
 
 const item = (id: string, extra: Partial<NavItem> = {}): NavItem => ({
   id, label: id, icon: <svg />, link: `/${id}`, ...extra,
 });
 
-/**
- * The permission filtering used to be spread across the rail's JSX, mixing three mechanisms
- * (capability checks, `<Security>` wrappers and feature flags) with rendering.
- */
 describe('filterNavGroups', () => {
   it('drops entries whose permission expression evaluated to false', () => {
     const groups: RawNavGroup[] = [{ id: 'g', items: [item('visible'), false, undefined, item('other')] }];
-    expect(filterNavGroups(groups, []).map((g) => g.items.map((i) => i.id))).toEqual([['visible', 'other']]);
+    expect(filterNavGroups(groups).map((g) => g.items.map((i) => i.id))).toEqual([['visible', 'other']]);
   });
 
   it('drops whole groups the user has no permission for', () => {
@@ -24,7 +21,7 @@ describe('filterNavGroups', () => {
       false,
       { id: 'emptied', items: [false, false] },
     ];
-    expect(filterNavGroups(groups, []).map((g) => g.id)).toEqual(['kept']);
+    expect(filterNavGroups(groups).map((g) => g.id)).toEqual(['kept']);
   });
 
   it('drops submenu rows the user is not granted', () => {
@@ -37,7 +34,7 @@ describe('filterNavGroups', () => {
         ],
       })],
     }];
-    expect(filterNavGroups(groups, [])[0].items[0].subItems?.map((s) => s.link)).toEqual(['/a']);
+    expect(filterNavGroups(groups)[0].items[0].subItems?.map((s) => s.link)).toEqual(['/a']);
   });
 
   it('treats an unspecified granted flag as granted', () => {
@@ -45,46 +42,46 @@ describe('filterNavGroups', () => {
       id: 'g',
       items: [item('parent', { subItems: [{ link: '/a', label: 'A' }] })],
     }];
-    expect(filterNavGroups(groups, [])[0].items[0].subItems).toHaveLength(1);
-  });
-
-  it('drops submenu rows whose entity type is hidden on the platform', () => {
-    const groups: RawNavGroup[] = [{
-      id: 'g',
-      items: [item('threats', {
-        subItems: [
-          { link: '/a', label: 'A', type: 'Campaign' },
-          { link: '/b', label: 'B', type: 'Intrusion-Set' },
-        ],
-      })],
-    }];
-    expect(filterNavGroups(groups, ['Campaign'])[0].items[0].subItems?.map((s) => s.link)).toEqual(['/b']);
-  });
-
-  it('keeps a parent whose submenu ended up empty, as a leaf entry', () => {
-    // The component this replaced rendered such a parent as a plain navigable link
-    // (`LeftBarItem`'s "No Subitems" branch).
-    const groups: RawNavGroup[] = [{
-      id: 'g',
-      items: [
-        item('kept'),
-        item('gutted', { link: '/gutted', subItems: [{ link: '/a', label: 'A', type: 'Campaign' }] }),
-      ],
-    }];
-    const items = filterNavGroups(groups, ['Campaign'])[0].items;
-    expect(items.map((i) => i.id)).toEqual(['kept', 'gutted']);
-    expect(items[1].link).toEqual('/gutted');
-    expect(items[1].subItems).toEqual([]);
+    expect(filterNavGroups(groups)[0].items[0].subItems).toHaveLength(1);
   });
 
   it('keeps a leaf entry that never declared a submenu', () => {
     const groups: RawNavGroup[] = [{ id: 'g', items: [item('leaf')] }];
-    const result = filterNavGroups(groups, ['Campaign']);
+    const result = filterNavGroups(groups);
     expect(result[0].items).toHaveLength(1);
     expect(result[0].items[0].subItems).toBeUndefined();
   });
 
   it('returns nothing at all when the user may see nothing', () => {
-    expect(filterNavGroups([{ id: 'g', items: [false] }, false], [])).toEqual([]);
+    expect(filterNavGroups([{ id: 'g', items: [false] }, false])).toEqual([]);
+  });
+});
+
+// An entry is hidden by its own entity type: hiding IPv4-Addr must not hide the Observables page they share with
+// Stix-Cyber-Observable (both resolve to the same URL), while hiding Stix-Cyber-Observable itself must.
+const hidden: string[] = [];
+vi.mock('../../../utils/hooks/useEntitySettings', () => ({ useHiddenEntities: () => hidden }));
+// The real gate (useVisibleEntries) runs: a BYPASS user passes the capability rules, so only the hidden types matter.
+vi.mock('../../../utils/hooks/useAuth', async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  default: () => ({ me: { draftContext: null, capabilities: [{ name: 'BYPASS' }], capabilitiesInDraft: [] } }),
+}));
+vi.mock('../../../utils/hooks/useHelper', () => ({ default: () => ({ isTrashEnable: () => true, isFeatureEnable: () => true }) }));
+vi.mock('../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
+
+describe('Hook: useNavMenu hidden entity types', () => {
+  const observablesLinks = () => testRenderHook(() => useNavMenu()).hook.result.current
+    .flatMap((group) => group.items.flatMap((i) => i.subItems ?? []))
+    .map((sub) => sub.link)
+    .filter((link) => link === '/dashboard/observations/observables');
+
+  it('keeps Observables when only one observable type is hidden', () => {
+    hidden.splice(0, hidden.length, 'IPv4-Addr');
+    expect(observablesLinks()).toHaveLength(1);
+  });
+
+  it('hides Observables when Stix-Cyber-Observable is hidden', () => {
+    hidden.splice(0, hidden.length, 'Stix-Cyber-Observable');
+    expect(observablesLinks()).toHaveLength(0);
   });
 });

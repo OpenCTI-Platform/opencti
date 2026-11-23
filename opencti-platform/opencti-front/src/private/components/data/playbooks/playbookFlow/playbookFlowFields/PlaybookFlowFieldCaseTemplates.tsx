@@ -24,7 +24,7 @@ interface CaseTemplateForm {
 
 const CASES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];
 
-const PlaybookFlowFieldCaseTemplates = () => {
+const PlaybookFlowFieldCaseTemplates = ({ required = false }: { required?: boolean }) => {
   const { values, setFieldValue } = useFormikContext<CaseTemplateForm>();
   const { container_type } = values;
 
@@ -38,6 +38,7 @@ const PlaybookFlowFieldCaseTemplates = () => {
     <CaseTemplateField
       label="Case templates"
       isDisabled={!isCaseContainer}
+      required={required}
       containerStyle={fieldSpacingContainerStyle}
     />
   );

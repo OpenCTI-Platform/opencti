@@ -8,14 +8,14 @@ import CreateRelationshipContextProvider from '@components/common/stix_core_rela
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Channel from './Channel';
-import ChannelKnowledge from './ChannelKnowledge';
+import ChannelKnowledge, { CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES } from './ChannelKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -44,7 +44,7 @@ const subscription = graphql`
 `;
 
 const channelQuery = graphql`
-  query RootChannelQuery($id: String!) {
+  query RootChannelQuery($id: String!, $observablesFilters: FilterGroup) {
     channel(id: $id) {
       id
       draftVersion {
@@ -58,7 +58,7 @@ const channelQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Channel_channel
       ...ChannelKnowledge_channel
       ...FileImportViewer_entity
@@ -128,6 +128,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
                     'channels',
                   ]}
                   data={channel}
+                  observablesRelationshipTypes={CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -213,6 +214,7 @@ const Root = () => {
   const { channelId } = useParams() as { channelId: string };
   const queryRef = useQueryLoading<RootChannelQuery>(channelQuery, {
     id: channelId,
+    observablesFilters: buildObservablesKnowledgeBarFilters(CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES),
   });
 
   return (

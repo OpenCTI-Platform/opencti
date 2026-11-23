@@ -1,9 +1,9 @@
-import React, { FunctionComponent, ReactElement, useEffect, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import Drawer from '@mui/material/Drawer';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import { List, ListItemButton, Stack } from '@mui/material';
@@ -12,8 +12,9 @@ import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 import { Theme } from '../../../../components/Theme';
-import { useTheme } from '@mui/material/styles';
 import useTopBanner from '../../../../utils/hooks/useTopBanner';
+import useVisibleEntries from './useVisibleEntries';
+import type { MenuEntry } from './menuEntry';
 
 const StyledDrawer = styled(Drawer)(() => ({
   '& .MuiDrawer-paper': {
@@ -31,13 +32,6 @@ const StyledDrawer = styled(Drawer)(() => ({
 const ToolbarSpacer = styled('div')(({ theme }) => ({
   ...theme.mixins.toolbar,
 }));
-
-export interface MenuEntry {
-  path: string;
-  label: string;
-  icon?: ReactElement;
-  isEE?: boolean;
-}
 
 const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ children }) => {
   const textRef = useRef<HTMLDivElement>(null);
@@ -70,7 +64,8 @@ const TruncatedText: FunctionComponent<{ children: React.ReactNode }> = ({ child
   return content;
 };
 
-const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }) => {
+const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries: allEntries }) => {
+  const entries = useVisibleEntries(allEntries);
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const { bannerSettings } = useAuth();
@@ -103,42 +98,47 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({ entries }
 
   const theme = useTheme<Theme>();
   return (
-    <StyledDrawer variant="permanent" anchor="right">
-      <ToolbarSpacer />
-      <List component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
-        {entries.map((entry, idx) => {
-          const isSelected = location.pathname.startsWith(entry.path);
-          const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
-          const iconOpacity = isSelected ? 1 : 0.5;
-          return (
-            <ListItemButton
-              key={idx}
-              component={Link}
-              to={entry.path}
-              selected={isSelected}
-              dense={false}
-              sx={{ paddingRight: 0 }}
-            >
-              {entry.icon && (
-                <ListItemIcon
-                  sx={{
-                    minWidth: '0px!important',
-                    mr: 1,
-                    opacity: iconOpacity,
-                    color: iconColor,
-                    '& svg': {
-                      fontSize: '16px!important',
-                    },
-                  }}
-                >{entry.icon}
-                </ListItemIcon>
-              )}
-              <ListItemText sx={{ m: 0 }} primary={renderLabel(entry)} />
-            </ListItemButton>
-          );
-        })}
-      </List>
-    </StyledDrawer>
+    <>
+      <StyledDrawer variant="permanent" anchor="right">
+        <ToolbarSpacer />
+        <List component="nav" style={{ marginTop: bannerHeight + settingsMessagesBannerHeight + topBannerHeight, marginBottom: bannerHeight }}>
+          {entries.map((entry, idx) => {
+            const isSelected = location.pathname.startsWith(entry.path);
+            const iconColor = isSelected ? theme.palette.text.light : theme.palette.text.tertiary;
+            const iconOpacity = isSelected ? 1 : 0.5;
+            return (
+              <ListItemButton
+                key={idx}
+                component={Link}
+                to={entry.path}
+                selected={isSelected}
+                dense={false}
+                sx={{ paddingRight: 0 }}
+              >
+                {entry.icon && (
+                  <ListItemIcon
+                    sx={{
+                      minWidth: '0px!important',
+                      mr: 1,
+                      opacity: iconOpacity,
+                      color: iconColor,
+                      '& svg': {
+                        fontSize: '16px!important',
+                      },
+                    }}
+                  >{entry.icon}
+                  </ListItemIcon>
+                )}
+                <ListItemText sx={{ m: 0 }} primary={renderLabel(entry)} />
+              </ListItemButton>
+            );
+          })}
+        </List>
+      </StyledDrawer>
+      {/* Right after the menu in the DOM: focusing it (see focusMainContent) makes the next Tab skip the menu and reach
+          the page content. Absolute so that it takes no room in a flex or grid parent. */}
+      <span tabIndex={-1} data-focus-target style={{ position: 'absolute', width: 0, height: 0, outline: 'none' }} />
+    </>
   );
 };
 

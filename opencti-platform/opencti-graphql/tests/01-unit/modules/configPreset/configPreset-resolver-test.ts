@@ -64,6 +64,7 @@ import { customStatusTemplate, defaultStatusTemplate } from './configPreset-stat
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
+import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -292,11 +293,55 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        key: 'dashboards',
+        label: 'Custom dashboards',
+        description: '',
+        group: { key: 'dashboards', label: 'Dashboards' },
+        // By name, the investigation is not a dashboard
+        items: [statusTemplateItem(executiveDashboard), statusTemplateItem(socDashboard)],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'connectors',
         label: 'Connectors',
         description: 'Managed connectors and their parameters, without their secrets',
         group: { key: 'integrations', label: 'Integrations' },
         items: [{ key: 'mitre', label: 'MITRE', translatable: false, dependsOn: [], isDefault: false }],
+        itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'rssFeeds',
+        label: 'RSS feeds',
+        description: 'RSS feeds and their parameters, without their state',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [
+          { key: 'Security news', label: 'Security news', translatable: false, dependsOn: [{ type: 'markings', key: customMarking.standard_id }], isDefault: false },
+          { key: 'Security news (1)', label: 'Security news', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'csvFeeds',
+        label: 'CSV feeds',
+        description: 'CSV feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'jsonFeeds',
+        label: 'JSON feeds',
+        description: 'JSON feeds with their mapper, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [],
+        itemsPageInfo: onePage(0),
+      },
+      {
+        key: 'taxiiFeeds',
+        label: 'TAXII feeds',
+        description: 'TAXII feeds and their parameters, without their credentials',
+        group: { key: 'integrations', label: 'Integrations' },
+        items: [{ key: 'Partner/TAXII', label: 'Partner/TAXII', translatable: false, dependsOn: [], isDefault: false }],
         itemsPageInfo: onePage(1),
       },
       {
@@ -367,7 +412,8 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['connectors', true], ['ruleEngine', false], ['fintelDesigns', true],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -418,7 +464,12 @@ describe('Config preset exportable types query', () => {
       ['vocabularies', 'taxonomy'],
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
+      ['dashboards', 'dashboards'],
       ['connectors', 'integrations'],
+      ['rssFeeds', 'integrations'],
+      ['csvFeeds', 'integrations'],
+      ['jsonFeeds', 'integrations'],
+      ['taxiiFeeds', 'integrations'],
       ['ruleEngine', 'automationRules'],
       ['fintelDesigns', 'customization'],
     ]);
@@ -473,7 +524,7 @@ describe('Config preset exportable items query', () => {
   });
 
   it('rejects an unknown type', async () => {
-    const result = await queryItems({ type: 'dashboards' });
+    const result = await queryItems({ type: 'unknownType' });
     expect(result.errors?.[0].message).toBe('Unknown configuration preset type');
   });
 

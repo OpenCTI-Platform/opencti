@@ -187,7 +187,7 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, ENTITIES_WORKFLOW_FEATURE_FLAG, extendedErrors, isFeatureEnabled, logApp } from '../config/conf';
@@ -209,6 +209,7 @@ import {
   KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
+  SETTINGS_SETKILLCHAINPHASES,
   SYSTEM_USER,
   userFilterStoreElements,
   validateUserAccessOperation,
@@ -2151,6 +2152,11 @@ export const filterTargetByExisting = async (
   return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
+// Meta objects that can be merged besides the STIX core objects.
+// A kill chain phase is only referenced through its kill-chain-phase refs, which the merge redirects to the target;
+// the standard id of a source lands in the x_opencti_stix_ids of the target, so a later import of a source resolves to it.
+const MERGEABLE_META_OBJECT_TYPES = [ENTITY_TYPE_VOCABULARY, ENTITY_TYPE_KILL_CHAIN_PHASE];
+
 const mergeEntitiesRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -2188,7 +2194,7 @@ const mergeEntitiesRaw = async (
     throw FunctionalError('Cannot merge entities of different types', { dest: targetType, source: sourceTypes });
   }
   // Check supported entities
-  if (!isStixCoreObject(targetEntity.entity_type) && targetEntity.entity_type !== ENTITY_TYPE_VOCABULARY) {
+  if (!isStixCoreObject(targetEntity.entity_type) && !MERGEABLE_META_OBJECT_TYPES.includes(targetEntity.entity_type)) {
     throw FunctionalError('Unsupported entity type for merging', { type: targetType });
   }
   // For vocabularies, extra elastic query is required
@@ -2558,6 +2564,11 @@ export const mergeEntities = async (
   if (mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_VOCABULARY && Boolean((o as BasicStoreEntityVocabulary).builtIn))) {
     throw FunctionalError('Cannot merge builtin vocabularies');
   }
+  // Merging kill chain phases deletes the sources: it changes the taxonomy, so it needs the right to manage it, like editing a phase
+  const isKillChainPhaseMerge = mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_KILL_CHAIN_PHASE);
+  if (isKillChainPhaseMerge && !isUserHasCapability(user, SETTINGS_SETKILLCHAINPHASES, { forceCapabilityInDraft: !!getDraftContext(context, user) })) {
+    throw ForbiddenAccess('You are not allowed to merge kill chain phases.', { capability: SETTINGS_SETKILLCHAINPHASES });
+  }
   // We need to lock all elements not locked yet.
   const { locks = [] } = opts;
   const participantIds = mergedIds.filter((e) => !locks.includes(e));
@@ -2658,6 +2669,8 @@ const prepareAttributesForUpdate = async (
 ) => {
   const instanceType = instance.entity_type;
   const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
+  const nameInput = elements.find((e) => e.key === NAME_FIELD);
+  const targetName = nameInput ? R.head(nameInput.value) : (instance as BasicStoreEntity).name;
   return elements.map((input) => {
     // Dynamic cases, attributes not defined in the schema
     if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
@@ -2677,9 +2690,9 @@ const prepareAttributesForUpdate = async (
     }
     // Aliases can't have the same name as entity name and an already existing normalized alias
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
-      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName((instance as BasicStoreEntity).name));
+      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(targetName));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return { key: input.key, value: uniqAliases };
+      return { ...input, value: uniqAliases };
     }
     // For upsert or update, workflow cant be reset or setup on un-existing workflow
     if (input.key === X_WORKFLOW_ID) {
@@ -2759,6 +2772,23 @@ type UpdateAttribueRawOpts = {
   impactStandardId?: boolean;
   upsert?: boolean;
 };
+// Purge removed alias IDs from other stix IDS
+const purgeRemovedAliasesIdsFromStixIds = (instance: BasicStoreEntity, aliasesIds: string[], preparedElements: EditInput[]) => {
+  const removedAliasesIds = (instance[INTERNAL_IDS_ALIASES] ?? []).filter((aid) => !aliasesIds.includes(aid));
+  if (removedAliasesIds.length === 0) {
+    return;
+  }
+  const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
+  if (stixIdsInput) {
+    stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds.includes(sid));
+  } else {
+    const currentStixIds = instance[IDS_STIX] ?? [];
+    const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds.includes(sid));
+    if (newStixIds.length < currentStixIds.length) {
+      preparedElements.push({ key: IDS_STIX, value: newStixIds });
+    }
+  }
+};
 const updateAttributeRaw = async (
   context: AuthContext,
   user: AuthUser,
@@ -2799,14 +2829,20 @@ const updateAttributeRaw = async (
     const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
+    const currentAliases: string[] = (aliasedInstance as unknown as Record<string, string[] | undefined>)[aliasField] ?? [];
     if (nameInput || aliasesInput) {
       const askedModificationName = nameInput ? R.head(nameInput.value) : undefined;
+      const targetName = askedModificationName ?? aliasedInstance.name;
       // Cleanup the alias input.
       if (aliasesInput) {
-        const preparedAliases = (aliasesInput.value ?? [])
+        const isDeltaOperation = aliasesInput.operation === UPDATE_OPERATION_ADD || aliasesInput.operation === UPDATE_OPERATION_REMOVE;
+        const mergedAliases = isDeltaOperation
+          ? (rebuildAndMergeInputFromExistingData(aliasesInput, aliasedInstance) as Partial<EditInput>).value ?? currentAliases
+          : aliasesInput.value ?? [];
+        aliasesInput.operation = EditOperation.Replace;
+        const preparedAliases = mergedAliases
           .filter((a) => isNotEmptyField(a))
-          .filter((a) => normalizeName(a) !== normalizeName(aliasedInstance.name)
-            && normalizeName(a) !== normalizeName(askedModificationName))
+          .filter((a) => normalizeName(a) !== normalizeName(targetName))
           .map((a) => a.trim());
         aliasesInput.value = R.uniqBy((e) => normalizeName(e), preparedAliases);
       }
@@ -2816,7 +2852,7 @@ const updateAttributeRaw = async (
         // If name change, we need to add the old name in aliases
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const aliases = [...(aliasedInstance[aliasField] ?? [])];
+        let aliases = [...(aliasedInstance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
           pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
@@ -2831,7 +2867,9 @@ const updateAttributeRaw = async (
             const generatedAliasesInput = { key: aliasField, value: uniqAliases };
             preparedElements.push(generatedAliasesInput);
           }
-        } else if (!aliasesInput) {
+        } else if (aliasesInput) {
+          aliases = aliasesInput.value;
+        } else {
           // Name change can create a duplicate with aliases
           // If it's the case aliases must be also patched.
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -2847,6 +2885,7 @@ const updateAttributeRaw = async (
         const aliasesId = generateAliasesId(aliases, aliasedInstance);
         const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasInput);
+        purgeRemovedAliasesIdsFromStixIds(aliasedInstance, aliasesId, preparedElements);
       } else if (aliasesInput) {
         // No name change asked but aliases addition
         if (upsert) {
@@ -2859,19 +2898,7 @@ const updateAttributeRaw = async (
         const aliasesId = generateAliasesId(aliasesInput.value, aliasedInstance);
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
-        // Purge removed alias IDs from other stix IDS
-        const currentStixIds = aliasedInstance[IDS_STIX] ?? [];
-        const removedAliasesIds = aliasedInstance[INTERNAL_IDS_ALIASES]?.filter((aid) => !aliasesId.includes(aid));
-        const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-        if (stixIdsInput) {
-          stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds?.includes(sid));
-        } else {
-          const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds?.includes(sid));
-          if (newStixIds.length < currentStixIds.length) {
-            const newStixIdsInput = { key: IDS_STIX, value: newStixIds };
-            preparedElements.push(newStixIdsInput);
-          }
-        }
+        purgeRemovedAliasesIdsFromStixIds(aliasedInstance, aliasesId, preparedElements);
       }
     }
   }

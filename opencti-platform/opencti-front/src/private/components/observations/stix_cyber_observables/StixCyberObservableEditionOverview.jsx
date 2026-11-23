@@ -505,7 +505,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             artifact
                               ? {
                                   label:
-                                  artifact.observable_value ?? artifact.id,
+                                    artifact.observable_value ?? artifact.id,
                                   value: artifact.id,
                                 }
                               : undefined
@@ -728,6 +728,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           languages
           vendor
           version
+          x_opencti_purl
         }
         ... on Url {
           value

@@ -18,7 +18,7 @@ import SelectFieldFds, { SelectItem } from '../../../../../../components/fields/
 import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 import { useFormatter } from '../../../../../../components/i18n';
 
-const PlaybookFlowFieldPeriod = () => {
+const PlaybookFlowFieldPeriod = ({ required = false }: { required?: boolean }) => {
   const { t_i18n } = useFormatter();
 
   return (
@@ -28,6 +28,7 @@ const PlaybookFlowFieldPeriod = () => {
       variant="outlined"
       name="period"
       label={t_i18n('Period')}
+      required={required}
       containerstyle={fieldSpacingContainerStyle}
     >
       <SelectItem value="hour">{t_i18n('hour')}</SelectItem>
