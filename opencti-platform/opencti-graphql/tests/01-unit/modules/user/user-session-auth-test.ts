@@ -160,7 +160,7 @@ describe('authenticateUserFromRequest - session, with the real session middlewar
     req.url = '/graphql';
     req.originalUrl = '/graphql';
     const res = new ServerResponse(req);
-    await promisify(sessionMiddleware)(req, res as any);
+    await promisify(sessionMiddleware)(req, res);
     // A session saved for a user that has been deleted since
     req.session.user = { id: 'deleted-user-id', session_creation: '2026-01-01T00:00:00.000Z', otp_validated: true };
     await promisify(req.session.save.bind(req.session))();
