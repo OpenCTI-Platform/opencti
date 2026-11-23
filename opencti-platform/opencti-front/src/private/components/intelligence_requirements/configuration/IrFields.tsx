@@ -103,11 +103,12 @@ const entitySearchQuery = graphql`
 /**
  * Search and pick entities of any type (anchors of a list subject group, targets of a path condition).
  */
-export const IrEntityPicker = ({ label, value, onChange, types }: {
+export const IrEntityPicker = ({ label, value, onChange, types, placeholder }: {
   label?: string;
   value: IrEntityOption[];
   onChange: (value: IrEntityOption[]) => void;
   types?: string[];
+  placeholder?: string;
 }) => {
   const { t_i18n } = useFormatter();
   const [input, setInput] = useState('');
@@ -148,7 +149,7 @@ export const IrEntityPicker = ({ label, value, onChange, types }: {
       {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
       <ComboboxField>
         <ComboboxChips aria-label={label} />
-        <ComboboxInput placeholder={t_i18n('Search entities…')} />
+        <ComboboxInput placeholder={placeholder ?? t_i18n('Search entities…')} />
         <ComboboxControls>
           <ComboboxClear />
           <ComboboxTrigger />
