@@ -53,7 +53,7 @@ const themes = [
 const userContext = createMockUserContext({
   me: { name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } },
 });
-const renderWithPreview = async (preview: unknown, onImported = vi.fn(), scope?: { key: string; value: string }) => {
+const renderWithPreview = async (preview: unknown, onImported = vi.fn(), scope?: string) => {
   const onClose = vi.fn();
   const rendered = testRender(<ConfigPresetPartialImport type="branding" scope={scope} itemsLabel="themes" onImported={onImported} onClose={onClose} />, { userContext });
   const file = new File(['zip'], 'bundle.zip', { type: 'application/zip' });
@@ -176,7 +176,7 @@ describe('ConfigPresetPartialImport', () => {
   });
 
   it('sends the scope of the screen with the preview and with the import, so that only the items in the scope are offered and imported', async () => {
-    const scope = { key: 'target_entity_type', value: 'Report' };
+    const scope = 'Report';
     const rendered = await renderWithPreview(previewOf(themes), vi.fn(), scope);
     await rendered.user.click(screen.getByTestId('config-preset-partial-import-submit'));
     expect(operation(rendered, 'ConfigPresetPartialImportMutation').request.variables).toMatchObject({ type: 'branding', scope });

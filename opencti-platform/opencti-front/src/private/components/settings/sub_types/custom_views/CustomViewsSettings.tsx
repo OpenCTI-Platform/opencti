@@ -16,9 +16,8 @@ import CustomViewFormDrawer from './CustomViewFormDrawer';
 import ConfigPresetPartialImportDialog from '../../config_preset/import/partial/ConfigPresetPartialImportDialog';
 import useConfigPresetPartialImportAccess from '../../config_preset/import/partial/useConfigPresetPartialImportAccess';
 
-// The configuration preset type of the custom views, and the key of their configuration that holds their entity type
+// The configuration preset type of the custom views
 const CUSTOM_VIEWS_CONFIG_PRESET_TYPE = 'customViews';
-const CUSTOM_VIEW_ENTITY_TYPE_KEY = 'target_entity_type';
 
 /**
  * Custom Views settings page.
@@ -45,7 +44,7 @@ const CustomViewsSettings = () => {
           title={t_i18n('Import a custom view')}
           type={CUSTOM_VIEWS_CONFIG_PRESET_TYPE}
           // Only the custom views of this entity type: the ones of the other types of the bundle are not offered
-          scope={{ key: CUSTOM_VIEW_ENTITY_TYPE_KEY, value: subType.id }}
+          scope={subType.id}
           itemsLabel={t_i18n('custom views')}
           fileLabel={t_i18n('Import a custom view file')}
           fileDescription={t_i18n('A custom view exported as a JSON file')}

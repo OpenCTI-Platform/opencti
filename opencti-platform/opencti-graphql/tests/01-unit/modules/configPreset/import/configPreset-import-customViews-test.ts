@@ -35,6 +35,8 @@ describe('Custom views import (registry)', () => {
   it('is importable, in the customization group, with a choice between overwriting the view of the name and adding a copy', () => {
     expect(family.importer).toBeDefined();
     expect(family.group.id).toBe('customization');
+    // The custom views page of an entity type scopes the partial import to the entity type of the views
+    expect(family.scopeKey).toBe('target_entity_type');
     expect(family.importModes).toEqual([ConfigImportMode.Overwrite, ConfigImportMode.Copy]);
   });
 

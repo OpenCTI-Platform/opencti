@@ -50,7 +50,7 @@ vi.mock('../../config_preset/import/partial/ConfigPresetPartialImportDialog', ()
   default: ({ open, type, scope, onChooseFile, onBundleImported }: {
     open: boolean;
     type: string;
-    scope?: { key: string; value: string };
+    scope?: string;
     onChooseFile: () => void;
     onBundleImported: () => void;
   }) => (open
@@ -83,7 +83,7 @@ describe('CustomViewsSettings, the import of a custom view', () => {
     await user.click(screen.getByRole('button', { name: 'Import a custom view' }));
     const dialog = screen.getByRole('dialog', { name: 'import customViews' });
     // Only the views of this entity type are offered: the ones of the other types of the bundle are not
-    expect(JSON.parse(dialog.getAttribute('data-scope') as string)).toEqual({ key: 'target_entity_type', value: 'Report' });
+    expect(JSON.parse(dialog.getAttribute('data-scope') as string)).toEqual('Report');
     expect(mocks.handleImport).not.toHaveBeenCalled();
   });
 

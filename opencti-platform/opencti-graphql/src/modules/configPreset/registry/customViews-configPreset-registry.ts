@@ -52,6 +52,8 @@ export const customViewsFamily: ConfigPresetFamilyDefinition = {
   description: 'Custom views of the entity types and their widgets',
   group: customizationGroup,
   directory: 'customization/custom_views',
+  // The custom views page of an entity type imports only the views of that entity type
+  scopeKey: 'target_entity_type',
   listItems: async (context, user, args) => {
     const { first, after, search, ids, excludedIds } = args;
     // An empty list of ids is no view: as a filter value it would match every view

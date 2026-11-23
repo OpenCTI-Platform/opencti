@@ -30,7 +30,7 @@ import { ConfigPresetPartialImportPreviewMutation, ConfigPresetPartialImportPrev
 import { ConfigPresetPartialImportMutation, ConfigPresetPartialImportMutation$data } from './__generated__/ConfigPresetPartialImportMutation.graphql';
 
 const configPresetPartialImportPreviewMutation = graphql`
-  mutation ConfigPresetPartialImportPreviewMutation($file: Upload!, $type: ID!, $scope: ConfigPresetPartialImportScopeInput) {
+  mutation ConfigPresetPartialImportPreviewMutation($file: Upload!, $type: ID!, $scope: String) {
     configPresetPartialImportPreview(file: $file, type: $type, scope: $scope) {
       bundle_name
       default_mode
@@ -69,7 +69,7 @@ const configPresetPartialImportMutation = graphql`
     $item_modes: [ConfigPresetItemModeInput!]
     $credentials: [ConfigPresetItemCredentialsInput!]
     $service_accounts: [ConfigPresetItemServiceAccountInput!]
-    $scope: ConfigPresetPartialImportScopeInput
+    $scope: String
   ) {
     configPresetPartialImport(file: $file, type: $type, items: $items, item_modes: $item_modes, credentials: $credentials, service_accounts: $service_accounts, scope: $scope) {
       results {
@@ -98,9 +98,9 @@ type Output = ConfigPresetPartialImportMutation$data['configPresetPartialImport'
 interface ConfigPresetPartialImportProps {
   // The key of the configuration preset type to take from the bundle (branding for the themes...)
   type: string;
-  // Only the items of the type whose configuration has this value for this key are offered and imported (the custom views of an entity type):
+  // Only the items of the type that have this value for the scope key of the type are offered and imported (the custom views of an entity type):
   // the other ones of the bundle are neither shown nor imported
-  scope?: { key: string; value: string };
+  scope?: string;
   // What the dialog calls the items of the type, already translated (the themes...)
   itemsLabel: string;
   // After a real import, so that the screen reads its items again

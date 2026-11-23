@@ -17,8 +17,8 @@ interface ConfigPresetPartialImportDialogProps {
   title: string;
   // The configuration preset type of the screen, and what the dialog calls its items (already translated)
   type: string;
-  // Only the items of the type that have this value for this key are offered and imported (the custom views of an entity type)
-  scope?: { key: string; value: string };
+  // Only the items of the type that have this value for the scope key of the type are offered and imported (the custom views of an entity type)
+  scope?: string;
   itemsLabel: string;
   // The cards of the first step, already translated
   fileLabel: string;

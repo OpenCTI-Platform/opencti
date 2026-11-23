@@ -1,13 +1,7 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
 import type { FileUploadData } from '../../../database/file-storage';
-import type {
-  ConfigPresetImportType,
-  ConfigPresetItemCredentialsInput,
-  ConfigPresetItemModeInput,
-  ConfigPresetItemServiceAccountInput,
-  ConfigPresetPartialImportScopeInput,
-} from '../../../generated/graphql';
+import type { ConfigPresetImportType, ConfigPresetItemCredentialsInput, ConfigPresetItemModeInput, ConfigPresetItemServiceAccountInput } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode } from '../../configImport/configImport-types';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
@@ -78,12 +72,20 @@ const readUploadedBundle = async (file: Promise<FileUploadData>): Promise<{ bund
 
 // The bundle without the items of the family that are out of the scope: a screen that is about one value (the entity type of its custom views)
 // neither shows nor imports the others. An id of an item out of the scope is then unknown, as any other id the bundle does not have.
-// The key is looked up in the configuration of the item as its own property only: the configuration comes from the bundle
-const scopeBundle = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, scope: ConfigPresetPartialImportScopeInput | null | undefined): ConfigPresetBundle => {
-  if (!scope) {
+// The key is the one the family declares, looked up in the configuration of the item as its own property only (the configuration comes from the
+// bundle). The values are compared trimmed, as the import schema of the family trims them.
+const scopeBundle = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, scope: string | null | undefined): ConfigPresetBundle => {
+  if (scope === null || scope === undefined) {
     return bundle;
   }
-  const isInScope = ({ configuration }: ConfigPresetBundleItem) => Object.hasOwn(configuration, scope.key) && configuration[scope.key] === scope.value;
+  const { scopeKey } = family;
+  if (!scopeKey) {
+    throw FunctionalError('This configuration type cannot be scoped', { type: family.id });
+  }
+  const isInScope = ({ configuration }: ConfigPresetBundleItem) => {
+    const value = Object.hasOwn(configuration, scopeKey) ? configuration[scopeKey] : undefined;
+    return typeof value === 'string' && value.trim() === scope.trim();
+  };
   return { ...bundle, items: bundle.items.filter((item) => item.type !== family.id || isInScope(item)) };
 };
 
@@ -93,7 +95,7 @@ export const resolveConfigPresetPartialImportItems = (
   bundle: ConfigPresetBundle,
   family: ConfigPresetFamilyDefinition,
   ids: string[] | null,
-  scope?: ConfigPresetPartialImportScopeInput | null,
+  scope?: string | null,
 ): ConfigPresetBundleItem[] => {
   const scoped = scopeBundle(bundle, family, scope);
   return resolveBundleDependencies(scoped, pickConfigPresetTypeItems(scoped, family.id, ids)).filter((item) => item.type === family.id);
@@ -113,7 +115,7 @@ export const configPresetPartialImportPreview = async (
   user: AuthUser,
   file: Promise<FileUploadData>,
   type: string,
-  scope?: ConfigPresetPartialImportScopeInput | null,
+  scope?: string | null,
 ): Promise<ConfigPresetPartialImportPreview> => {
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
@@ -143,7 +145,7 @@ export const configPresetPartialImport = async (
   itemModes: ConfigPresetItemModeInput[],
   itemCredentials: ConfigPresetItemCredentialsInput[] = [],
   itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
-  scope?: ConfigPresetPartialImportScopeInput | null,
+  scope?: string | null,
 ): Promise<ConfigPresetPartialImportOutput> => {
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
