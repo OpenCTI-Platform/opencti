@@ -95,9 +95,11 @@ const LIST_QUERY = gql`
 
 const LIST_WITH_RELATIONSHIPS_QUERY = gql`
     query globalSearchWithRelationships(
+        $types: [String]
         $filters: FilterGroup
     ) {
         globalSearchWithRelationships(
+            types: $types
             filters: $filters
         ) {
             edges {
@@ -1737,6 +1739,11 @@ describe('Complex filters combinations for elastic queries', () => {
     const objectsResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: undefined } });
     const allResult = await queryAsAdmin({ query: LIST_WITH_RELATIONSHIPS_QUERY, variables: { filters: undefined } });
     expect(allResult.data?.globalSearchWithRelationships.edges.length).toEqual(objectsResult.data?.globalSearch.edges.length + 24);
+    // explicit types are still honored: 2 malwares, and the 24 relationships when asking for the abstract relationship type
+    const malwaresResult = await queryAsAdmin({ query: LIST_WITH_RELATIONSHIPS_QUERY, variables: { types: [ENTITY_TYPE_MALWARE] } });
+    expect(malwaresResult.data?.globalSearchWithRelationships.edges.length).toEqual(2);
+    const typedRelationshipsResult = await queryAsAdmin({ query: LIST_WITH_RELATIONSHIPS_QUERY, variables: { types: [ABSTRACT_STIX_CORE_RELATIONSHIP] } });
+    expect(typedRelationshipsResult.data?.globalSearchWithRelationships.edges.length).toEqual(24);
   });
   it(`should list relationships according to filters: combinations of operators and modes with the special filter keys ${INSTANCE_RELATION_TYPES_FILTER}, ${RELATION_FROM_TYPES_FILTER}, ${RELATION_TO_TYPES_FILTER}`, async () => {
     // all stix core relationships

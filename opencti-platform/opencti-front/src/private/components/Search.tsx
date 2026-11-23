@@ -19,7 +19,7 @@ import NavigationSearchResults from './search/NavigationSearchResults';
 
 const LOCAL_STORAGE_KEY = 'search';
 
-const SEARCH_ENTITY_TYPES = ['Stix-Core-Object', 'Stix-Core-Relationship'];
+const SEARCH_ENTITY_TYPES = ['Stix-Core-Object', 'stix-core-relationship'];
 
 const searchLineFragment = graphql`
   fragment SearchStixCoreObjectLine_node on StixObjectOrStixRelationship {

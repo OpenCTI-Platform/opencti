@@ -26,6 +26,7 @@ import { storeUpdateEvent } from '../database/stream/stream-handler';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -178,7 +179,9 @@ export const globalSearchPaginated = async (context, user, args) => {
 
 export const globalSearchWithRelationshipsPaginated = async (context, user, args) => {
   await publishSearchAction(user, args);
-  return pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], args);
+  // buildRelationsFilter overwrites args.types, so the requested types must be given as the types argument
+  const types = (args.types ?? []).filter((type) => isStixCoreObject(type) || isStixCoreRelationship(type));
+  return pageEntitiesOrRelationsConnection(context, user, types.length > 0 ? types : [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], args);
 };
 
 export const findUnknownStixCoreObjects = async (context, user, args) => {

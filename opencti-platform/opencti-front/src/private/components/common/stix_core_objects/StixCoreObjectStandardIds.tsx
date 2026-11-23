@@ -52,7 +52,7 @@ export const StixCoreObjectStandardIds = ({ standardId, stixIds, deleteStixId }:
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IconButton
                 variant="tertiary"
-                aria-label="Close"
+                aria-label={t_i18n('Other STIX IDs')}
                 size="small"
                 disabled={otherStixIds.length === 0}
                 onClick={handleToggleOpenStixIds}
