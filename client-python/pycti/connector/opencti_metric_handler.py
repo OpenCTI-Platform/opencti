@@ -4,7 +4,7 @@ This module provides Prometheus metrics support for OpenCTI connectors,
 allowing monitoring of connector performance and health.
 """
 
-from typing import Type, Union
+from typing import List, Type, Union
 
 from prometheus_client import Counter, Enum, Info, start_http_server
 
@@ -210,7 +210,7 @@ class OpenCTIMetricHandler:
         connector_id: str,
         connector_name: str,
         connector_type: str,
-        connector_scope: str,
+        connector_scope: Union[str, List[str]],
         name: str = "identity",
     ) -> None:
         """Set the labels of an Info metric describing the connector.
@@ -226,8 +226,9 @@ class OpenCTIMetricHandler:
         :type connector_name: str
         :param connector_type: Type of the connector
         :type connector_type: str
-        :param connector_scope: Scope of the connector
-        :type connector_scope: str
+        :param connector_scope: Scope of the connector, either as a comma-separated
+            string or as a list (joined with commas in the label)
+        :type connector_scope: str or list[str]
         :param name: Name of the Info metric to update (default: "identity")
         :type name: str
 
@@ -236,6 +237,10 @@ class OpenCTIMetricHandler:
         """
         if self.activated:
             if self._metric_exists(name, Info):
+                # Prometheus label values must be strings: a list scope would
+                # make every scrape of /metrics fail
+                if isinstance(connector_scope, list):
+                    connector_scope = ",".join(str(s) for s in connector_scope)
                 self._metrics[name].info(
                     {
                         "id": connector_id,

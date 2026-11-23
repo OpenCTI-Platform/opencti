@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from prometheus_client import REGISTRY, Counter, Enum, Info
+from prometheus_client import REGISTRY, Counter, Enum, Info, generate_latest
 
 from pycti import OpenCTIMetricHandler
 from pycti.utils.opencti_logger import logger
@@ -42,6 +42,29 @@ class TestOpenCTIMetricHandler(TestCase):
                     "name": "My connector",
                     "type": "EXTERNAL_IMPORT",
                     "scope": "report",
+                },
+            ),
+            1.0,
+        )
+
+    def test_set_info_with_list_scope(self):
+        # OpenCTIConnector accepts a list scope (e.g. from a YAML config)
+        self.metric.set_info(
+            connector_id="0b6f3c9e-1234-4abc-9def-0123456789ab",
+            connector_name="My connector",
+            connector_type="INTERNAL_ENRICHMENT",
+            connector_scope=["Url", "Artifact"],
+        )
+        # Rendering /metrics must not fail on the identity labels
+        generate_latest(REGISTRY)
+        self.assertEqual(
+            REGISTRY.get_sample_value(
+                "opencti_connector_identity_info",
+                {
+                    "id": "0b6f3c9e-1234-4abc-9def-0123456789ab",
+                    "name": "My connector",
+                    "type": "INTERNAL_ENRICHMENT",
+                    "scope": "Url,Artifact",
                 },
             ),
             1.0,
