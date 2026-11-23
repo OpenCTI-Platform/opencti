@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../../../../relay/environment';
+import useHelper from '../../../../../../utils/hooks/useHelper';
 import type { useXtmCounterpartsOfQuery, useXtmCounterpartsOfQuery$data } from './__generated__/useXtmCounterpartsOfQuery.graphql';
 import type { useXtmCounterpartsConnectionsQuery } from './__generated__/useXtmCounterpartsConnectionsQuery.graphql';
 
@@ -39,6 +40,15 @@ export const xtmCounterpartsOfQuery = graphql`
     }
   }
 `;
+
+// Dedicated feature flag, off by default (Sam, 23 Nov 2026): it gates the emblem, its surface, the
+// list row marks and every counterpart call. Same id as on the server (XTM_COUNTERPARTS_FEATURE_FLAG).
+export const XTM_COUNTERPARTS_FEATURE_FLAG = 'XTM_COUNTERPARTS';
+
+export const useXtmCounterpartsEnabled = (): boolean => {
+  const { isFeatureEnable } = useHelper();
+  return isFeatureEnable(XTM_COUNTERPARTS_FEATURE_FLAG);
+};
 
 export const XTM_COUNTERPART_TTL_MS = 2 * 60 * 1000;
 const BATCH_DELAY_MS = 30;
@@ -160,35 +170,59 @@ export const xtmCounterpartStateOf = (lookup: Lookup, product: string): XtmCount
   }
 };
 
-/** The counterpart of one OpenCTI object in one connected product, with the connection state for the CTA. */
-const useXtmCounterpart = (product: string, objectId: string | null | undefined): XtmCounterpartState => {
-  const [state, setState] = useState<XtmCounterpartState>({ status: 'loading' });
+export type XtmCounterpartStates = Readonly<Record<string, XtmCounterpartState>>;
+
+const statesOf = (products: ReadonlyArray<string>, state: XtmCounterpartState): XtmCounterpartStates => (
+  Object.fromEntries(products.map((product) => [product, state]))
+);
+
+/**
+ * The counterparts of one OpenCTI object in several products, from one connections read and one
+ * batched lookup. Behind the dedicated feature flag XTM_COUNTERPARTS: while it is off, every
+ * product is 'none' and nothing is sent (the server refuses the lookup too).
+ */
+export const useXtmCounterpartStates = (products: ReadonlyArray<string>, objectId: string | null | undefined): XtmCounterpartStates => {
+  const enabled = useXtmCounterpartsEnabled();
+  const productsKey = products.join(',');
+  const [states, setStates] = useState<XtmCounterpartStates>(() => statesOf(products, { status: enabled ? 'loading' : 'none' }));
   useEffect(() => {
+    const keys = productsKey ? productsKey.split(',') : [];
     let active = true;
-    setState({ status: 'loading' });
+    if (!enabled || keys.length === 0) {
+      setStates(statesOf(keys, { status: 'none' }));
+      return () => {
+        active = false;
+      };
+    }
+    setStates(statesOf(keys, { status: 'loading' }));
     lookupXtmConnections().then((connected) => {
       if (!active) return;
       if (!connected) {
-        setState({ status: 'unavailable' });
+        setStates(statesOf(keys, { status: 'unavailable' }));
         return;
       }
-      if (!connected.get(product)) {
-        setState({ status: 'not_connected' });
-        return;
-      }
-      if (!objectId) {
-        setState({ status: 'none' });
+      const reachable = keys.filter((key) => connected.get(key));
+      const unreachable: Array<[string, XtmCounterpartState]> = keys.filter((key) => !connected.get(key)).map((key) => [key, { status: 'not_connected' }]);
+      if (reachable.length === 0 || !objectId) {
+        setStates(Object.fromEntries([...unreachable, ...reachable.map((key): [string, XtmCounterpartState] => [key, { status: 'none' }])]));
         return;
       }
       lookupXtmCounterpartsOf(objectId).then((lookup) => {
-        if (active) setState(xtmCounterpartStateOf(lookup, product));
+        if (!active) return;
+        setStates(Object.fromEntries([...unreachable, ...reachable.map((key): [string, XtmCounterpartState] => [key, xtmCounterpartStateOf(lookup, key)])]));
       });
     });
     return () => {
       active = false;
     };
-  }, [product, objectId]);
-  return state;
+  }, [enabled, productsKey, objectId]);
+  return states;
+};
+
+/** The counterpart of one OpenCTI object in one connected product, with the connection state for the CTA. */
+const useXtmCounterpart = (product: string, objectId: string | null | undefined): XtmCounterpartState => {
+  const states = useXtmCounterpartStates([product], objectId);
+  return states[product] ?? { status: 'loading' };
 };
 
 export default useXtmCounterpart;

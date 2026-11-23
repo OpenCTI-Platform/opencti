@@ -11,7 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
-import { XtmEmblems } from '../../common/xtm/counterpart/core/XtmEmblem';
+import { XtmEmblem } from '../../common/xtm/counterpart/core/XtmEmblem';
 import { xtmProductsFor } from '../../common/xtm/counterpart/core/xtmProducts';
 
 interface StixSightingRelationshipHeaderProps {
@@ -58,7 +58,7 @@ const StixSightingRelationshipHeader = ({
           gap: 1,
         }}
       >
-        {sightingId && <XtmEmblems products={xtmProductsFor('stix-sighting-relationship')} objectId={sightingId} />}
+        {sightingId && <XtmEmblem products={xtmProductsFor('stix-sighting-relationship')} objectId={sightingId} />}
         {canDelete && (
           <PopoverMenu>
             {({ closeMenu }) => (

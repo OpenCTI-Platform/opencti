@@ -6968,5 +6968,10 @@
   "XTM One is not connected": "XTM Oneは接続されていません",
   "See this asset in the XTM One inventory: its criticality, owner and exposure.": "XTM Oneのインベントリでこの資産を表示します：重要度、所有者、露出。",
   "It appears once the XTM One inventory holds an asset with this hostname or address.": "XTM Oneのインベントリにこのホスト名またはアドレスの資産が登録されると表示されます。",
-  "Connect XTM One to see this asset in your inventory.": "XTM Oneを接続すると、この資産をインベントリで確認できます。"
+  "Connect XTM One to see this asset in your inventory.": "XTM Oneを接続すると、この資産をインベントリで確認できます。",
+  "Across the XTM Platform": "XTM プラットフォーム全体",
+  "Not found across the XTM Platform": "XTM プラットフォームで見つかりません",
+  "Found": "見つかりました",
+  "Not found": "見つかりません",
+  "Unavailable": "利用できません"
 }

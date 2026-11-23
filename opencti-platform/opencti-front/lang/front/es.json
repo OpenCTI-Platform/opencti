@@ -6968,5 +6968,10 @@
   "XTM One is not connected": "XTM One no está conectado",
   "See this asset in the XTM One inventory: its criticality, owner and exposure.": "Ver este activo en el inventario de XTM One: su criticidad, propietario y exposición.",
   "It appears once the XTM One inventory holds an asset with this hostname or address.": "Aparece cuando el inventario de XTM One contiene un activo con este nombre de host o dirección.",
-  "Connect XTM One to see this asset in your inventory.": "Conecte XTM One para ver este activo en su inventario."
+  "Connect XTM One to see this asset in your inventory.": "Conecte XTM One para ver este activo en su inventario.",
+  "Across the XTM Platform": "En la plataforma XTM",
+  "Not found across the XTM Platform": "No encontrado en la plataforma XTM",
+  "Found": "Encontrado",
+  "Not found": "No encontrado",
+  "Unavailable": "No disponible"
 }

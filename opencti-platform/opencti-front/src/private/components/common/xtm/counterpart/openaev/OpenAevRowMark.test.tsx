@@ -28,6 +28,11 @@ vi.mock('../../../../../../relay/environment', async (importOriginal) => ({
   }),
 }));
 
+// The row marks are behind the dedicated feature flag XTM_COUNTERPARTS: these tests run with it on.
+vi.mock('../../../../../../utils/hooks/useHelper', () => ({
+  default: () => ({ isFeatureEnable: (id: string) => id === 'XTM_COUNTERPARTS' }),
+}));
+
 const counterpart = {
   key: 'CVE-2024-0001',
   product: 'openaev',

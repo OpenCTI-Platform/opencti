@@ -6968,5 +6968,10 @@
   "XTM One is not connected": "XTM One не подключен",
   "See this asset in the XTM One inventory: its criticality, owner and exposure.": "Посмотреть этот актив в инвентаре XTM One: критичность, владелец и подверженность.",
   "It appears once the XTM One inventory holds an asset with this hostname or address.": "Появляется, когда в инвентаре XTM One есть актив с этим именем хоста или адресом.",
-  "Connect XTM One to see this asset in your inventory.": "Подключите XTM One, чтобы увидеть этот актив в инвентаре."
+  "Connect XTM One to see this asset in your inventory.": "Подключите XTM One, чтобы увидеть этот актив в инвентаре.",
+  "Across the XTM Platform": "На платформе XTM",
+  "Not found across the XTM Platform": "Не найдено на платформе XTM",
+  "Found": "Найдено",
+  "Not found": "Не найдено",
+  "Unavailable": "Недоступно"
 }

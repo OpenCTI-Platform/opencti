@@ -1,6 +1,6 @@
 import { LRUCache } from 'lru-cache';
 import type { AuthContext, AuthUser } from '../../../../types/user';
-import { logApp } from '../../../../config/conf';
+import { isFeatureEnabled, logApp } from '../../../../config/conf';
 import { CounterpartLookupError, type CounterpartCaller } from './counterpart-errors';
 import { counterpartKeysOf, type CounterpartSource } from './counterpart-keys';
 
@@ -327,9 +327,18 @@ export const xtmConnections = (providers: ReadonlyArray<CounterpartProvider> = P
 
 const callerOf = (user: AuthUser): CounterpartCaller => ({ id: user.id, user_email: user.user_email });
 
-export const findXtmConnections = async (_context: AuthContext, _user: AuthUser) => xtmConnections();
+// Dedicated feature flag, off by default (Sam, 23 Nov 2026): while it is off the platform answers no
+// connection and sends no counterpart call to another product. Same id as the front-end flag.
+export const XTM_COUNTERPARTS_FEATURE_FLAG = 'XTM_COUNTERPARTS';
+
+export const findXtmConnections = async (_context: AuthContext, _user: AuthUser) => (
+  isFeatureEnabled(XTM_COUNTERPARTS_FEATURE_FLAG) ? xtmConnections() : []
+);
 
 export const findXtmCounterpartsByIds = async (context: AuthContext, user: AuthUser, ids: string[]) => {
+  if (!isFeatureEnabled(XTM_COUNTERPARTS_FEATURE_FLAG)) {
+    return [];
+  }
   const connected = PROVIDERS.some((p) => p.isConnected());
   if (!connected || ids.length === 0) {
     return [];

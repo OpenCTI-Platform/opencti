@@ -1,156 +1,223 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Box from '@mui/material/Box';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import Popover from '@mui/material/Popover';
+import { Chip, Paper, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../../components/i18n';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../../../utils/hooks/useGranted';
-import useXtmCounterpart, { type XtmCounterpart } from './useXtmCounterparts';
+import useXtmCounterpart, { useXtmCounterpartStates, type XtmCounterpart, type XtmCounterpartState } from './useXtmCounterparts';
 import { XTM_CONNECT_DOC_URL } from './xtmConnect';
 import { XtmMark } from './XtmMark';
-import { XtmPivotPreview, XtmPivotTeaser } from './XtmPivotPreview';
-import { factLabelsOf, previewFactsOf } from './counterpartFacts';
-import type { XtmProduct } from './xtmProducts';
+import { XtmPivotPreview } from './XtmPivotPreview';
+import { previewFactsOf, type FactFormatters } from './counterpartFacts';
+import { XTMONE_PRODUCT, type XtmProduct } from './xtmProducts';
 
-// Contract v3 (Sam, 22 Nov 2026), identical in OpenCTI, OpenAEV and OpenCRQ: one icon-only emblem
-// per counterpart product in the header, at the size of the sibling header actions, no text.
-// - connected and found: the emblem in the theme primary, a link to the counterpart, the preview
-//   of its facts on hover and keyboard focus;
-// - connected and not found: the emblem greyed, still focusable, tooltip "Not found in X" and how
-//   an object gets there;
-// - not connected: the emblem greyed, the teaser (what X would show, example skeletons), a link to
-//   the connection documentation for a user who can configure the platform, a read-only hint else;
-// - unavailable (X could not answer this time): the emblem greyed, "X is unavailable".
-// Nothing while loading and for an object X has no counterpart for.
+// One emblem per object, identical in OpenCTI, OpenAEV and OpenCRQ (Sam, 23 Nov 2026): the XTM One
+// mark of the product switcher, in one header slot. Purple when at least one other product holds the
+// object, grey otherwise. A click opens a small anchored surface (a popover, never a dialog) with one
+// section per product: its status, the facts it answered and a button to open the object there.
+// - not connected: a "Connect X" entry for a user who can configure the platform, nothing else;
+// - not supported (the product has no lookup for this object, or answers 404): the product is left out;
+// - nothing at all to show (no product connected and the user cannot connect one): no emblem.
+// Everything sits behind the dedicated feature flag XTM_COUNTERPARTS (off by default).
 
-// Two colours only, the same for every product and the same hex in OpenCTI, OpenAEV and OpenCRQ
-// (Sam, 22 Nov 2026): found = the design system's highlight ink (--icon-highlight, the brand primary
-// of the theme, a custom primary included), not found, not connected and unavailable = its disabled
-// ink (--icon-disabled). Design system tokens, never the MUI palette, so the three products agree.
-// The one exception is XTM One, whose found emblem keeps the XTM One purple (product.foundColor).
-export const EMBLEM_FOUND = 'var(--icon-highlight)';
+// Design system inks, the same in the three products.
+export const EMBLEM_FOUND = 'var(--color-filigran-ia-primary)';
 export const EMBLEM_MUTED = 'var(--icon-disabled)';
 
-/** The ink of a product's emblem: its found ink when active, the disabled ink otherwise. */
-export const emblemInk = (product: XtmProduct, active: boolean): string => (active ? (product.foundColor ?? EMBLEM_FOUND) : EMBLEM_MUTED);
+/** The ink of a product mark: its found ink when active, the disabled ink otherwise. */
+export const emblemInk = (product: XtmProduct, active: boolean): string => (active ? (product.foundColor ?? 'var(--icon-highlight)') : EMBLEM_MUTED);
 
-interface XtmEmblemProps {
-  product: XtmProduct;
-  // The OpenCTI object: the server reads its key under the caller's rights.
-  objectId: string | null | undefined;
-}
+/** A counterpart link is followed only when it is an http(s) address. */
+export const safeCounterpartUrl = (url: string | null | undefined): string | undefined => {
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
-/** The preview of a match: shared by the header emblem and the list-row mark. */
-export const XtmCounterpartPreview: React.FC<{ product: XtmProduct; counterpart: XtmCounterpart }> = ({ product, counterpart }) => {
+const useFactFormatters = (): FactFormatters => {
   const { t_i18n, n, fd } = useFormatter();
+  return { t_i18n, count: (v) => n(v), money: (v) => n(v), date: (v) => fd(v) };
+};
+
+/** The preview of a match, used by the list-row mark tooltip. */
+export const XtmCounterpartPreview: React.FC<{ product: XtmProduct; counterpart: XtmCounterpart }> = ({ product, counterpart }) => {
+  const { t_i18n } = useFormatter();
+  const formatters = useFactFormatters();
   return (
     <XtmPivotPreview
       mark={<XtmMark src={product.mark} size={16} color={emblemInk(product, true)} />}
       productName={product.name}
       entityType={counterpart.object_type}
       name={counterpart.object_name}
-      facts={previewFactsOf(counterpart.facts, product.facts, { t_i18n, count: (v) => n(v), money: (v) => n(v), date: (v) => fd(v) })}
+      facts={previewFactsOf(counterpart.facts, product.facts, formatters)}
       action={t_i18n(product.action)}
     />
   );
 };
 
-const NotFound: React.FC<{ product: XtmProduct }> = ({ product }) => {
+type SectionKind = 'found' | 'not_found' | 'unavailable' | 'not_connected';
+
+const sectionKindOf = (state: XtmCounterpartState): SectionKind | null => {
+  switch (state.status) {
+    case 'match':
+      return 'found';
+    case 'no_match':
+      return 'not_found';
+    case 'unavailable':
+      return 'unavailable';
+    case 'not_connected':
+      return 'not_connected';
+    default:
+      return null;
+  }
+};
+
+const ProductSection: React.FC<{ product: XtmProduct; state: XtmCounterpartState; kind: SectionKind }> = ({ product, state, kind }) => {
   const { t_i18n } = useFormatter();
+  const formatters = useFactFormatters();
+  const status: Record<SectionKind, { label: string; severity: 'info' | 'neutral' | 'medium' }> = {
+    found: { label: t_i18n('Found'), severity: 'info' },
+    not_found: { label: t_i18n('Not found'), severity: 'neutral' },
+    unavailable: { label: t_i18n('Unavailable'), severity: 'medium' },
+    not_connected: { label: t_i18n('Not connected'), severity: 'neutral' },
+  };
+  const counterpart = state.status === 'match' ? state.counterpart : null;
+  const facts = counterpart ? previewFactsOf(counterpart.facts, product.facts, formatters) : [];
+  const href = counterpart ? safeCounterpartUrl(counterpart.object_url) : undefined;
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 288 }} data-testid="xtm-not-found">
-      <Box component="span" sx={{ fontWeight: 600 }}>{t_i18n(product.notFound)}</Box>
-      <Box component="span" sx={{ opacity: 0.72 }}>{t_i18n(product.howItGetsThere)}</Box>
+    <Box component="section" aria-label={product.name} data-testid={`${product.product}-section`} data-status={kind} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <XtmMark src={product.mark} size={16} color={emblemInk(product, kind === 'found')} />
+        <Box component="span" sx={{ fontWeight: 600, flex: 1 }}>{product.name}</Box>
+        <Chip label={status[kind].label} severity={status[kind].severity} />
+      </Box>
+      {counterpart && (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            {counterpart.object_type && <Chip label={counterpart.object_type} />}
+            {counterpart.object_name && (
+              <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{counterpart.object_name}</Box>
+            )}
+          </Box>
+          {facts.length > 0 && (
+            <Box component="dl" sx={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 2, rowGap: 0.5, m: 0 }}>
+              {facts.map((fact) => (
+                <Box key={fact.label} sx={{ display: 'contents' }}>
+                  <Box component="dt" sx={{ color: 'var(--text-secondary)' }}>{fact.label}</Box>
+                  <Box component="dd" sx={{ m: 0, fontWeight: 600 }}>{fact.value}</Box>
+                </Box>
+              ))}
+            </Box>
+          )}
+        </>
+      )}
+      {kind === 'not_found' && <Box component="span" sx={{ color: 'var(--text-secondary)' }}>{t_i18n(product.howItGetsThere)}</Box>}
+      {kind === 'unavailable' && <Box component="span" sx={{ color: 'var(--text-secondary)' }}>{t_i18n(product.unavailable)}</Box>}
+      {href && (
+        <Box>
+          <Button variant="secondary" size="small" href={href} target="_blank" rel="noopener noreferrer">{t_i18n(product.open)}</Button>
+        </Box>
+      )}
+      {kind === 'not_connected' && (
+        <Box>
+          <Button variant="secondary" size="small" href={XTM_CONNECT_DOC_URL} target="_blank" rel="noopener noreferrer">{t_i18n(product.connect)}</Button>
+        </Box>
+      )}
     </Box>
   );
 };
 
-export const XtmEmblem: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
+interface XtmEmblemProps {
+  // The products that can hold this object, in display order (xtmProductsFor).
+  products: ReadonlyArray<XtmProduct>;
+  // The OpenCTI object: the server reads its key under the caller's rights.
+  objectId: string | null | undefined;
+}
+
+/** The single XTM emblem of an object header, and its cross-product surface. */
+export const XtmEmblem: React.FC<XtmEmblemProps> = ({ products, objectId }) => {
   const { t_i18n } = useFormatter();
   const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
-  const state = useXtmCounterpart(product.product, objectId);
+  const states = useXtmCounterpartStates(products.map((p) => p.product), objectId);
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const open = Boolean(anchor);
 
-  let label: string;
-  let tooltip: React.ReactNode;
-  let href: string | undefined;
-  let active = false;
-  switch (state.status) {
-    case 'match':
-      label = t_i18n(product.open);
-      tooltip = <XtmCounterpartPreview product={product} counterpart={state.counterpart} />;
-      href = state.counterpart.object_url;
-      active = true;
-      break;
-    case 'no_match':
-      label = t_i18n(product.notFound);
-      tooltip = <NotFound product={product} />;
-      break;
-    case 'unavailable':
-      label = t_i18n(product.unavailable);
-      tooltip = label;
-      break;
-    case 'not_connected':
-      label = canConfigure ? t_i18n(product.connect) : t_i18n(product.notConnected);
-      tooltip = (
-        <XtmPivotTeaser
-          mark={<XtmMark src={product.mark} size={16} color={EMBLEM_MUTED} />}
-          productName={product.name}
-          labels={factLabelsOf(product.facts, t_i18n)}
-          pitch={t_i18n(product.pitch)}
-          next={canConfigure ? t_i18n('Open the documentation to connect it.') : t_i18n('Ask an administrator to connect it.')}
-        />
-      );
-      if (canConfigure) href = XTM_CONNECT_DOC_URL;
-      break;
-    default:
-      return null;
-  }
-  const link = href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {};
+  const sections = products
+    .map((product) => ({ product, state: states[product.product] ?? { status: 'loading' as const } }))
+    .map(({ product, state }) => ({ product, state, kind: sectionKindOf(state) }))
+    // Not connected is shown to settings managers only; not supported is never listed.
+    .filter((s): s is { product: XtmProduct; state: XtmCounterpartState; kind: SectionKind } => s.kind !== null && (s.kind !== 'not_connected' || canConfigure));
+  if (sections.length === 0) return null;
+  const found = sections.filter((s) => s.kind === 'found').length;
+  const label = found > 0 ? t_i18n('Across the XTM Platform') : t_i18n('Not found across the XTM Platform');
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <IconButton
-          variant="secondary"
-          size="default"
-          aria-label={label}
-          // Greyed but still focusable, so keyboard focus opens the tooltip too.
-          aria-disabled={!active && !href ? true : undefined}
-          data-testid={`${product.product}-emblem`}
-          data-status={state.status}
-          {...link}
-        >
-          <XtmMark src={product.mark} color={emblemInk(product, active)} />
-        </IconButton>
-      </TooltipTrigger>
-      <TooltipContent>{tooltip}</TooltipContent>
-    </Tooltip>
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <IconButton
+            variant="secondary"
+            size="default"
+            aria-label={label}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            data-testid="xtm-emblem"
+            data-found={found}
+            onClick={(event: React.MouseEvent<HTMLElement>) => setAnchor(event.currentTarget)}
+          >
+            <XtmMark src={XTMONE_PRODUCT.mark} color={found > 0 ? EMBLEM_FOUND : EMBLEM_MUTED} />
+          </IconButton>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+      <Popover
+        open={open}
+        anchorEl={anchor}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        slotProps={{ paper: { sx: { background: 'transparent', boxShadow: 'none', mt: 1 } } }}
+      >
+        <Paper elevation={2} padding={16} data-testid="xtm-surface" role="dialog" aria-label={t_i18n('Across the XTM Platform')}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: 320 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <XtmMark src={XTMONE_PRODUCT.mark} size={16} color={found > 0 ? EMBLEM_FOUND : EMBLEM_MUTED} />
+              <Box component="span" sx={{ fontWeight: 600 }}>{t_i18n('Across the XTM Platform')}</Box>
+            </Box>
+            {sections.map(({ product, state, kind }, index) => (
+              <Box key={product.product} sx={index > 0 ? { borderTop: '1px solid var(--border-primary)', pt: 2 } : undefined}>
+                <ProductSection product={product} state={state} kind={kind} />
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+      </Popover>
+    </>
   );
 };
 
 /**
- * The emblems of the products an object can have a counterpart in, in the order of Contract v3
- * (XTM One leftmost, then OpenAEV, then OpenCRQ: OpenCTI is self).
+ * List-row mark: the 16 px emblem of a product, only when it holds the object; nothing on the
+ * row otherwise (the header carries the other states). Unchanged by the single emblem until the UX
+ * round decides; behind the same feature flag (useXtmCounterpart answers 'none' while it is off).
  */
-export const XtmEmblems: React.FC<{ products: ReadonlyArray<XtmProduct>; objectId: string | null | undefined }> = ({ products, objectId }) => (
-  <>
-    {products.map((product) => <XtmEmblem key={product.product} product={product} objectId={objectId} />)}
-  </>
-);
-
-/**
- * List-row mark: the 16 px emblem in the theme primary, only when the product holds the object;
- * nothing on the row otherwise (the header carries the other states). The lookups of every row of
- * a page go out batched in one query.
- */
-export const XtmRowMark: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
+export const XtmRowMark: React.FC<{ product: XtmProduct; objectId: string | null | undefined }> = ({ product, objectId }) => {
   const { t_i18n } = useFormatter();
   const state = useXtmCounterpart(product.product, objectId);
   if (state.status !== 'match') return null;
+  const href = safeCounterpartUrl(state.counterpart.object_url);
+  if (!href) return null;
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Box
           component="a"
-          href={state.counterpart.object_url}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={t_i18n(product.open)}

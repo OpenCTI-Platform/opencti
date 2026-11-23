@@ -53,7 +53,7 @@ import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMe
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
-import { XtmEmblems } from '../xtm/counterpart/core/XtmEmblem';
+import { XtmEmblem } from '../xtm/counterpart/core/XtmEmblem';
 import { xtmProductsFor } from '../xtm/counterpart/core/xtmProducts';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
@@ -526,7 +526,7 @@ const StixDomainObjectHeader = (props) => {
         rightActions={(
           <>
             {xtmCounterpartId && (
-              <XtmEmblems products={xtmProductsFor(stixDomainObject.entity_type ?? entityType)} objectId={xtmCounterpartId} />
+              <XtmEmblem products={xtmProductsFor(stixDomainObject.entity_type ?? entityType)} objectId={xtmCounterpartId} />
             )}
             {disableSharing !== true && (
               <StixCoreObjectSharing

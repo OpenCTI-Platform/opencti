@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ warn: vi.fn() }));
+const mocks = vi.hoisted(() => ({ warn: vi.fn(), flagOn: true }));
 
 vi.mock('../../../../../../src/config/conf', () => ({
+  isFeatureEnabled: (flag: string) => flag === 'XTM_COUNTERPARTS' && mocks.flagOn !== false,
   default: { get: () => undefined },
   logApp: { info: vi.fn(), error: vi.fn(), warn: mocks.warn, debug: vi.fn() },
 }));
@@ -27,8 +28,24 @@ import {
   resolveCounterpartsOfSources,
   registerCounterpartProvider,
   xtmConnections,
+  findXtmConnections,
+  findXtmCounterpartsByIds,
   type XtmCounterpart,
 } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+
+describe('XTM counterparts: dedicated feature flag XTM_COUNTERPARTS', () => {
+  it('answers no connection and no counterpart while the flag is off', async () => {
+    mocks.flagOn = false;
+    try {
+      const context = {} as never;
+      const user = { id: 'alice', user_email: 'alice@example.com' } as never;
+      expect(await findXtmConnections(context, user)).toEqual([]);
+      expect(await findXtmCounterpartsByIds(context, user, ['id-1'])).toEqual([]);
+    } finally {
+      mocks.flagOn = true;
+    }
+  });
+});
 
 const ALICE = { id: 'alice', user_email: 'alice@example.com' };
 const BOB = { id: 'bob', user_email: 'bob@example.com' };
