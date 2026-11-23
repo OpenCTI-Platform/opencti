@@ -3297,9 +3297,13 @@ export const updateAttributeMetaResolved = async <T extends StoreObject>(
         const targetCreated = R.head(targetsCreated);
         // If asking for a real change
         if (currentValue?.id !== targetCreated?.internal_id) {
-          // Delete the current relation
-          if (currentValue?.standard_id) {
-            const currentRels = (await fullRelationsList(context, user, relType, { fromId: initial.id }))
+          // Delete the current relations before creating the new one, so a single ref never holds two targets.
+          // currentValue is resolved with the user's rights: a target the user cannot see is absent from it,
+          // but its relation still exists, so the relations are listed with SYSTEM_USER (in the user's draft, if any).
+          // Clearing (no new target) still requires a visible current value.
+          if (currentValue?.standard_id || isNotEmptyField(targetCreated)) {
+            const systemContext = { ...context, draft_context: getDraftContext(context, user) };
+            const currentRels = (await fullRelationsList(systemContext, SYSTEM_USER, relType, { fromId: initial.id }))
               .map((rel) => ({
                 ...rel,
                 // we resolve from and to without need of an extra query
