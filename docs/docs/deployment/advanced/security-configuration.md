@@ -22,6 +22,12 @@ For a fully secure platform, you should disable the loading of unsecure (HTTP) r
 
 Setting `app:allow_unsecure_http_resources` to `false` explicitly also makes the browser upgrade every HTTP request of the platform to HTTPS (`upgrade-insecure-requests`): the platform must then be served over HTTPS, or its interface no longer loads. `app:http:secure_by_default` alone does not upgrade the requests.
 
+## Inline scripts
+
+The Content-Security-Policy of the platform blocks inline scripts (no `'unsafe-inline'` in `script-src`).
+
+The HTML of `app:script_snippet` is inline in the platform page. When this snippet is set, the Content-Security-Policy allows inline scripts again. For a strict Content-Security-Policy, leave `app:script_snippet` empty.
+
 ## Session timeout
 
 To ensure that user sessions are not kept alive indefinitely, you should configure a session timeout (`app:session_timeout`) that matches your security policy.
