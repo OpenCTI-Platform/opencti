@@ -116,7 +116,10 @@ describe('managed connector token encryption', () => {
     mockGetEntitiesMapFromCache.mockImplementation(async () => new Map([
       ['user-1', { id: 'user-1', internal_id: 'user-1', api_tokens: cachedUserTokens ?? userTokens }],
     ]));
-    mockStoreLoadById.mockImplementation(async (_context, _user, id) => ({ id, internal_id: id, api_tokens: [...userTokens] }));
+    // The connector still runs as user-1; the user as stored
+    mockStoreLoadById.mockImplementation(async (_context, _user, id, type) => (type === 'Connector'
+      ? { id, internal_id: id, connector_user_id: 'user-1' }
+      : { id, internal_id: id, api_tokens: [...userTokens] }));
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-1' }]);
     mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }, managedBy) => {
       tokenCount += 1;

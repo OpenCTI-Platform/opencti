@@ -10,6 +10,7 @@ const {
   mockAddUserTokenByAdmin,
   mockRevokeUserTokenByAdmin,
   mockInternalDeleteElementById,
+  mockPatchAttribute,
   mockStoreLoadById,
   mockLockResources,
   redisStore,
@@ -19,6 +20,7 @@ const {
   mockAddUserTokenByAdmin: vi.fn(),
   mockRevokeUserTokenByAdmin: vi.fn(),
   mockInternalDeleteElementById: vi.fn(),
+  mockPatchAttribute: vi.fn(),
   mockStoreLoadById: vi.fn(),
   mockLockResources: vi.fn(),
   redisStore: new Map<string, string>(),
@@ -59,16 +61,19 @@ vi.mock('../../../../src/modules/user/user-domain', async (importOriginal) => ({
 vi.mock('../../../../src/modules/catalog/catalog-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/catalog/catalog-domain')>()),
   encryptValue: (publicKey: string, value: string) => `${publicKey}|${value}`,
+  computeConnectorTargetContract: () => [],
 }));
 
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
   internalDeleteElementById: mockInternalDeleteElementById,
+  patchAttribute: mockPatchAttribute,
 }));
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   storeLoadById: mockStoreLoadById,
+  fullEntitiesList: async () => [{ public_key: 'public-key' }],
 }));
 
 vi.mock('../../../../src/domain/work', async (importOriginal) => ({
@@ -92,26 +97,32 @@ vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) =>
   publishUserAction: vi.fn(),
 }));
 
-import { computeManagedConnectorContractConfiguration, connectorDelete } from '../../../../src/modules/connector/connector-domain';
+import { computeManagedConnectorContractConfiguration, connectorDelete, managedConnectorEdit } from '../../../../src/modules/connector/connector-domain';
 
 const context = {} as AuthContext;
 const user = { id: 'admin' } as AuthUser;
 
-// Only the fields read by the tested functions
-const managedConnector = (id: string, catalogId: string, userId = 'user-1') => ({
-  id,
-  internal_id: id,
-  name: id,
-  catalog_id: catalogId,
-  connector_user_id: userId,
-  connector_type: 'EXTERNAL_IMPORT',
-  manager_contract_configuration: [],
-}) as unknown as BasicStoreEntityConnector;
+// Connectors as stored in the database, while a configuration read may still hold an older copy
+let liveConnectors: Map<string, BasicStoreEntityConnector>;
+
+// Only the fields read by the tested functions; also stores the connector in the database
+const managedConnector = (id: string, catalogId: string, userId = 'user-1') => {
+  const connector = {
+    id,
+    internal_id: id,
+    name: id,
+    catalog_id: catalogId,
+    connector_user_id: userId,
+    connector_type: 'EXTERNAL_IMPORT',
+    manager_contract: { config_schema: { properties: {} } },
+    manager_contract_configuration: [],
+  } as unknown as BasicStoreEntityConnector;
+  liveConnectors.set(id, connector);
+  return connector;
+};
 
 // Tokens of the user, kept in sync by the add and revoke mocks
 let userTokens: { id: string; name: string; managed_by_type?: string; managed_by_id?: string }[];
-// Connectors deleted from the database, while a configuration read may still hold them
-let deletedConnectorIds: Set<string>;
 const loadUser = (userId: string) => (userId === 'user-1' ? { id: 'user-1', internal_id: 'user-1', api_tokens: userTokens } : undefined);
 
 const readToken = async (connectorEntity: BasicStoreEntityConnector) => {
@@ -125,7 +136,7 @@ describe('managed connector token', () => {
     vi.clearAllMocks();
     redisStore.clear();
     userTokens = [];
-    deletedConnectorIds = new Set();
+    liveConnectors = new Map();
     let tokenCount = 0;
     mockLockResources.mockResolvedValue({ unlock: vi.fn() });
     mockGetEntitiesMapFromCache.mockImplementation(async () => new Map([['user-1', loadUser('user-1')]]));
@@ -133,7 +144,7 @@ describe('managed connector token', () => {
       if (type === ENTITY_TYPE_USER) {
         return loadUser(id);
       }
-      return deletedConnectorIds.has(id) ? undefined : { id, internal_id: id };
+      return liveConnectors.get(id);
     });
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key' }]);
     mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }, managedBy) => {
@@ -206,7 +217,7 @@ describe('managed connector token', () => {
 
   it('should not issue a token for a connector deleted while its configuration is read', async () => {
     const connectorA = managedConnector('connector-a', 'catalog-x');
-    deletedConnectorIds.add('connector-a');
+    liveConnectors.delete('connector-a');
 
     await expect(readToken(connectorA)).rejects.toThrow('Managed connector not found');
     expect(mockAddUserTokenByAdmin).not.toHaveBeenCalled();
@@ -240,7 +251,7 @@ describe('managed connector token', () => {
 
     expect(await connectorDelete(context, user, 'connector-a')).toBe('connector-a');
 
-    expect(mockLockResources).toHaveBeenCalledWith(['manager-configuration-connector-a']);
+    expect(mockLockResources).toHaveBeenCalledWith(['composer-token-user-1']);
     expect(userTokens.map(({ id }) => id)).toEqual(['token-2']);
   });
 
@@ -255,6 +266,48 @@ describe('managed connector token', () => {
     expect(await connectorDelete(context, user, 'connector-a')).toBe('connector-a');
 
     expect(userTokens.map(({ id }) => id)).toEqual(['user-token']);
+  });
+
+  it('should take the token lock of the user, shared by the connectors running as that user', async () => {
+    await readToken(managedConnector('connector-a', 'catalog-x'));
+    await readToken(managedConnector('connector-b', 'catalog-y'));
+
+    expect(mockLockResources.mock.calls).toEqual([[['composer-token-user-1']], [['composer-token-user-1']]]);
+  });
+
+  it('should not issue a token to the user a managed connector no longer runs as', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    // Moved to another user after this configuration read loaded it
+    liveConnectors.set('connector-a', { ...connectorA, connector_user_id: 'user-2' });
+
+    await expect(readToken(connectorA)).rejects.toThrow('Managed connector user changed');
+    expect(mockAddUserTokenByAdmin).not.toHaveBeenCalled();
+  });
+
+  it('should revoke the token of the previous user when a managed connector moves to another user', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    await readToken(connectorA);
+    await readToken(managedConnector('connector-b', 'catalog-y'));
+    mockPatchAttribute.mockResolvedValueOnce({ element: { ...connectorA, connector_user_id: 'user-2' } });
+    mockLockResources.mockClear();
+
+    await managedConnectorEdit(context, user, { id: 'connector-a', name: 'connector-a', title: 'connector-a', connector_user_id: 'user-2', manager_contract_configuration: [] });
+
+    expect(mockLockResources).toHaveBeenCalledWith(['composer-token-user-1']);
+    expect(userTokens.map(({ managed_by_id }) => managed_by_id)).toEqual(['connector-b']);
+    expect(redisStore.has('composer:connector:connector-a:token:user-1')).toBe(false);
+    expect(redisStore.has('composer:connector:connector-b:token:user-1')).toBe(true);
+  });
+
+  it('should not revoke any token when a managed connector is edited without changing its user', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    await readToken(connectorA);
+    mockPatchAttribute.mockResolvedValueOnce({ element: connectorA });
+
+    await managedConnectorEdit(context, user, { id: 'connector-a', name: 'connector-a', title: 'connector-a', connector_user_id: 'user-1', manager_contract_configuration: [] });
+
+    expect(mockRevokeUserTokenByAdmin).not.toHaveBeenCalled();
+    expect(userTokens.map(({ managed_by_id }) => managed_by_id)).toEqual(['connector-a']);
   });
 
   it('should delete a managed connector whose user no longer exists, without revoking any token', async () => {
