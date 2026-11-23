@@ -59,7 +59,7 @@ describe('extractWsSessionContext: maximum lifetime of a session', () => {
   it('should accept a subscription of a session under its maximum lifetime', async () => {
     const context = subscriptionContext(Date.now() - TWELVE_HOURS + 60 * 1000);
     const sessionContext = await extractWsSessionContext(context);
-    expect(sessionContext.user.id).toEqual(USER.id);
+    expect(sessionContext.user?.id).toEqual(USER.id);
   });
 
   it('should refuse a subscription of a session over its maximum lifetime, without ending the session', async () => {

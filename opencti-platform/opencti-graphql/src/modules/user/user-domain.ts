@@ -2759,6 +2759,23 @@ const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser)
   }
 };
 
+// A stream is authenticated once, when it opens, then serves events for a long time: the maximum lifetime of
+// its session is checked again before each batch of events. Only a stream authenticated by its session is
+// concerned: a bearer token is used before the session cookie the request may also carry (as in
+// authenticateUserFromRequest), so an unrelated session must not close a stream authenticated by a token.
+// When the session is over its maximum lifetime, it is ended and the logout recorded, as for any other request.
+// Returns true when the stream must be closed.
+export const endStreamSessionOverMaxLifetime = async (context: AuthContext, req: SessionAuthRequest & SessionEndRequest) => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser || extractTokenFromBearer(req.headers.authorization) || !isSessionOverMaxLifetime(sessionUser)) {
+    return false;
+  }
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const logged = platformUsers.get(sessionUser.id);
+  await endSessionOverMaxLifetime(req, userWithOrigin(req, { ...sessionUser, ...logged }) as AuthUser);
+  return true;
+};
+
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {

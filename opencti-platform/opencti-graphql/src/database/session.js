@@ -63,14 +63,18 @@ const createApplicationSession = async () => {
 const MAX_SESSION_MAX_LIFETIME = 2147483647;
 
 // Maximum lifetime of a session in ms, counted from the login and never extended by the user activity.
-// 0 (the default) means no limit. Any value that is not a whole number of ms in range makes the platform refuse
+// 0 (the default) means no limit, as an unset or empty value does (an empty environment variable is common in
+// deployment templates). Any other value that is not a whole number of ms in range makes the platform refuse
 // to start (see boot): falling back to no limit would silently disable a security setting.
 export const getSessionMaxLifetime = () => {
   const configuredValue = conf.get('app:session_max_lifetime');
   if (configuredValue === undefined || configuredValue === null || configuredValue === '') {
     return 0;
   }
-  const maxLifetime = Number(configuredValue);
+  // Environment values are parsed (true, false, [] ...): only a number or a string of digits is a lifetime,
+  // as converting anything else to a number would give a meaningless limit (true is 1 ms, false is no limit)
+  const isNumericValue = typeof configuredValue === 'number' || (typeof configuredValue === 'string' && /^\d+$/.test(configuredValue));
+  const maxLifetime = isNumericValue ? Number(configuredValue) : NaN;
   if (!Number.isInteger(maxLifetime) || maxLifetime < 0 || maxLifetime > MAX_SESSION_MAX_LIFETIME) {
     throw ConfigurationError(
       `Invalid app:session_max_lifetime: expected a whole number of milliseconds between 0 (no limit) and ${MAX_SESSION_MAX_LIFETIME}`,

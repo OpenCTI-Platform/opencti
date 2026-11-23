@@ -8,7 +8,6 @@ import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elCount, elList, elFindByIds } from '../database/engine';
-import { isSessionOverMaxLifetime } from '../database/session';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -67,7 +66,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../http/httpServer-draft';
-import { resolveUserByIdFromCache } from '../modules/user/user-domain';
+import { endStreamSessionOverMaxLifetime, resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
@@ -167,8 +166,8 @@ export const refreshStreamUser = async (req, { isPublicUser = false } = {}) => {
   if (!isPublicUser && !isUserAccountActive(cachedUser)) {
     return { error: 'the account of the user is no longer active' };
   }
-  // A stream opened with a session ends with it, when the session reaches its maximum lifetime
-  if (!isPublicUser && req.session?.user && isSessionOverMaxLifetime(req.session.user)) {
+  // A stream authenticated by a session ends with it, when the session reaches its maximum lifetime
+  if (!isPublicUser && await endStreamSessionOverMaxLifetime(context, req)) {
     return { error: 'the session of the user reached its maximum lifetime' };
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);

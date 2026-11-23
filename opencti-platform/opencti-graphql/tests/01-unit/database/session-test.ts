@@ -252,6 +252,23 @@ describe('session: maximum lifetime', () => {
     }
   });
 
+  it('should refuse a maximum lifetime that the configuration parses into something else than a number', async () => {
+    // Converted to a number, true would be 1 ms and false or [] no limit
+    for (const invalidValue of ['true', 'false', '[]', '{}']) {
+      process.env.APP__SESSION_MAX_LIFETIME = invalidValue;
+      const { getSessionMaxLifetime } = await loadSessionModule();
+      expect(() => getSessionMaxLifetime(), invalidValue).toThrowError(/Invalid app:session_max_lifetime/);
+    }
+  });
+
+  it('should have no maximum lifetime when the configured value is empty', async () => {
+    for (const emptyValue of ['', 'null']) {
+      process.env.APP__SESSION_MAX_LIFETIME = emptyValue;
+      const { getSessionMaxLifetime } = await loadSessionModule();
+      expect(getSessionMaxLifetime(), emptyValue).toEqual(0);
+    }
+  });
+
   it('should accept the highest maximum lifetime the platform settings can expose', async () => {
     process.env.APP__SESSION_MAX_LIFETIME = '2147483647';
     const { getSessionMaxLifetime } = await loadSessionModule();
