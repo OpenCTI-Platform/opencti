@@ -9,6 +9,9 @@ import EntityStixSightingRelationships from '../../events/stix_sighting_relation
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const COUNTRY_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'located-at'];
+
 const countryKnowledgeFragment = graphql`
   fragment CountryKnowledge_country on Country {
     id
@@ -268,7 +271,7 @@ const CountryKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={country.id}
-              relationshipTypes={['related-to', 'located-at']}
+              relationshipTypes={COUNTRY_OBSERVABLES_RELATIONSHIP_TYPES}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}

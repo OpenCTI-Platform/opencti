@@ -7,13 +7,13 @@ import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import City from './City';
-import CityKnowledge from './CityKnowledge';
+import CityKnowledge, { CITY_OBSERVABLES_RELATIONSHIP_TYPES } from './CityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootCityQuery } from './__generated__/RootCityQuery.graphql';
@@ -45,7 +45,7 @@ const subscription = graphql`
 `;
 
 const cityQuery = graphql`
-  query RootCityQuery($id: String!) {
+  query RootCityQuery($id: String!, $observablesFilters: FilterGroup) {
     city(id: $id) {
       id
       entity_type
@@ -58,7 +58,7 @@ const cityQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...City_city
       ...CityKnowledge_city
       ...FileImportViewer_entity
@@ -124,6 +124,7 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
                     'observables',
                   ]}
                   data={city}
+                  observablesRelationshipTypes={CITY_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -209,7 +210,7 @@ const RootCityComponent = ({ queryRef, cityId }: RootCityComponentProps) => {
 
 const RootCity = () => {
   const { cityId } = useParams() as { cityId: string };
-  const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId });
+  const queryRef = useQueryLoading<RootCityQuery>(cityQuery, { id: cityId, observablesFilters: buildObservablesKnowledgeBarFilters(CITY_OBSERVABLES_RELATIONSHIP_TYPES) });
   return (
     <>
       {queryRef && (

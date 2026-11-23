@@ -9,6 +9,9 @@ import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreR
 import StixSightingRelationship from '../../events/stix_sighting_relationships/StixSightingRelationship';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const POSITION_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'located-at'];
+
 const positionKnowledgeFragment = graphql`
   fragment PositionKnowledge_position on Position {
     id
@@ -281,7 +284,7 @@ const PositionKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={position.id}
-              relationshipTypes={['related-to', 'located-at']}
+              relationshipTypes={POSITION_OBSERVABLES_RELATIONSHIP_TYPES}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}

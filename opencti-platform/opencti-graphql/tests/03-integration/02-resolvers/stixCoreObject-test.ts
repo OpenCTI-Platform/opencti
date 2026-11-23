@@ -76,6 +76,26 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     expect(distribution.length).toEqual(6);
   });
 
+  it('should scope a given regardingOf filter to the entity', async () => {
+    // Keys come as arrays from the API: the entity id must still be injected in the regardingOf filter,
+    // otherwise every object having a "uses" relationship with anything would be counted
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    expect(malware).toBeDefined();
+    const distribution = await stixCoreObjectsDistributionByEntity(testContext, ADMIN_USER, {
+      objectId: malware!.internal_id,
+      field: 'entity_type',
+      operation: 'count',
+      filters: {
+        mode: 'and',
+        filters: [{ key: ['regardingOf'], values: [{ key: 'relationship_type', values: ['uses'] }] }],
+        filterGroups: [],
+      },
+    });
+    const aggregationMap = new Map(distribution.map((i: { label: string; value: number }) => [i.label, i.value]));
+    // Paradise Ransomware uses 2 attack patterns and is used by 1 intrusion set
+    expect(aggregationMap).toEqual(new Map([['Attack-Pattern', 2], ['Intrusion-Set', 1]]));
+  });
+
   it('should support limit option', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware).toBeDefined();

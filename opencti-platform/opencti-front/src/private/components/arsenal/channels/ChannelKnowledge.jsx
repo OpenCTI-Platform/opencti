@@ -11,6 +11,9 @@ import StixSightingRelationship from '../../events/stix_sighting_relationships/S
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import EntityStixCoreRelationshipsStixCyberObservable from '../../common/stix_core_relationships/views/stix_cyber_observable/EntityStixCoreRelationshipsStixCyberObservable';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'publishes', 'uses', 'belongs-to'];
+
 const channelKnowledgeFragment = graphql`
   fragment ChannelKnowledge_channel on Channel {
     id
@@ -231,12 +234,7 @@ const ChannelKnowledgeComponent = ({
               defaultStartTime={channel.first_seen}
               defaultStopTime={channel.last_seen}
               isRelationReversed={true}
-              relationshipTypes={[
-                'related-to',
-                'publishes',
-                'uses',
-                'belongs-to',
-              ]}
+              relationshipTypes={CHANNEL_OBSERVABLES_RELATIONSHIP_TYPES}
             />
           )}
         />

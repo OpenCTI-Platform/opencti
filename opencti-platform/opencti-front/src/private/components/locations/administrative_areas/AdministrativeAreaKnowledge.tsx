@@ -8,6 +8,9 @@ import { AdministrativeAreaKnowledge_administrativeArea$key } from './__generate
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const ADMINISTRATIVE_AREA_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'located-at'];
+
 const administrativeAreaKnowledgeFragment = graphql`
   fragment AdministrativeAreaKnowledge_administrativeArea on AdministrativeArea {
     id
@@ -267,7 +270,7 @@ const AdministrativeAreaKnowledge = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={administrativeArea.id}
-              relationshipTypes={['related-to', 'located-at']}
+              relationshipTypes={ADMINISTRATIVE_AREA_OBSERVABLES_RELATIONSHIP_TYPES}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}
