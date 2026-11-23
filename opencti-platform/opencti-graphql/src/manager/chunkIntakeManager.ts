@@ -66,7 +66,7 @@ import { rehydrateFiles, removeStagedFiles, stageFiles } from '../intake/intake-
 import { intakeEnvelopeOfMessage, type IntakeEnvelope } from '../intake/intake-envelope';
 import { reportWorkProgress } from '../domain/work';
 import { chunkWorkProgress, type ChunkWorkFields } from './chunkIntakeWork';
-import { getDenormBuffer, isTransitoryError } from '../database/engine';
+import { getDenormBuffer, initDenormBuffer, isTransitoryError } from '../database/engine';
 import { wait } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 
@@ -937,6 +937,13 @@ const consumeWorkerlessIntake = async (): Promise<ChunkConsumer> => {
     : listQueuesOnce;
   // The operations are released against the sequencer's queue: R* = factor x max batch
   const setPoint = Math.max(1, Math.round(PUSH_READY_DEPTH_FACTOR * SEQUENCER_CONFIG.maxBatchSize));
+  // task 0040 no-op tag: a set point of tagged intents is ratio x the set point raw, it must fit the queue or the
+  // release outruns what the queue admits
+  const maxTagRatio = Math.max(1, Math.floor(SEQUENCER_CONFIG.queueMaxIntents / setPoint));
+  if (SEQUENCER_CONFIG.noopTagCaps && SEQUENCER_CONFIG.noopTagCeilingRatio > maxTagRatio) {
+    logApp.warn('[OPENCTI-MODULE] Worker-less intake: noop_tag_ceiling_ratio lowered to fit queue_max_intents', { ratio: SEQUENCER_CONFIG.noopTagCeilingRatio, lowered: maxTagRatio });
+    SEQUENCER_CONFIG.noopTagCeilingRatio = maxTagRatio;
+  }
   const scheduler = createReleaseScheduler({ queueDepth: sequencerQueueDepth, setPoint: () => setPoint, quantum: PUSH_RELEASE_QUANTUM });
   workerlessScheduler = scheduler;
   const unsubscribe = onSequencerQueueTaken(scheduler.notify);
@@ -1135,8 +1142,6 @@ const chunkIntakeInitializer = async () => {
   // (2026-09-24). Consume only once the loop is ready.
   if (isSequencerEnabled()) {
     await startSequencerLoop();
-    // task 0040 append buffer: flushes while this node holds its lease (null when the knob is off)
-    getDenormBuffer()?.start();
   }
   let consumer: ChunkConsumer;
   if (CHUNK_INTAKE_SOURCE === 'push_queues') {
@@ -1149,6 +1154,9 @@ const chunkIntakeInitializer = async () => {
       });
     });
   }
+  // task 0040 append buffer: this node buffers (knob on) and flushes while it holds the lease; started once the
+  // consumer is up, so that a failed start leaves no timer behind; it drains what is left with the knob off too
+  if (isSequencerEnabled()) initDenormBuffer().start();
   logApp.info('[OPENCTI-MODULE] Chunk intake manager consuming', {
     source: CHUNK_INTAKE_SOURCE,
     queue: consumer.queue,

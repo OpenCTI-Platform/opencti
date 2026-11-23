@@ -204,7 +204,7 @@ import { isEsScriptFilterEnabled } from './engine-config';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { getCurrentWriteBuffer, type SequencerWriteBuffer } from './sequencer/sequencer-write-buffer';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
-import { createDenormBuffer, type DenormBuffer, type DenormTarget } from './sequencer/denorm-buffer';
+import { createDenormBuffer, type DenormBuffer, type DenormLocker, type DenormTarget } from './sequencer/denorm-buffer';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { redisDenormBufferStore } from './redis';
 import { AbortError } from 'node-fetch';
@@ -5069,10 +5069,14 @@ export const buildDenormalizedRefsScriptParams = (targetsElements: DenormalizedR
   };
 };
 // task 0040 append buffer (sequencer/denorm-buffer.ts): the impacts of elIndexElements whose relationship type and
-// side are buffered are collected here instead of being written, as one target per document
+// side are buffered are collected here instead of being written, as one target per document, and landed (buffered,
+// or written directly) once the relationship documents are indexed, before the other side-writes: a failure of
+// those must not lose them, the retry of the batch finds the relationships existing
 export interface DenormSink {
   isBuffered: (relationshipType: string, side: string) => boolean;
   targets: DenormTarget[];
+  land: (targets: DenormTarget[]) => Promise<void>;
+  writtenDirectly?: boolean;
 }
 export const toDenormTarget = (entityId: string, entity: any, impacts: any[], updatedAt: string): DenormTarget => {
   const byGroup = R.groupBy((i: any) => `${i.relationshipType}|${i.refField}`, impacts) as Record<string, any[]>;
@@ -5088,15 +5092,16 @@ export const toDenormTarget = (entityId: string, entity: any, impacts: any[], up
     }),
   };
 };
-// The same script as the direct write ("to" side elements of the document's type); a replay moves every append to
-// the contains-guarded refs, since part of it may already have landed
+// The same script as the direct write ("to" side elements of the document's type), refreshed_at set to the time of
+// the write (a buffered time could move it back over a later direct write); a replay moves every append to the
+// contains-guarded refs, since part of it may already have landed
 export const denormTargetBulkLines = (target: DenormTarget, replay: boolean) => {
   const targetsElements = target.groups.map((group) => ({
     relation: group.relation,
     field: group.field,
     elements: group.ids.map((id) => ({ id, side: 'to', type: target.entityType })),
   }));
-  const params = buildDenormalizedRefsScriptParams(targetsElements, target.updatedAt);
+  const params = buildDenormalizedRefsScriptParams(targetsElements, now());
   const finalParams = replay ? { ...params, appended_refs: [], distinct_refs: [...params.distinct_refs, ...params.appended_refs] } : params;
   return [
     { update: { _index: target.index, _id: target.docId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -5115,12 +5120,31 @@ export const elWriteDenormTargets = async (context: AuthContext, targets: Denorm
   }
 };
 let denormBuffer: DenormBuffer | null = null;
-// The buffer of this node, null when the knob is off; every node has one so that its removals flush first
-export const getDenormBuffer = (): DenormBuffer | null => {
-  if (!SEQUENCER_CONFIG.denormBuffer) return null;
+let denormRelations = new Set<string>();
+// The documents a write of buffered appends holds, in a lock namespace of their own: batches lock external
+// references as nested ids, sharing those keys would make flushes and batches wait for each other
+const denormLocker: DenormLocker = async (ids, wait) => {
+  try {
+    return await lockResources(R.uniq(ids).map((id) => `denorm-flush:${id}`), wait ? {} : { retryCount: 0 });
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) return null;
+    throw err;
+  }
+};
+// Called by the intake manager of this node (user decision 2026-11-21: the buffer serves the worker-less intake
+// only; stock workers, the sequencer without the intake manager and the API write directly). Its flusher also
+// drains what is left in Redis when the knob is off; buffering itself follows the knob.
+// Only unidirectional refs: their appends are contains-guarded, a write played twice cannot double an id
+export const bufferableRelations = (configured: string[]) => configured.filter((relation) => isStixRefUnidirectionalRelationship(relation));
+export const initDenormBuffer = (): DenormBuffer => {
   if (!denormBuffer) {
+    const configured = SEQUENCER_CONFIG.denormBufferRelations;
+    const kept = bufferableRelations(configured);
+    const rejected = configured.filter((relation) => !kept.includes(relation));
+    if (rejected.length > 0) logApp.warn('[SEQUENCER] denorm buffer ignores these relationship types, not unidirectional refs', { rejected });
+    denormRelations = new Set(kept);
     const writer = (targets: DenormTarget[], replay: boolean) => elWriteDenormTargets(executionContext('denorm_buffer_flush', SYSTEM_USER), targets, replay, true);
-    denormBuffer = createDenormBuffer(redisDenormBufferStore, writer, {
+    denormBuffer = createDenormBuffer(redisDenormBufferStore, writer, denormLocker, {
       flushPeriodMs: SEQUENCER_CONFIG.denormFlushPeriodMs,
       targetMaxIds: SEQUENCER_CONFIG.denormFlushTargetMaxIds,
       maxIds: SEQUENCER_CONFIG.denormBufferMaxIds,
@@ -5129,14 +5153,29 @@ export const getDenormBuffer = (): DenormBuffer | null => {
   }
   return denormBuffer;
 };
-const denormSinkOf = (buffer: DenormBuffer | null): DenormSink | undefined => {
-  if (!buffer) return undefined;
-  const relations = new Set(SEQUENCER_CONFIG.denormBufferRelations);
-  return { isBuffered: (relationshipType, side) => side === ROLE_TO && relations.has(relationshipType), targets: [] };
+// The buffer of this node, null unless its intake manager initialized it
+export const getDenormBuffer = (): DenormBuffer | null => denormBuffer;
+const denormSinkOf = (context: AuthContext): DenormSink | undefined => {
+  const buffer = denormBuffer;
+  if (!buffer || !SEQUENCER_CONFIG.denormBuffer || denormRelations.size === 0) return undefined;
+  const land = async (targets: DenormTarget[]) => {
+    // Over the cap or on a Redis failure the appends are written now as before
+    const buffered = await buffer.add(targets).catch((err) => {
+      logApp.warn('[SEQUENCER] denorm buffer add failed, appends written directly', { cause: err });
+      return false;
+    });
+    if (!buffered) {
+      await elWriteDenormTargets(context, targets, false, false);
+      sink.writtenDirectly = true;
+    }
+  };
+  const sink: DenormSink = { isBuffered: (relationshipType, side) => side === ROLE_TO && denormRelations.has(relationshipType), targets: [], land };
+  return sink;
 };
-// Removals (relation delete, merge) on documents with pending appends: the appends land first
+// Removals (relation delete, merge) on documents with pending or in-flight appends: the appends land first. Only
+// where the buffer runs; a Redis or lock failure refuses the removal.
 const flushDenormFirst = async (ids: string[]) => {
-  const buffer = getDenormBuffer();
+  const buffer = denormBuffer;
   if (buffer && ids.length > 0) await buffer.flushFirst(R.uniq(ids));
 };
 // Bulk index body of a document: the document without its _index, in one for...in copy as R.dissoc did
@@ -5239,6 +5278,7 @@ export const elIndexElements = async (
       const params = buildDenormalizedRefsScriptParams(targetsElements, now());
       return [{ ...entity, id: entityId, data: { script: { source: EL_DENORMALIZED_REFS_SCRIPT_SOURCE, params } } }];
     });
+    if (denormSink && denormSink.targets.length > 0) await denormSink.land(denormSink.targets);
     // bulk update elements (denormalized relations)
     if (elementsToUpdate.length > 0) {
       const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
@@ -5299,23 +5339,14 @@ export const elFlushSequencerWrites = async (context: AuthContext, user: AuthUse
       if (perCallSum > wholeCount) {
         sequencerMetrics.sidewriteGrouped(perCallSum - wholeCount);
       }
-      const denormBuffer = getDenormBuffer();
-      const denormSink = denormSinkOf(denormBuffer);
-      await elIndexElements(context, user, 'sequencer-flush', allElements, { refresh: false, denormSink });
-      sequencerMetrics.esOp('bulk_docs');
-      // task 0040 append buffer: after the relationship documents, before the ack. Over the cap or on a Redis
-      // failure the appends are written now as before: a rejected batch would not replay them (its retry finds
-      // the relationships existing)
-      if (denormBuffer && denormSink && denormSink.targets.length > 0) {
-        const buffered = await denormBuffer.add(denormSink.targets).catch((err) => {
-          logApp.error('[SEQUENCER] denorm buffer add failed, appends written directly', { cause: err });
-          return false;
-        });
-        if (!buffered) {
-          denormSink.targets.forEach((target) => touched.add(target.index));
-          await elWriteDenormTargets(context, denormSink.targets, false, false);
-        }
+      const denormSink = denormSinkOf(context);
+      try {
+        await elIndexElements(context, user, 'sequencer-flush', allElements, { refresh: false, denormSink });
+      } finally {
+        // task 0040 append buffer: appends written directly (fallback) touch their indices, failure or not
+        if (denormSink?.writtenDirectly) denormSink.targets.forEach((target) => touched.add(target.index));
       }
+      sequencerMetrics.esOp('bulk_docs');
     }
     if (buffer.updateOps.length > 0) {
       buffer.updateOps.forEach((op) => touched.add(op.index));

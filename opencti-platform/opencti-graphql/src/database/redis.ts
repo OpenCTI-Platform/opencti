@@ -669,8 +669,13 @@ export const redisQueueLeaseStore = {
   },
 };
 
-// task 0040 append buffer (sequencer/denorm-buffer.ts), in the {dn} slot. The scripts build their keys from the
-// namespace of KEYS[1] ('{dn}:total' once prefixed by ioredis), all in the same slot.
+// task 0040 append buffer (sequencer/denorm-buffer.ts). Every key carries the {dn} hash tag, so the scripts stay in
+// one cluster slot; they build their keys from the namespace of KEYS[1] ('{dn}:total' once prefixed by ioredis)
+// rather than declaring each one (the document and flush keys are only known inside the script).
+// {dn}:total counts the buffered ids, in flight included, until done or moved aside; {dn}:pending scores each
+// document by its first pending append; {dn}:inflight scores each flush by its take; {dn}:infl:<doc> holds the
+// flushes a document is in; {dn}:attempts counts the failed writes per flush; {dn}:dead keeps the flushes moved
+// aside, with their keys.
 const DN_TOTAL_KEY = '{dn}:total';
 const DN_PENDING_KEY = '{dn}:pending';
 const DN_INFLIGHT_KEY = '{dn}:inflight';
@@ -711,7 +716,6 @@ return 1
 const DN_TAKE_SCRIPT = `${DN_PREFIX}
 local f = ARGV[1]
 local out = {}
-local taken = 0
 for i = 3, #ARGV do
   local t = ARGV[i]
   redis.call('zrem', KEYS[2], t)
@@ -724,7 +728,6 @@ for i = 3, #ARGV do
       local key = P .. '{dn}:add:' .. t .. ':' .. name
       if redis.call('exists', key) == 1 then
         local ids = redis.call('smembers', key)
-        taken = taken + #ids
         redis.call('rename', key, P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name)
         table.insert(groups, { name, ids })
       end
@@ -732,41 +735,84 @@ for i = 3, #ARGV do
     redis.call('rename', groupsKey, P .. '{dn}:flgroups:' .. f .. ':' .. t)
     redis.call('rename', metaKey, P .. '{dn}:flmeta:' .. f .. ':' .. t)
     redis.call('sadd', P .. '{dn}:fl:' .. f, t)
+    redis.call('sadd', P .. '{dn}:infl:' .. t, f)
     table.insert(out, { t, meta, groups })
   end
 end
 if #out > 0 then redis.call('zadd', KEYS[3], ARGV[2], f) end
-redis.call('decrby', KEYS[1], taken)
 return out
+`;
+// Removes a flush from the buffer: its ids leave the total, its documents lose their in-flight mark; keep = 1 keeps
+// its keys (moved aside)
+const DN_RELEASE_FLIGHT = `
+local function releaseFlight(P, f, keep)
+  local flushKey = P .. '{dn}:fl:' .. f
+  local count = 0
+  for _, t in ipairs(redis.call('smembers', flushKey)) do
+    local groupsKey = P .. '{dn}:flgroups:' .. f .. ':' .. t
+    for _, name in ipairs(redis.call('smembers', groupsKey)) do
+      local key = P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name
+      count = count + redis.call('scard', key)
+      if keep == 0 then redis.call('del', key) end
+    end
+    if keep == 0 then redis.call('del', groupsKey, P .. '{dn}:flmeta:' .. f .. ':' .. t) end
+    redis.call('srem', P .. '{dn}:infl:' .. t, f)
+  end
+  if keep == 0 then redis.call('del', flushKey) end
+  redis.call('hdel', P .. '{dn}:attempts', f)
+  redis.call('zrem', P .. '{dn}:inflight', f)
+  redis.call('decrby', P .. '{dn}:total', count)
+end
 `;
 // KEYS: total, inflight; ARGV: flush id
 const DN_DONE_SCRIPT = `${DN_PREFIX}
-local f = ARGV[1]
-local flushKey = P .. '{dn}:fl:' .. f
-for _, t in ipairs(redis.call('smembers', flushKey)) do
-  local groupsKey = P .. '{dn}:flgroups:' .. f .. ':' .. t
-  for _, name in ipairs(redis.call('smembers', groupsKey)) do
-    redis.call('del', P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name)
-  end
-  redis.call('del', groupsKey, P .. '{dn}:flmeta:' .. f .. ':' .. t)
-end
-redis.call('del', flushKey)
-redis.call('zrem', KEYS[2], f)
+${DN_RELEASE_FLIGHT}
+if redis.call('zscore', KEYS[2], ARGV[1]) then releaseFlight(P, ARGV[1], 0) end
 return 1
 `;
-// KEYS: total, inflight; ARGV: taken before ms. The in-flight flushes with their appends.
+// KEYS: total, inflight; ARGV: flush id, max attempts, now ms. 1 = moved aside.
+const DN_FAILED_SCRIPT = `${DN_PREFIX}
+${DN_RELEASE_FLIGHT}
+if not redis.call('zscore', KEYS[2], ARGV[1]) then return 0 end
+local attempts = redis.call('hincrby', P .. '{dn}:attempts', ARGV[1], 1)
+if attempts < tonumber(ARGV[2]) then return 0 end
+releaseFlight(P, ARGV[1], 1)
+redis.call('zadd', P .. '{dn}:dead', ARGV[3], ARGV[1])
+return 1
+`;
+// KEYS: total, inflight; ARGV: limit. The oldest in-flight flushes with their documents.
 const DN_INFLIGHT_SCRIPT = `${DN_PREFIX}
 local out = {}
-for _, f in ipairs(redis.call('zrangebyscore', KEYS[2], '-inf', ARGV[1])) do
-  local targets = {}
-  for _, t in ipairs(redis.call('smembers', P .. '{dn}:fl:' .. f)) do
-    local groups = {}
-    for _, name in ipairs(redis.call('smembers', P .. '{dn}:flgroups:' .. f .. ':' .. t)) do
-      table.insert(groups, { name, redis.call('smembers', P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name) })
-    end
-    table.insert(targets, { t, redis.call('hgetall', P .. '{dn}:flmeta:' .. f .. ':' .. t), groups })
+for _, f in ipairs(redis.call('zrange', KEYS[2], 0, tonumber(ARGV[1]) - 1)) do
+  table.insert(out, { f, redis.call('smembers', P .. '{dn}:fl:' .. f) })
+end
+return out
+`;
+// KEYS: total, inflight; ARGV: flush id. Its appends, or false once done or moved aside.
+const DN_FLIGHT_SCRIPT = `${DN_PREFIX}
+local f = ARGV[1]
+if not redis.call('zscore', KEYS[2], f) then return false end
+local targets = {}
+for _, t in ipairs(redis.call('smembers', P .. '{dn}:fl:' .. f)) do
+  local groups = {}
+  for _, name in ipairs(redis.call('smembers', P .. '{dn}:flgroups:' .. f .. ':' .. t)) do
+    table.insert(groups, { name, redis.call('smembers', P .. '{dn}:fladd:' .. f .. ':' .. t .. ':' .. name) })
   end
-  table.insert(out, { f, targets })
+  table.insert(targets, { t, redis.call('hgetall', P .. '{dn}:flmeta:' .. f .. ':' .. t), groups })
+end
+return targets
+`;
+// KEYS: total; ARGV: document ids. The in-flight flushes holding one of them.
+const DN_INFLIGHT_OF_SCRIPT = `${DN_PREFIX}
+local seen = {}
+local out = {}
+for i = 1, #ARGV do
+  for _, f in ipairs(redis.call('smembers', P .. '{dn}:infl:' .. ARGV[i])) do
+    if not seen[f] then
+      seen[f] = true
+      table.insert(out, f)
+    end
+  end
 end
 return out
 `;
@@ -818,9 +864,20 @@ export const redisDenormBufferStore: DenormBufferStore = {
   done: async (flushId) => {
     await getClientBase().eval(DN_DONE_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, flushId);
   },
-  inflight: async (beforeMs) => {
-    const raw = await getClientBase().eval(DN_INFLIGHT_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, String(beforeMs)) as Array<[string, DnRawTarget[]]>;
-    return raw.map(([flushId, targets]) => ({ flushId, targets: targets.map(parseDenormTarget) }));
+  inflight: async (limit) => {
+    const raw = await getClientBase().eval(DN_INFLIGHT_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, String(limit)) as Array<[string, string[]]>;
+    return raw.map(([flushId, docIds]) => ({ flushId, docIds }));
+  },
+  flight: async (flushId) => {
+    const raw = await getClientBase().eval(DN_FLIGHT_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, flushId) as DnRawTarget[] | null;
+    return raw === null ? null : raw.map(parseDenormTarget);
+  },
+  inflightOf: async (ids) => {
+    if (ids.length === 0) return [];
+    return await getClientBase().eval(DN_INFLIGHT_OF_SCRIPT, 1, DN_TOTAL_KEY, ...ids) as string[];
+  },
+  failed: async (flushId, maxAttempts, nowMs) => {
+    return (await getClientBase().eval(DN_FAILED_SCRIPT, 2, DN_TOTAL_KEY, DN_INFLIGHT_KEY, flushId, String(maxAttempts), String(nowMs))) === 1;
   },
   acquireLease: async (token, ttlMs) => {
     return (await getClientBase().eval(QUEUE_LEASE_RENEW_SCRIPT, 1, DN_LEASE_KEY, token, String(ttlMs))) === 1;

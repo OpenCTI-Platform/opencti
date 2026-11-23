@@ -1,5 +1,15 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { capWeight, fillWeighted, isLikelyNoop, NoopMemo, noopMemoKey, noopTokenOf, takeNoopMemoHits } from '../../../src/database/sequencer/sequencer-noop-memo';
+import {
+  capWeight,
+  drainQueue,
+  fillWeighted,
+  isLikelyNoop,
+  NoopMemo,
+  noopMemoKey,
+  noopTokenOf,
+  takeNoopMemoHits,
+  weightedQueueDepth,
+} from '../../../src/database/sequencer/sequencer-noop-memo';
 import type { NoopTarget, NoopToken } from '../../../src/database/sequencer/sequencer-noop-memo';
 import { SequencerQueue } from '../../../src/database/sequencer/sequencer-queue';
 import { buildIntent } from '../../../src/database/sequencer/sequencer-intent';
@@ -156,5 +166,42 @@ describe('sequencer queue weighted size: tagged intents weigh in the release set
     expect(queue.weightedSize(1)).toBe(41);
     queue.tryPop();
     expect(queue.weightedSize(1 / 20)).toBeCloseTo(2.95);
+  });
+});
+
+describe('sequencer cycle drain under the tag caps (sequencer-loop drainQueue, weightedQueueDepth)', () => {
+  const sized = (intent: SequencerIntent, sizeBytes: number) => Object.assign(intent, { sizeBytes });
+  const queueOf = (intents: SequencerIntent[]) => {
+    const items = [...intents];
+    return () => items.shift();
+  };
+  const tagWeight = (on: boolean) => (intent: SequencerIntent) => capWeight(intent, on);
+
+  it('should drain as before with the caps off: weight 1 each, up to max(max batch, batch + queue share)', () => {
+    const batch = [intentOf('lane1'), intentOf('lane2'), intentOf('lane3')];
+    const queued = Array.from({ length: 10 }, (_, n) => tagged(intentOf(`q${n}`)));
+    drainQueue(batch, queueOf(queued), { maxBatchSize: 4, queueShare: 2, ceiling: Infinity, maxBytes: Infinity, weightOf: tagWeight(false) });
+    expect(batch.length).toBe(5);
+  });
+
+  it('should give the queue its share even when the lanes and the parked set already reach the ceiling (B10)', () => {
+    // without the share the queued producers the parked intents wait for would never be reached
+    const batch = Array.from({ length: 6 }, (_, n) => intentOf(`lane${n}`));
+    const queued = Array.from({ length: 10 }, (_, n) => intentOf(`q${n}`));
+    drainQueue(batch, queueOf(queued), { maxBatchSize: 2, queueShare: 2, ceiling: 4, maxBytes: Infinity, weightOf: tagWeight(true) });
+    expect(batch.length).toBe(8);
+  });
+
+  it('should stop at the byte bound past the queue share under the caps (stale tags cannot make a giant batch)', () => {
+    const batch: SequencerIntent[] = [];
+    const queued = Array.from({ length: 10 }, (_, n) => sized(tagged(intentOf(`q${n}`)), 100));
+    drainQueue(batch, queueOf(queued), { maxBatchSize: 2, queueShare: 2, ceiling: 10, maxBytes: 300, weightOf: tagWeight(true) });
+    expect(batch.length).toBe(3);
+  });
+
+  it('should report the weighted depth to the release set point only under the caps', () => {
+    const queue = { size: () => 41, weightedSize: (w: number) => 1 + 40 * w };
+    expect(weightedQueueDepth(queue, true, 20)).toBeCloseTo(3);
+    expect(weightedQueueDepth(queue, false, 20)).toBe(41);
   });
 });

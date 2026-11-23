@@ -57,6 +57,7 @@ import { computeBatchLockKeys, computeOwnLockKeys, getCurrentBatchLock, setCurre
 import { mergedSourceKeys, newEndpointShares, preShareEndpoints, releaseEndpointShares, startEndpointShareRenewal } from './sequencer-endpoint-shares';
 import {
   capWeight,
+  drainQueue,
   fillWeighted,
   isLikelyNoop,
   isNoopOfServedBasis,
@@ -67,6 +68,7 @@ import {
   noopTokenOf,
   settleNoopRecords,
   takeNoopMemoHits,
+  weightedQueueDepth,
 } from './sequencer-noop-memo';
 import type { NoopDiagOutcome, NoopRecord, NoopTarget, NoopToken, NoopVersionsOf } from './sequencer-noop-memo';
 import type { CoalesceGroup } from './sequencer-batch-plan';
@@ -259,7 +261,8 @@ export const describeIntentLocation = (ids: string[]): IntentLocation => {
 const noopTagCapsOn = () => SEQUENCER_CONFIG.noopMemo && SEQUENCER_CONFIG.noopTagCaps;
 const noopTagWeight = (intent: SequencerIntent) => capWeight(intent, noopTagCapsOn());
 const noopTagCeiling = () => (noopTagCapsOn() ? SEQUENCER_CONFIG.noopTagCeilingRatio * SEQUENCER_CONFIG.maxBatchSize : Infinity);
-export const sequencerQueueDepth = () => (noopTagCapsOn() ? queue.weightedSize(1 / SEQUENCER_CONFIG.noopTagCeilingRatio) : queue.size());
+const noopTagMaxBytes = () => (noopTagCapsOn() ? SEQUENCER_CONFIG.maxBatchBytes : Infinity);
+export const sequencerQueueDepth = () => weightedQueueDepth(queue, noopTagCapsOn(), SEQUENCER_CONFIG.noopTagCeilingRatio);
 const queueTakenListeners = new Set<() => void>();
 export const onSequencerQueueTaken = (listener: () => void) => {
   queueTakenListeners.add(listener);
@@ -1014,13 +1017,16 @@ const runBatchLoop = async () => {
     // share of the cap every cycle (a batch may exceed the cap by that share): the queued
     // producers the waiters depend on are always reached
     // task 0040 no-op tag: the cap and the drain count weighted slots (a likely no-op takes none under
-    // noop_tag_caps), the cycle holds at most the ceiling
-    const batchWeight = batch.reduce((acc, intent) => acc + noopTagWeight(intent), 0);
-    const drainTarget = Math.max(SEQUENCER_CONFIG.maxBatchSize, batchWeight + laneAdmitCap);
+    // noop_tag_caps), the cycle holds at most the ceiling and the batch bytes, the queue share aside
     // queue wait is recorded on FIRST entry into a batch only (deferred and parked
     // re-entries would recount and dominate the histogram)
-    fillWeighted(batch, () => queue.tryPop(), drainTarget, noopTagCeiling(), noopTagWeight, (next) => {
-      sequencerMetrics.queueWait((Date.now() - next.arrivedAt) / 1000);
+    drainQueue(batch, () => queue.tryPop(), {
+      maxBatchSize: SEQUENCER_CONFIG.maxBatchSize,
+      queueShare: laneAdmitCap,
+      ceiling: noopTagCeiling(),
+      maxBytes: noopTagMaxBytes(),
+      weightOf: noopTagWeight,
+      onTaken: (next) => sequencerMetrics.queueWait((Date.now() - next.arrivedAt) / 1000),
     });
     if (batch.length === 0) continue;
     sequencerMetrics.queueDepth(queue.size());
@@ -1547,7 +1553,7 @@ const runBatchLoop = async () => {
           const grabbed: SequencerIntent[] = [];
           fillWeighted(grabbed, () => queue.tryPop(), SEQUENCER_CONFIG.maxBatchSize, noopTagCeiling(), noopTagWeight, (next) => {
             sequencerMetrics.queueWait((Date.now() - next.arrivedAt) / 1000);
-          });
+          }, { maxBytes: noopTagMaxBytes(), share: 0 });
           if (grabbed.length > 0) {
             try {
               await warmResolveAhead(grabbed);

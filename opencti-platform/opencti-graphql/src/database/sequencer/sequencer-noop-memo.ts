@@ -172,7 +172,8 @@ export const isLikelyNoop = (intent: SequencerIntent, memo: NoopMemo, keyedTypes
 export const capWeight = (intent: SequencerIntent, tagCaps: boolean): number => (tagCaps && intent.likelyNoop ? 0 : 1);
 
 // Takes from `next` into `batch` while the batch weighs less than `target` and holds less than `ceiling` intents
-// (what the batch already holds counts against both); onTaken sees each intent taken
+// (what the batch already holds counts against both), and, past the first `share` intents taken, while what was
+// taken is under `maxBytes`; onTaken sees each intent taken
 export const fillWeighted = (
   batch: SequencerIntent[],
   next: () => SequencerIntent | undefined,
@@ -180,16 +181,44 @@ export const fillWeighted = (
   ceiling: number,
   weightOf: (intent: SequencerIntent) => number,
   onTaken?: (intent: SequencerIntent) => void,
+  bytes: { maxBytes: number; share: number } = { maxBytes: Infinity, share: 0 },
 ): void => {
   let weight = batch.reduce((acc, intent) => acc + weightOf(intent), 0);
-  while (weight < target && batch.length < ceiling) {
+  let taken = 0;
+  let takenBytes = 0;
+  while (weight < target && batch.length < ceiling && (taken < bytes.share || takenBytes < bytes.maxBytes)) {
     const intent = next();
     if (!intent) break;
     onTaken?.(intent);
     batch.push(intent);
     weight += weightOf(intent);
+    taken += 1;
+    takenBytes += intent.sizeBytes ?? 0;
   }
 };
+
+export interface DrainOptions {
+  maxBatchSize: number;
+  queueShare: number; // B10: what the queue gets every cycle, whatever the lanes and the parked set assembled
+  ceiling: number; // intents a cycle holds at most (Infinity without the tag caps)
+  maxBytes: number; // bytes the drain takes past the queue share (Infinity without the tag caps)
+  weightOf: (intent: SequencerIntent) => number;
+  onTaken?: (intent: SequencerIntent) => void;
+}
+// task 0040 no-op tag: the drain of one cycle counts weighted slots up to max(maxBatchSize, batch weight + queue
+// share); the ceiling and the byte bound never take the queue share away (B10: the queued producers the waiters
+// depend on are always reached)
+export const drainQueue = (batch: SequencerIntent[], next: () => SequencerIntent | undefined, options: DrainOptions): void => {
+  const batchWeight = batch.reduce((acc, intent) => acc + options.weightOf(intent), 0);
+  const target = Math.max(options.maxBatchSize, batchWeight + options.queueShare);
+  const ceiling = Math.max(options.ceiling, batch.length + options.queueShare);
+  fillWeighted(batch, next, target, ceiling, options.weightOf, options.onTaken, { maxBytes: options.maxBytes, share: options.queueShare });
+};
+
+// task 0040 no-op tag: the depth the release set point reads, a tagged intent counting 1 / ratio under the tag caps
+export const weightedQueueDepth = (queue: { size: () => number; weightedSize: (taggedWeight: number) => number }, tagCaps: boolean, ratio: number): number => (
+  tagCaps ? queue.weightedSize(1 / ratio) : queue.size()
+);
 
 const distinctTargets = (entries: NoopMemoEntry[]): NoopTarget[] => {
   const targets = new Map<string, NoopTarget>();

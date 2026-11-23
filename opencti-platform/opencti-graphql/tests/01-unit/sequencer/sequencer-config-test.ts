@@ -24,7 +24,11 @@ describe('sequencer configuration defaults', () => {
     expect(SEQUENCER_CONFIG.deferredWaitMaxExpiries).toBe(3);
     expect(SEQUENCER_CONFIG.deferredReadmitRatio).toBe(0.5);
   });
-  it('should keep the append buffer off by default, on external references, flushed every 10 s (task 0040)', () => {
+  it('should keep the no-op tag caps off by default, ratio 5 (task 0040)', () => {
+    expect(SEQUENCER_CONFIG.noopTagCaps).toBe(false);
+    expect(SEQUENCER_CONFIG.noopTagCeilingRatio).toBe(5);
+  });
+  it('should keep the append buffer on by default, on external references, flushed every 15 s (task 0040)', () => {
     expect(SEQUENCER_CONFIG.denormBuffer).toBe(true);
     expect(SEQUENCER_CONFIG.denormBufferRelations).toEqual(['external-reference']);
     expect(SEQUENCER_CONFIG.denormFlushPeriodMs).toBe(15000);
