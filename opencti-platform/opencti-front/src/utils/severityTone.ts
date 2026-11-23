@@ -58,16 +58,16 @@ export const scoreTone = (score: number): ChipSeverity => {
 };
 
 /**
- * CVSS base score (0-10): the bands ItemCvssScore always drew. Above 9 it keeps its
- * own black chip (no tone carries it), so `undefined` there.
+ * CVSS base score (0-10): the bands ItemCvssScore always drew. Every score above 7
+ * up to 10 takes the critical tone, so the most severe band follows the shared tones
+ * like every other XTM module.
  */
-export const cvssTone = (cvssScore: number): ChipSeverity | undefined => {
+export const cvssTone = (cvssScore: number): ChipSeverity => {
   if (cvssScore === 0) return 'neutral';
   if (cvssScore <= 3) return 'low';
   if (cvssScore <= 5) return 'info';
   if (cvssScore <= 7) return 'high';
-  if (cvssScore <= 9) return 'critical';
-  if (cvssScore <= 10) return undefined;
+  if (cvssScore <= 10) return 'critical';
   return 'neutral';
 };
 

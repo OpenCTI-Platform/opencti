@@ -1,5 +1,3 @@
-import { useTheme } from '@mui/material/styles';
-import type { Theme } from './Theme';
 import Tag from './common/tag/Tag';
 import { EMPTY_VALUE } from '../utils/String';
 import { isEmptyField } from '../utils/utils';
@@ -10,17 +8,9 @@ type ItemCvssScoreProps = {
 };
 
 const ItemCvssScore = ({ score }: ItemCvssScoreProps) => {
-  const theme = useTheme<Theme>();
-
   if (isEmptyField(score)) return EMPTY_VALUE;
 
-  const tone = cvssTone(score);
-  return (
-    <Tag
-      label={`${score}`}
-      {...(tone ? { severity: tone } : { color: theme.palette.common.black })}
-    />
-  );
+  return <Tag label={`${score}`} severity={cvssTone(score)} />;
 };
 
 export default ItemCvssScore;
