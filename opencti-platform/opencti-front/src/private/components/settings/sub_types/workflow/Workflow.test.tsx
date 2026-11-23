@@ -257,10 +257,10 @@ vi.mock('./RequestAccessValidatorGroup', () => ({
   default: () => <div data-testid="validator-group-field" />,
 }));
 
-vi.mock('./RequestAccessMigrationDialog', () => ({
-  default: ({ open, onClose, onMigrated }: { open: boolean; onClose: () => void; onMigrated: () => void }) => (
+vi.mock('./WorkflowMigrationDialog', () => ({
+  default: ({ scope, open, onClose, onMigrated }: { scope: string; open: boolean; onClose: () => void; onMigrated: () => void }) => (
     open ? (
-      <div data-testid="request-access-migration-dialog">
+      <div data-testid="workflow-migration-dialog" data-scope={scope}>
         <button onClick={onMigrated}>migrated</button>
         <button onClick={onClose}>close migration</button>
       </div>
@@ -1239,10 +1239,10 @@ describe('Workflow Component', () => {
         const user = userEvent.setup();
         renderRfi({ scope: 'REQUEST_ACCESS' });
 
-        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('workflow-migration-dialog')).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
 
-        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+        expect(screen.getByTestId('workflow-migration-dialog')).toBeInTheDocument();
       });
 
       it('shows the new workflow once the migration is done', async () => {
@@ -1262,14 +1262,25 @@ describe('Workflow Component', () => {
         await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
         await user.click(screen.getByText('close migration'));
 
-        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('workflow-migration-dialog')).not.toBeInTheDocument();
         expect(mockOnRefetch).not.toHaveBeenCalled();
       });
 
-      it('does not offer the migration on the Global scope', () => {
+      it('offers to migrate the statuses of the entity type on the Global scope', async () => {
+        const user = userEvent.setup();
         renderRfi({ scope: 'GLOBAL' });
 
         expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Migrate statuses' }));
+
+        expect(screen.getByTestId('workflow-migration-dialog')).toHaveAttribute('data-scope', 'GLOBAL');
+      });
+
+      it('does not offer the migration once the Global workflow has been published', () => {
+        mockLoadedDefinition = { ...mockWorkflowDefinition, hasPublishedVersion: true };
+        renderRfi({ scope: 'GLOBAL' });
+
+        expect(screen.queryByRole('button', { name: 'Migrate statuses' })).not.toBeInTheDocument();
       });
 
       it('still offers the migration over a request access workflow never published', async () => {
@@ -1279,7 +1290,7 @@ describe('Workflow Component', () => {
 
         await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
 
-        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+        expect(screen.getByTestId('workflow-migration-dialog')).toBeInTheDocument();
       });
 
       it('offers the migration next to a draft that already has statuses', () => {

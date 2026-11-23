@@ -31,7 +31,7 @@ import RestoreConfirmDialog from './RestoreConfirmDialog';
 import WorkflowScopeSwitch from './WorkflowScopeSwitch';
 import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
 import EntityStatusSyncSetting from '../global_workflow_request_access/EntityStatusSyncSetting';
-import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
+import WorkflowMigrationDialog from './WorkflowMigrationDialog';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { MESSAGING$ } from '../../../../../relay/environment';
@@ -446,8 +446,9 @@ const Workflow = ({
   const [open, setOpen] = useState<boolean>(false);
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [migrationOpen, setMigrationOpen] = useState(false);
-  // The migration builds the request access workflow until one is published: it may replace a draft, never a published one.
-  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinitionStatus.hasPublishedVersion;
+  // The migration builds the workflow of the scope from its legacy statuses until one is published: it may replace a draft, never a published one.
+  const canMigrate = !workflowDefinitionStatus.hasPublishedVersion;
+  const migrateLabel = scope === 'REQUEST_ACCESS' ? t_i18n('Migrate request access statuses') : t_i18n('Migrate statuses');
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -563,9 +564,9 @@ const Workflow = ({
                 >
                   {t_i18n('Add Status')}
                 </Button>
-                {canMigrateRequestAccess && (
+                {canMigrate && (
                   <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
-                    {t_i18n('Migrate request access statuses')}
+                    {migrateLabel}
                   </Button>
                 )}
               </Panel>
@@ -603,9 +604,9 @@ const Workflow = ({
                 >
                   {t_i18n('Restore published version')}
                 </Button>
-                {canMigrateRequestAccess && (
+                {canMigrate && (
                   <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
-                    {t_i18n('Migrate request access statuses')}
+                    {migrateLabel}
                   </Button>
                 )}
               </Panel>
@@ -632,8 +633,10 @@ const Workflow = ({
           handleRestore();
         }}
       />
-      {canMigrateRequestAccess && (
-        <RequestAccessMigrationDialog
+      {canMigrate && (
+        <WorkflowMigrationDialog
+          entityType={entityType}
+          scope={scope}
           open={migrationOpen}
           onClose={() => setMigrationOpen(false)}
           onMigrated={onRefetch}

@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createTheme, ThemeOptions, ThemeProvider } from '@mui/material/styles';
 import ThemeDark from '../../../../../components/ThemeDark';
-import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
+import WorkflowMigrationDialog from './WorkflowMigrationDialog';
 
 const testTheme = createTheme(ThemeDark() as ThemeOptions);
 
@@ -85,15 +85,15 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
 const onClose = vi.fn();
 const onMigrated = vi.fn();
 
-const renderDialog = () => render(
+const renderDialog = (scope: 'GLOBAL' | 'REQUEST_ACCESS' = 'REQUEST_ACCESS', entityType = 'Case-Rfi') => render(
   <ThemeProvider theme={testTheme}>
-    <RequestAccessMigrationDialog open onClose={onClose} onMigrated={onMigrated} />
+    <WorkflowMigrationDialog entityType={entityType} scope={scope} open onClose={onClose} onMigrated={onMigrated} />
   </ThemeProvider>,
 );
 
-const confirmButton = () => screen.getByTestId('request-access-migration-confirm-button');
+const confirmButton = () => screen.getByTestId('workflow-migration-confirm-button');
 
-describe('RequestAccessMigrationDialog', () => {
+describe('WorkflowMigrationDialog', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockPreview = diagnosticsOf([]);
@@ -108,15 +108,15 @@ describe('RequestAccessMigrationDialog', () => {
 
     expect(mockQuery.mock.calls[0][1]).toEqual({ entityType: 'Case-Rfi' });
 
-    const states = within(screen.getByTestId('request-access-migration-states'));
+    const states = within(screen.getByTestId('workflow-migration-states'));
     const names = states.getAllByRole('listitem').map((item) => item.textContent);
     expect(names).toEqual(['Incoming', 'ValidatedApproved', 'RefusedDeclined']);
 
-    const transitions = screen.getByTestId('request-access-migration-transitions');
+    const transitions = screen.getByTestId('workflow-migration-transitions');
     expect(transitions).toHaveTextContent('Accept: Incoming → Validated');
     expect(transitions).toHaveTextContent('Reject: Incoming → Refused');
 
-    const [warning, blocking] = screen.getAllByTestId('request-access-migration-diagnostic');
+    const [warning, blocking] = screen.getAllByTestId('workflow-migration-diagnostic');
     expect(warning).toHaveTextContent('Two statuses share the same order');
     expect(warning).toHaveTextContent('Warning');
     expect(blocking).toHaveTextContent('Approved and Declined statuses are the same');
@@ -228,7 +228,7 @@ describe('RequestAccessMigrationDialog', () => {
       mockPreview = diagnosticsOf([existingDraft]);
       renderDialog();
 
-      expect(screen.getByTestId('request-access-migration-replace-draft')).toHaveTextContent('The current draft of the request access workflow will be replaced by the migrated statuses.');
+      expect(screen.getByTestId('workflow-migration-replace-draft')).toHaveTextContent('The current draft of the request access workflow will be replaced by the migrated statuses.');
       expect(screen.queryByText(existingDraft.message)).not.toBeInTheDocument();
       expect(confirmButton()).toBeDisabled();
 
@@ -256,8 +256,8 @@ describe('RequestAccessMigrationDialog', () => {
       mockPreview.workflowMigrationPreview.results[1].hasPublishedVersion = true;
       renderDialog();
 
-      expect(screen.queryByTestId('request-access-migration-replace-draft')).not.toBeInTheDocument();
-      expect(screen.getByTestId('request-access-migration-diagnostic')).toHaveTextContent('Blocking');
+      expect(screen.queryByTestId('workflow-migration-replace-draft')).not.toBeInTheDocument();
+      expect(screen.getByTestId('workflow-migration-diagnostic')).toHaveTextContent('Blocking');
       expect(confirmButton()).toBeDisabled();
     });
   });
@@ -268,6 +268,47 @@ describe('RequestAccessMigrationDialog', () => {
     renderDialog();
 
     expect(screen.getByText('There is no request access status to migrate.')).toBeInTheDocument();
-    expect(screen.queryByTestId('request-access-migration-confirm-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('workflow-migration-confirm-button')).not.toBeInTheDocument();
+  });
+
+  describe('on the Global scope', () => {
+    it('previews the statuses of the entity type with the Global texts', () => {
+      renderDialog('GLOBAL', 'Report');
+
+      expect(mockQuery.mock.calls[0][1]).toEqual({ entityType: 'Report' });
+      expect(screen.getByText('Migrate statuses')).toBeInTheDocument();
+      expect(screen.getByText('The legacy statuses become a workflow. Existing statuses are reused, so entities keep their current status.')).toBeInTheDocument();
+      const names = within(screen.getByTestId('workflow-migration-states')).getAllByRole('listitem').map((item) => item.textContent);
+      expect(names).toEqual(['tpl-global']);
+    });
+
+    it('confirm calls workflowMigrate with scope GLOBAL on the entity type', async () => {
+      const user = userEvent.setup();
+      renderDialog('GLOBAL', 'Report');
+
+      await user.click(confirmButton());
+
+      expect(mockCommit).toHaveBeenCalledWith(expect.objectContaining({
+        variables: { entityType: 'Report', publish: true, overwrite: false, scope: 'GLOBAL' },
+      }));
+    });
+
+    it('asks to confirm the replacement of a Global draft', () => {
+      mockPreview = diagnosticsOf([]);
+      mockPreview.workflowMigrationPreview.results[0].diagnostics = [{ type: 'EXISTING_WORKFLOW', message: 'Entity type already has a workflow with no published version' }];
+      renderDialog('GLOBAL', 'Report');
+
+      expect(screen.getByTestId('workflow-migration-replace-draft')).toHaveTextContent('The current draft of the workflow will be replaced by the migrated statuses.');
+      expect(screen.getByRole('checkbox', { name: 'Replace the current draft of the workflow' })).toBeInTheDocument();
+      expect(confirmButton()).toBeDisabled();
+    });
+
+    it('has nothing to confirm when the entity type has no status', () => {
+      mockPreview.workflowMigrationPreview.results = mockPreview.workflowMigrationPreview.results.filter((result) => result.scope === 'REQUEST_ACCESS');
+      renderDialog('GLOBAL', 'Report');
+
+      expect(screen.getByText('There is no status to migrate.')).toBeInTheDocument();
+      expect(screen.queryByTestId('workflow-migration-confirm-button')).not.toBeInTheDocument();
+    });
   });
 });

@@ -21,6 +21,7 @@ import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount, addWorkflowRequestAccessMigrationCount, addWorkflowRequestAccessPublishCount } from '../../../manager/telemetryManager';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../schema/stixDomainObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { X_CLOSING_REASON } from '../../../schema/identifier';
@@ -780,6 +781,40 @@ const convertLegacyStatuses = async (
   // before handing templates to the converter (a missing one becomes a MISSING_TEMPLATE diagnostic).
   const conversion = convertStatusToDefinition(statuses, templates.filter((template): template is BasicWorkflowTemplateEntity => template != null));
   return { ...conversion, statuses };
+};
+
+// The Report statuses data-initialization seeds, by order: every platform first installed before workflows has them
+const DEFAULT_REPORT_STATUS_NAMES = ['NEW', 'IN_PROGRESS', 'ANALYZED', 'CLOSED'];
+
+/**
+ * True when the GLOBAL legacy statuses of the type are still the ones the platform seeds (Report only):
+ * same templates, same orders, none removed. Nobody configured them, so migrating them would publish a
+ * workflow nobody asked for, and every Report created afterwards would carry a workflow instance.
+ */
+export const hasOnlyDefaultLegacyStatuses = async (context: AuthContext, user: AuthUser, entityType: string): Promise<boolean> => {
+  if (entityType !== ENTITY_TYPE_CONTAINER_REPORT) return false;
+  const executionContext = bypassDraftContext(context);
+  const executionUser = bypassDraftUser(user);
+  const allStatuses = await fullEntitiesList<BasicWorkflowStatus>(executionContext, executionUser, [ENTITY_TYPE_STATUS], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['type'], values: [entityType] }],
+      filterGroups: [],
+    },
+  });
+  const statuses = allStatuses
+    .filter((status) => (status.scope ?? StatusScope.Global) === StatusScope.Global)
+    .sort((a, b) => a.order - b.order);
+  if (statuses.length !== DEFAULT_REPORT_STATUS_NAMES.length || statuses.some((status) => status.to_be_deleted_at)) {
+    return false;
+  }
+  const templates = await storeLoadByIds<BasicWorkflowTemplateEntity>(
+    executionContext,
+    executionUser,
+    statuses.map((status) => status.template_id),
+    ENTITY_TYPE_STATUS_TEMPLATE,
+  );
+  return statuses.every((status, index) => status.order === index + 1 && templates[index]?.name === DEFAULT_REPORT_STATUS_NAMES[index]);
 };
 
 // The legacy approved / declined ids point at REQUEST_ACCESS `Status` records; their templates are

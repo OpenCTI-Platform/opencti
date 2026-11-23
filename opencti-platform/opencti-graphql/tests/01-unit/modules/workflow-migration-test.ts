@@ -4,7 +4,7 @@ import { FunctionalError, LockTimeoutError, UnsupportedError } from '../../../sr
 import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { StatusScope } from '../../../src/generated/graphql';
 import { getAvailableSettings } from '../../../src/modules/entitySetting/entitySetting-utils';
-import { getWorkflowConfig, migrateWorkflowFromStatuses, resolveScopedDefinitionId } from '../../../src/modules/workflow/domain/workflow-domain';
+import { getWorkflowConfig, hasOnlyDefaultLegacyStatuses, migrateWorkflowFromStatuses, resolveScopedDefinitionId } from '../../../src/modules/workflow/domain/workflow-domain';
 import { NO_LEGACY_STATUSES_MESSAGE } from '../../../src/modules/workflow/migration/status-to-definition-converter';
 import { logWorkflowMigrationSummary, migrateAllWorkflowDefinitions, type WorkflowMigrationResult } from '../../../src/modules/workflow/workflow-migration';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
@@ -17,6 +17,7 @@ vi.mock('../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi
 vi.mock('../../../src/modules/entitySetting/entitySetting-utils', () => ({ getAvailableSettings: vi.fn() }));
 vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   getWorkflowConfig: vi.fn(),
+  hasOnlyDefaultLegacyStatuses: vi.fn(),
   migrateWorkflowFromStatuses: vi.fn(),
   resolveScopedDefinitionId: vi.fn(),
 }));
@@ -37,6 +38,7 @@ describe('migrateAllWorkflowDefinitions', () => {
     vi.mocked(getAvailableSettings).mockReturnValue(['workflow_id']);
     vi.mocked(getWorkflowConfig).mockResolvedValue({ id: 'entity-setting' } as any);
     vi.mocked(resolveScopedDefinitionId).mockReturnValue(undefined);
+    vi.mocked(hasOnlyDefaultLegacyStatuses).mockResolvedValue(false);
     vi.mocked(migrateWorkflowFromStatuses).mockResolvedValue({} as any);
   });
 
@@ -69,6 +71,28 @@ describe('migrateAllWorkflowDefinitions', () => {
     vi.mocked(migrateWorkflowFromStatuses).mockRejectedValue(FunctionalError(NO_LEGACY_STATUSES_MESSAGE, { entityType: 'Report' }));
     const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
     expect(results).toEqual([{ entityType: 'Report', scope: StatusScope.Global, outcome: 'no_statuses' }]);
+  });
+
+  it('leaves a type on its seeded statuses, without publishing a workflow', async () => {
+    setEntityTypes('Report', 'Grouping');
+    vi.mocked(hasOnlyDefaultLegacyStatuses).mockImplementation(async (_ctx, _user, entityType) => entityType === 'Report');
+    const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
+    expect(results).toEqual([
+      { entityType: 'Report', scope: StatusScope.Global, outcome: 'default_statuses' },
+      { entityType: 'Grouping', scope: StatusScope.Global, outcome: 'migrated' },
+    ]);
+    expect(attempts()).toEqual([['Grouping', StatusScope.Global]]);
+  });
+
+  it('only checks the seeded statuses on the GLOBAL scope', async () => {
+    setEntityTypes(CASE_RFI);
+    vi.mocked(hasOnlyDefaultLegacyStatuses).mockResolvedValue(true);
+    const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
+    expect(results.map(({ scope, outcome }) => [scope, outcome])).toEqual([
+      [StatusScope.Global, 'default_statuses'],
+      [StatusScope.RequestAccess, 'migrated'],
+    ]);
+    expect(hasOnlyDefaultLegacyStatuses).toHaveBeenCalledTimes(1);
   });
 
   it('reports a business error that is not the no statuses one as failed', async () => {
@@ -233,7 +257,7 @@ describe('logWorkflowMigrationSummary', () => {
       result('Opinion', 'no_statuses'),
     ]);
     expect(logMigration.info).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=2, has_workflow=1, no_statuses=3, enterprise_only=0, failed=0');
+    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=2, has_workflow=1, no_statuses=3, default_statuses=0, enterprise_only=0, failed=0');
     expect(logMigration.warn).not.toHaveBeenCalled();
     expect(logMigration.error).not.toHaveBeenCalled();
   });
@@ -245,7 +269,7 @@ describe('logWorkflowMigrationSummary', () => {
       result('Note', 'failed', StatusScope.Global, 'bang'),
     ]);
     expect(logMigration.info).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=1, has_workflow=0, no_statuses=0, enterprise_only=0, failed=2');
+    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=1, has_workflow=0, no_statuses=0, default_statuses=0, enterprise_only=0, failed=2');
     expect(logMigration.warn).toHaveBeenCalledTimes(1);
     const warning = vi.mocked(logMigration.warn).mock.calls[0][0];
     expect(warning).toContain('Grouping');

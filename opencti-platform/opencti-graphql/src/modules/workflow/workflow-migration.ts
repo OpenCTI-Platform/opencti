@@ -9,11 +9,12 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../entitySetting/entitySetting-types';
 import { getAvailableSettings } from '../entitySetting/entitySetting-utils';
-import { getWorkflowConfig, migrateWorkflowFromStatuses, resolveScopedDefinitionId } from './domain/workflow-domain';
+import { getWorkflowConfig, hasOnlyDefaultLegacyStatuses, migrateWorkflowFromStatuses, resolveScopedDefinitionId } from './domain/workflow-domain';
 import { NO_LEGACY_STATUSES_MESSAGE } from './migration/status-to-definition-converter';
 
+// `default_statuses`: the type only holds the statuses the platform seeds, nobody configured them (Report)
 // `enterprise_only`: the migrated definition needs Enterprise Edition (e.g. the shareRequestedEntities action of REQUEST_ACCESS)
-export type WorkflowMigrationOutcome = 'migrated' | 'has_workflow' | 'no_statuses' | 'enterprise_only' | 'failed';
+export type WorkflowMigrationOutcome = 'migrated' | 'has_workflow' | 'no_statuses' | 'default_statuses' | 'enterprise_only' | 'failed';
 
 export type WorkflowMigrationResult = {
   entityType: string;
@@ -23,7 +24,7 @@ export type WorkflowMigrationResult = {
   reason?: string;
 };
 
-const OUTCOMES: WorkflowMigrationOutcome[] = ['migrated', 'has_workflow', 'no_statuses', 'enterprise_only', 'failed'];
+const OUTCOMES: WorkflowMigrationOutcome[] = ['migrated', 'has_workflow', 'no_statuses', 'default_statuses', 'enterprise_only', 'failed'];
 
 const SKIPPED_ENTITY_TYPES = new Set<string>([
   // The workflow of a draft must contain a validateDraft action, a migrated one never has it
@@ -56,6 +57,10 @@ const migrateScope = async (
     const entitySetting = await getWorkflowConfig(context, user, entityType);
     if (resolveScopedDefinitionId(entitySetting, scope)) {
       return { entityType, scope, outcome: 'has_workflow' };
+    }
+    // The seeded statuses stay legacy statuses: an administrator migrates them from the workflow settings when needed
+    if (scope === StatusScope.Global && await hasOnlyDefaultLegacyStatuses(context, user, entityType)) {
+      return { entityType, scope, outcome: 'default_statuses' };
     }
     await migrateWorkflowFromStatuses(context, user, entityType, true, false, scope);
     return { entityType, scope, outcome: 'migrated' };

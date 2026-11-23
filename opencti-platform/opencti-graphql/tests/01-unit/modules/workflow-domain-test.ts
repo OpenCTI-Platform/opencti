@@ -20,6 +20,7 @@ import { findByType } from '../../../src/modules/entitySetting/entitySetting-dom
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { addNotification } from '../../../src/modules/notification/notification-domain';
 import {
+  hasOnlyDefaultLegacyStatuses,
   __resetReadRepairRateLimitForTest,
   assertExternalStatusWriteAllowed,
   assertExternalStatusCreateAllowed,
@@ -8606,5 +8607,64 @@ describe('getWorkflowTransitions – blocked transitions', () => {
 
     expect(instance.allowedTransitions).toEqual([]);
     expect(instance.blockedTransitions.map((t: any) => t.event)).toEqual(['review']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// hasOnlyDefaultLegacyStatuses
+// ---------------------------------------------------------------------------
+
+describe('hasOnlyDefaultLegacyStatuses', () => {
+  const SEEDED = ['NEW', 'IN_PROGRESS', 'ANALYZED', 'CLOSED'];
+  const status = (name: string, order: number, extra: Record<string, unknown> = {}) => (
+    { id: `status-${name}`, type: 'Report', scope: StatusScope.Global, template_id: `template-${name}`, order, ...extra }
+  );
+  const givenStatuses = (statuses: any[], names: Record<string, string> = {}) => {
+    vi.mocked(fullEntitiesList).mockResolvedValue(statuses as any);
+    vi.mocked(storeLoadByIds).mockImplementation((async (_ctx: any, _user: any, ids: string[]) => ids.map((id) => (
+      { id, name: names[id] ?? id.replace('template-', '') }
+    ))) as any);
+  };
+
+  beforeEach(() => {
+    vi.mocked(fullEntitiesList).mockReset();
+    vi.mocked(storeLoadByIds).mockReset();
+  });
+
+  it('is true for the 4 seeded Report statuses, whatever order they are listed in', async () => {
+    givenStatuses(SEEDED.map((name, index) => status(name, index + 1)).reverse());
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(true);
+  });
+
+  it('is false for another type, without reading its statuses', async () => {
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Grouping')).toBe(false);
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it('is false once a status is added', async () => {
+    givenStatuses([...SEEDED.map((name, index) => status(name, index + 1)), status('PENDING', 5)]);
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('is false once a status is removed or marked for deletion', async () => {
+    givenStatuses(SEEDED.slice(0, 3).map((name, index) => status(name, index + 1)));
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+    givenStatuses(SEEDED.map((name, index) => status(name, index + 1, index === 3 ? { to_be_deleted_at: new Date() } : {})));
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('is false once the statuses are reordered', async () => {
+    givenStatuses([status('NEW', 1), status('IN_PROGRESS', 3), status('ANALYZED', 2), status('CLOSED', 4)]);
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('is false once a status points at another template', async () => {
+    givenStatuses(SEEDED.map((name, index) => status(name, index + 1)), { 'template-ANALYZED': 'TO_BE_QUALIFIED' });
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('ignores the statuses of another scope', async () => {
+    givenStatuses([...SEEDED.map((name, index) => status(name, index + 1)), status('APPROVED', 1, { scope: StatusScope.RequestAccess })]);
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(true);
   });
 });

@@ -9,12 +9,12 @@ import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import RequestAccessOutcomeRepair from './RequestAccessOutcomeRepair';
-import { REQUEST_ACCESS_ENTITY_TYPE } from './utils';
-import { RequestAccessMigrationDialogPreviewQuery } from './__generated__/RequestAccessMigrationDialogPreviewQuery.graphql';
-import { RequestAccessMigrationDialogMutation } from './__generated__/RequestAccessMigrationDialogMutation.graphql';
+import type { WorkflowScope } from '../SubTypeWorkflow';
+import { WorkflowMigrationDialogPreviewQuery } from './__generated__/WorkflowMigrationDialogPreviewQuery.graphql';
+import { WorkflowMigrationDialogMutation } from './__generated__/WorkflowMigrationDialogMutation.graphql';
 
-export const requestAccessMigrationPreviewQuery = graphql`
-  query RequestAccessMigrationDialogPreviewQuery($entityType: String!) {
+export const workflowMigrationPreviewQuery = graphql`
+  query WorkflowMigrationDialogPreviewQuery($entityType: String!) {
     workflowMigrationPreview(entityType: $entityType) {
       entityType
       results {
@@ -48,8 +48,8 @@ export const requestAccessMigrationPreviewQuery = graphql`
   }
 `;
 
-const requestAccessMigrationMutation = graphql`
-  mutation RequestAccessMigrationDialogMutation($entityType: String!, $publish: Boolean, $overwrite: Boolean, $scope: StatusScope) {
+const workflowMigrationMutation = graphql`
+  mutation WorkflowMigrationDialogMutation($entityType: String!, $publish: Boolean, $overwrite: Boolean, $scope: StatusScope) {
     workflowMigrate(entityType: $entityType, publish: $publish, overwrite: $overwrite, scope: $scope) {
       id
       published
@@ -65,25 +65,46 @@ const isBlocking = (diagnostic: { type: string }, publish: boolean) => (
   publish ? PUBLISH_BLOCKING_DIAGNOSTICS : ALWAYS_BLOCKING_DIAGNOSTICS
 ).includes(diagnostic.type);
 
+type Translate = (key: string) => string;
+
+// The texts name the statuses the migration reads: the request access ones, or the entity type ones.
+// Each key stays a literal t_i18n call so the translation extraction finds it.
+const workflowMigrationTexts = (t_i18n: Translate, scope: WorkflowScope) => (scope === 'REQUEST_ACCESS' ? {
+  title: t_i18n('Migrate request access statuses'),
+  none: t_i18n('There is no request access status to migrate.'),
+  intro: t_i18n('The legacy request access statuses become a request access workflow. Existing statuses are reused, so requests keep their current status.'),
+  replaceWarning: t_i18n('The current draft of the request access workflow will be replaced by the migrated statuses.'),
+  replaceLabel: t_i18n('Replace the current draft of the request access workflow'),
+} : {
+  title: t_i18n('Migrate statuses'),
+  none: t_i18n('There is no status to migrate.'),
+  intro: t_i18n('The legacy statuses become a workflow. Existing statuses are reused, so entities keep their current status.'),
+  replaceWarning: t_i18n('The current draft of the workflow will be replaced by the migrated statuses.'),
+  replaceLabel: t_i18n('Replace the current draft of the workflow'),
+});
+
 interface MigrationPreviewProps {
+  entityType: string;
+  scope: WorkflowScope;
   onClose: () => void;
   onMigrated: () => void;
 }
 
-const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
+const MigrationPreview = ({ entityType, scope, onClose, onMigrated }: MigrationPreviewProps) => {
   const { t_i18n } = useFormatter();
+  const texts = workflowMigrationTexts(t_i18n, scope);
   const [publish, setPublish] = useState(true);
   const [replaceDraftConfirmed, setReplaceDraftConfirmed] = useState(false);
   // Bumped after the outcome statuses are repaired, so the preview is read again.
   const [fetchKey, setFetchKey] = useState(0);
-  const { workflowMigrationPreview, statusTemplates } = useLazyLoadQuery<RequestAccessMigrationDialogPreviewQuery>(
-    requestAccessMigrationPreviewQuery,
-    { entityType: REQUEST_ACCESS_ENTITY_TYPE },
+  const { workflowMigrationPreview, statusTemplates } = useLazyLoadQuery<WorkflowMigrationDialogPreviewQuery>(
+    workflowMigrationPreviewQuery,
+    { entityType },
     { fetchPolicy: 'network-only', fetchKey },
   );
-  const [commitMigration, migrating] = useApiMutation<RequestAccessMigrationDialogMutation>(requestAccessMigrationMutation);
+  const [commitMigration, migrating] = useApiMutation<WorkflowMigrationDialogMutation>(workflowMigrationMutation);
 
-  const preview = workflowMigrationPreview?.results.find((result) => result.scope === 'REQUEST_ACCESS');
+  const preview = workflowMigrationPreview?.results.find((result) => result.scope === scope);
   const names = new Map<string, string>();
   statusTemplates?.edges?.forEach((edge) => {
     if (edge?.node) names.set(edge.node.id, edge.node.name);
@@ -93,7 +114,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
   if (!preview) {
     return (
       <>
-        <Text variant="content-base" as="p">{t_i18n('There is no request access status to migrate.')}</Text>
+        <Text variant="content-base" as="p">{texts.none}</Text>
         <DialogActions>
           <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
         </DialogActions>
@@ -101,7 +122,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
     );
   }
 
-  // A request access workflow never published is only a draft: the migration may replace it once confirmed.
+  // A workflow never published is only a draft: the migration may replace it once confirmed.
   const replacesDraft = !preview.hasPublishedVersion && preview.diagnostics.some((diagnostic) => diagnostic.type === 'EXISTING_WORKFLOW');
   const diagnostics = replacesDraft ? preview.diagnostics.filter((diagnostic) => diagnostic.type !== 'EXISTING_WORKFLOW') : preview.diagnostics;
   const blocked = diagnostics.some((diagnostic) => isBlocking(diagnostic, publish)) || (replacesDraft && !replaceDraftConfirmed);
@@ -117,7 +138,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
 
   const handleConfirm = () => {
     commitMigration({
-      variables: { entityType: REQUEST_ACCESS_ENTITY_TYPE, publish, overwrite: replacesDraft, scope: 'REQUEST_ACCESS' },
+      variables: { entityType, publish, overwrite: replacesDraft, scope },
       onCompleted: (_response, errors) => {
         if (errors?.length) return;
         onMigrated();
@@ -131,18 +152,18 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
   return (
     <>
       <Text variant="content-base" as="p" style={{ marginBottom: 16 }}>
-        {t_i18n('The legacy request access statuses become a request access workflow. Existing statuses are reused, so requests keep their current status.')}
+        {texts.intro}
       </Text>
       {replacesDraft && (
-        <div data-testid="request-access-migration-replace-draft" style={{ marginBottom: 8 }}>
+        <div data-testid="workflow-migration-replace-draft" style={{ marginBottom: 8 }}>
           <Alert
             severity="warning"
             title={t_i18n('Warning')}
-            description={t_i18n('The current draft of the request access workflow will be replaced by the migrated statuses.')}
+            description={texts.replaceWarning}
             style={{ marginBottom: 8 }}
           />
           <Checkbox
-            label={t_i18n('Replace the current draft of the request access workflow')}
+            label={texts.replaceLabel}
             checked={replaceDraftConfirmed}
             onCheckedChange={(checked) => setReplaceDraftConfirmed(checked === true)}
           />
@@ -151,7 +172,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
       {diagnostics.map((diagnostic, index) => (
         <Alert
           key={`${diagnostic.type}-${index}`}
-          data-testid="request-access-migration-diagnostic"
+          data-testid="workflow-migration-diagnostic"
           severity={isBlocking(diagnostic, publish) ? 'error' : 'warning'}
           title={isBlocking(diagnostic, publish) ? t_i18n('Blocking') : t_i18n('Warning')}
           description={diagnostic.message}
@@ -162,7 +183,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
         <RequestAccessOutcomeRepair initialState={preview.initialState} statusIds={states.map((state) => state.statusId)} onRepaired={() => setFetchKey((key) => key + 1)} />
       )}
       <Text variant="title-sm" as="h3" style={{ marginTop: 16 }}>{t_i18n('States')}</Text>
-      <ul data-testid="request-access-migration-states" style={{ listStyle: 'none', padding: 0, margin: '8px 0' }}>
+      <ul data-testid="workflow-migration-states" style={{ listStyle: 'none', padding: 0, margin: '8px 0' }}>
         {states.map((state) => (
           <li key={state.statusId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span>{nameOf(state.statusId)}</span>
@@ -176,7 +197,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
         ))}
       </ul>
       <Text variant="title-sm" as="h3" style={{ marginTop: 16 }}>{t_i18n('Transitions')}</Text>
-      <ul data-testid="request-access-migration-transitions" style={{ padding: '0 0 0 20px', margin: '8px 0', maxHeight: 200, overflowY: 'auto' }}>
+      <ul data-testid="workflow-migration-transitions" style={{ padding: '0 0 0 20px', margin: '8px 0', maxHeight: 200, overflowY: 'auto' }}>
         {[...transitionLines.entries()].map(([key, { event, from, to }]) => (
           <li key={key}>{`${event}: ${from.join(', ')} → ${to}`}</li>
         ))}
@@ -185,12 +206,12 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
         label={t_i18n('Publish immediately')}
         checked={publish}
         onCheckedChange={setPublish}
-        wrapperClassName="request-access-migration-publish"
+        wrapperClassName="workflow-migration-publish"
       />
       <DialogActions>
         <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
         <Button
-          data-testid="request-access-migration-confirm-button"
+          data-testid="workflow-migration-confirm-button"
           onClick={handleConfirm}
           disabled={blocked || migrating}
         >
@@ -201,29 +222,31 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
   );
 };
 
-interface RequestAccessMigrationDialogProps {
+interface WorkflowMigrationDialogProps {
+  entityType: string;
+  scope: WorkflowScope;
   open: boolean;
   onClose: () => void;
   onMigrated: () => void;
 }
 
-const RequestAccessMigrationDialog = ({ open, onClose, onMigrated }: RequestAccessMigrationDialogProps) => {
+const WorkflowMigrationDialog = ({ entityType, scope, open, onClose, onMigrated }: WorkflowMigrationDialogProps) => {
   const { t_i18n } = useFormatter();
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      title={t_i18n('Migrate request access statuses')}
+      title={workflowMigrationTexts(t_i18n, scope).title}
       size="medium"
     >
       <ErrorBoundary>
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <MigrationPreview onClose={onClose} onMigrated={onMigrated} />
+          <MigrationPreview entityType={entityType} scope={scope} onClose={onClose} onMigrated={onMigrated} />
         </Suspense>
       </ErrorBoundary>
     </Dialog>
   );
 };
 
-export default RequestAccessMigrationDialog;
+export default WorkflowMigrationDialog;
