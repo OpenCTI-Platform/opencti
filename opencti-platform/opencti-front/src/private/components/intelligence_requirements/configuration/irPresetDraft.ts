@@ -12,9 +12,9 @@ import {
   type IrDraft,
   type IrEntityOption,
   type IrGroupDraft,
-  type IrLinkDraft,
   type IrPriority,
 } from './irConfigTypes';
+import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { getRule, IR_PIR_TYPES, type IrPirType, type IrPresetRule } from './irPresetRules';
 
 export interface IrPresetValue {
@@ -49,17 +49,18 @@ export const emptyValue = (): IrPresetValue => ({ entities: [], types: [], terms
 // region names and values
 const MAX_NAMED_VALUES = 3;
 
-const valueLabels = (value: IrPresetValue, t: Translate): string[] => [
+// "any <Type>" is the entitiesOrType choice; container types are plain type names
+const valueLabels = (def: IrPresetRule, value: IrPresetValue, t: Translate): string[] => [
   ...value.entities.map((e) => e.label),
-  ...value.types.map((type) => `${t('any')} ${t(type)}`),
+  ...value.types.map((type) => (def.value === 'entitiesOrType' ? `${t('any')} ${t(type)}` : t(type))),
   ...value.terms,
   ...(value.number !== null ? [String(value.number)] : []),
 ];
 
-const hasValue = (value: IrPresetValue) => valueLabels(value, (s) => s).length > 0;
+const hasValue = (value: IrPresetValue) => value.entities.length + value.types.length + value.terms.length > 0 || value.number !== null;
 
-const namedValues = (value: IrPresetValue, t: Translate): string => {
-  const labels = valueLabels(value, t);
+const namedValues = (def: IrPresetRule, value: IrPresetValue, t: Translate): string => {
+  const labels = valueLabels(def, value, t);
   const shown = labels.slice(0, MAX_NAMED_VALUES).join(', ');
   return labels.length > MAX_NAMED_VALUES ? `${shown} +${labels.length - MAX_NAMED_VALUES} more` : shown;
 };
@@ -71,7 +72,7 @@ export const defaultRuleName = (pirType: IrPirType, rule: IrRuleInstance, t: Tra
   const subject = subjectOf(pirType, t);
   const verb = t(def.verb);
   if (def.value === 'none') return `${subject} ${verb}`;
-  const values = namedValues(rule.value, t);
+  const values = namedValues(def, rule.value, t);
   if (verb === ':') return `${subject}: ${values}`;
   if (verb.includes('{v}')) return `${subject} ${verb.replace('{v}', values)}`;
   return `${subject} ${verb} ${values}`;
@@ -103,7 +104,17 @@ export const validatePresetItems = (items: IrPresetItem[]): { itemId: string; ru
 // endregion
 
 // region query chips
+export interface IrQueryChip {
+  key: string;
+  operator?: '=' | '≥'; // '=' when absent
+  values: string;
+  fromUser: boolean;
+}
+
 const FILTER_KEY_LABELS: Record<string, string> = {
+  entity_type: 'Entity type',
+  response_types: 'Response types',
+  x_opencti_cisa_kev: 'CISA KEV',
   objectLabel: 'Label',
   malware_types: 'Malware type',
   sophistication: 'Sophistication',
@@ -114,27 +125,29 @@ const FILTER_KEY_LABELS: Record<string, string> = {
   account_type: 'Account type',
 };
 
+const keyLabel = (key: string) => FILTER_KEY_LABELS[key] ?? key;
+
 // Rules reading as "<flagged> -relationship-> <anchor>": the chips show the relationship and both sides
-const relationshipOf = (def: IrPresetRule): { relationships: string[]; direction: IrDirection } | null => {
+const relationshipOf = (def: IrPresetRule): { label: string; direction: IrDirection } | null => {
   const { build } = def;
   switch (build.kind) {
     case 'linked':
     case 'linkedViaFilter':
-      return { relationships: build.relationships, direction: build.direction };
+      return { label: build.relationships.join(', '), direction: build.direction };
     case 'container':
     case 'containerFixed':
-      return { relationships: ['object'], direction: 'outgoing' };
+      return { label: 'object (contained in)', direction: 'outgoing' };
     case 'indicated':
-      return { relationships: ['indicates'], direction: 'outgoing' };
+      return { label: 'indicates', direction: 'outgoing' };
     default:
       return null;
   }
 };
 
-const filterKeyLabel = (def: IrPresetRule): string => {
+const valueKeyLabel = (def: IrPresetRule): string => {
   const { build } = def;
   switch (build.kind) {
-    case 'entityFilter': return FILTER_KEY_LABELS[build.key] ?? build.key;
+    case 'entityFilter': return keyLabel(build.key);
     case 'motivation': return 'Motivation';
     case 'keywords': return 'Keyword';
     case 'domains': return 'Domain';
@@ -143,33 +156,48 @@ const filterKeyLabel = (def: IrPresetRule): string => {
   }
 };
 
-export const presetQueryChips = (rule: IrRuleInstance, flags: string[], t: Translate): { key: string; values: string; fromUser: boolean }[] => {
+// The constraints a rule fixes itself, as chips (kev, data leak)
+const fixedChips = (filters: FilterGroup, t: Translate, skipKeys: string[] = []): IrQueryChip[] => filters.filters
+  .filter((f) => !skipKeys.includes(f.key))
+  .map((f) => ({ key: t(keyLabel(f.key)), operator: '=', values: f.values.join(', '), fromUser: false }));
+
+export const presetQueryChips = (rule: IrRuleInstance, flags: string[], t: Translate): IrQueryChip[] => {
   const def = getRule(rule.ruleKey);
+  const { build } = def;
   const flagged = flags.join(', ');
-  const values = valueLabels(rule.value, t).join(', ');
-  const userChips = (key: string) => (def.value === 'none' ? [] : [{ key: t(key), values, fromUser: true }]);
+  const values = valueLabels(def, rule.value, t).join(', ');
+  const userChips = (key: string): IrQueryChip[] => (def.value === 'none' ? [] : [{ key: t(key), operator: '=', values, fromUser: true }]);
   const relation = relationshipOf(def);
   if (relation) {
     const flaggedIsSource = relation.direction === 'incoming';
+    const fixedSource: IrQueryChip[] = [];
+    if (build.kind === 'indicated') fixedSource.push({ key: t('Source type'), operator: '=', values: 'Indicator', fromUser: false });
+    if (build.kind === 'containerFixed') {
+      const types = build.filters.filters.find((f) => f.key === 'entity_type');
+      if (types) fixedSource.push({ key: t('Source type'), operator: '=', values: types.values.join(', '), fromUser: false });
+      fixedSource.push(...fixedChips(build.filters, t, ['entity_type']));
+    }
+    const flaggedChip: IrQueryChip = { key: t(flaggedIsSource ? 'Source type' : 'Target type'), operator: '=', values: flagged, fromUser: false };
     return [
-      { key: t('Relationship type'), values: relation.relationships.join(', '), fromUser: false },
-      { key: t(flaggedIsSource ? 'Source type' : 'Target type'), values: flagged, fromUser: false },
-      ...userChips(flaggedIsSource ? 'Target' : 'Source'),
+      { key: t('Relationship type'), operator: '=', values: relation.label, fromUser: false },
+      // a fixed container query is described by its own constraints
+      ...(build.kind === 'containerFixed' ? fixedSource : [...fixedSource, flaggedChip, ...userChips(flaggedIsSource ? 'Target' : 'Source')]),
     ];
   }
-  return [
-    { key: t('Entity type'), values: flagged, fromUser: false },
-    ...userChips(filterKeyLabel(def)),
-  ];
+  const entityType: IrQueryChip = { key: t('Entity type'), operator: '=', values: flagged, fromUser: false };
+  if (build.kind === 'fixedFilter') return [entityType, ...fixedChips(build.filters, t)];
+  const operator: IrQueryChip['operator'] = build.kind === 'entityFilter' && build.operator === 'gte' ? '≥' : '=';
+  return [entityType, ...userChips(valueKeyLabel(def)).map((chip) => ({ ...chip, operator }))];
 };
 // endregion
 
 // region conversion to the draft
-type Filter = { key: string[]; values: string[]; operator: string; mode: 'or' };
-type FilterGroupInput = { mode: 'and' | 'or'; filters: Filter[]; filterGroups: FilterGroupInput[] };
+// Backend format: keys are lists (the catalogue's front-format FilterGroup keeps a string key, so it is not reused here)
+type BackendFilter = { key: string[]; values: string[]; operator: string; mode: 'or' };
+type BackendFilterGroup = { mode: 'and' | 'or'; filters: BackendFilter[]; filterGroups: BackendFilterGroup[] };
 
-const filter = (key: string, values: string[], operator = 'eq'): Filter => ({ key: [key], values, operator, mode: 'or' });
-const filterGroup = (filters: Filter[], mode: 'and' | 'or' = 'and', filterGroups: FilterGroupInput[] = []): FilterGroupInput => ({ mode, filters, filterGroups });
+const filter = (key: string, values: string[], operator = 'eq'): BackendFilter => ({ key: [key], values, operator, mode: 'or' });
+const filterGroup = (filters: BackendFilter[], mode: 'and' | 'or' = 'and', filterGroups: BackendFilterGroup[] = []): BackendFilterGroup => ({ mode, filters, filterGroups });
 
 const filterValues = (value: IrPresetValue): string[] => [
   ...value.entities.map((e) => e.value),
@@ -177,35 +205,35 @@ const filterValues = (value: IrPresetValue): string[] => [
   ...(value.number !== null ? [String(value.number)] : []),
 ];
 
-// What one rule brings to a requirement: the parts of a criterion, and the same rule as a condition
+// What one rule brings to a requirement, as a criterion or as a condition of one.
+// `groups` are the subject groups it creates: only those the criterion (entry) or the condition (context) references.
 interface RuleParts {
   criterion: Partial<IrCriterionDraft>;
   condition: Pick<IrConditionDraft, 'filters' | 'link'>;
+  groups: IrGroupDraft[];
 }
 
 const fromFilters = (fg: unknown, flags: string[]): RuleParts => {
   const filters = JSON.stringify(fg);
-  return { criterion: { kind: 'attribute', target_types: flags, target_filters: filters }, condition: { filters, link: null } };
+  return { criterion: { kind: 'attribute', target_types: flags, target_filters: filters }, condition: { filters, link: null }, groups: [] };
 };
 
-const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], groupName: string, groups: IrGroupDraft[]): RuleParts => {
+const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], groupName: string, asCriterion: boolean): RuleParts => {
+  const groups: IrGroupDraft[] = [];
+  // groups of a graph criterion are its entry points; groups of a link condition are context
+  const anchorRole = asCriterion ? 'entry' : 'context';
   const addGroup = (patch: Partial<IrGroupDraft>, suffix = ''): string => {
     const group = { ...emptyGroup(), name: `${groupName}${suffix}`, ...patch };
     groups.push(group);
     return group.id;
   };
-  const graph = (groupIds: string[], relationships: string[], direction: IrDirection): RuleParts => {
-    const link: IrLinkDraft = { relationship_types: relationships, group_ids: groupIds };
-    return {
-      criterion: { kind: 'graph', from_group_ids: groupIds, relationship_types: relationships, direction, target_types: flags },
-      condition: { filters: null, link },
-    };
-  };
-  const typeGroup = (types: string[], suffix = '') => addGroup({
-    kind: 'filter',
-    role: 'context',
-    filters: JSON.stringify(filterGroup([filter('entity_type', types)])),
-  }, suffix);
+  const typeGroup = (filters: string, suffix = '') => addGroup({ kind: 'filter', role: anchorRole, filters }, suffix);
+  const entityTypeGroup = (types: string[], suffix = '') => typeGroup(JSON.stringify(filterGroup([filter('entity_type', types)])), suffix);
+  const graph = (groupIds: string[], relationships: string[], direction: IrDirection): RuleParts => ({
+    criterion: { kind: 'graph', from_group_ids: groupIds, relationship_types: relationships, direction, target_types: flags },
+    condition: { filters: null, link: { relationship_types: relationships, group_ids: groupIds } },
+    groups,
+  });
   const { build } = def;
   switch (build.kind) {
     case 'entityFilter':
@@ -218,34 +246,26 @@ const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], gr
     case 'fixedFilter':
       return fromFilters(build.filters, flags);
     case 'oneOf': {
+      // as a condition, the entities are an ids filter: no subject group
+      const condition = { filters: JSON.stringify(filterGroup([filter('ids', value.entities.map((e) => e.value))])), link: null };
+      if (!asCriterion) return { criterion: {}, condition, groups };
       const groupId = addGroup({ kind: 'list', role: 'entry', entities: value.entities });
-      return {
-        criterion: { kind: 'attribute', from_group_ids: [groupId], target_types: flags },
-        condition: { filters: JSON.stringify(filterGroup([filter('ids', value.entities.map((e) => e.value))])), link: null },
-      };
+      return { criterion: { kind: 'attribute', from_group_ids: [groupId], target_types: flags }, condition, groups };
     }
     case 'linked': {
       const groupIds: string[] = [];
-      if (value.entities.length > 0) groupIds.push(addGroup({ kind: 'list', role: 'context', entities: value.entities }));
-      if (value.types.length > 0) groupIds.push(typeGroup(value.types, groupIds.length > 0 ? ' (types)' : ''));
+      if (value.entities.length > 0) groupIds.push(addGroup({ kind: 'list', role: anchorRole, entities: value.entities }));
+      if (value.types.length > 0) groupIds.push(entityTypeGroup(value.types, groupIds.length > 0 ? ' (types)' : ''));
       return graph(groupIds, build.relationships, build.direction);
     }
-    case 'linkedViaFilter': {
-      const groupId = addGroup({
-        kind: 'filter',
-        role: 'context',
-        filters: JSON.stringify(filterGroup([filter('entity_type', [build.anchorType]), filter(build.anchorKey, value.terms)])),
-      });
-      return graph([groupId], build.relationships, build.direction);
-    }
+    case 'linkedViaFilter':
+      return graph([typeGroup(JSON.stringify(filterGroup([filter('entity_type', [build.anchorType]), filter(build.anchorKey, value.terms)])))], build.relationships, build.direction);
     case 'container':
-      return graph([typeGroup(value.types)], ['object'], 'outgoing');
-    case 'containerFixed': {
-      const groupId = addGroup({ kind: 'filter', role: 'context', filters: JSON.stringify(build.filters) });
-      return graph([groupId], ['object'], 'outgoing');
-    }
+      return graph([entityTypeGroup(value.types)], ['object'], 'outgoing');
+    case 'containerFixed':
+      return graph([typeGroup(JSON.stringify(build.filters))], ['object'], 'outgoing');
     case 'indicated':
-      return graph([typeGroup(['Indicator'])], ['indicates'], 'outgoing');
+      return graph([entityTypeGroup(['Indicator'])], ['indicates'], 'outgoing');
     case 'domains':
       return fromFilters(filterGroup([], 'or', [
         filterGroup([filter('entity_type', ['Email-Addr']), filter('value', value.terms, 'ends_with')]),
@@ -253,11 +273,14 @@ const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], gr
         filterGroup([filter('entity_type', ['Credential']), filter('value', value.terms, 'contains')]),
       ]), flags);
     case 'keywords': {
+      if (!asCriterion) throw new Error('A keywords rule cannot be a condition of a group');
       const groupId = addGroup({ kind: 'keywords', role: 'entry', keywords: value.terms });
-      return { criterion: { kind: 'keywords', from_group_ids: [groupId] }, condition: { filters: null, link: null } };
+      return { criterion: { kind: 'keywords', from_group_ids: [groupId] }, condition: { filters: null, link: null }, groups };
     }
-    default:
-      throw new Error('Unknown preset rule build');
+    default: {
+      const unhandled: never = build;
+      throw new Error(`Unknown preset rule build: ${JSON.stringify(unhandled)}`);
+    }
   }
 };
 
@@ -267,11 +290,10 @@ export const presetItemsToDraft = (
   flags: string[],
   items: IrPresetItem[],
 ): IrDraft => {
-  const draft = emptyDraft();
   const groups: IrGroupDraft[] = [];
   const criteria: IrCriterionDraft[] = [];
   const t = (s: string) => s;
-  const criterionOf = (name: string, parts: RuleParts): IrCriterionDraft => ({
+  const criterionOf = (name: string, parts: Pick<RuleParts, 'criterion'>): IrCriterionDraft => ({
     ...emptyCriterion([]),
     id: newId('c'),
     ...parts.criterion,
@@ -281,22 +303,25 @@ export const presetItemsToDraft = (
   });
   items.forEach((item) => {
     if (item.kind === 'custom') {
-      criteria.push(criterionOf(item.name, { criterion: { kind: 'attribute', target_types: flags, target_filters: item.filters }, condition: { filters: null, link: null } }));
+      criteria.push(criterionOf(item.name, { criterion: { kind: 'attribute', target_types: flags, target_filters: item.filters } }));
       return;
     }
     const rules = item.kind === 'rule' ? [item.rule] : item.rules;
     if (rules.length === 0) return;
     const [first, ...others] = rules;
-    const criterion = criterionOf(item.name, buildParts(getRule(first.ruleKey), first.value, flags, item.name, groups));
+    const firstParts = buildParts(getRule(first.ruleKey), first.value, flags, item.name, true);
+    groups.push(...firstParts.groups);
+    const criterion = criterionOf(item.name, firstParts);
     others.forEach((rule) => {
       const name = defaultRuleName(pirType, rule, t);
-      const { condition } = buildParts(getRule(rule.ruleKey), rule.value, flags, name, groups);
-      criterion.conditions.push({ ...emptyCondition(), name, applies_to_types: [], ...condition });
+      const parts = buildParts(getRule(rule.ruleKey), rule.value, flags, name, false);
+      groups.push(...parts.groups);
+      criterion.conditions.push({ ...emptyCondition(), name, applies_to_types: [], ...parts.condition });
     });
     criteria.push(criterion);
   });
   return {
-    ...draft,
+    ...emptyDraft(),
     name: general.name,
     question: general.question,
     description: general.description,

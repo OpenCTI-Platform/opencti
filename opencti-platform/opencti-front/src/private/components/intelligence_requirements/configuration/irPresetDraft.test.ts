@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { draftToInput } from './irConfigTypes';
+import type { IrPirType } from './irPresetRules';
 import { defaultItemName, defaultRuleName, emptyValue, presetItemsToDraft, presetQueryChips, validatePresetItems, type IrPresetItem, type IrPresetValue } from './irPresetDraft';
 
 const t = (s: string) => s;
@@ -82,9 +83,169 @@ describe('validatePresetItems', () => {
 describe('presetQueryChips', () => {
   it('shows the targets query as in the mockup', () => {
     expect(presetQueryChips(targetsRule, ['Malware'], t)).toEqual([
-      { key: 'Relationship type', values: 'targets', fromUser: false },
-      { key: 'Source type', values: 'Malware', fromUser: false },
-      { key: 'Target', values: 'Financial services', fromUser: true },
+      { key: 'Relationship type', operator: '=', values: 'targets', fromUser: false },
+      { key: 'Source type', operator: '=', values: 'Malware', fromUser: false },
+      { key: 'Target', operator: '=', values: 'Financial services', fromUser: true },
     ]);
+  });
+  it('shows a number rule with its operator', () => {
+    expect(presetQueryChips({ id: 'x', ruleKey: 'cvss', value: v({ number: 9 }) }, ['Vulnerability'], t)).toEqual([
+      { key: 'Entity type', operator: '=', values: 'Vulnerability', fromUser: false },
+      { key: 'CVSS score', operator: '≥', values: '9', fromUser: true },
+    ]);
+  });
+  it('shows the fixed filter of a rule with nothing to edit', () => {
+    expect(presetQueryChips({ id: 'x', ruleKey: 'kev', value: emptyValue() }, ['Vulnerability'], t)).toEqual([
+      { key: 'Entity type', operator: '=', values: 'Vulnerability', fromUser: false },
+      { key: 'CISA KEV', operator: '=', values: 'true', fromUser: false },
+    ]);
+  });
+  it('shows the container constraint of a data leak', () => {
+    expect(presetQueryChips({ id: 'x', ruleKey: 'data-leak', value: emptyValue() }, ['Credential'], t)).toEqual([
+      { key: 'Relationship type', operator: '=', values: 'object (contained in)', fromUser: false },
+      { key: 'Source type', operator: '=', values: 'Case-Incident', fromUser: false },
+      { key: 'Response types', operator: '=', values: 'data-leak', fromUser: false },
+    ]);
+  });
+  it('shows the indicator as the source of new indicators', () => {
+    expect(presetQueryChips({ id: 'x', ruleKey: 'indicated', value: emptyValue() }, ['Malware'], t)).toEqual([
+      { key: 'Relationship type', operator: '=', values: 'indicates', fromUser: false },
+      { key: 'Source type', operator: '=', values: 'Indicator', fromUser: false },
+      { key: 'Target type', operator: '=', values: 'Malware', fromUser: false },
+    ]);
+  });
+});
+
+describe('container types in names', () => {
+  it('names plain container types, without "any"', () => {
+    const rule = { id: 'x', ruleKey: 'in-container', value: v({ types: ['Report', 'Grouping'] }) };
+    expect(defaultRuleName('malware', rule, t)).toBe('Malware in Report, Grouping');
+  });
+  it('keeps "any" for the type choice of a linked rule', () => {
+    const rule = { id: 'x', ruleKey: 'targets', value: v({ types: ['Country'] }) };
+    expect(defaultRuleName('malware', rule, t)).toBe('Malware targeting any Country');
+  });
+});
+
+describe('each rule kind as a criterion', () => {
+  const one = (rule: { id: string; ruleKey: string; value: IrPresetValue }, pirType: IrPirType = 'malware', flags = ['Malware']) => presetItemsToDraft(
+    general,
+    pirType,
+    flags,
+    [{ id: 'i', kind: 'rule', name: 'n', rule }],
+  );
+  const filtersOf = (c: { target_filters: string | null }) => JSON.parse(c.target_filters!);
+  const groupOf = (d: ReturnType<typeof one>, i = 0) => d.groups.find((g) => g.id === d.criteria[0].from_group_ids[i])!;
+
+  it('oneOf: a list group as entry, and an attribute criterion on it', () => {
+    const d = one({ id: 'x', ruleKey: 'one-of', value: v({ entities: [fs] }) });
+    expect(d.criteria[0]).toMatchObject({ kind: 'attribute', target_types: ['Malware'], target_filters: null });
+    expect(groupOf(d)).toMatchObject({ kind: 'list', role: 'entry', entities: [fs] });
+    expect(d.groups).toHaveLength(1);
+  });
+  it('entityFilter: the operator and the id values of a label', () => {
+    const label = { value: 'lbl-1', label: 'banking', type: 'Label' };
+    const d = one({ id: 'x', ruleKey: 'has-label', value: v({ entities: [label] }) });
+    expect(filtersOf(d.criteria[0]).filters[0]).toMatchObject({ key: ['objectLabel'], values: ['lbl-1'], operator: 'eq' });
+    const n = one({ id: 'x', ruleKey: 'cvss', value: v({ number: 9 }) }, 'vulnerability', ['Vulnerability']);
+    expect(filtersOf(n.criteria[0]).filters[0]).toMatchObject({ key: ['x_opencti_cvss_base_score'], values: ['9'], operator: 'gte' });
+    expect(d.groups).toEqual([]);
+  });
+  it('motivation: primary or secondary motivations', () => {
+    const d = one({ id: 'x', ruleKey: 'motivation', value: v({ terms: ['ideology'] }) }, 'adversary', ['Threat-Actor-Group']);
+    const fg = filtersOf(d.criteria[0]);
+    expect(fg.mode).toBe('or');
+    expect(fg.filters.map((f: { key: string[] }) => f.key[0])).toEqual(['primary_motivation', 'secondary_motivations']);
+  });
+  it('fixedFilter: the catalogue filter as it is', () => {
+    const d = one({ id: 'x', ruleKey: 'kev', value: emptyValue() }, 'vulnerability', ['Vulnerability']);
+    expect(filtersOf(d.criteria[0]).filters[0]).toMatchObject({ key: 'x_opencti_cisa_kev', values: ['true'] });
+  });
+  it('linkedViaFilter: a filter group on the anchor type and key', () => {
+    const d = one({ id: 'x', ruleKey: 'affects-product', value: v({ terms: ['nginx'] }) }, 'vulnerability', ['Vulnerability']);
+    expect(d.criteria[0]).toMatchObject({ kind: 'graph', relationship_types: ['has'], direction: 'outgoing' });
+    expect(groupOf(d)).toMatchObject({ kind: 'filter', role: 'entry' });
+    expect(JSON.parse(groupOf(d).filters!).filters.map((f: { key: string[]; values: string[] }) => [f.key[0], f.values])).toEqual([['entity_type', ['Software']], ['x_opencti_product', ['nginx']]]);
+  });
+  it('container: a filter group on the container types, linked by object', () => {
+    const d = one({ id: 'x', ruleKey: 'in-container', value: v({ types: ['Report'] }) });
+    expect(d.criteria[0]).toMatchObject({ kind: 'graph', relationship_types: ['object'], direction: 'outgoing' });
+    expect(JSON.parse(groupOf(d).filters!).filters[0]).toMatchObject({ key: ['entity_type'], values: ['Report'] });
+  });
+  it('containerFixed: the filters of the rule', () => {
+    const d = one({ id: 'x', ruleKey: 'data-leak', value: emptyValue() }, 'credential', ['Credential']);
+    expect(d.criteria[0]).toMatchObject({ relationship_types: ['object'], direction: 'outgoing' });
+    expect(JSON.parse(groupOf(d).filters!).filters.map((f: { values: string[] }) => f.values)).toEqual([['Case-Incident'], ['data-leak']]);
+  });
+  it('indicated: indicators indicating the entity', () => {
+    const d = one({ id: 'x', ruleKey: 'indicated', value: emptyValue() });
+    expect(d.criteria[0]).toMatchObject({ relationship_types: ['indicates'], direction: 'outgoing' });
+    expect(JSON.parse(groupOf(d).filters!).filters[0]).toMatchObject({ values: ['Indicator'] });
+  });
+  it('domains: three alternatives on mail, account and credential', () => {
+    const d = one({ id: 'x', ruleKey: 'in-domains', value: v({ terms: ['acme.com'] }) }, 'credential', ['User-Account', 'Email-Addr', 'Credential']);
+    const fg = filtersOf(d.criteria[0]);
+    expect(fg.mode).toBe('or');
+    expect(fg.filterGroups.map((g: { filters: { key: string[]; operator: string }[] }) => [g.filters[0].key[0], g.filters[1].key[0], g.filters[1].operator])).toEqual([
+      ['entity_type', 'value', 'ends_with'],
+      ['entity_type', 'account_login', 'ends_with'],
+      ['entity_type', 'value', 'contains'],
+    ]);
+  });
+  it('keywords: a keywords group as entry and a keywords criterion on it', () => {
+    const d = one({ id: 'x', ruleKey: 'mentions', value: v({ terms: ['ransomware'] }) });
+    expect(d.criteria[0].kind).toBe('keywords');
+    expect(groupOf(d)).toMatchObject({ kind: 'keywords', role: 'entry', keywords: ['ransomware'] });
+  });
+  it('custom: an attribute criterion on the flagged types with the chosen filters', () => {
+    const d = presetItemsToDraft(general, 'malware', ['Malware'], [{ id: 'c', kind: 'custom', name: 'Custom', filters: '{"mode":"and"}' }]);
+    expect(d.criteria[0]).toMatchObject({ name: 'Custom', kind: 'attribute', target_types: ['Malware'], target_filters: '{"mode":"and"}' });
+    expect(d.groups).toEqual([]);
+  });
+});
+
+describe('each rule kind as a condition', () => {
+  const inGroup = (rule: { id: string; ruleKey: string; value: IrPresetValue }) => presetItemsToDraft(
+    general,
+    'malware',
+    ['Malware'],
+    [{ id: 'g', kind: 'group', name: 'n', rules: [targetsRule, rule] }],
+  );
+  it('oneOf: an ids filter, and no subject group', () => {
+    const d = inGroup({ id: 'x', ruleKey: 'one-of', value: v({ entities: [fs] }) });
+    expect(JSON.parse(d.criteria[0].conditions[0].filters!).filters[0]).toMatchObject({ key: ['ids'], values: ['id-fs'], operator: 'eq', mode: 'or' });
+    expect(d.groups).toHaveLength(1);
+  });
+  it('linked: a link and a context group', () => {
+    const d = inGroup(usesRule);
+    const { link } = d.criteria[0].conditions[0];
+    expect(link?.group_ids).toHaveLength(1);
+    expect(d.groups.find((g) => g.id === link!.group_ids[0])).toMatchObject({ kind: 'list', role: 'context' });
+  });
+  it('entityFilter: the same filters as the criterion', () => {
+    const d = inGroup(typeRule);
+    expect(JSON.parse(d.criteria[0].conditions[0].filters!).filters[0]).toMatchObject({ key: ['malware_types'], operator: 'eq' });
+    expect(d.criteria[0].conditions[0].link).toBeNull();
+  });
+  it('keywords: refuses to be a condition', () => {
+    expect(() => inGroup({ id: 'x', ruleKey: 'mentions', value: v({ terms: ['a'] }) })).toThrow('keywords');
+  });
+});
+
+describe('subject groups of the whole draft', () => {
+  it('references every group, as entry from a criterion and as context from a link', () => {
+    const draft = presetItemsToDraft(general, 'malware', ['Malware'], [
+      { id: 'a', kind: 'rule', name: 'a', rule: { id: 'r', ruleKey: 'one-of', value: v({ entities: [fs] }) } },
+      { id: 'b', kind: 'rule', name: 'b', rule: { id: 'r', ruleKey: 'mentions', value: v({ terms: ['x'] }) } },
+      { id: 'c', kind: 'group', name: 'c', rules: [targetsRule, usesRule, { id: 'o', ruleKey: 'one-of', value: v({ entities: [fs] }) }, { id: 'ind', ruleKey: 'indicated', value: emptyValue() }] },
+    ]);
+    const input = draftToInput(draft);
+    const entry = new Set(input.ir_scope_criteria.flatMap((c) => c.from_group_ids));
+    const context = new Set(input.ir_scope_criteria.flatMap((c) => c.conditions.flatMap((k) => k.link?.group_ids ?? [])));
+    input.ir_subject_groups.forEach((g) => {
+      expect(entry.has(g.id) || context.has(g.id)).toBe(true);
+      expect(g.role).toBe(entry.has(g.id) ? 'entry' : 'context');
+    });
+    expect(context.size).toBe(2);
   });
 });
