@@ -10,7 +10,7 @@ const FILES = [
   'src/components/UploadImport.tsx',
 ];
 
-const SEARCH_FIELD = 'src/components/SearchInput.jsx';
+const SEARCH_FIELD = 'src/components/SearchInput.tsx';
 
 const read = (f: string) => readFileSync(path.resolve(f), 'utf8');
 const SOURCES = new Map([...FILES, SEARCH_FIELD].map((f) => [f, read(f)]));
@@ -69,6 +69,8 @@ const importedSymbols = (source: string) => {
   const symbols: string[] = [];
   const re = /^import\s+([^;]*?)\s+from\s+'(@mui\/[^']+)';/gms;
   for (const [, clause, module] of source.matchAll(re)) {
+    // `import type from '@mui/...'` renders nothing: it is not a MUI component in the bar.
+    if (/^type\s/.test(clause)) continue;
     const braced = /\{([^}]*)\}/s.exec(clause);
     if (braced) {
       symbols.push(...braced[1].split(',').map((s) => s.trim().split(/\s+as\s+/)[0]).filter(Boolean));
@@ -177,7 +179,7 @@ describe('the admin top bar is built from library components', () => {
   });
 
   it('sizes the loader from the slot it sits in, not by eye', () => {
-    const search = read('src/components/SearchInput.jsx');
+    const search = read('src/components/SearchInput.tsx');
     expect(search).toMatch(/<Spinner size="md"/);
     expect(search).not.toMatch(/<Spinner size="(sm|lg|xl)"/);
   });
