@@ -48,3 +48,29 @@ coverage:
         paths:
           - client-python
           - "!client-python/pycti/connector/"
+
+# A job that has not uploaded keeps the coverage of the parent commit.
+flag_management:
+  default_rules:
+    carryforward: false
+  individual_flags:
+    - name: opencti-graphql-unit
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-graphql/
+    - name: opencti-graphql-integration
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-graphql/
+    - name: opencti-graphql-rules
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-graphql/
+    - name: opencti-front
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-front/
+    - name: opencti-client-python
+      carryforward: true
+      paths:
+        - client-python/
