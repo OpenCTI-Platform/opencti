@@ -45,8 +45,10 @@ export class ApplicationError extends Error {
 }
 
 // Network
-const isEmptyPath = R.isNil(window.BASE_PATH) || R.isEmpty(window.BASE_PATH);
-const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
+// The backend fills the base path in a meta element of index.html, as the CSP blocks inline scripts.
+const basePath = document.querySelector('meta[name="base-path"]')?.content ?? '';
+const isEmptyPath = R.isNil(basePath) || R.isEmpty(basePath);
+const contextPath = isEmptyPath || basePath === '/' ? '' : basePath;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
 export const fileUri = (fileImport) => `${APP_BASE_PATH}${fileImport}`; // No slash here, will be replace by the builder

@@ -248,7 +248,11 @@ const createApp = async (app, schema) => {
   const ancestorsFromConfig = nconf.get('app:public_dashboard_authorized_domains')?.trim() ?? '';
   const frameAncestorDomains = ancestorsFromConfig === '' ? "'none'" : ancestorsFromConfig;
   const allowedFrameSrc = ["'self'"];
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const scriptSrc = ["'self'"];
+  // The script snippet is inline HTML: the CSP allows inline scripts only when a snippet is configured.
+  if ((nconf.get('app:script_snippet')?.trim() ?? '') !== '') {
+    scriptSrc.push("'unsafe-inline'");
+  }
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
