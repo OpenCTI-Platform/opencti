@@ -48,7 +48,8 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageEntitiesMainInfoFragment, securityCoverage);
   // The selected result replaces the coverage averages; an unknown result falls back to them.
-  const scope = resolveSelectedResult(data.results ?? [], selectedResultId) ?? data;
+  const selectedResult = resolveSelectedResult(data.results ?? [], selectedResultId);
+  const scope = selectedResult ?? data;
   return (
     <Card
       title={(
@@ -60,7 +61,7 @@ const SecurityCoverageMainInfo: FunctionComponent<Props> = ({
           }}
         >
           <span>{t_i18n('Coverage information')}</span>
-          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+          <Tooltip title={selectedResult ? t_i18n('Coverage score from the selected Security Coverage Result') : t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         </Stack>

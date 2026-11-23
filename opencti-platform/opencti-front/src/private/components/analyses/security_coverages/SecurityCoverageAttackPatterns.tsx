@@ -49,11 +49,13 @@ const GLYPH = { fontSize: 16 };
 interface SecurityCoverageAttackPatternsProps {
   securityCoverage: SecurityCoverageAttackPatternsFragment$data;
   dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
+  isResultScoped?: boolean;
 }
 
 const SecurityCoverageAttackPatternsComponent = ({
   securityCoverage,
   dataKillChains,
+  isResultScoped = false,
 }: SecurityCoverageAttackPatternsProps) => {
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -105,7 +107,7 @@ const SecurityCoverageAttackPatternsComponent = ({
           }}
         >
           <span>{t_i18n('Attack patterns coverage')}</span>
-          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+          <Tooltip title={isResultScoped ? t_i18n('Coverage score from the selected Security Coverage Result') : t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         </Stack>

@@ -235,13 +235,13 @@ const SecurityCoverageComponent = ({
         </Grid>
         <Grid size={6} sx={widgetSx}>
           <SecurityCoverageScopedWidget securityCoverage={securityCoverage} scopedQueryRef={displayedQueryRef}>
-            {(widgets) => <SecurityCoverageTestedEntitiesChart securityCoverage={widgets} />}
+            {(widgets) => <SecurityCoverageTestedEntitiesChart securityCoverage={widgets} isResultScoped={displayedResultId !== null} />}
           </SecurityCoverageScopedWidget>
         </Grid>
 
         <Grid size={6} sx={widgetSx}>
           <SecurityCoverageScopedWidget securityCoverage={securityCoverage} scopedQueryRef={displayedQueryRef}>
-            {(widgets) => <SecurityCoverageDetails securityCoverage={widgets} />}
+            {(widgets) => <SecurityCoverageDetails securityCoverage={widgets} isResultScoped={displayedResultId !== null} />}
           </SecurityCoverageScopedWidget>
         </Grid>
 
@@ -255,6 +255,7 @@ const SecurityCoverageComponent = ({
               <SecurityCoverageAttackPatterns
                 securityCoverage={widgets}
                 dataKillChains={dataKillChains}
+                isResultScoped={displayedResultId !== null}
               />
             )}
           </SecurityCoverageScopedWidget>

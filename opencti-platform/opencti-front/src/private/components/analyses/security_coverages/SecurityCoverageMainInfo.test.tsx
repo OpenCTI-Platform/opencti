@@ -71,4 +71,16 @@ describe('Component: SecurityCoverageMainInfo', () => {
 
     expect(screen.queryByText('detection:50')).not.toBeInTheDocument();
   });
+
+  it('shows the scoped tooltip when a result is selected and the average one otherwise', async () => {
+    const scoped = testRender(<SecurityCoverageMainInfo securityCoverage={buildData([parisResult])} selectedResultId="scr-paris" />);
+    await scoped.user.hover(screen.getByTestId('InformationOutlineIcon'));
+    expect(await screen.findByText('Coverage score from the selected Security Coverage Result')).toBeInTheDocument();
+    scoped.unmount();
+
+    const average = testRender(<SecurityCoverageMainInfo securityCoverage={buildData([parisResult])} selectedResultId={null} />);
+    await average.user.hover(screen.getByTestId('InformationOutlineIcon'));
+    expect(await screen.findByText('Average coverage score from Security Coverage Result(s)')).toBeInTheDocument();
+    expect(screen.queryByText('Coverage score from the selected Security Coverage Result')).not.toBeInTheDocument();
+  });
 });

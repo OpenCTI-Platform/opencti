@@ -90,4 +90,14 @@ describe('Component: SecurityCoverageVulnerabilities', () => {
 
     expect(screen.getAllByText('Vuln1')).toHaveLength(1);
   });
+
+  it('shows the scoped tooltip when a result is selected', async () => {
+    const { user } = testRender(
+      <SecurityCoverageVulnerabilities securityCoverage={buildData(2)} isResultScoped />,
+    );
+
+    await user.hover(screen.getByTestId('InformationOutlineIcon'));
+
+    expect(await screen.findByText('Coverage score from the selected Security Coverage Result')).toBeInTheDocument();
+  });
 });
