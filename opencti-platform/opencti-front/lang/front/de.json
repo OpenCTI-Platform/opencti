@@ -6932,5 +6932,5 @@
   "Zoom in": "Vergrößern",
   "Zoom out": "Verkleinern",
   "Pastel colours": "Pastellfarben",
-  "Show severity, priority and marking chips in soft pastel fills instead of the standard colours.": "Schweregrad-, Prioritäts- und Markierungs-Chips in sanften Pastellfarben statt in den Standardfarben anzeigen."
+  "Show chips in soft pastel fills instead of the standard outlined colours.": "Chips in sanften Pastellfarben statt in den umrandeten Standardfarben anzeigen."
 }

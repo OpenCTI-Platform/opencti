@@ -6932,5 +6932,5 @@
   "Zoom in": "Ingrandisci",
   "Zoom out": "Riduci",
   "Pastel colours": "Colori pastello",
-  "Show severity, priority and marking chips in soft pastel fills instead of the standard colours.": "Mostra i chip di gravità, priorità e marcatura con riempimenti pastello tenui invece dei colori standard."
+  "Show chips in soft pastel fills instead of the standard outlined colours.": "Mostra i chip con riempimenti pastello tenui invece dei colori standard con contorno."
 }
