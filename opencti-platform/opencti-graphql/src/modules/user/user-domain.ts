@@ -2735,7 +2735,7 @@ type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; ses
 // so its user must log in again, and the logout is recorded in the activity log.
 // Several requests of the same session can reach it at once, possibly on several nodes (a page sends its
 // queries in parallel): each one ends the session, but only the one that actually deleted it records the logout.
-export const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser) => {
+const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser) => {
   const { sessionID } = req;
   // As express-session does when destroying a session: otherwise the end of the request would save it again
   delete req.session;

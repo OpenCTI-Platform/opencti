@@ -17,7 +17,6 @@ import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
 import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
 import { getSessionMiddleware, isSessionOverMaxLifetime } from '../database/session';
-import { endSessionOverMaxLifetime } from '../modules/user/user-domain';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -86,8 +85,10 @@ export const extractWsSessionContext = async (context) => {
     // its maximum lifetime stays alive. This is accepted, as the next HTTP request of the front then fails and sends
     // the user back to the login page, which closes the WebSocket. The check compares dates only, so it also works
     // with the copy of the session this connection keeps from its first subscription request.
+    // The subscription is only refused here, the session is not ended: the activity listener ignores the actions
+    // of a subscription, so a logout published from here would never be recorded. The next HTTP request ends the
+    // session and records the logout.
     if (isSessionOverMaxLifetime(wsSession.user)) {
-      await endSessionOverMaxLifetime(req, sessionContext.user);
       throw ForbiddenAccess('User must be authenticated');
     }
     sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
