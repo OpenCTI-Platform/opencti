@@ -9,12 +9,14 @@ export const up = async (next: (error?: Error) => void) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
   try {
+    // A single type failing is only logged: it keeps its legacy statuses. A global failure (the entity settings
+    // cannot be listed) fails the migration, so it is replayed on the next start.
     const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
     logWorkflowMigrationSummary(results);
   } catch (error) {
-    // The legacy statuses are left as they are, so the platform starts anyway. An administrator can migrate
-    // an entity type later with the workflowMigrate mutation.
-    logMigration.error(`${message} > failed, no workflow definition was migrated: ${error instanceof Error ? error.message : String(error)}`);
+    logMigration.error(`${message} > failed, it will be replayed on the next start`);
+    next(error instanceof Error ? error : new Error(String(error)));
+    return;
   }
   logMigration.info(`${message} > done in ${Date.now() - startTime} ms`);
   next();

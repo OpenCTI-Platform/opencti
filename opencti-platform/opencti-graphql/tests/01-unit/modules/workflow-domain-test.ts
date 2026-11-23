@@ -4933,6 +4933,40 @@ describe('getWorkflowInstance — lazy backfill', () => {
     expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
   });
 
+  it('backfills an entity without status without writing one, and records the unset status as kept', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+    const input = (createEntity as any).mock.calls[0][2];
+    expect(input.pendingError).toContain('no status');
+    expect(JSON.parse(input.history).at(-1)).toEqual(expect.objectContaining({ event: 'event_external_kept', status_id: null, reason: 'unset' }));
+  });
+
+  it('backfills an entity with a dangling status without overwriting it, and records it as kept', async () => {
+    setupCommon();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'legacy-status-id' });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+    const input = (createEntity as any).mock.calls[0][2];
+    expect(JSON.parse(input.history).at(-1)).toEqual(expect.objectContaining({ event: 'event_external_kept', status_id: 'legacy-status-id', reason: 'unmapped' }));
+  });
+
   it('does not backfill, nor run initial state actions, when the entity is read from a draft', async () => {
     setupCommon();
     (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
@@ -5195,6 +5229,26 @@ describe('getWorkflowInstance — read-repair', () => {
     (loadEntity as any).mockResolvedValue({
       ...instance,
       history: JSON.stringify([{ state: 'reviewing', event: 'event_external_kept', status_id: 'stale-status-id', reason: 'unmapped' }]),
+    });
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('leaves an entity without status unset when its instance recorded the unset status as kept', async () => {
+    setup();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ ...entity, x_opencti_workflow_id: undefined });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([{ state: 'draft', event: 'event_external_kept', status_id: null, reason: 'unset' }]),
     });
     (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
 

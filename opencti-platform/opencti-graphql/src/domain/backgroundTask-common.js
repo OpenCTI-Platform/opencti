@@ -98,25 +98,35 @@ const allTargetsWithoutWorkflow = async (context, user, targetTypes) => {
   // Dynamic import: workflow-domain imports this module
   const { listTypesWithPublishedWorkflow } = await import('../modules/workflow/domain/workflow-domain');
   const workflowTypes = await listTypesWithPublishedWorkflow(context, user);
-  const coversWorkflowType = (targetType) => workflowTypes.some((workflowType) => workflowType === targetType || getParentTypes(workflowType).includes(targetType));
+  // `entity_type` filter values are matched case-insensitively (`report` reaches Reports)
+  const coversWorkflowType = (targetType) => workflowTypes.some((workflowType) => [workflowType, ...getParentTypes(workflowType)]
+    .some((type) => type.toLowerCase() === targetType.toLowerCase()));
   return !targetTypes.some(coversWorkflowType);
 };
 
-// Entity types a query task can reach, read from its top-level `entity_type eq` filters. They only bound the
-// targets when every other filter can only narrow them: `and` mode, or a type filter alone in its group.
+// Entity types a query task can reach, read from its `entity_type eq` filters, nested groups included.
+// In `and` mode, each type filter or bounded sub-group narrows the targets: their bounds intersect.
+// In `or` mode, the group is only bounded when every member is: their bounds add up.
 // Any other shape (no type filter, `not_eq`, `or` with other filters) returns no type, so the caller fails closed.
 const resolveQueryTargetTypes = (filterGroup) => {
   if (!filterGroup) {
     return [];
   }
-  const typeFilters = findFiltersFromKey(filterGroup.filters ?? [], TYPE_FILTER)
-    .filter((filter) => (filter.operator ?? 'eq') === 'eq');
-  const onlyNarrowing = filterGroup.mode === FilterMode.And
-    || ((filterGroup.filters ?? []).length === 1 && (filterGroup.filterGroups ?? []).length === 0);
-  if (typeFilters.length === 0 || !onlyNarrowing) {
+  const filters = filterGroup.filters ?? [];
+  const typeFilters = findFiltersFromKey(filters, TYPE_FILTER).filter((filter) => (filter.operator ?? 'eq') === 'eq');
+  const subGroupBounds = (filterGroup.filterGroups ?? []).map(resolveQueryTargetTypes);
+  const bounds = [...typeFilters.map((filter) => filter.values ?? []), ...subGroupBounds].filter((bound) => bound.length > 0);
+  if (bounds.length === 0) {
     return [];
   }
-  return typeFilters.map((filter) => filter.values).flat();
+  if (filterGroup.mode === FilterMode.And) {
+    // An empty intersection (e.g. `Container` and `Report`, or contradictory filters) keeps the first bound, which still covers the targets
+    const intersection = bounds.reduce((acc, bound) => acc.filter((type) => bound.some((t) => t.toLowerCase() === type.toLowerCase())));
+    return intersection.length > 0 ? intersection : bounds[0];
+  }
+  const everyMemberBounded = typeFilters.length === filters.length && typeFilters.every((filter) => (filter.values ?? []).length > 0)
+    && subGroupBounds.every((bound) => bound.length > 0);
+  return everyMemberBounded ? bounds.flat() : [];
 };
 
 const checkWorkflowActionsValidity = async (context, user, actions, resolveTargetTypes) => {

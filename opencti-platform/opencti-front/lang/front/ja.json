@@ -5967,6 +5967,7 @@
   "The variables and time range of the published dashboard start from this preset": "公開ダッシュボードの変数と期間はこのプリセットから始まります",
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "CTIで役割を果たすさまざまなタイプの組織。情報源として、あるいは攻撃の被害者や発信源として、さらにはプラットフォーム内でユーザーを分離する方法として。",
   "The widget is not called in the content": "ウィジェットはコンテンツ内で呼び出されない",
+  "The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.": "ワークフローは順序が最初のアクセス要求ステータスから始まります。承認および拒否のステータスより小さい順序を別のアクセス要求ステータスに設定するか、新しいステータスを追加してから、このダイアログを再度開いてください。",
   "Theme": "テーマ",
   "theme": "テーマ",
   "Theme already exists": "テーマは既に存在します",

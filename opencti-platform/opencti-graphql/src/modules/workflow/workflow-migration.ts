@@ -1,4 +1,5 @@
 import { logMigration } from '../../config/conf';
+import { ENTERPRISE_EDITION_REQUIRED_MESSAGE } from '../../enterprise-edition/ee';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { StatusScope } from '../../generated/graphql';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
@@ -11,17 +12,18 @@ import { getAvailableSettings } from '../entitySetting/entitySetting-utils';
 import { getWorkflowConfig, migrateWorkflowFromStatuses, resolveScopedDefinitionId } from './domain/workflow-domain';
 import { NO_LEGACY_STATUSES_MESSAGE } from './migration/status-to-definition-converter';
 
-export type WorkflowMigrationOutcome = 'migrated' | 'has_workflow' | 'no_statuses' | 'failed';
+// `enterprise_only`: the migrated definition needs Enterprise Edition (e.g. the shareRequestedEntities action of REQUEST_ACCESS)
+export type WorkflowMigrationOutcome = 'migrated' | 'has_workflow' | 'no_statuses' | 'enterprise_only' | 'failed';
 
 export type WorkflowMigrationResult = {
   entityType: string;
   scope: StatusScope;
   outcome: WorkflowMigrationOutcome;
-  // Set when the outcome is `failed`
+  // Set when the outcome is `failed` or `enterprise_only`
   reason?: string;
 };
 
-const OUTCOMES: WorkflowMigrationOutcome[] = ['migrated', 'has_workflow', 'no_statuses', 'failed'];
+const OUTCOMES: WorkflowMigrationOutcome[] = ['migrated', 'has_workflow', 'no_statuses', 'enterprise_only', 'failed'];
 
 const SKIPPED_ENTITY_TYPES = new Set<string>([
   // The workflow of a draft must contain a validateDraft action, a migrated one never has it
@@ -62,7 +64,11 @@ const migrateScope = async (
     if (reason === NO_LEGACY_STATUSES_MESSAGE) {
       return { entityType, scope, outcome: 'no_statuses' };
     }
-    // Enterprise Edition refusals and lock failures end up here too: the type stays on its legacy statuses.
+    // Expected on Community Edition, not a failure: the type stays on its legacy statuses
+    if (reason === ENTERPRISE_EDITION_REQUIRED_MESSAGE) {
+      return { entityType, scope, outcome: 'enterprise_only', reason };
+    }
+    // Lock failures end up here too: the type stays on its legacy statuses.
     return { entityType, scope, outcome: 'failed', reason };
   }
 };
@@ -70,7 +76,7 @@ const migrateScope = async (
 /**
  * Migrates, for each entity type that has a workflow setting, its legacy statuses into a published workflow
  * definition: the GLOBAL scope, plus the REQUEST_ACCESS scope for Case-Rfi. Never throws for a single type,
- * so one failing type does not stop the others nor the platform startup: every outcome is returned.
+ * so one failing type does not stop the others: every outcome is returned. Throws when the types cannot be listed.
  */
 export const migrateAllWorkflowDefinitions = async (context: AuthContext, user: AuthUser): Promise<WorkflowMigrationResult[]> => {
   const entitySettings = await fullEntitiesList<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING]);
@@ -88,6 +94,11 @@ export const migrateAllWorkflowDefinitions = async (context: AuthContext, user: 
 export const logWorkflowMigrationSummary = (results: WorkflowMigrationResult[]): void => {
   const counts = OUTCOMES.map((outcome) => `${outcome}=${results.filter((result) => result.outcome === outcome).length}`);
   logMigration.info(`[MIGRATION] Workflow definitions (counted per type and scope) > ${counts.join(', ')}`);
+  const enterpriseOnly = results.filter((result) => result.outcome === 'enterprise_only');
+  if (enterpriseOnly.length > 0) {
+    const skipped = enterpriseOnly.map((result) => `${result.entityType} (${result.scope})`).join(', ');
+    logMigration.info(`[MIGRATION] Workflow definitions skipped, they need Enterprise Edition: ${skipped} | They keep their legacy statuses`);
+  }
   const failed = results.filter((result) => result.outcome === 'failed');
   if (failed.length === 0) return;
   const failures = failed.map((result) => `${result.entityType} (${result.scope}): ${result.reason}`).join('; ');

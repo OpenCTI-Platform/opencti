@@ -55,9 +55,9 @@ vi.mock('./StatusTemplateFieldScoped', () => ({
 const onRepaired = vi.fn();
 const testTheme = createTheme(ThemeDark() as ThemeOptions);
 
-const renderRepair = () => render(
+const renderRepair = (initialState = 'tpl-open') => render(
   <ThemeProvider theme={testTheme}>
-    <RequestAccessOutcomeRepair onRepaired={onRepaired} />
+    <RequestAccessOutcomeRepair initialState={initialState} onRepaired={onRepaired} />
   </ThemeProvider>,
 );
 
@@ -71,6 +71,18 @@ describe('RequestAccessOutcomeRepair', () => {
       declined_status: { template: { id: 'tpl-validated', name: 'Validated', color: '#0f0' } },
       approval_admin: [{ id: 'group-soc', name: 'SOC' }],
     };
+  });
+
+  it('explains how to fix an outcome on the initial state instead of offering the form, which cannot fix it', () => {
+    mockConfiguration = {
+      approved_status: { template: { id: 'tpl-approved', name: 'Approved', color: '#0f0' } },
+      declined_status: { template: { id: 'tpl-declined', name: 'Declined', color: '#f00' } },
+      approval_admin: [],
+    };
+    renderRepair('tpl-approved');
+
+    expect(screen.getByTestId('request-access-outcome-initial-state')).toBeInTheDocument();
+    expect(screen.queryByTestId('request-access-outcome-repair')).not.toBeInTheDocument();
   });
 
   it('offers both outcome statuses of the request access scope', () => {

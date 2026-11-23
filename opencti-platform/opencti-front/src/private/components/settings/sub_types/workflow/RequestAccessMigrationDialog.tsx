@@ -159,7 +159,7 @@ const MigrationPreview = ({ onClose, onMigrated }: MigrationPreviewProps) => {
         />
       ))}
       {diagnostics.some((diagnostic) => diagnostic.type === 'REQUEST_ACCESS_OUTCOME_INVALID') && (
-        <RequestAccessOutcomeRepair onRepaired={() => setFetchKey((key) => key + 1)} />
+        <RequestAccessOutcomeRepair initialState={preview.initialState} onRepaired={() => setFetchKey((key) => key + 1)} />
       )}
       <Text variant="title-sm" as="h3" style={{ marginTop: 16 }}>{t_i18n('States')}</Text>
       <ul data-testid="request-access-migration-states" style={{ listStyle: 'none', padding: 0, margin: '8px 0' }}>

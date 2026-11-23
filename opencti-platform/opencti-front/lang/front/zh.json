@@ -5967,6 +5967,7 @@
   "The variables and time range of the published dashboard start from this preset": "已发布仪表板的变量和时间范围以此预设为起点",
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "在 CTI 中发挥作用的各类组织，无论是作为信息源，还是作为受害者或攻击源，甚至是在平台中隔离用户的一种方式。",
   "The widget is not called in the content": "在内容中不调用部件",
+  "The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.": "工作流从排序第一的访问请求状态开始。请为另一个访问请求状态设置比已批准和已拒绝状态更低的顺序，或添加一个新状态，然后重新打开此对话框。",
   "Theme": "主题",
   "theme": "主题",
   "Theme already exists": "主题已存在",

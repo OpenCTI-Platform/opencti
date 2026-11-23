@@ -5967,6 +5967,7 @@
   "The variables and time range of the published dashboard start from this preset": "The variables and time range of the published dashboard start from this preset",
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.",
   "The widget is not called in the content": "The widget is not called in the content",
+  "The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.": "The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.",
   "Theme": "Theme",
   "theme": "theme",
   "Theme already exists": "Theme already exists",

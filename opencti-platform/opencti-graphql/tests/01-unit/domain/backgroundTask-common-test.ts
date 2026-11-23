@@ -248,6 +248,34 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('You are not allowed to do this.');
     });
 
+    it('should refuse a direct status replace when the type filter value is lowercase', async () => {
+      const input = queryInput({ mode: 'and', filters: [typeFilter(['report'])], filterGroups: [] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should refuse a direct status replace when a nested and-group targets a type with a published workflow', async () => {
+      const nested = { mode: 'and', filters: [typeFilter([ENTITY_TYPE_CONTAINER_REPORT])], filterGroups: [] };
+      const input = queryInput({ mode: 'and', filters: [labelFilter], filterGroups: [nested] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should accept a direct status replace when nested groups intersect to a type without a published workflow', async () => {
+      const nested = { mode: 'or', filters: [typeFilter(['Malware'])], filterGroups: [] };
+      const input = queryInput({ mode: 'and', filters: [typeFilter([ENTITY_TYPE_CONTAINER_REPORT, 'Malware'])], filterGroups: [nested] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should refuse a direct status replace when an or-group mixes a bounded and an unbounded sub-group', async () => {
+      workflowMocks.listTypesWithPublishedWorkflow.mockResolvedValue([]);
+      const bounded = { mode: 'and', filters: [typeFilter(['Malware'])], filterGroups: [] };
+      const unbounded = { mode: 'and', filters: [labelFilter], filterGroups: [] };
+      const input = queryInput({ mode: 'or', filters: [], filterGroups: [bounded, unbounded] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
     it('should accept a direct status replace from a user with BYPASS capability', async () => {
       const statusAction = { type: ACTION_TYPE_REPLACE, context: { field: 'x_opencti_workflow_id', values: ['status-id'] } };
       await expect(checkActionValidity(testContext, ADMIN_USER, buildInput([statusAction]), scope, type)).resolves.toEqual(undefined);

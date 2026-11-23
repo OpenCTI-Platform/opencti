@@ -1,7 +1,7 @@
 import { graphql, useFragment } from 'react-relay';
 import { Form, Formik } from 'formik';
 import Button from '@common/button/Button';
-import { Text } from '@filigran/design-system';
+import { Alert, Text } from '@filigran/design-system';
 import { requestAccessConfigurationFragment } from '../global_workflow_request_access/RequestAccessConfigurationEdition';
 import StatusTemplateFieldScoped from './StatusTemplateFieldScoped';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -27,6 +27,8 @@ interface OutcomeRepairFormValues {
 }
 
 interface RequestAccessOutcomeRepairProps {
+  // The initial state of the migrated workflow: the first request access status by order
+  initialState: string;
   onRepaired: () => void;
 }
 
@@ -38,7 +40,7 @@ const toFieldOption = (template: { id: string; name: string; color: string } | n
 
 // Corrects the legacy approved / declined outcome statuses, which the migration reads. The validator
 // group is sent back as is: the configure mutation replaces it with whatever it receives.
-const RequestAccessOutcomeRepair = ({ onRepaired }: RequestAccessOutcomeRepairProps) => {
+const RequestAccessOutcomeRepair = ({ initialState, onRepaired }: RequestAccessOutcomeRepairProps) => {
   const { t_i18n } = useFormatter();
   const { subType } = useSubTypeOutletContext();
   const configuration = useFragment(
@@ -79,6 +81,23 @@ const RequestAccessOutcomeRepair = ({ onRepaired }: RequestAccessOutcomeRepairPr
       },
     });
   };
+
+  // An outcome on the initial state comes from the status order, which this form does not change
+  const approvedTemplateId = configuration?.approved_status?.template?.id;
+  const declinedTemplateId = configuration?.declined_status?.template?.id;
+  const outcomeIsInitialState = !!approvedTemplateId && !!declinedTemplateId && approvedTemplateId !== declinedTemplateId
+    && (initialState === approvedTemplateId || initialState === declinedTemplateId);
+  if (outcomeIsInitialState) {
+    return (
+      <Alert
+        data-testid="request-access-outcome-initial-state"
+        severity="info"
+        title={t_i18n('Request access outcome statuses')}
+        description={t_i18n('The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.')}
+        style={{ marginTop: 16 }}
+      />
+    );
+  }
 
   return (
     <div data-testid="request-access-outcome-repair" style={{ marginTop: 16 }}>

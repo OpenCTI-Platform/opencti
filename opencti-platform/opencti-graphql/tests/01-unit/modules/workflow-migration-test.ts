@@ -96,11 +96,16 @@ describe('migrateAllWorkflowDefinitions', () => {
     ]);
   });
 
-  it('counts an Enterprise Edition refusal as failed, not thrown', async () => {
+  it('counts an Enterprise Edition refusal as enterprise_only, not failed nor thrown', async () => {
     setEntityTypes('Report');
     vi.mocked(migrateWorkflowFromStatuses).mockRejectedValue(UnsupportedError('Enterprise edition is not enabled'));
     const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
-    expect(results).toEqual([{ entityType: 'Report', scope: StatusScope.Global, outcome: 'failed', reason: 'Enterprise edition is not enabled' }]);
+    expect(results).toEqual([{ entityType: 'Report', scope: StatusScope.Global, outcome: 'enterprise_only', reason: 'Enterprise edition is not enabled' }]);
+  });
+
+  it('throws when the entity settings cannot be listed, so the migration is replayed', async () => {
+    vi.mocked(fullEntitiesList).mockRejectedValue(new Error('search unavailable'));
+    await expect(migrateAllWorkflowDefinitions(context, SYSTEM_USER)).rejects.toThrowError('search unavailable');
   });
 
   it('a lock failure counts as failed, not thrown', async () => {
@@ -166,13 +171,26 @@ describe('migrateAllWorkflowDefinitions', () => {
   it('keeps the GLOBAL result of Case-Rfi when its REQUEST_ACCESS scope fails', async () => {
     setEntityTypes(CASE_RFI);
     vi.mocked(migrateWorkflowFromStatuses).mockImplementation((async (_ctx: any, _user: any, _entityType: string, _publish: boolean, _overwrite: boolean, scope: StatusScope) => {
+      if (scope === StatusScope.RequestAccess) throw new Error('lock timeout');
+      return {};
+    }) as any);
+    const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
+    expect(results).toEqual([
+      { entityType: CASE_RFI, scope: StatusScope.Global, outcome: 'migrated' },
+      { entityType: CASE_RFI, scope: StatusScope.RequestAccess, outcome: 'failed', reason: 'lock timeout' },
+    ]);
+  });
+
+  it('skips the REQUEST_ACCESS scope of Case-Rfi on Community Edition, without failing', async () => {
+    setEntityTypes(CASE_RFI);
+    vi.mocked(migrateWorkflowFromStatuses).mockImplementation((async (_ctx: any, _user: any, _entityType: string, _publish: boolean, _overwrite: boolean, scope: StatusScope) => {
       if (scope === StatusScope.RequestAccess) throw UnsupportedError('Enterprise edition is not enabled');
       return {};
     }) as any);
     const results = await migrateAllWorkflowDefinitions(context, SYSTEM_USER);
     expect(results).toEqual([
       { entityType: CASE_RFI, scope: StatusScope.Global, outcome: 'migrated' },
-      { entityType: CASE_RFI, scope: StatusScope.RequestAccess, outcome: 'failed', reason: 'Enterprise edition is not enabled' },
+      { entityType: CASE_RFI, scope: StatusScope.RequestAccess, outcome: 'enterprise_only', reason: 'Enterprise edition is not enabled' },
     ]);
   });
 
@@ -215,7 +233,7 @@ describe('logWorkflowMigrationSummary', () => {
       result('Opinion', 'no_statuses'),
     ]);
     expect(logMigration.info).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=2, has_workflow=1, no_statuses=3, failed=0');
+    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=2, has_workflow=1, no_statuses=3, enterprise_only=0, failed=0');
     expect(logMigration.warn).not.toHaveBeenCalled();
     expect(logMigration.error).not.toHaveBeenCalled();
   });
@@ -227,7 +245,7 @@ describe('logWorkflowMigrationSummary', () => {
       result('Note', 'failed', StatusScope.Global, 'bang'),
     ]);
     expect(logMigration.info).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=1, has_workflow=0, no_statuses=0, failed=2');
+    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('migrated=1, has_workflow=0, no_statuses=0, enterprise_only=0, failed=2');
     expect(logMigration.warn).toHaveBeenCalledTimes(1);
     const warning = vi.mocked(logMigration.warn).mock.calls[0][0];
     expect(warning).toContain('Grouping');
@@ -240,17 +258,28 @@ describe('logWorkflowMigrationSummary', () => {
   it('logs a WARN, not an ERROR, with the legacy flow note when a request access scope failed', () => {
     logWorkflowMigrationSummary([
       result('Report', 'failed', StatusScope.Global, 'boom'),
-      result('Case-Rfi', 'failed', StatusScope.RequestAccess, 'Enterprise edition is not enabled'),
+      result('Case-Rfi', 'failed', StatusScope.RequestAccess, 'lock timeout'),
     ]);
     expect(logMigration.warn).toHaveBeenCalledTimes(1);
     const failure = vi.mocked(logMigration.warn).mock.calls[0][0];
     expect(failure).toContain('Report');
     expect(failure).toContain('boom');
     expect(failure).toContain('Case-Rfi');
-    expect(failure).toContain('Enterprise edition is not enabled');
+    expect(failure).toContain('lock timeout');
     expect(failure).toContain('request access flow keeps running on its legacy statuses');
     expect(failure).toContain('migrateWorkflowFromStatuses');
     expect(logMigration.error).not.toHaveBeenCalled();
+  });
+
+  it('logs the types that need Enterprise Edition on an INFO line, not as failures', () => {
+    logWorkflowMigrationSummary([
+      result('Report', 'migrated'),
+      result('Case-Rfi', 'enterprise_only', StatusScope.RequestAccess, 'Enterprise edition is not enabled'),
+    ]);
+    expect(logMigration.info).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(logMigration.info).mock.calls[0][0]).toContain('enterprise_only=1, failed=0');
+    expect(vi.mocked(logMigration.info).mock.calls[1][0]).toContain('Case-Rfi (REQUEST_ACCESS)');
+    expect(logMigration.warn).not.toHaveBeenCalled();
   });
 
   it('logs no failure line when nothing failed', () => {

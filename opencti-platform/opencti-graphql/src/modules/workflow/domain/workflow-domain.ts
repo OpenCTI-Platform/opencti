@@ -550,6 +550,7 @@ const initializeWorkflowInstance = async (
   entity: BasicStoreEntity & { id?: string; internal_id?: string; x_opencti_workflow_id?: string },
   definitionData: WorkflowDefinitionResponse,
   { scope, suppliedStatus }: Pick<ResolvedEntityWorkflow, 'scope' | 'suppliedStatus'>,
+  onRead = false,
 ): Promise<WorkflowInstanceStoreEntity> => {
   const entityId = entity.id || entity.internal_id;
   const executionContext = bypassDraftContext(context);
@@ -559,7 +560,9 @@ const initializeWorkflowInstance = async (
   // (a) explicit status resolves to a valid state: start there, no projection write.
   // (b) explicit status does not resolve: start at initialState with a pendingError
   //     diagnostic, no projection write — the caller-supplied field is never overwritten.
-  // (c) no status supplied: start at initialState and project it onto the entity.
+  // (c) no status supplied: start at initialState and project it onto the entity, unless the instance is
+  //     backfilled by a read: an entity older than its workflow keeps no status until a user acts on it.
+  // In (b) and in the backfill of (c), the entity status is recorded as kept so read-repair leaves it alone too.
   let currentState = definitionData.initialState;
   // `scope` is the one the definition was resolved with. Global keeps the default 'standard' unless a supplied status resolved.
   let instanceScope: string = scope === StatusScope.Global ? 'standard' : scope;
@@ -575,21 +578,23 @@ const initializeWorkflowInstance = async (
     } else {
       pendingError = `Supplied x_opencti_workflow_id "${suppliedStatusId}" does not resolve to any state of the published workflow`;
     }
+  } else if (onRead) {
+    pendingError = 'The entity had no status when its workflow started: the status stays unset until the next transition';
   } else {
     shouldProject = true;
   }
 
+  const timestamp = new Date().toISOString();
+  const history: Array<Record<string, unknown>> = [{ state: currentState, user_id: user.id, timestamp, event: 'initialization' }];
+  if (pendingError) {
+    history.push({ state: currentState, status_id: suppliedStatusId ?? null, reason: suppliedStatusId ? 'unmapped' : 'unset', user_id: user.id, timestamp, event: EVENT_EXTERNAL_KEPT });
+  }
   const instanceInput: Record<string, unknown> = {
     entity_id: entityId,
     workflow_id: definitionData.id,
     currentState,
     scope: instanceScope,
-    history: JSON.stringify([{
-      state: currentState,
-      user_id: user.id,
-      timestamp: new Date().toISOString(),
-      event: 'initialization',
-    }]),
+    history: JSON.stringify(history),
   };
   if (pendingError) {
     instanceInput.pendingError = pendingError;
@@ -624,6 +629,7 @@ const ensureWorkflowInstance = async (
   definitionData: any,
   resolved: ResolvedEntityWorkflow,
   runInitialActions = true,
+  onRead = false,
 ): Promise<WorkflowInstanceStoreEntity> => {
   if (resolved.instanceEntity) return resolved.instanceEntity;
 
@@ -633,6 +639,7 @@ const ensureWorkflowInstance = async (
     entity as BasicStoreEntity & { id?: string; internal_id?: string },
     definitionData,
     resolved,
+    onRead,
   );
 
   if (!runInitialActions) return instanceEntity;
@@ -1857,9 +1864,9 @@ export const getWorkflowInstance = async (
       // from `context.user` (via `bypassDraftContext`), not from a separately-passed user
       // argument — so the WORKFLOW_MANAGER_USER identity must be set on the context itself.
       const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-      // The initial state's onEnter actions are not replayed: a read must never mutate the entity
-      // (e.g. resetAuthorizedMembers would lift a restriction on a plain GET).
-      instanceEntity = await ensureWorkflowInstance(executionContext, WORKFLOW_MANAGER_USER, entity, definitionData, resolved, false);
+      // The initial state's onEnter actions are not replayed and its status is not projected: a read must never
+      // mutate the entity (e.g. resetAuthorizedMembers would lift a restriction on a plain GET).
+      instanceEntity = await ensureWorkflowInstance(executionContext, WORKFLOW_MANAGER_USER, entity, definitionData, resolved, false, true);
     } catch (error) {
       logApp.warn('[OPENCTI-MODULE] Failed to lazily backfill WorkflowInstance for entity, falling back to synthesized instance', { cause: error, entityId: effectiveEntityId });
     }
@@ -1879,7 +1886,8 @@ export const getWorkflowInstance = async (
         const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
         const needsRepair = async (repairEntity: BasicStoreEntity, repairInstance: WorkflowInstanceStoreEntity) => {
           const entityStatusId = repairEntity.x_opencti_workflow_id;
-          if (entityStatusId && findKeptExternalStatusId(repairInstance) === entityStatusId) return false;
+          const kept = findKeptExternalEntry(repairInstance);
+          if (kept && (kept.status_id ?? null) === (entityStatusId ?? null)) return false;
           if (isExternalSyncInFlight(repairEntity, repairInstance)) return false;
           const expectedStatusId = await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, repairInstance.currentState);
           return !!expectedStatusId && entityStatusId !== expectedStatusId;
@@ -3047,9 +3055,10 @@ const EVENT_EXTERNAL_KEPT = 'event_external_kept';
 const EVENT_EXTERNAL_IGNORED = 'event_external_ignored';
 const EVENT_ADMIN_CLEAR = 'admin_clear_pending_state';
 
-const findKeptExternalStatusId = (instanceEntity: WorkflowInstanceStoreEntity): string | undefined => {
+// A kept entry with no status_id is an entity backfilled without status: read-repair leaves it unset.
+const findKeptExternalEntry = (instanceEntity: WorkflowInstanceStoreEntity): { status_id?: string | null } | undefined => {
   const entry = parseWorkflowHistory(instanceEntity).findLast((e) => e.event !== EVENT_EXTERNAL_IGNORED);
-  return entry?.event === EVENT_EXTERNAL_KEPT ? entry.status_id : undefined;
+  return entry?.event === EVENT_EXTERNAL_KEPT ? entry : undefined;
 };
 
 const recordKeptExternalWrite = async (

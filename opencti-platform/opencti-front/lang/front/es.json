@@ -5967,6 +5967,7 @@
   "The variables and time range of the published dashboard start from this preset": "Las variables y el rango de fechas del panel publicado parten de este preajuste",
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "Los distintos tipos de organizaciones que desempeñan un papel en la CTI, ya sea como fuente de información o como víctima o fuente de ataque, o incluso una forma de segregar a los usuarios en la plataforma.",
   "The widget is not called in the content": "El widget no se llama en el contenido",
+  "The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.": "El flujo de trabajo empieza en el primer estado de solicitud de acceso por orden. Asigne a otro estado de solicitud de acceso un orden inferior al de los estados aprobado y rechazado, o añada uno nuevo, y vuelva a abrir este cuadro de diálogo.",
   "Theme": "Tema",
   "theme": "tema",
   "Theme already exists": "El tema ya existe",
