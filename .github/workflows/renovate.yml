@@ -107,6 +107,8 @@ jobs:
           RENOVATE_PLATFORM_COMMIT: enabled
           # Branches written by the Mend Renovate app are not treated as modified by someone else.
           RENOVATE_GIT_IGNORED_AUTHORS: '["29139614+renovate[bot]@users.noreply.github.com"]'
+          # Pull requests and the Dependency Dashboard created by the Mend Renovate app are managed too.
+          RENOVATE_IGNORE_PR_AUTHOR: 'true'
           RENOVATE_REPOSITORY_CACHE: ${{ inputs.repoCache || 'enabled' }}
 
       - name: Save Renovate repository cache
