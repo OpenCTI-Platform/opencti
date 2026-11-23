@@ -709,6 +709,8 @@
   "Malware types": "Типы вредоносных программ",
   "Manage access restrictions": "Управление ограничениями доступа",
   "Manage advanced access restrictions on entities": "Управление расширенными ограничениями доступа к сущностям",
+  "Managed by id": "Управляется (ID)",
+  "Managed by type": "Управляется (тип)",
   "Managed connectors and their parameters, without their secrets": "Управляемые коннекторы и их параметры, без секретов",
   "Manager contracts": "Договоры с менеджерами",
   "Manager ID": "Идентификатор менеджера",

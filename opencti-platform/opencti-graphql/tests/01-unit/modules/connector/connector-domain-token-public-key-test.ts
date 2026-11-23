@@ -95,9 +95,9 @@ const connectorOtherCatalog = { ...connector, id: 'connector-b', internal_id: 'c
 const connectorSameCatalog = { ...connector, id: 'connector-c', internal_id: 'connector-c', name: 'connector-c' } as BasicStoreEntityConnector;
 
 // Tokens of the user as stored, kept in sync by the add and revoke mocks
-let userTokens: { id: string; name: string }[];
+let userTokens: { id: string; name: string; managed_by_type?: string; managed_by_id?: string }[];
 // Tokens of the user as the user cache sees them: the stored ones, unless a test makes the cache lag behind
-let cachedUserTokens: { id: string; name: string }[] | null;
+let cachedUserTokens: { id: string; name: string; managed_by_type?: string; managed_by_id?: string }[] | null;
 
 // Each read is one Composer request, with its own context
 const readToken = async (target = connector, context = {} as AuthContext) => {
@@ -116,11 +116,14 @@ describe('managed connector token encryption', () => {
     mockGetEntitiesMapFromCache.mockImplementation(async () => new Map([
       ['user-1', { id: 'user-1', internal_id: 'user-1', api_tokens: cachedUserTokens ?? userTokens }],
     ]));
-    mockStoreLoadById.mockImplementation(async (_context, _user, id) => ({ id, internal_id: id, api_tokens: [...userTokens] }));
+    // The connector still runs as user-1; the user as stored
+    mockStoreLoadById.mockImplementation(async (_context, _user, id, type) => (type === 'Connector'
+      ? { id, internal_id: id, connector_user_id: 'user-1' }
+      : { id, internal_id: id, api_tokens: [...userTokens] }));
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-1' }]);
-    mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }) => {
+    mockAddUserTokenByAdmin.mockImplementation(async (_context, _user, _userId, { name }, managedBy) => {
       tokenCount += 1;
-      userTokens.push({ id: `token-${tokenCount}`, name });
+      userTokens.push({ id: `token-${tokenCount}`, name, managed_by_type: managedBy?.type, managed_by_id: managedBy?.id });
       return { token_id: `token-${tokenCount}`, plaintext_token: `plaintext-${tokenCount}` };
     });
     // As the real one, which reloads the user from the database
@@ -168,8 +171,8 @@ describe('managed connector token encryption', () => {
 
   it('should keep serving the cached token when the user holds several Composer tokens', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
-    // Connectors sharing a user can each create a token with the same name: the first one found is not the cached one
-    userTokens.unshift({ id: 'token-other', name: 'Composer managed token' });
+    // A stale users cache can leave several tokens tagged with this connector: the first one found is not the cached one
+    userTokens.unshift({ id: 'token-other', name: 'Composer managed token (connector: connector-a)', managed_by_type: 'Connector', managed_by_id: 'connector-a' });
 
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     expect(await readToken()).toBe('public-key-1|plaintext-1');
@@ -180,7 +183,7 @@ describe('managed connector token encryption', () => {
   it('should regenerate the token when the cache holds a value written before the record format', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
     // Before the fix, the bare encrypted token was cached, whatever the key it was encrypted with
-    redisStore.set('composer:catalog-x:token:user-1', 'previous-public-key|plaintext-1');
+    redisStore.set('composer:connector:connector-a:token:user-1', 'previous-public-key|plaintext-1');
 
     expect(await readToken()).toBe('public-key-1|plaintext-2');
     expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'user-1', 'token-1');
@@ -212,19 +215,30 @@ describe('managed connector token encryption', () => {
     cachedUserTokens = [];
     expect(await readToken()).toBe('public-key-1|plaintext-1');
 
-    expect(await readToken(connectorSameCatalog)).toBe('public-key-1|plaintext-1');
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
     expect(mockAddUserTokenByAdmin).toHaveBeenCalledTimes(1);
   });
 
-  it('should rotate the token once when connectors sharing the user read it at the same time', async () => {
+  it('should rotate the token once when a connector is read twice at the same time', async () => {
     expect(await readToken()).toBe('public-key-1|plaintext-1');
+    mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-2' }]);
+
+    const tokens = await Promise.all([readToken(), readToken()]);
+    expect(tokens).toEqual(['public-key-2|plaintext-2', 'public-key-2|plaintext-2']);
+    expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledTimes(1);
+    expect(userTokens.map(({ id }) => id)).toEqual(['token-2']);
+  });
+
+  it('should rotate the own token of each connector sharing the user and the catalog when read at the same time', async () => {
+    expect(await readToken()).toBe('public-key-1|plaintext-1');
+    expect(await readToken(connectorSameCatalog)).toBe('public-key-1|plaintext-2');
     mockFindConnectorManagers.mockResolvedValue([{ public_key: 'public-key-2' }]);
 
     // Composer resolves all managed connectors in parallel
     const tokens = await Promise.all([readToken(), readToken(connectorSameCatalog)]);
-    expect(tokens).toEqual(['public-key-2|plaintext-2', 'public-key-2|plaintext-2']);
-    expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledTimes(1);
-    expect(userTokens.map(({ id }) => id)).toEqual(['token-2']);
+    expect([...tokens].sort()).toEqual(['public-key-2|plaintext-3', 'public-key-2|plaintext-4']);
+    expect(mockRevokeUserTokenByAdmin.mock.calls.map(([, , , tokenId]) => tokenId).sort()).toEqual(['token-1', 'token-2']);
+    expect(userTokens.map(({ managed_by_id }) => managed_by_id).sort()).toEqual(['connector-a', 'connector-c']);
   });
 
   it('should load the connector manager once per request', async () => {
