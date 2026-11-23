@@ -312,15 +312,19 @@ const IrEntities = ({ irId }: { irId: string }) => {
       percentWidth: 16,
       isSortable: false,
       render: (line: Line) => {
-        // The first reason as a chip, the others counted in a "+N" chip; every reason in the tooltip
+        // The first reason's name ellipsizes, its points and the "+N" count stay whole in non-shrinking chips;
+        // every reason is in the tooltip
         const reasons = line.match_score_breakdown
           .filter((o) => o.kind !== 'condition' && o.hit && o.points !== 0)
-          .map((o) => `${o.name} ${o.points > 0 ? '+' : ''}${o.points}`);
+          .map((o) => ({ name: o.name, points: `${o.points > 0 ? '+' : ''}${o.points}` }));
         if (reasons.length === 0) return '-';
         return (
-          <Box title={reasons.join('\n')} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
-            <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
-              <Chip label={reasons[0]} size="sm" />
+          <Box title={reasons.map((r) => `${r.name} ${r.points}`).join('\n')} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
+            <Text as="span" variant="content-caption" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {reasons[0].name}
+            </Text>
+            <Box sx={{ flexShrink: 0 }}>
+              <Chip label={reasons[0].points} size="sm" />
             </Box>
             {reasons.length > 1 && (
               <Box sx={{ flexShrink: 0 }}>
