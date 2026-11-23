@@ -191,17 +191,23 @@ const buildInput = (ids: Ids, confidencePoints = 40): Record<string, any> => ({
 
 const octi = (extension: Record<string, unknown>) => ({ [STIX_EXT_OCTI]: extension });
 
-// Stream events after the position of a requirement created now (its position is one rescan day back)
+// Stream positions of the test events: strictly increasing across the tests, so every batch comes after the position
+// the previous batch left (a requirement created now starts one rescan day back)
+let streamClock = Date.now();
+const nextEventId = () => {
+  streamClock += 1;
+  return `${streamClock}-0`;
+};
+
 const buildEvents = (ids: Ids) => {
-  const now = Date.now();
-  const event = (offset: number, type: string, data: unknown, context?: unknown) => ({
-    id: `${now + offset}-0`,
+  const event = (type: string, data: unknown, context?: unknown) => ({
+    id: nextEventId(),
     event: type,
     data: { type, scope: 'external', message: 'test', origin: {}, version: '4', data, ...(context ? { context } : {}) },
   });
   return [
-    event(1, 'create', { id: APT41_STIX_ID, type: 'intrusion-set', name: 'APT41', extensions: octi({ id: ids.actor, type: 'Intrusion-Set' }) }),
-    event(2, 'create', {
+    event('create', { id: APT41_STIX_ID, type: 'intrusion-set', name: 'APT41', extensions: octi({ id: ids.actor, type: 'Intrusion-Set' }) }),
+    event('create', {
       id: APT41_USES_PARADISE_STIX_ID,
       type: 'relationship',
       relationship_type: 'uses',
@@ -209,21 +215,21 @@ const buildEvents = (ids: Ids) => {
       target_ref: PARADISE_STIX_ID,
       extensions: octi({ id: ids.relationship, source_ref: ids.actor, source_type: 'Intrusion-Set', target_ref: ids.malware, target_type: 'Malware' }),
     }),
-    event(3, 'update', {
+    event('update', {
       id: PARADISE_STIX_ID,
       type: 'malware',
       name: 'Paradise Ransomware',
       extensions: octi({ id: ids.malware, type: 'Malware' }),
     }, { patch: [{ op: 'replace', path: '/description', value: 'updated' }, { op: 'replace', path: '/modified', value: 'now' }] }),
-    event(4, 'create', { id: 'sighting--test', type: 'sighting', extensions: octi({ id: 'sighting-id', type: 'Stix-Sighting-Relationship' }) }),
-    event(5, 'delete', { id: PARADISE_STIX_ID, type: 'malware', extensions: octi({ id: ids.malware, type: 'Malware' }) }),
+    event('create', { id: 'sighting--test', type: 'sighting', extensions: octi({ id: 'sighting-id', type: 'Stix-Sighting-Relationship' }) }),
+    event('delete', { id: PARADISE_STIX_ID, type: 'malware', extensions: octi({ id: ids.malware, type: 'Malware' }) }),
   ];
 };
 
-const mockStream = (events: unknown[], offsetMs = 10) => {
+const mockStream = (events: unknown[]) => {
   vi.spyOn(streamHandler, 'fetchStreamEventsRangeFromEventId').mockImplementation(async (_from: string, callback: any) => {
     await callback(events);
-    return { lastEventId: `${Date.now() + offsetMs}-0` } as any;
+    return { lastEventId: `${streamClock}-0` } as any;
   });
 };
 
@@ -275,7 +281,7 @@ describe('Intelligence requirement manager: stream processing', () => {
 
   it('should do nothing on a batch without knowledge creation or update', async () => {
     const before = await readMatches(irId);
-    mockStream([], 20);
+    mockStream([]);
     await intelligenceRequirementManagerHandler();
     const after = await readMatches(irId);
     expect(after.length).toEqual(before.length);
@@ -375,7 +381,7 @@ describe('Intelligence requirement manager: stream processing', () => {
     const { data } = await queryAsAdminWithSuccess({ query: MATCHES_STATUS_QUERY, variables: { ids: [malware!.id], status: 'removed' } });
     expect(data.intelligenceRequirementMatchesStatusUpdate).toEqual(1);
     // A new proof on a removed entity does not bring it back
-    mockStream(buildEvents(ids), 30);
+    mockStream(buildEvents(ids));
     await intelligenceRequirementManagerHandler();
     const after = (await readMatches(irId)).find((m) => m.match_entity_id === ids.malware);
     expect(after?.match_status).toEqual('removed');
@@ -384,7 +390,7 @@ describe('Intelligence requirement manager: stream processing', () => {
   it('should keep processing the batch when the evaluation of one candidate fails', async () => {
     const before = await readMatches(irId);
     vi.spyOn(irPipeline, 'upsertCandidate').mockRejectedValue(new Error('candidate evaluation failure'));
-    mockStream(buildEvents(ids), 40);
+    mockStream(buildEvents(ids));
     await expect(intelligenceRequirementManagerHandler()).resolves.toBeUndefined();
     const after = await readMatches(irId);
     expect(after.length).toEqual(before.length);
@@ -393,7 +399,7 @@ describe('Intelligence requirement manager: stream processing', () => {
   it('should record the processing error of a requirement and keep its position', async () => {
     const before = await readMatches(irId);
     const failure = vi.spyOn(irEngine, 'buildEngineState').mockRejectedValue(new Error('engine state failure'));
-    mockStream(buildEvents(ids), 50);
+    mockStream(buildEvents(ids));
     await expect(intelligenceRequirementManagerHandler()).resolves.toBeUndefined();
     expect(failure).toHaveBeenCalled();
     const after = await readMatches(irId);
