@@ -105,6 +105,8 @@ describe('XtmEmblem (single XTM emblem, Sam 23 Nov 2026)', () => {
     expect(screen.getByTestId('xtmone-section')).toHaveAttribute('data-status', 'not_connected');
     expect(screen.getByRole('link', { name: 'Open in OpenAEV' })).toHaveAttribute('href', aevCounterpart.object_url);
     expect(screen.getByRole('link', { name: 'Connect XTM One' })).toHaveAttribute('href', XTM_CONNECT_DOC_URL);
+    // A design system separator between the three sections, none before the first.
+    expect(screen.getAllByTestId('xtm-surface-separator')).toHaveLength(2);
   });
 
   it('a user who cannot configure the platform sees no "Connect" entry', async () => {

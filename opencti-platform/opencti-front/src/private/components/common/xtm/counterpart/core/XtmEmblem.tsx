@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Box from '@mui/material/Box';
 import Popover from '@mui/material/Popover';
-import { Chip, Paper, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Paper, Separator, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../../../components/i18n';
@@ -25,6 +25,8 @@ import { XTMONE_PRODUCT, type XtmProduct } from './xtmProducts';
 // Design system inks, the same in the three products.
 export const EMBLEM_FOUND = 'var(--color-filigran-ia-primary)';
 export const EMBLEM_MUTED = 'var(--icon-disabled)';
+// Secondary ink of labels and explanations, a token the design system defines.
+export const SECONDARY_INK = 'var(--text-default-secondary)';
 
 /** The ink of a product mark: its found ink when active, the disabled ink otherwise. */
 export const emblemInk = (product: XtmProduct, active: boolean): string => (active ? (product.foundColor ?? 'var(--icon-highlight)') : EMBLEM_MUTED);
@@ -109,7 +111,7 @@ const ProductSection: React.FC<{ product: XtmProduct; state: XtmCounterpartState
             <Box component="dl" sx={{ display: 'grid', gridTemplateColumns: 'max-content 1fr', columnGap: 2, rowGap: 0.5, m: 0 }}>
               {facts.map((fact) => (
                 <Box key={fact.label} sx={{ display: 'contents' }}>
-                  <Box component="dt" sx={{ color: 'var(--text-secondary)' }}>{fact.label}</Box>
+                  <Box component="dt" sx={{ color: SECONDARY_INK }}>{fact.label}</Box>
                   <Box component="dd" sx={{ m: 0, fontWeight: 600 }}>{fact.value}</Box>
                 </Box>
               ))}
@@ -117,8 +119,8 @@ const ProductSection: React.FC<{ product: XtmProduct; state: XtmCounterpartState
           )}
         </>
       )}
-      {kind === 'not_found' && <Box component="span" sx={{ color: 'var(--text-secondary)' }}>{t_i18n(product.howItGetsThere)}</Box>}
-      {kind === 'unavailable' && <Box component="span" sx={{ color: 'var(--text-secondary)' }}>{t_i18n(product.unavailable)}</Box>}
+      {kind === 'not_found' && <Box component="span" sx={{ color: SECONDARY_INK }}>{t_i18n(product.howItGetsThere)}</Box>}
+      {kind === 'unavailable' && <Box component="span" sx={{ color: SECONDARY_INK }}>{t_i18n(product.unavailable)}</Box>}
       {href && (
         <Box>
           <Button variant="secondary" size="small" href={href} target="_blank" rel="noopener noreferrer">{t_i18n(product.open)}</Button>
@@ -190,9 +192,10 @@ export const XtmEmblem: React.FC<XtmEmblemProps> = ({ products, objectId }) => {
               <Box component="span" sx={{ fontWeight: 600 }}>{t_i18n('Across the XTM Platform')}</Box>
             </Box>
             {sections.map(({ product, state, kind }, index) => (
-              <Box key={product.product} sx={index > 0 ? { borderTop: '1px solid var(--border-primary)', pt: 2 } : undefined}>
+              <React.Fragment key={product.product}>
+                {index > 0 && <Separator variant="subtle" data-testid="xtm-surface-separator" />}
                 <ProductSection product={product} state={state} kind={kind} />
-              </Box>
+              </React.Fragment>
             ))}
           </Box>
         </Paper>
