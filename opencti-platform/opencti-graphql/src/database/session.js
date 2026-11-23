@@ -60,6 +60,26 @@ const createApplicationSession = async () => {
 
 const getApplicationSession = memoize(createApplicationSession);
 
+// Maximum lifetime of a session in ms, counted from the login and never extended by the user activity.
+// 0 (the default), or any value that is not a positive number, means no limit.
+export const getSessionMaxLifetime = () => {
+  const maxLifetime = Number(conf.get('app:session_max_lifetime') ?? 0);
+  return Number.isFinite(maxLifetime) && maxLifetime > 0 ? maxLifetime : 0;
+};
+
+// A session over its maximum lifetime must be ended, whatever the activity of its user.
+// A session without a valid login time cannot prove its age: it is ended as well when a limit is set.
+export const isSessionOverMaxLifetime = (sessionUser, maxLifetime = getSessionMaxLifetime(), nowTime = Date.now()) => {
+  if (maxLifetime <= 0) {
+    return false;
+  }
+  const loginTime = Date.parse(sessionUser?.session_creation ?? '');
+  if (Number.isNaN(loginTime)) {
+    return true;
+  }
+  return nowTime - loginTime >= maxLifetime;
+};
+
 const getSessionStore = async () => (await getApplicationSession()).sessionStore;
 
 export const getSessionMiddleware = async () => (await getApplicationSession()).session;
