@@ -1,24 +1,15 @@
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useLocation, useSearchParams } from 'react-router';
-import { Alert, Paper, Text } from '@filigran/design-system';
+import { Alert, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
-import {
-  emptyDraft,
-  type IrCriterionKind,
-  type IrCriterionMode,
-  type IrDirection,
-  type IrDraft,
-  type IrGroupKind,
-  type IrGroupRole,
-  type IrPriority,
-  type IrStatus,
-} from './irConfigTypes';
+import IrCreationWizard from './IrCreationWizard';
+import { type IrCriterionKind, type IrCriterionMode, type IrDirection, type IrDraft, type IrGroupKind, type IrGroupRole, type IrPriority, type IrStatus } from './irConfigTypes';
 import { type IrConfigView, readConfigView, writeConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationQuery, IntelligenceRequirementConfigurationQuery$data } from './__generated__/IntelligenceRequirementConfigurationQuery.graphql';
 
@@ -179,37 +170,6 @@ const IrViewToggle = ({ view, onChange }: { view: IrConfigView; onChange: (view:
   );
 };
 
-// Creation: the user picks how to write the criteria before the form opens
-const IrViewChooser = ({ onPick }: { onPick: (view: IrConfigView) => void }) => {
-  const { t_i18n } = useFormatter();
-  const choices: { view: IrConfigView; title: string; text: string; example: string }[] = [
-    {
-      view: 'fields',
-      title: t_i18n('Form fields'),
-      text: t_i18n('Every option of a criterion is a field: relationship types, direction, starting groups, target types.'),
-      example: t_i18n('Relationship types: uses · Direction: outgoing (anchor → target) · Target types: Malware'),
-    },
-    {
-      view: 'sentence',
-      title: t_i18n('Sentences (beta)'),
-      text: t_i18n('Every criterion reads as a sentence; click a part of the sentence to change it. Same configuration, same engine.'),
-      example: t_i18n('Bring in automatically the Malware used by North Korean actors'),
-    },
-  ];
-  return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 420px))', gap: 2 }}>
-      {choices.map((c) => (
-        <Paper key={c.view} padding={24}>
-          <Text as="div" variant="title-sm" style={{ marginBottom: 8 }}>{c.title}</Text>
-          <Text as="p" variant="content-compact" style={{ marginBottom: 12 }}>{c.text}</Text>
-          <Text as="p" variant="content-caption" style={{ marginBottom: 16, opacity: 0.8, fontStyle: 'italic' }}>{c.example}</Text>
-          <Button variant={c.view === 'sentence' ? 'primary' : 'secondary'} onClick={() => onPick(c.view)}>{t_i18n('Start')}</Button>
-        </Paper>
-      ))}
-    </Box>
-  );
-};
-
 // The Configuration tab of a requirement: rendered under its header and tabs (IntelligenceRequirement), which carry the breadcrumbs
 export const IntelligenceRequirementConfigurationTab = ({ irId }: { irId: string }) => {
   const { t_i18n } = useFormatter();
@@ -238,8 +198,8 @@ const IntelligenceRequirementConfiguration = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const aiNotes = state?.aiNotes;
   const picked = searchParams.get('view');
-  // A proposal of the AI opens in the form fields, as before; a new requirement asks first
-  const view: IrConfigView | null = picked === 'fields' || picked === 'sentence' ? picked : (state?.aiDraft ? 'fields' : null);
+  // A proposal of the AI opens in the form fields, as before; a new requirement starts with the creation wizard
+  const view: IrConfigView = picked === 'fields' || picked === 'sentence' ? picked : 'fields';
   const changeView = (next: IrConfigView) => setSearchParams({ view: next }, { replace: true, state });
   return (
     <>
@@ -271,12 +231,12 @@ const IntelligenceRequirementConfiguration = () => {
           />
         </Box>
       )}
-      {view ? (
+      {state?.aiDraft ? (
         <>
           <IrViewToggle view={view} onChange={changeView} />
-          <IntelligenceRequirementConfigurationForm initialDraft={state?.aiDraft ?? emptyDraft()} view={view} onCreated={(id) => writeConfigView(id, view)} />
+          <IntelligenceRequirementConfigurationForm initialDraft={state.aiDraft} view={view} onCreated={(id) => writeConfigView(id, view)} />
         </>
-      ) : <IrViewChooser onPick={changeView} />}
+      ) : <IrCreationWizard />}
     </>
   );
 };
