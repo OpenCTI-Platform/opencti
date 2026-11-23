@@ -32,10 +32,14 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
 import { extractRefererPathFromReq, extractSafeRedirectFromReq, sanitizeReferer, setCookieError, decodeOidcState } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
-import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { AuthType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
+import { AuthenticationFailure } from '../config/errors';
+
+// The passport routes serve the redirect-based providers (SSO) only: the form providers are served by the login form
+const isServedByPassportRoutes = (provider) => PROVIDERS.some((p) => p.provider === provider && p.type === AuthType.AUTH_SSO);
 
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
@@ -416,7 +420,7 @@ const createApp = async (app, schema) => {
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
       const { provider } = req.params;
-      const strategy = passport._strategy(provider);
+      const strategy = isServedByPassportRoutes(provider) ? passport._strategy(provider) : undefined;
       if (!strategy) {
         setCookieError(res, `Unknown authentication provider '${provider}'`);
         logApp.info('Unknown authentication provider', { provider });
@@ -482,6 +486,10 @@ const createApp = async (app, schema) => {
     });
 
     try {
+      if (!isServedByPassportRoutes(provider)) {
+        logApp.info('Authentication provider not served by the callback route', { provider });
+        throw AuthenticationFailure();
+      }
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       await sessionAuthenticateUser(context, req, logged, provider);
