@@ -160,6 +160,19 @@ describe('XtmRowMark behind the flag', () => {
     expect(screen.queryByTestId('openaev-row-mark')).not.toBeInTheDocument();
     expect(mocks.calls).toHaveLength(0);
   });
+
+  it('is a link-role span, never an anchor inside the row link, and opens the product in a new tab', async () => {
+    mocks.results = [result('vuln-1', 'openaev', 'found', aevCounterpart)];
+    const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
+    testRender(<XtmRowMark product={OPENAEV_PRODUCT} objectId="vuln-1" />);
+    const mark = await screen.findByTestId('openaev-row-mark');
+    expect(mark.tagName).toBe('SPAN');
+    expect(mark).toHaveAttribute('role', 'link');
+    expect(mark).not.toHaveAttribute('href');
+    mark.click();
+    expect(opened).toHaveBeenCalledWith('https://aev.example/admin/assets/asset-1', '_blank', 'noopener,noreferrer');
+    opened.mockRestore();
+  });
 });
 
 describe('safeCounterpartUrl', () => {

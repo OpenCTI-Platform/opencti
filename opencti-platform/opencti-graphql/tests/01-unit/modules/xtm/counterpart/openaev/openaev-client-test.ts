@@ -86,6 +86,7 @@ describe('OpenAEV client', () => {
     expect(mocks.post).toHaveBeenCalledWith(
       `/api/tenants/${OPENAEV_DEFAULT_TENANT_ID}/xtm/objects/assets`,
       { counterpart_keys: ['web-01'] },
+      { maxRedirects: 0 },
     );
     expect(mocks.jwt).toHaveBeenCalledWith(ALICE, 'https://aev.example.com');
     expect(mocks.clientOptions[0].baseURL).toBe('https://aev.example.com');
@@ -110,6 +111,8 @@ describe('OpenAEV client', () => {
     connect();
     mocks.post.mockRejectedValueOnce(Object.assign(new Error('denied'), { status: 403 }));
     await expect(fetchOpenAevObjects('assets', ['web-01'], ALICE)).rejects.toMatchObject({ reason: 'forbidden' });
+    // 403 and 404 are left to the domain: the client warns only on an outage.
+    expect(mocks.warn).not.toHaveBeenCalled();
   });
 
   it('trusts the administrator-configured URL past the outbound guard', async () => {
@@ -219,6 +222,6 @@ describe('OpenAEV counterpart provider', () => {
       { id: 'ap-1', product: 'openaev', status: 'found' },
     ]);
     expect(results[0].counterpart?.key).toBe('T1059.001');
-    expect(mocks.post).toHaveBeenCalledWith(expect.stringContaining('/xtm/objects/attack-patterns'), { counterpart_keys: ['T1059.001'] });
+    expect(mocks.post).toHaveBeenCalledWith(expect.stringContaining('/xtm/objects/attack-patterns'), { counterpart_keys: ['T1059.001'] }, { maxRedirects: 0 });
   });
 });

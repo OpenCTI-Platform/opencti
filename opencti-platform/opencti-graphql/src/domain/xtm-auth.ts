@@ -210,11 +210,13 @@ const XTM_ONE_EXCHANGE_TIMEOUT_MS = 5000;
  * A JWT XTM One signs for the calling user, addressed to another platform registered in XTM One
  * (`POST {xtm_one_url}/xtm/auth/exchange`, XTM One #952): this platform proves the user with its
  * own per-user JWT addressed to XTM One, and XTM One answers a token whose subject is the XTM One
- * account of that user. `undefined` when no XTM One is configured or on any refusal or failure,
- * so a caller keeps its behaviour without it. Never cached here, never logged.
+ * account of that user. `undefined` when XTM One is not connected (URL and xtm:xtm_one_token, as
+ * every other XTM One call site: the default configuration names a URL without a token, and the
+ * admin never opted in) or on any refusal or failure, so a caller keeps its behaviour without it.
+ * Never cached here, never logged.
  */
 export const exchangeXtmOneUserToken = async (user: { id: string; user_email: string }, audience: string): Promise<string | undefined> => {
-  if (!xtmOneUrl) {
+  if (!xtmOneUrl || !conf.get('xtm:xtm_one_token')) {
     return undefined;
   }
   try {

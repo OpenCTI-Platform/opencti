@@ -38,8 +38,9 @@ enum XtmCounterpartStatus {
   unavailable
 }
 
-# The answer for one object of this platform in one connected product. The product answers under
-# the calling user's own rights: facts only when that user has rights there.
+# The answer for one object of this platform in one connected product. OpenAEV and XTM One answer
+# under the calling user's own rights. OpenCRQ answers as its service account: name and link for any
+# user who reads the object here, facts only when that user has rights in OpenCRQ.
 type XtmCounterpartResult {
   id: String!
   product: String!

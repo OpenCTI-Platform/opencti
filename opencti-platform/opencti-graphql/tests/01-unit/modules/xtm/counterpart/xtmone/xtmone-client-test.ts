@@ -78,7 +78,7 @@ describe('XTM One counterpart client', () => {
     connect();
     mocks.post.mockResolvedValue({ data: { items: [item('web-01')] } });
     const result = await fetchXtmOneAssets(['web-01'], ALICE);
-    expect(mocks.post).toHaveBeenCalledWith(XTM_ONE_LOOKUP_PATH, { keys: ['web-01'] });
+    expect(mocks.post).toHaveBeenCalledWith(XTM_ONE_LOOKUP_PATH, { keys: ['web-01'] }, { maxRedirects: 0 });
     expect(mocks.clientOptions[0].baseURL).toBe('https://one.example.com');
     expect(mocks.jwt).toHaveBeenCalledWith(ALICE, 'https://one.example.com');
     expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer jwt-alice@https://one.example.com');
@@ -107,6 +107,7 @@ describe('XTM One counterpart client', () => {
     await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'not_supported' });
     mocks.post.mockRejectedValueOnce(Object.assign(new Error('denied'), { response: { status: 403 } }));
     await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'forbidden' });
+    expect(mocks.warn).not.toHaveBeenCalled();
     mocks.post.mockRejectedValueOnce(Object.assign(new Error('boom'), { response: { status: 502 } }));
     await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
     mocks.post.mockResolvedValueOnce({ data: {} });

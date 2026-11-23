@@ -1,7 +1,7 @@
 import conf, { logApp } from '../../../../config/conf';
 import { getHttpClient } from '../../../../utils/http-client';
 import { counterpartAuthorization } from '../core/counterpart-auth';
-import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-errors';
+import { type CounterpartCaller, lookupFailureOf } from '../core/counterpart-errors';
 
 const XTM_ONE_TIMEOUT_MS = 5000;
 // XTM One's inventory lookup (XTM-One-Platform/xtm-one#1349): the assets the given identifiers name.
@@ -56,7 +56,8 @@ export const fetchXtmOneAssets = async (keys: string[], caller: CounterpartCalle
         'Content-Type': 'application/json',
       },
     });
-    const response = await httpClient.post(XTM_ONE_LOOKUP_PATH, { keys });
+    // No redirect: the user's token would follow it.
+    const response = await httpClient.post(XTM_ONE_LOOKUP_PATH, { keys }, { maxRedirects: 0 });
     const items = response.data?.items;
     if (!Array.isArray(items)) {
       throw Object.assign(new Error('unreadable body'), { status: 'unreadable' });
@@ -75,8 +76,6 @@ export const fetchXtmOneAssets = async (keys: string[], caller: CounterpartCalle
         }),
       }));
   } catch (error: any) {
-    // Never log the request: its headers carry the user's token.
-    logApp.warn('[XTM One] Counterpart lookup failed', { status: error?.status ?? error?.response?.status, code: error?.code });
-    throw lookupErrorOf(error, 'XTM One');
+    throw lookupFailureOf(error, 'XTM One', (message, meta) => logApp.warn(message, meta));
   }
 };

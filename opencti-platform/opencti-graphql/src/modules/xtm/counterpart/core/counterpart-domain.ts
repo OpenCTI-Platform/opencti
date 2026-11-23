@@ -73,10 +73,12 @@ export const sanitiseFacts = (facts: unknown): XtmCounterpartFact[] => {
 };
 
 /**
- * A connected XTM product able to resolve counterparts. Each lookup runs as the calling user
- * (a short-lived JWT signed by this platform, as for XTM One): the product applies that user's
- * own rights, so a user without rights there gets no facts. A third product registers one more
- * provider, nothing else changes.
+ * A connected XTM product able to resolve counterparts. OpenAEV and XTM One run each lookup as the
+ * calling user (a short-lived JWT signed by this platform): the product applies that user's own
+ * rights, so a user without rights there gets nothing or no facts. OpenCRQ authenticates the lookup
+ * with its service account: any user who can read the object here gets the OpenCRQ object name and
+ * link, and only the facts depend on the user (the XTM One token forwarded in X-XTM-User-Token).
+ * A third product registers one more provider, nothing else changes.
  * resolve throws CounterpartLookupError('not_supported') when the product has no such route
  * and CounterpartLookupError('unavailable') on any other failure.
  */
@@ -151,7 +153,8 @@ export const counterpartsOfAnswer = (
 ): XtmCounterpart[] => {
   const asked = new Set(keys);
   return objects
-    .filter((o) => o && typeof o.object_id === 'string' && typeof o.object_url === 'string')
+    // object_url becomes an href: absolute http(s) only.
+    .filter((o) => o && typeof o.object_id === 'string' && typeof o.object_url === 'string' && isHttpUrl(o.object_url))
     .map((o) => ({ ...o, key: normaliseCounterpartKey(kind, o.object_key) ?? o.object_key }))
     .filter((o) => asked.has(o.key))
     .map((o) => ({

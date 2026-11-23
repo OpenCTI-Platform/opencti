@@ -102,6 +102,15 @@ describe('OpenCRQ client', () => {
     expect(mocks.jwt).not.toHaveBeenCalled();
     expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer crq-service-token');
     expect(mocks.clientOptions[0].headers).not.toHaveProperty('X-XTM-User-Token');
+    // Never follows a redirect: X-XTM-User-Token would go with it.
+    expect(mocks.get.mock.calls[0][1]).toEqual({ maxRedirects: 0 });
+  });
+
+  it('reads the deprecated xtm:opengrc_url when xtm:opencrq_url is not set', () => {
+    mocks.settings['xtm:opengrc_url'] = 'https://grc.example.com/';
+    mocks.settings['xtm:opencrq_token'] = 'crq-service-token';
+    expect(getOpenCrqUrl()).toBe('https://grc.example.com');
+    expect(isOpenCrqConnected()).toBe(true);
   });
 
   it('forwards the user token XTM One exchanged for the calling user, addressed to OpenCRQ', async () => {
@@ -126,8 +135,12 @@ describe('OpenCRQ client', () => {
     connect();
     mocks.get.mockRejectedValueOnce(Object.assign(new Error('nf'), { status: 404 }));
     await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'not_supported' });
+    // 404 is left to the domain (one warning per route per process): no warning here.
+    expect(mocks.warn).not.toHaveBeenCalled();
+    // A 403 is the service account or its tenant refused, never the user: an outage, logged.
     mocks.get.mockRejectedValueOnce(Object.assign(new Error('denied'), { status: 403 }));
-    await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'forbidden' });
+    await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
+    expect(mocks.warn).toHaveBeenCalledTimes(1);
     mocks.get.mockRejectedValueOnce(Object.assign(new Error('boom'), { status: 401 }));
     await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
     mocks.get.mockResolvedValueOnce({ data: { result: {} } });

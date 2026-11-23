@@ -1,7 +1,7 @@
 import conf, { logApp } from '../../../../config/conf';
 import { getHttpClient } from '../../../../utils/http-client';
 import { counterpartAuthorization } from '../core/counterpart-auth';
-import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-errors';
+import { type CounterpartCaller, lookupFailureOf } from '../core/counterpart-errors';
 
 // OpenAEV's default tenant (io.openaev.database.model.Tenant.DEFAULT_TENANT_UUID): the tenant a
 // single-tenant OpenAEV serves. A multi-tenant OpenAEV is reached with xtm:openaev_tenant_id.
@@ -60,14 +60,13 @@ export const fetchOpenAevObjects = async (path: OpenAevObjectPath, keys: string[
       },
     });
     const tenantId = encodeURIComponent(getOpenAevTenantId());
-    const response = await httpClient.post(`/api/tenants/${tenantId}/xtm/objects/${path}`, { counterpart_keys: keys });
+    // No redirect: the user's token would follow it.
+    const response = await httpClient.post(`/api/tenants/${tenantId}/xtm/objects/${path}`, { counterpart_keys: keys }, { maxRedirects: 0 });
     if (!Array.isArray(response.data)) {
       throw Object.assign(new Error('unreadable body'), { status: 'unreadable' });
     }
     return response.data as OpenAevLocalObject[];
   } catch (error: any) {
-    // Never log the request: its headers carry the user's token.
-    logApp.warn('[OPENAEV] Counterpart lookup failed', { path, status: error?.status, code: error?.code });
-    throw lookupErrorOf(error, 'OpenAEV');
+    throw lookupFailureOf(error, 'OpenAEV', (message, meta) => logApp.warn(message, { path, ...meta }));
   }
 };

@@ -212,19 +212,27 @@ export const XtmRowMark: React.FC<{ product: XtmProduct; objectId: string | null
   if (state.status !== 'match') return null;
   const href = safeCounterpartUrl(state.counterpart.object_url);
   if (!href) return null;
+  // The row is itself a link (DataTableLine, SystemLine): the mark is a span with the link role, never
+  // an <a> inside the row's <a>, and opens the product in a new tab without opening the row.
+  const open = (event: React.SyntheticEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    window.open(href, '_blank', 'noopener,noreferrer');
+  };
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <Box
-          component="a"
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
+          component="span"
+          role="link"
+          tabIndex={0}
           aria-label={t_i18n(product.open)}
           data-testid={`${product.product}-row-mark`}
-          // The row is itself a link: the mark opens the product without opening the row.
-          onClick={(event: React.MouseEvent) => event.stopPropagation()}
-          sx={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, ml: 0.5, verticalAlign: 'middle' }}
+          onClick={open}
+          onKeyDown={(event: React.KeyboardEvent) => {
+            if (event.key === 'Enter') open(event);
+          }}
+          sx={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, ml: 0.5, verticalAlign: 'middle', cursor: 'pointer' }}
         >
           <XtmMark src={product.mark} size={16} color={emblemInk(product, true)} />
         </Box>

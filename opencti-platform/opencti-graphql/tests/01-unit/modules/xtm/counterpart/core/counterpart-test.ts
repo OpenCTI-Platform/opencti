@@ -21,6 +21,7 @@ vi.mock('../../../../../../src/domain/xtm-auth', () => ({
 
 import {
   type CounterpartProvider,
+  counterpartsOfAnswer,
   COUNTERPART_CACHE_TTL_MS,
   CounterpartLookupError,
   normaliseCounterpartKey,
@@ -32,6 +33,17 @@ import {
   findXtmCounterpartsByIds,
   type XtmCounterpart,
 } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+
+describe('counterpartsOfAnswer: object_url becomes an href', () => {
+  it('keeps absolute http(s) URLs only', () => {
+    const answer = counterpartsOfAnswer('OpenAEV', 'ASSET', ['a', 'b', 'c'], [
+      { object_key: 'a', object_id: '1', object_type: 'asset', object_url: 'https://aev.example/a' },
+      { object_key: 'b', object_id: '2', object_type: 'asset', object_url: 'javascript:alert(1)' },
+      { object_key: 'c', object_id: '3', object_type: 'asset', object_url: '/relative/c' },
+    ]);
+    expect(answer.map((c) => c.key)).toEqual(['a']);
+  });
+});
 
 describe('XTM counterparts: dedicated feature flag XTM_COUNTERPARTS', () => {
   it('answers no connection and no counterpart while the flag is off', async () => {

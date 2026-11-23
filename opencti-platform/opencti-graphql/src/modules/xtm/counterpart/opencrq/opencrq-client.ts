@@ -1,7 +1,7 @@
 import conf, { logApp } from '../../../../config/conf';
 import { getHttpClient } from '../../../../utils/http-client';
 import { exchangeXtmOneUserToken } from '../../../../domain/xtm-auth';
-import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-errors';
+import { type CounterpartCaller, lookupFailureOf } from '../core/counterpart-errors';
 
 const OPENCRQ_TIMEOUT_MS = 5000;
 const OPENCRQ_LOOKUP_PROCEDURE = 'xtm.lookup';
@@ -26,8 +26,9 @@ export interface OpenCrqLocalObject {
 
 const trimSlash = (url: string) => url.replace(/\/+$/, '');
 
+// xtm:opencrq_url, else the deprecated xtm:opengrc_url older installs still set.
 export const getOpenCrqUrl = (): string | null => {
-  const url = conf.get('xtm:opencrq_url');
+  const url = conf.get('xtm:opencrq_url') || conf.get('xtm:opengrc_url');
   return url ? trimSlash(String(url)) : null;
 };
 
@@ -48,15 +49,18 @@ const getOpenCrqToken = (): string | null => {
   return token ? String(token) : null;
 };
 
-// Connected when both the URL and the service-account token are set.
+// Connected when both the URL (getOpenCrqUrl) and the service-account token are set.
 export const isOpenCrqConnected = (): boolean => !!(getOpenCrqUrl() && getOpenCrqToken());
 
 /**
  * Asks OpenCRQ which of the given keys it holds (tRPC query GET {api}/xtm.lookup?input=...) with the
  * service-account bearer, forwarding the XTM One token of the calling user in X-XTM-User-Token: OpenCRQ
  * reads the financial facts as that person; without XTM One (no token exchange) it answers the links only.
+ * The bearer is the service account, never the user: any user who can read the object here gets the
+ * OpenCRQ object name and link; only the facts depend on the user's own rights in OpenCRQ.
  * Throws CounterpartLookupError: not_supported on a 404 (an OpenCRQ without the procedure),
- * forbidden on a 403, unavailable on anything else.
+ * unavailable on anything else, a 403 included: OpenCRQ answers 403 only when the service account or
+ * its tenant is refused, never for a user, so it is a fault of the connection, not a per-user right.
  */
 export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[], caller: CounterpartCaller): Promise<OpenCrqLocalObject[]> => {
   const apiUrl = getOpenCrqApiUrl();
@@ -81,15 +85,14 @@ export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[
       },
     });
     const input = encodeURIComponent(JSON.stringify({ kind, keys }));
-    const response = await httpClient.get(`/${OPENCRQ_LOOKUP_PROCEDURE}?input=${input}`);
+    // No redirect: X-XTM-User-Token would follow it (http-client strips only the standard auth headers).
+    const response = await httpClient.get(`/${OPENCRQ_LOOKUP_PROCEDURE}?input=${input}`, { maxRedirects: 0 });
     const data = response.data?.result?.data;
     if (!Array.isArray(data)) {
       throw Object.assign(new Error('unreadable body'), { status: 'unreadable' });
     }
     return data as OpenCrqLocalObject[];
   } catch (error: any) {
-    // Never log the request: its headers carry the user's token.
-    logApp.warn('[OPENCRQ] Counterpart lookup failed', { kind, status: error?.status, code: error?.code });
-    throw lookupErrorOf(error, 'OpenCRQ');
+    throw lookupFailureOf(error, 'OpenCRQ', (message, meta) => logApp.warn(message, { kind, ...meta }), { forbiddenIsPerUser: false });
   }
 };

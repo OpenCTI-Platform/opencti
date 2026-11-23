@@ -54,10 +54,14 @@ describe('OpenAevRowMark', () => {
   it('links to the OpenAEV counterpart of a row', async () => {
     mocks.results = [{ id: 'vuln-1', product: 'openaev', status: 'found', counterpart }];
     testRender(<OpenAevRowMark objectId="vuln-1" />);
+    const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
     const link = await screen.findByRole('link', { name: 'Open in OpenAEV' });
-    expect(link).toHaveAttribute('href', counterpart.object_url);
-    expect(link).toHaveAttribute('target', '_blank');
+    // Not an <a>: the row is itself a link.
+    expect(link.tagName).toBe('SPAN');
     expect(link).toHaveAttribute('data-testid', 'openaev-row-mark');
+    link.click();
+    expect(opened).toHaveBeenCalledWith(counterpart.object_url, '_blank', 'noopener,noreferrer');
+    opened.mockRestore();
   });
 
   it('draws nothing without a match, and nothing when OpenAEV is unavailable', async () => {
