@@ -7668,7 +7668,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/busboy@npm:1.5.5, @types/busboy@npm:^1.5.0":
+"@types/busboy@npm:1.5.5, @types/busboy@npm:^1.5.5":
   version: 1.5.5
   resolution: "@types/busboy@npm:1.5.5"
   dependencies:
@@ -14478,11 +14478,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-upload@npm:18.0.2":
-  version: 18.0.2
-  resolution: "graphql-upload@npm:18.0.2"
+"graphql-upload@npm:18.0.3":
+  version: 18.0.3
+  resolution: "graphql-upload@npm:18.0.3"
   dependencies:
-    "@types/busboy": "npm:^1.5.0"
+    "@types/busboy": "npm:^1.5.5"
     "@types/node": "npm:*"
     "@types/object-path": "npm:^0.11.1"
     busboy: "npm:^1.6.0"
@@ -14498,7 +14498,7 @@ __metadata:
       optional: true
     "@types/koa":
       optional: true
-  checksum: 10c0/f20f4006e34bfdfdc37877242a89aca21c8ee5e75673ec80a54dc09a740eac5e9576e07235991b54b3afdd51da584e46a76d33286d6e06f33b3d2c174831f1ef
+  checksum: 10c0/88546ae99698aad695a45b2d72682170c40523f02ff39ae58ef74c9bdd563ff09673cf2cb3879fab702bd1d0196156102e193ac94edc50d7e4b07d5e66d54188
   languageName: node
   linkType: hard
 
@@ -18985,7 +18985,7 @@ __metadata:
     graphql-scalars: "npm:2.0.1"
     graphql-subscriptions: "npm:3.1.0"
     graphql-tag: "npm:2.12.7"
-    graphql-upload: "npm:18.0.2"
+    graphql-upload: "npm:18.0.3"
     graphql-ws: "npm:6.4.3"
     helmet: "npm:8.3.0"
     http-proxy-agent: "npm:9.1.0"
