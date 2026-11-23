@@ -16,7 +16,7 @@ export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'wri
   | 'dedup_before_lock' | 'dedup_stamp_changed' | 'dedup_stamps_outlived' | 'dedup_research' | 'partial_acquire' | 'partial_carried_groups';
 
 export type DenormBufferEvent = 'buffered_ids' | 'flushed_ids' | 'flushed_targets' | 'flushes' | 'replayed_targets' | 'fallback_ids'
-  | 'flush_first_targets' | 'flush_failed' | 'dead_targets';
+  | 'edited_ids' | 'tombstones_applied' | 'flush_failed' | 'dead_targets';
 
 class SequencerMetrics {
   // Hot-path counters (one add per intent, per identity map lookup): plain totals, exported at
@@ -48,6 +48,8 @@ class SequencerMetrics {
   private denormBufferEvents: Counter | null = null;
 
   private denormBufferLagGauge: Gauge | null = null;
+
+  private denormBufferDeadGauge: Gauge | null = null;
 
   private sidewritesGrouped: Counter | null = null;
 
@@ -163,11 +165,15 @@ class SequencerMetrics {
     });
     this.denormBufferEvents = meter.createCounter('opencti_sequencer_denorm_buffer_total', {
       valueType: ValueType.INT,
-      description: 'Append buffer (task 0040): ids buffered, flushed, replayed, written directly over the cap, targets flushed before a removal',
+      description: 'Append buffer (task 0040): ids buffered, flushed, replayed, written directly over the cap, edited by removals, tombstones applied, failures, targets moved aside',
     });
     this.denormBufferLagGauge = meter.createGauge('opencti_sequencer_denorm_buffer_lag_seconds', {
       valueType: ValueType.DOUBLE,
       description: 'Age of the oldest buffered append at the last flush tick (the references panel lag)',
+    });
+    this.denormBufferDeadGauge = meter.createGauge('opencti_sequencer_denorm_buffer_dead_flushes', {
+      valueType: ValueType.INT,
+      description: 'Flushes of the append buffer moved aside after repeated failures (requeued at the next start)',
     });
     this.sidewritesGrouped = meter.createCounter('opencti_sequencer_sidewrites_grouped_total', {
       valueType: ValueType.INT,
@@ -302,6 +308,10 @@ class SequencerMetrics {
 
   denormBufferLag(seconds: number) {
     this.denormBufferLagGauge?.record(seconds);
+  }
+
+  denormBufferDead(count: number) {
+    this.denormBufferDeadGauge?.record(count);
   }
 
   sidewriteGrouped(count = 1) {

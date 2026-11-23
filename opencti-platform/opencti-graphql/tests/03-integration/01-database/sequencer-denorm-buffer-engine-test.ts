@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createEntity, deleteElementById, deleteRelationsByFromAndTo, mergeEntities } from '../../../src/database/middleware';
-import { elFlushSequencerWrites, elRefreshIndices, engine, initDenormBuffer } from '../../../src/database/engine';
+import { elFlushSequencerWrites, elRefreshIndices, engine, initDenormBuffer, resetDenormBuffer } from '../../../src/database/engine';
 import { redisDenormBufferStore } from '../../../src/database/redis';
 import { ES_INDEX_PREFIX } from '../../../src/database/utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -14,12 +14,13 @@ import { internalLoadById } from '../../../src/database/middleware-loader';
 import type { DenormBuffer } from '../../../src/database/sequencer/denorm-buffer';
 import type { AuthContext } from '../../../src/types/user';
 
-// task 0040 append buffer, engine side, on a node whose intake manager initialized the buffer: a batch flush
+// task 0040 append buffer, engine side. On a node whose intake manager started the buffer, a batch flush
 // (elFlushSequencerWrites) keeps the "to" side appends of the buffered relationship types (external-reference by
 // default) in Redis instead of writing them, lands them before the other side-writes, writes them directly when the
-// buffer refuses them (global cap) or fails (Redis), and a removal on a document with pending appends, or with a
-// write of them in progress, lands them first. The batch is played as the loop plays it: the intents apply under
-// the applying scope with a current write buffer, then the loop flushes that buffer.
+// buffer refuses them (global cap), fails (Redis), is stopped or turned off; a removal or a merge edits the buffered
+// appends without waiting, and an id a write in progress lands after its removal is erased by that writer. On a
+// node without the buffer, appends are written directly and nothing touches Redis. The batch is played as the loop
+// plays it: the intents apply under the applying scope with a current write buffer, then the loop flushes it.
 
 // The search engine client every module shares: a hook can hold or fail one bulk
 type BulkHook = (request: Record<string, any>) => Promise<void>;
@@ -30,6 +31,9 @@ const isUpdateOf = (request: Record<string, any>, docId: string) => (request.bod
 const isSideBulk = (request: Record<string, any>) => (request.body ?? []).some((line: Record<string, any>) => line?.update);
 
 const applyingContext = (): AuthContext => ({ ...testContext, sequencer: { scope: 'applying' } } as AuthContext);
+const wait = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
 
 const reverseIdsOf = async (referenceId: string): Promise<string[]> => {
   await elRefreshIndices([`${ES_INDEX_PREFIX}*`]);
@@ -52,48 +56,93 @@ const commitCitingMalware = async (name: string, referenceId: string) => {
   return malware;
 };
 
-describe('Sequencer append buffer, engine side (task 0040)', () => {
-  const saved = { denormBuffer: SEQUENCER_CONFIG.denormBuffer, relations: SEQUENCER_CONFIG.denormBufferRelations };
+const removeCitation = (malwareId: string, referenceId: string) => deleteRelationsByFromAndTo(
+  testContext,
+  ADMIN_USER,
+  malwareId,
+  referenceId,
+  RELATION_EXTERNAL_REFERENCE,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+);
+
+const fixtures = (prefix: string) => {
   const created: { id: string; type: string }[] = [];
+  const newReference = async (suffix: string) => {
+    const reference = await createEntity(testContext, ADMIN_USER, { source_name: `${prefix}_${suffix}`, url: `https://denorm.buffer/${prefix}/${suffix}` }, ENTITY_TYPE_EXTERNAL_REFERENCE);
+    created.push({ id: reference.internal_id, type: ENTITY_TYPE_EXTERNAL_REFERENCE });
+    return reference;
+  };
+  const cite = async (suffix: string, referenceId: string) => {
+    const malware = await commitCitingMalware(`${prefix}_MALWARE_${suffix}`, referenceId);
+    created.push({ id: malware.internal_id, type: ENTITY_TYPE_MALWARE });
+    return malware;
+  };
+  const cleanup = async (buffer?: DenormBuffer) => {
+    for (let i = created.length - 1; i >= 0; i -= 1) {
+      // what is still buffered for the document lands before it is deleted (an update of a deleted document fails)
+      if (buffer) await buffer.flush([created[i].id]).catch(() => false);
+      await deleteElementById(testContext, ADMIN_USER, created[i].id, created[i].type).catch(() => {});
+    }
+    created.length = 0;
+  };
+  return { created, newReference, cite, cleanup };
+};
+
+describe('Sequencer append buffer, node without the intake manager (task 0040)', () => {
+  const { newReference, cite, cleanup } = fixtures('DENORM_NO_BUFFER');
+  afterEach(async () => cleanup());
+
+  it('should write the append at the batch commit and keep it out of Redis', async () => {
+    const reference = await newReference('DIRECT');
+    const malware = await cite('DIRECT', reference.internal_id);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+    expect(await redisDenormBufferStore.pending([reference.internal_id])).toEqual([]);
+    await removeCitation(malware.internal_id, reference.internal_id);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([]);
+  });
+});
+
+describe('Sequencer append buffer, engine side (task 0040)', () => {
+  const saved = {
+    denormBuffer: SEQUENCER_CONFIG.denormBuffer,
+    relations: SEQUENCER_CONFIG.denormBufferRelations,
+    periodMs: SEQUENCER_CONFIG.denormFlushPeriodMs,
+  };
+  const { created, newReference, cite, cleanup } = fixtures('DENORM_BUFFER');
   let buffer: DenormBuffer;
   let originalAdd: DenormBuffer['add'];
+  let originalEdit: DenormBuffer['edit'];
 
   beforeAll(() => {
     SEQUENCER_CONFIG.denormBuffer = true;
     SEQUENCER_CONFIG.denormBufferRelations = [RELATION_EXTERNAL_REFERENCE];
+    // the tests flush themselves: no periodic tick during a test
+    SEQUENCER_CONFIG.denormFlushPeriodMs = 3600000;
     buffer = initDenormBuffer();
+    buffer.start();
     originalAdd = buffer.add;
+    originalEdit = buffer.edit;
     client.bulk = async (request: Record<string, any>, ...rest: any[]) => {
       if (hooks.beforeBulk) await hooks.beforeBulk(request);
       return originalBulk.call(engine, request, ...rest);
     };
   });
-  afterAll(() => {
+  afterAll(async () => {
     client.bulk = originalBulk;
+    await resetDenormBuffer();
     SEQUENCER_CONFIG.denormBuffer = saved.denormBuffer;
     SEQUENCER_CONFIG.denormBufferRelations = saved.relations;
+    SEQUENCER_CONFIG.denormFlushPeriodMs = saved.periodMs;
   });
   afterEach(async () => {
     hooks.beforeBulk = undefined;
     buffer.add = originalAdd;
+    buffer.edit = originalEdit;
+    SEQUENCER_CONFIG.denormBuffer = true;
     setCurrentWriteBuffer(null);
-    for (let i = created.length - 1; i >= 0; i -= 1) {
-      await buffer.flushFirst([created[i].id]).catch(() => {});
-      await deleteElementById(testContext, ADMIN_USER, created[i].id, created[i].type).catch(() => {});
-    }
-    created.length = 0;
+    buffer.start();
+    await cleanup(buffer);
   });
-
-  const newReference = async (suffix: string) => {
-    const reference = await createEntity(testContext, ADMIN_USER, { source_name: `DENORM_BUFFER_${suffix}`, url: `https://denorm.buffer/${suffix}` }, ENTITY_TYPE_EXTERNAL_REFERENCE);
-    created.push({ id: reference.internal_id, type: ENTITY_TYPE_EXTERNAL_REFERENCE });
-    return reference;
-  };
-  const cite = async (suffix: string, referenceId: string) => {
-    const malware = await commitCitingMalware(`DENORM_BUFFER_MALWARE_${suffix}`, referenceId);
-    created.push({ id: malware.internal_id, type: ENTITY_TYPE_MALWARE });
-    return malware;
-  };
 
   it('should keep the reference append out of the batch commit and write it once at the flush', async () => {
     const reference = await newReference('BUFFERED');
@@ -119,6 +168,22 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
   });
 
+  it('should write the append at the batch commit when the buffer knob is off', async () => {
+    const reference = await newReference('KNOB_OFF');
+    SEQUENCER_CONFIG.denormBuffer = false;
+    const malware = await cite('KNOB_OFF', reference.internal_id);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+    expect(await redisDenormBufferStore.pending([reference.internal_id])).toEqual([]);
+  });
+
+  it('should write the append at the batch commit once the buffer is stopped (intake manager shutting down)', async () => {
+    const reference = await newReference('STOPPED');
+    await buffer.stop();
+    const malware = await cite('STOPPED', reference.internal_id);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+    expect(await redisDenormBufferStore.pending([reference.internal_id])).toEqual([]);
+  });
+
   it('should land the append before the other side-writes, so that their failure does not lose it', async () => {
     const reference = await newReference('SIDE_FAILED');
     // the side bulk of the batch (the citing object's own array) fails once the relationship documents are indexed
@@ -142,17 +207,17 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
   });
 
-  it('should flush the pending append before removing the relation, so that no stale id is left', async () => {
+  it('should drop the pending append at the removal of the relation, so that the flush does not bring the id back', async () => {
     const reference = await newReference('REMOVED');
     const malware = await cite('REMOVED', reference.internal_id);
     expect(await redisDenormBufferStore.pending([reference.internal_id]), 'the append is buffered').toEqual([reference.internal_id]);
-    await deleteRelationsByFromAndTo(testContext, ADMIN_USER, malware.internal_id, reference.internal_id, RELATION_EXTERNAL_REFERENCE, ABSTRACT_STIX_REF_RELATIONSHIP);
+    await removeCitation(malware.internal_id, reference.internal_id);
     // the periodic flush comes after the removal: nothing may be left for it to append
     await buffer.flush([reference.internal_id]);
     expect(await reverseIdsOf(reference.internal_id)).toEqual([]);
   });
 
-  it('should flush the pending append before a merge renames the cited id, so that no deleted id is left', async () => {
+  it('should rename the pending append when a merge replaces the cited object, so that no deleted id is left', async () => {
     const reference = await newReference('MERGED');
     const source = await cite('MERGED', reference.internal_id);
     expect(await redisDenormBufferStore.pending([reference.internal_id]), 'the append is buffered').toEqual([reference.internal_id]);
@@ -163,7 +228,7 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     expect(await reverseIdsOf(reference.internal_id)).toEqual([target.internal_id]);
   });
 
-  it('should make a removal wait for a write of the append in progress, so that the append lands before it', async () => {
+  it('should not make a removal wait for a write in progress, and erase the id that write lands after it', async () => {
     const reference = await newReference('IN_FLIGHT');
     const malware = await cite('IN_FLIGHT', reference.internal_id);
     // the flush of the reference is held in its ES write, its document locked
@@ -175,7 +240,6 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     const writeReached = new Promise<void>((resolve) => {
       reachWrite = resolve;
     });
-    // only the flush's own write is held: a removal that did not wait would land the appends itself and pass
     let held = false;
     hooks.beforeBulk = async (request) => {
       if (held || !isUpdateOf(request, reference.internal_id)) return;
@@ -186,17 +250,27 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     const flushing = buffer.flush([reference.internal_id]);
     await writeReached;
     let removed = false;
-    const removal = deleteRelationsByFromAndTo(testContext, ADMIN_USER, malware.internal_id, reference.internal_id, RELATION_EXTERNAL_REFERENCE, ABSTRACT_STIX_REF_RELATIONSHIP)
-      .then(() => {
-        removed = true;
-      });
-    await new Promise((resolve) => {
-      setTimeout(resolve, 1000);
+    const removal = removeCitation(malware.internal_id, reference.internal_id).then(() => {
+      removed = true;
     });
-    expect(removed, 'the removal waits for the write in progress').toBe(false);
+    await Promise.race([removal, wait(10000)]);
+    expect(removed, 'the removal does not wait for the write in progress').toBe(true);
     release();
-    await Promise.all([flushing, removal]);
+    await flushing;
     hooks.beforeBulk = undefined;
-    expect(await reverseIdsOf(reference.internal_id)).toEqual([]);
+    expect(await reverseIdsOf(reference.internal_id), 'the removed id the write landed is erased').toEqual([]);
+  });
+
+  it('should go on with the removal when the buffer edit fails (Redis down)', async () => {
+    const reference = await newReference('EDIT_FAILED');
+    const malware = await cite('EDIT_FAILED', reference.internal_id);
+    buffer.edit = async () => {
+      throw new Error('redis down');
+    };
+    await removeCitation(malware.internal_id, reference.internal_id);
+    buffer.edit = originalEdit;
+    // accepted gap (PR note): the removed id comes back with the flush
+    await buffer.flush([reference.internal_id]);
+    expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
   });
 });

@@ -1171,8 +1171,11 @@ const chunkIntakeInitializer = async () => {
     shutdown: async () => {
       stopPreLoopTicker();
       stopStallWatchdog();
-      await consumer.close();
-      await getDenormBuffer()?.stop();
+      try {
+        await consumer.close();
+      } finally {
+        await getDenormBuffer()?.stop();
+      }
       logApp.info('[OPENCTI-MODULE] Chunk intake consumer closed');
     },
   };

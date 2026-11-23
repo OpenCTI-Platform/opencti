@@ -204,7 +204,7 @@ import { isEsScriptFilterEnabled } from './engine-config';
 import { sequencerIdentityBarrier } from './sequencer/sequencer-barrier';
 import { getCurrentWriteBuffer, type SequencerWriteBuffer } from './sequencer/sequencer-write-buffer';
 import { sequencerMetrics } from './sequencer/sequencer-metrics';
-import { createDenormBuffer, type DenormBuffer, type DenormLocker, type DenormTarget } from './sequencer/denorm-buffer';
+import { createDenormBuffer, type DenormBuffer, type DenormEdit, type DenormLock, type DenormTarget, type DenormTombstones } from './sequencer/denorm-buffer';
 import { SEQUENCER_CONFIG } from './sequencer/sequencer-config';
 import { redisDenormBufferStore } from './redis';
 import { AbortError } from 'node-fetch';
@@ -4449,8 +4449,8 @@ export const elRemoveRelationConnection = async (
   const impacts: [string, any][] = Object.entries(elementsImpact);
   if (impacts.length > 0) {
     const idsToResolve = impacts.map(([k]) => k);
-    // task 0040 append buffer: the pending appends of these documents land before the removals
-    await flushDenormFirst(idsToResolve);
+    // task 0040 append buffer: the removed ids leave the buffered appends of these documents
+    await editDenormBuffer(denormRemovalEdits(impacts));
     const dataIds = await elFindByIds(context, user, idsToResolve, { baseData: true, baseFields: ['pir_information'] }) as BasicStoreEntity[];
     // Build cache for rest of execution
     const elIdsCache: Record<string, string> = {};
@@ -5119,23 +5119,47 @@ export const elWriteDenormTargets = async (context: AuthContext, targets: Denorm
     await elRefreshIndices(R.uniq(targets.map((target) => target.index)));
   }
 };
+// Applies tombstones: removes each id, or renames it (the new id added when absent), only where present
+const EL_DENORM_TOMBSTONES_SCRIPT_SOURCE = `
+  for (edit in params.edits) {
+    def values = ctx._source[edit.key];
+    if (values != null && values.contains(edit.from)) {
+      values.removeIf(v -> v == edit.from);
+      if (edit.to != null && !values.contains(edit.to)) { values.add(edit.to); }
+    }
+  }
+`;
+export const elEraseDenormTombstones = async (context: AuthContext, tombstones: DenormTombstones[]) => {
+  const body = tombstones.flatMap((tombstone) => {
+    const edits = tombstone.edits.map((e) => ({ key: buildRefRelationKey(e.relation, e.field), from: e.from, to: e.to }));
+    return [
+      { update: { _index: tombstone.index, _id: tombstone.docId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+      { script: { source: EL_DENORM_TOMBSTONES_SCRIPT_SOURCE, params: { edits } } },
+    ];
+  });
+  const chunks = R.splitEvery(MAX_BULK_OPERATIONS * 2, body);
+  for (let i = 0; i < chunks.length; i += 1) {
+    await elBulk(context, { refresh: false, timeout: BULK_TIMEOUT, body: chunks[i] });
+  }
+  if (tombstones.length > 0) await elRefreshIndices(R.uniq(tombstones.map((t) => t.index)));
+};
 let denormBuffer: DenormBuffer | null = null;
 let denormRelations = new Set<string>();
-// The documents a write of buffered appends holds, in a lock namespace of their own: batches lock external
-// references as nested ids, sharing those keys would make flushes and batches wait for each other
-const denormLocker: DenormLocker = async (ids, wait) => {
+// The documents a write of buffered appends holds, never waited on, in a lock namespace of their own: batches lock
+// external references as nested ids, sharing those keys would make flushes and batches wait for each other
+const denormLock = async (ids: string[]): Promise<DenormLock | null> => {
   try {
-    return await lockResources(R.uniq(ids).map((id) => `denorm-flush:${id}`), wait ? {} : { retryCount: 0 });
+    return await lockResources(R.uniq(ids).map((id) => `denorm-flush:${id}`), { retryCount: 0 });
   } catch (err: any) {
     if (err?.name === TYPE_LOCK_ERROR) return null;
     throw err;
   }
 };
+// Only unidirectional refs: their appends are contains-guarded, a write played twice cannot double an id
+export const bufferableRelations = (configured: string[]) => configured.filter((relation) => isStixRefUnidirectionalRelationship(relation));
 // Called by the intake manager of this node (user decision 2026-11-21: the buffer serves the worker-less intake
 // only; stock workers, the sequencer without the intake manager and the API write directly). Its flusher also
 // drains what is left in Redis when the knob is off; buffering itself follows the knob.
-// Only unidirectional refs: their appends are contains-guarded, a write played twice cannot double an id
-export const bufferableRelations = (configured: string[]) => configured.filter((relation) => isStixRefUnidirectionalRelationship(relation));
 export const initDenormBuffer = (): DenormBuffer => {
   if (!denormBuffer) {
     const configured = SEQUENCER_CONFIG.denormBufferRelations;
@@ -5143,8 +5167,12 @@ export const initDenormBuffer = (): DenormBuffer => {
     const rejected = configured.filter((relation) => !kept.includes(relation));
     if (rejected.length > 0) logApp.warn('[SEQUENCER] denorm buffer ignores these relationship types, not unidirectional refs', { rejected });
     denormRelations = new Set(kept);
-    const writer = (targets: DenormTarget[], replay: boolean) => elWriteDenormTargets(executionContext('denorm_buffer_flush', SYSTEM_USER), targets, replay, true);
-    denormBuffer = createDenormBuffer(redisDenormBufferStore, writer, denormLocker, {
+    const context = executionContext('denorm_buffer_flush', SYSTEM_USER);
+    denormBuffer = createDenormBuffer(redisDenormBufferStore, {
+      write: (targets, replay) => elWriteDenormTargets(context, targets, replay, true),
+      erase: (tombstones) => elEraseDenormTombstones(context, tombstones),
+      lock: denormLock,
+    }, {
       flushPeriodMs: SEQUENCER_CONFIG.denormFlushPeriodMs,
       targetMaxIds: SEQUENCER_CONFIG.denormFlushTargetMaxIds,
       maxIds: SEQUENCER_CONFIG.denormBufferMaxIds,
@@ -5155,9 +5183,15 @@ export const initDenormBuffer = (): DenormBuffer => {
 };
 // The buffer of this node, null unless its intake manager initialized it
 export const getDenormBuffer = (): DenormBuffer | null => denormBuffer;
+// Tests only: stops and forgets the buffer of this process
+export const resetDenormBuffer = async () => {
+  if (denormBuffer) await denormBuffer.stop();
+  denormBuffer = null;
+  denormRelations = new Set();
+};
 const denormSinkOf = (context: AuthContext): DenormSink | undefined => {
   const buffer = denormBuffer;
-  if (!buffer || !SEQUENCER_CONFIG.denormBuffer || denormRelations.size === 0) return undefined;
+  if (!buffer || !buffer.isBuffering() || !SEQUENCER_CONFIG.denormBuffer || denormRelations.size === 0) return undefined;
   const land = async (targets: DenormTarget[]) => {
     // Over the cap or on a Redis failure the appends are written now as before
     const buffered = await buffer.add(targets).catch((err) => {
@@ -5172,12 +5206,31 @@ const denormSinkOf = (context: AuthContext): DenormSink | undefined => {
   const sink: DenormSink = { isBuffered: (relationshipType, side) => side === ROLE_TO && denormRelations.has(relationshipType), targets: [], land };
   return sink;
 };
-// Removals (relation delete, merge) on documents with pending or in-flight appends: the appends land first. Only
-// where the buffer runs; a Redis or lock failure refuses the removal.
-const flushDenormFirst = async (ids: string[]) => {
+// Removals and merge renames edit the buffered appends of their documents (user decision 2026-11-23): no wait, no
+// lock, no ES write; only where the buffer runs, and only for the "to" side of the bufferable types (a type removed
+// from the configuration may still have appends to drain). A Redis failure is logged, the removal goes on: a
+// removed id may then come back with a later flush (the same class as a removal from a node without the buffer).
+const editDenormBuffer = async (edits: DenormEdit[]) => {
   const buffer = denormBuffer;
-  if (buffer && ids.length > 0) await buffer.flushFirst(R.uniq(ids));
+  if (!buffer || edits.length === 0) return;
+  await buffer.edit(edits).catch((err) => {
+    logApp.warn('[SEQUENCER] denorm buffer edit failed, a removed id may come back with a flush', { cause: err, edits: edits.length });
+  });
 };
+const denormRemovalEdits = (impacts: [string, any][]): DenormEdit[] => impacts.flatMap(([docId, elementMeta]) => Object.entries(elementMeta as Record<string, string[]>)
+  .flatMap(([typeAndIndex, cleanupIds]) => {
+    const [relationType, relationIndex, side] = typeAndIndex.split('|');
+    if (side !== ROLE_TO) return [];
+    if (!isStixRefUnidirectionalRelationship(relationType)) return [];
+    const field = isStixRefRelationship(relationType) && isInferredIndex(relationIndex) ? ID_INFERRED : ID_INTERNAL;
+    return R.uniq(cleanupIds).map((from) => ({ docId, relation: relationType, field, from, to: null }));
+  }));
+const denormRenameEdits = (elements: any[]): DenormEdit[] => elements.flatMap((doc) => {
+  if (!doc.toReplace || !isStixRefUnidirectionalRelationship(doc.relationType)) return [];
+  const field = isStixRefRelationship(doc.relationType) && isInferredIndex(doc._index) ? ID_INFERRED : ID_INTERNAL;
+  const targets: string[] = Array.isArray(doc.data.internal_id) ? doc.data.internal_id : [doc.data.internal_id];
+  return targets.filter((to) => isNotEmptyField(to)).map((to) => ({ docId: doc.id, relation: doc.relationType, field, from: doc.toReplace, to }));
+});
 // Bulk index body of a document: the document without its _index, in one for...in copy as R.dissoc did
 export const bulkIndexDocument = (doc: Record<string, any>) => {
   const body: Record<string, any> = {};
@@ -5384,8 +5437,8 @@ export const elUpdateRelationConnections = async (context: AuthContext, elements
 };
 export const elUpdateEntityConnections = async (context: AuthContext, elements: any[]) => {
   if (elements.length > 0) {
-    // task 0040 append buffer: the pending appends of these documents land before the id replacements
-    await flushDenormFirst(elements.map((doc) => doc.id));
+    // task 0040 append buffer: the replaced ids are renamed in the buffered appends of these documents
+    await editDenormBuffer(denormRenameEdits(elements));
     const source = `if (ctx._source[params.key] == null) {
       ctx._source[params.key] = params.to;
     } else if (params.from == null) {

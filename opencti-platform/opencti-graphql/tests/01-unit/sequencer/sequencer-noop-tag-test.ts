@@ -199,6 +199,13 @@ describe('sequencer cycle drain under the tag caps (sequencer-loop drainQueue, w
     expect(batch.length).toBe(3);
   });
 
+  it('should give the queue its whole share past the byte bound, and nothing more (B10 before the bytes)', () => {
+    const batch: SequencerIntent[] = [];
+    const queued = Array.from({ length: 10 }, (_, n) => sized(tagged(intentOf(`q${n}`)), 100));
+    drainQueue(batch, queueOf(queued), { maxBatchSize: 2, queueShare: 5, ceiling: 10, maxBytes: 100, weightOf: tagWeight(true) });
+    expect(batch.length).toBe(5);
+  });
+
   it('should report the weighted depth to the release set point only under the caps', () => {
     const queue = { size: () => 41, weightedSize: (w: number) => 1 + 40 * w };
     expect(weightedQueueDepth(queue, true, 20)).toBeCloseTo(3);
