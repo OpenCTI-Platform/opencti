@@ -41,4 +41,13 @@ describe('availableComponents', () => {
     // wipe the registry — pick a stable representative).
     expect(componentIds).toContain('PLAYBOOK_INTERNAL_MANUAL_TRIGGER');
   });
+
+  it('should offer one requirement entry point, never the retired "Listen PIR events"', async () => {
+    vi.spyOn(xtmOneClient, 'isConfigured').mockReturnValue(true);
+
+    const componentIds = (await availableComponents(testContext)).map((c) => c.id);
+
+    expect(componentIds).toContain('PLAYBOOK_DATA_STREAM_INTELLIGENCE_REQUIREMENT');
+    expect(componentIds).not.toContain('PLAYBOOK_DATA_STREAM_PIR');
+  });
 });

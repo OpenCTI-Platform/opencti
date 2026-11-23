@@ -2,55 +2,92 @@ import { v4 as uuid } from 'uuid';
 import { expect, test } from '../fixtures/baseFixtures';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
 import PirPage from '../model/pir.pageModel';
-import PirFormPageModel from '../model/form/pirForm.pageModel';
-import PirDetailsPageModel from '../model/pirDetails.pageModel';
+import IntelligenceRequirementPageModel from '../model/intelligenceRequirement.pageModel';
 import { addRelationship, deleteRelationship } from '../dataForTesting/relationship.data';
+import { executeGraphql } from '../dataForTesting/query-utils';
 import { awaitUntilCondition } from '../utils';
+
+const FLAGGED_MALWARE = 'E2E dashboard - Malware - month ago';
+const TARGETED_LOCATION = 'location--5acd8b26-51c2-4608-86ed-e9edd43ad971';
+
+/** Create a threat landscape PIR on one location through the PIR API, the contract consumers keep calling. */
+const createPir = async (request: Parameters<typeof executeGraphql>[0], name: string) => {
+  const { stixCoreObject } = await executeGraphql<{ stixCoreObject: { id: string } | null }>(
+    request,
+    'stixCoreObject',
+    'query E2EPirLocation($id: String!) { stixCoreObject(id: $id) { id } }',
+    { id: TARGETED_LOCATION },
+  );
+  if (!stixCoreObject) throw new Error(`Location ${TARGETED_LOCATION} not found`);
+  await executeGraphql(request, 'pirAdd', 'mutation E2EPirAdd($input: PirAddInput!) { pirAdd(input: $input) { id } }', {
+    input: {
+      name,
+      pir_type: 'THREAT_LANDSCAPE',
+      description: 'e2e PIR description',
+      pir_rescan_days: 0,
+      pir_criteria: [{
+        weight: 1,
+        filters: {
+          mode: 'and',
+          filterGroups: [],
+          filters: [
+            { key: ['entity_type'], values: ['targets'], operator: 'eq', mode: 'or' },
+            { key: ['toId'], values: [stixCoreObject.id], operator: 'eq', mode: 'or' },
+          ],
+        },
+      }],
+      pir_filters: { mode: 'and', filterGroups: [], filters: [{ key: ['confidence'], values: ['0'], operator: 'gte', mode: 'or' }] },
+    },
+  });
+};
+
+const deletePirByName = async (request: Parameters<typeof executeGraphql>[0], name: string) => {
+  const data = await executeGraphql<{ pirs: { edges: { node: { id: string; name: string } }[] } }>(
+    request,
+    'pirs',
+    'query E2EPirsByName($search: String) { pirs(search: $search, first: 10) { edges { node { id name } } } }',
+    { search: name },
+  );
+  const pir = data.pirs.edges.map((e) => e.node).find((node) => node.name === name);
+  if (!pir) throw new Error(`PIR ${name} not found`);
+  await executeGraphql(request, 'pirDelete', 'mutation E2EPirDelete($id: ID!) { pirDelete(id: $id) }', { id: pir.id });
+};
 
 /**
  * Content of the test
  * -------------------
- * Create a PIR
- * Navigate through PIR tabs
- * Test flag entities
- * Delete PIR
+ * The PIR list URL redirects to the intelligence requirements, opened from the left menu
+ * Create a PIR through the PIR API
+ * Open it from the list: it is read on the screen of its intelligence requirement
+ * Navigate through the requirement tabs
+ * Flag an entity with a relationship, then unflag it
+ * Delete the PIR
  */
 test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }) => {
   const leftNavigation = new LeftBarPage(page);
   const pirPage = new PirPage(page);
-  const pirForm = new PirFormPageModel(page);
-  const pirDetails = new PirDetailsPageModel(page);
+  const requirement = new IntelligenceRequirementPageModel(page);
 
+  // One PIR concept: the old list URL lands on the intelligence requirements
   await pirPage.goto();
+  await page.waitForURL(/\/dashboard\/intelligence_requirements$/);
   await pirPage.navigateFromMenu();
+  await page.waitForURL(/\/dashboard\/intelligence_requirements$/);
   // open nav bar once and for all
   await leftNavigation.open();
 
   // region Create PIR
   // -----------------
 
-  await pirPage.openCreateForm();
-  await expect(pirForm.getCreateTitle()).toBeVisible();
-  // Step 1
   const pirName = `PIR - ${uuid()}`;
-  await pirForm.nameField.fill('');
-  await expect(pirForm.getNextButton()).toBeDisabled();
-  await pirForm.nameField.fill(pirName);
-  await expect(pirForm.getNextButton()).toBeEnabled();
-  await pirForm.descriptionField.fill('e2e PIR description');
-  await pirForm.rescanPeriodField.selectOption('No rescan');
-  await pirForm.getNextButton().click();
-  // Step 2
-  await expect(pirForm.getCreateButton()).toBeDisabled();
-  await pirForm.locationsField.selectOption('France');
-  await expect(pirForm.getCreateButton()).toBeEnabled();
-  await pirForm.industriesField.selectOption('Agriculture');
-  await pirForm.getCreateButton().click();
+  await createPir(request, pirName);
 
+  // The PIR is listed and read on the screen of its intelligence requirement
+  await pirPage.goto();
   await pirPage.getItemFromList(pirName).click();
-  await pirDetails.toggleDetails();
-  await expect(pirDetails.getTitle(pirName)).toBeVisible();
-  await expect(pirDetails.getDescription('e2e PIR description')).toBeVisible();
+  await page.waitForURL(/\/dashboard\/intelligence_requirements\/[^/]+/);
+  await expect(requirement.getTitle(pirName)).toBeVisible();
+  const basePath = requirement.basePath();
 
   // ---------
   // endregion
@@ -58,10 +95,14 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
   // region Navigate through tabs
   // ----------------------------
 
-  await pirDetails.tabs.goToThreatsTab();
-  await pirDetails.tabs.goToAnalysesTab();
-  await pirDetails.tabs.goToActivitiesTab();
-  await pirDetails.tabs.goToOverviewTab();
+  await requirement.goToTab('Entities');
+  await page.waitForURL(`**${basePath}/entities`);
+  await requirement.goToTab('Timeline');
+  await page.waitForURL(`**${basePath}/timeline`);
+  await requirement.goToTab('Inbox');
+  await page.waitForURL(`**${basePath}/inbox`);
+  await requirement.goToTab('Overview');
+  await expect(requirement.getTitle(pirName)).toBeVisible();
 
   // ---------
   // endregion
@@ -69,7 +110,8 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
   // region Create a relation that flags entity
   // ------------------------------------------
 
-  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('0');
+  await requirement.gotoEntities(basePath);
+  await expect(requirement.getEntity(FLAGGED_MALWARE)).toBeHidden();
   await addRelationship(request, {
     relationship_type: 'targets',
     toId: 'location--5acd8b26-51c2-4608-86ed-e9edd43ad971',
@@ -77,56 +119,13 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
     createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df',
   });
 
-  // ---------
-  // endregion
-
-  // region Control tab Overview after flagging
-  // ------------------------------------------
-
-  // The entity type count and the two top author widgets are fed by separate aggregations,
-  // which do not necessarily land on the same refresh. Waiting on the count alone left the
-  // top author assertions racing against their own aggregation, so poll on all three.
+  // The requirement engine reads the stream: poll until the malware enters the requirement
   const waitForFlagging = async () => {
-    await pirPage.navigateFromMenu();
-    await pirPage.getItemFromList(pirName).click();
-    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    if (text !== '1') return false;
-    const hasTopAuthorEntities = await pirDetails.getTopAuthorEntities('John Doe').isVisible();
-    const hasTopAuthorRelationships = await pirDetails.getTopAuthorRelationships('ANSSI').isVisible();
-    return hasTopAuthorEntities && hasTopAuthorRelationships;
+    await requirement.gotoEntities(basePath);
+    return requirement.getEntity(FLAGGED_MALWARE).isVisible();
   };
-  await awaitUntilCondition(waitForFlagging, 5000, 20);
-  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
-  await expect(pirDetails.getTopAuthorEntities('John Doe')).toBeVisible();
-  await expect(pirDetails.getTopAuthorRelationships('ANSSI')).toBeVisible();
-
-  const historyItemName = 'Malware E2E dashboard - Malware - month ago added to PIR';
-  const waitForHistory = async () => {
-    await pirPage.navigateFromMenu();
-    await pirPage.getItemFromList(pirName).click();
-    return pirDetails.getNewsFeedItem(historyItemName).isVisible();
-  };
-  await awaitUntilCondition(waitForHistory, 5000, 20);
-  await expect(pirDetails.getNewsFeedItem(historyItemName)).toBeVisible();
-
-  // ---------
-  // endregion
-
-  // region Control tab Threats after flagging
-  // -----------------------------------------
-
-  await pirDetails.tabs.goToThreatsTab();
-  await expect(pirDetails.dataTable.container.getByText('E2E dashboard - Malware - month ago')).toBeVisible();
-  await expect(pirDetails.dataTable.container.getByText('50')).toBeVisible();
-
-  // ---------
-  // endregion
-
-  // region Control tab History after flagging
-  // -----------------------------------------
-
-  await pirDetails.tabs.goToActivitiesTab();
-  await expect(pirDetails.dataTable.container.getByText(historyItemName)).toBeVisible();
+  await awaitUntilCondition(waitForFlagging, 2000, 15);
+  await expect(requirement.getEntity(FLAGGED_MALWARE)).toBeVisible();
 
   // ---------
   // endregion
@@ -134,37 +133,28 @@ test('Pir CRUD', { tag: ['@pir', '@mutation', '@ee'] }, async ({ page, request }
   // region Delete relation that flags entity
   // ----------------------------------------
 
-  await pirDetails.tabs.goToOverviewTab();
-  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('1');
   await deleteRelationship(request, {
     relationship_type: 'targets',
     toId: 'location--5acd8b26-51c2-4608-86ed-e9edd43ad971',
     fromId: 'malware--48534a79-a9d7-4c34-a292-f5f102d26dea',
   });
 
-  // ---------
-  // endregion
-
-  // region Control tab Overview after unflagging
-  // --------------------------------------------
-
   const waitForUnflagging = async () => {
-    await pirPage.navigateFromMenu();
-    await pirPage.getItemFromList(pirName).click();
-    const text = await pirDetails.getEntityTypeCount('Malware').innerText();
-    return text === '0';
+    await requirement.gotoEntities(basePath);
+    return !(await requirement.getEntity(FLAGGED_MALWARE).isVisible());
   };
-  await awaitUntilCondition(waitForUnflagging, 5000, 20);
-  await expect(pirDetails.getEntityTypeCount('Malware')).toContainText('0');
+  await awaitUntilCondition(waitForUnflagging, 2000, 15);
+  await expect(requirement.getEntity(FLAGGED_MALWARE)).toBeHidden();
 
   // ---------
   // endregion
 
-  // region Delete the report
-  // ------------------------
+  // region Delete the PIR
+  // ---------------------
 
-  await pirDetails.delete();
-  await pirPage.navigateFromMenu();
+  // Deleting the PIR deletes its requirement and everything stored for it
+  await deletePirByName(request, pirName);
+  await pirPage.goto();
   await expect(pirPage.getItemFromList(pirName)).toBeHidden();
 
   // ---------

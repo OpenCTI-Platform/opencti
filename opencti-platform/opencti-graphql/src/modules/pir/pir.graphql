@@ -59,6 +59,8 @@ type Pir implements InternalObject & BasicObject {
         search: String
     ): ContainerConnection
     queue_messages: Int!
+    # The intelligence requirement that flags the entities of the Pir
+    pir_requirement_id: ID
 }
 
 type PirRelationship implements BasicRelationship {

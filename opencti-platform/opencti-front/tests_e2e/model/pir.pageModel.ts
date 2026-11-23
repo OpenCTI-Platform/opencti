@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
 import LeftBarPage from './menu/leftBar.pageModel';
 
+/** The PIR list URL: it redirects to the intelligence requirement list (one PIR concept). */
 export default class PirPage {
   pageUrl = '/dashboard/pirs';
   constructor(private page: Page) {}
@@ -12,15 +13,7 @@ export default class PirPage {
   async navigateFromMenu() {
     const leftBarPage = new LeftBarPage(this.page);
     await leftBarPage.open();
-    await leftBarPage.clickOnMenu('PIR');
-  }
-
-  getCreateButton() {
-    return this.page.getByRole('button', { name: 'Create PIR', exact: true });
-  }
-
-  openCreateForm() {
-    return this.getCreateButton().click();
+    await leftBarPage.clickOnMenu('Intelligence requirements');
   }
 
   getItemFromList(name: string) {

@@ -39,6 +39,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { FilterMode } from '../../generated/graphql';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
+import { PLAYBOOK_DATA_STREAM_REQUIREMENT } from './components/data-stream-requirement-component';
 import { pushAll } from '../../utils/arrayUtil';
 import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT } from './components/container-wrapper-component';
 import { PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT } from './components/manipulate-knowledge-component';
@@ -606,6 +607,7 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INTERNAL_MANUAL_TRIGGER.id]: PLAYBOOK_INTERNAL_MANUAL_TRIGGER,
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
   [PLAYBOOK_DATA_STREAM_PIR.id]: PLAYBOOK_DATA_STREAM_PIR,
+  [PLAYBOOK_DATA_STREAM_REQUIREMENT.id]: PLAYBOOK_DATA_STREAM_REQUIREMENT,
   [PLAYBOOK_INTERNAL_DATA_CRON.id]: PLAYBOOK_INTERNAL_DATA_CRON,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,

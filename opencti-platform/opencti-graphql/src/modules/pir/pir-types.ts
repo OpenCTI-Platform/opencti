@@ -35,6 +35,7 @@ export interface BasicStoreEntityPir extends BasicStoreEntity {
   pir_filters: string;
   lastEventId: string;
   restricted_members: Array<AuthorizedMember>;
+  pir_requirement_id?: string | null; // the intelligence requirement that flags the entities of the Pir
 }
 
 export interface StoreEntityPir extends StoreEntity {
@@ -46,6 +47,7 @@ export interface StoreEntityPir extends StoreEntity {
   pir_filters: string;
   lastEventId: string;
   restricted_members: Array<AuthorizedMember>;
+  pir_requirement_id?: string | null;
 }
 
 export interface StixPir extends StixInternal {

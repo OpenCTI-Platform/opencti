@@ -17,6 +17,16 @@ import { pirRelationshipsDistribution, pirRelationshipsMultiTimeSeries } from '.
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import * as entrepriseEdition from '../../../src/enterprise-edition/ee';
 import { LAST_PIR_SCORE_DATE_FILTER, PIR_SCORE_FILTER } from '../../../src/utils/filtering/filtering-constants';
+import { type BasicStoreEntityIntelligenceRequirement, ENTITY_TYPE_INTELLIGENCE_REQUIREMENT } from '../../../src/modules/intelligenceRequirement/intelligenceRequirement-types';
+import type { BasicStoreEntityPir } from '../../../src/modules/pir/pir-types';
+
+const loadRequirementOfPir = async (pirId: string) => {
+  const pir = await internalLoadById<BasicStoreEntityPir>(testContext, SYSTEM_USER, pirId, { type: ENTITY_TYPE_PIR });
+  if (!pir?.pir_requirement_id) return { pir, requirement: null };
+  const opts = { type: ENTITY_TYPE_INTELLIGENCE_REQUIREMENT };
+  const requirement = await internalLoadById<BasicStoreEntityIntelligenceRequirement>(testContext, SYSTEM_USER, pir.pir_requirement_id, opts);
+  return { pir, requirement };
+};
 
 const LIST_QUERY = gql`
   query pirs(
@@ -240,6 +250,17 @@ describe('PIR resolver standard behavior', () => {
     resetCacheForEntity(ENTITY_TYPE_PIR);
   });
 
+  it('should create the active intelligence requirement of a new pir, the only engine that flags it', async () => {
+    const { pir, requirement } = await loadRequirementOfPir(pirInternalId1);
+    expect(requirement).toBeDefined();
+    expect(pir.pir_requirement_id).toEqual(requirement?.id);
+    expect(requirement?.ir_pir_id).toEqual(pirInternalId1);
+    expect(requirement?.ir_status).toEqual('active');
+    expect(requirement?.name).toEqual('MyPir1');
+    expect(requirement?.lastEventId).toEqual(pir.lastEventId);
+    expect(JSON.parse(requirement?.ir_scope_criteria ?? '[]').length).toEqual(2);
+  });
+
   it('should pir loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId1 } });
     expect(queryResult).not.toBeNull();
@@ -277,6 +298,9 @@ describe('PIR resolver standard behavior', () => {
       variables: { id: pirInternalId1, input: [{ key: 'name', value: ['myPirNewName'] }] },
     });
     expect(queryResult.data?.pirFieldPatch.name).toEqual('myPirNewName');
+    // the name is mirrored on the intelligence requirement of the pir
+    const { requirement } = await loadRequirementOfPir(pirInternalId1);
+    expect(requirement?.name).toEqual('myPirNewName');
   });
 
   it('should not update some pir fields', async () => {
@@ -668,6 +692,8 @@ describe('PIR resolver standard behavior', () => {
         pirDelete(id: $id)
       }
     `;
+    const { requirement: requirement1 } = await loadRequirementOfPir(pirInternalId1);
+    expect(requirement1).toBeDefined();
     // Delete the PIRs
     await queryAsAdmin({
       query: DELETE_QUERY,
@@ -701,5 +727,8 @@ describe('PIR resolver standard behavior', () => {
     queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: pirInternalId2 } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.pir).toBeNull();
+    // Verify the intelligence requirement of the PIR is deleted with it
+    const requirementAfterDelete = await internalLoadById(testContext, SYSTEM_USER, requirement1!.id, { type: ENTITY_TYPE_INTELLIGENCE_REQUIREMENT });
+    expect(requirementAfterDelete).toBeFalsy();
   });
 });

@@ -44,6 +44,8 @@ import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
 import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
+import { listenRequirementEvents } from './listenRequirementEventsUtils';
+import { PLAYBOOK_DATA_STREAM_REQUIREMENT_ID } from '../../modules/playbook/components/data-stream-requirement-component';
 import { isDebugPlaybook, isValidEventType } from './playbookManagerUtils';
 import { buildPlaybookEventContext } from '../../modules/playbook/playbook-utils';
 import { playbookExecutor } from './playbookExecutor';
@@ -156,6 +158,9 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             }
             if (instance && instance.component_id === 'PLAYBOOK_DATA_STREAM_PIR') {
               await listenPirEvents(context, streamEvent, instance, playbook);
+            }
+            if (instance && instance.component_id === PLAYBOOK_DATA_STREAM_REQUIREMENT_ID) {
+              await listenRequirementEvents(context, streamEvent, instance, playbook);
             }
           }
         }

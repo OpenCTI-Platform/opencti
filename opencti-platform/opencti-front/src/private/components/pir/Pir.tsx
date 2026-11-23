@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { Suspense } from 'react';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import type { PreloadedQuery } from 'react-relay';
-import { Route, Routes, useParams } from 'react-router';
+import { Navigate, Route, Routes, useParams } from 'react-router';
 import { PirQuery } from './__generated__/PirQuery.graphql';
 import PirHeader from './PirHeader';
 import PirTabs from './PirTabs';
@@ -28,9 +28,12 @@ import Loader from '../../../components/Loader';
 import PirAnalyses from './pir_analyses/PirAnalyses';
 import PirHistory from './pir_history/PirHistory';
 
+const requirementPath = (requirementId: string) => `/dashboard/intelligence_requirements/${requirementId}`;
+
 const pirQuery = graphql`
   query PirQuery($id: ID!) {
     pir(id: $id) {
+      pir_requirement_id
       ...PirAnalysesFragment
       ...PirEditionFragment
       ...PirHeaderFragment
@@ -52,6 +55,10 @@ const PirComponent = ({
   const { pir } = usePreloadedQuery(pirQuery, pirQueryRef);
 
   if (!pir) return <ErrorNotFound />;
+  // One PIR concept: every PIR is scored by its intelligence requirement and read on the requirement screens.
+  if (pir.pir_requirement_id) {
+    return <Navigate to={requirementPath(pir.pir_requirement_id)} replace={true} />;
+  }
 
   return (
     <>

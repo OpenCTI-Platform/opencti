@@ -69,6 +69,12 @@ import { elPaginate, type PaginateOpts } from '../../database/engine';
 import { registerConnectorQueues, unregisterConnector } from '../connector/connector-rabbitmq';
 import { lockResources } from '../../lock/master-lock';
 import type { LogConnection } from '../../types/log';
+import {
+  deleteRequirementOfPir,
+  linkNewPirToRequirement,
+  mirrorPirMembersOnRequirement,
+  mirrorPirPatchOnRequirement,
+} from '../intelligenceRequirement/intelligenceRequirement-pirLink';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -231,6 +237,8 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
   });
   // create rabbit queue for pir
   await registerConnectorQueues(pirId, `Pir ${pirId} queue`, 'internal', 'pir');
+  // its intelligence requirement (paused while the legacy engine flags the Pir)
+  await linkNewPirToRequirement(context, created);
   // notify the Pir creation
   return notify(BUS_TOPICS[ENTITY_TYPE_PIR].ADDED_TOPIC, created, user);
 };
@@ -243,8 +251,13 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   } catch (e) {
     logApp.error('[OPENCTI] Error while unregistering Pir connector', { cause: e });
   }
+  // the link to the requirement is read before the Pir goes
+  const pir = await storeLoadById<BasicStoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR);
   // delete the Pir
-  return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
+  const deleted = await deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
+  // then its intelligence requirement and everything stored for it
+  await deleteRequirementOfPir(context, user, pir);
+  return deleted;
 };
 
 export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[], opts: { auditLogEnabled?: boolean } = {}) => {
@@ -254,7 +267,10 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
   if (keys.some((k) => !allowedKeys.includes(k))) {
     throw FunctionalError('Error while updating the PIR, invalid or forbidden key.', { pirId });
   }
-  return editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input, opts);
+  const updated = await editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input, opts);
+  // name and description are mirrored on the intelligence requirement of the Pir
+  await mirrorPirPatchOnRequirement(context, updated, input);
+  return updated;
 };
 
 /**
@@ -393,5 +409,8 @@ export const pirEditAuthorizedMembers = async (
     busTopicKey: ENTITY_TYPE_PIR,
   };
   // @ts-expect-error TODO improve busTopicKey types to avoid this
-  return editAuthorizedMembers(context, user, args);
+  const updated = await editAuthorizedMembers(context, user, args);
+  // the intelligence requirement of the Pir gets the same members
+  await mirrorPirMembersOnRequirement(context, pirId);
+  return updated;
 };
