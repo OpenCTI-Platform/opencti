@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
 import IrTypeStep from './IrTypeStep';
 import IrRulesStep from './IrRulesStep';
+import IrPresetRulesReview from './IrPresetRulesReview';
 import { IR_PIR_TYPES, rulesForType, type IrPirType } from './irPresetRules';
 import { defaultItemName, presetItemsToDraft, validatePresetItems, type IrPresetGeneral, type IrPresetItem } from './irPresetDraft';
 import { presetText } from './IrPresetItemCard';
@@ -44,6 +45,7 @@ const IrCreationWizard = () => {
   const [renamed, setRenamed] = useState<Set<string>>(() => new Set());
   const [triedNext, setTriedNext] = useState<boolean[]>([false, false]);
   const [reviewKey, setReviewKey] = useState(0); // remounts the form each time the review step opens
+  const [focusItemId, setFocusItemId] = useState<string | null>(null); // the item to edit, coming back from the review
   const steps = [t_i18n('General settings'), t_i18n('Criteria'), t_i18n('Scoring and review')];
 
   const flags = pirType === 'threat_custom' ? customFlags : (IR_PIR_TYPES.find((p) => p.key === pirType)?.flags ?? []);
@@ -59,7 +61,10 @@ const IrCreationWizard = () => {
       setTriedNext((tried) => tried.map((v, i) => (i === step ? true : v)));
       return;
     }
-    if (step === 1) setReviewKey((k) => k + 1);
+    if (step === 1) {
+      setReviewKey((k) => k + 1);
+      setFocusItemId(null);
+    }
     setStep(step + 1);
   };
 
@@ -109,6 +114,7 @@ const IrCreationWizard = () => {
             renamed={renamed}
             onRenamedChange={setRenamed}
             showErrors={triedNext[1]}
+            focusItemId={focusItemId}
           />
         </Paper>
       )}
@@ -118,6 +124,16 @@ const IrCreationWizard = () => {
           initialDraft={presetItemsToDraft(general, pirType, flags, items)}
           view="fields"
           onCreated={(id) => writeConfigView(id, 'fields')}
+          rulesReview={(
+            <IrPresetRulesReview
+              items={items}
+              flags={flags}
+              onEdit={(itemId) => {
+                setFocusItemId(itemId);
+                setStep(1);
+              }}
+            />
+          )}
         />
       )}
       <Box sx={{ display: 'flex', gap: 1, mt: 2, maxWidth: 1100 }}>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button as FdsButton, Chip, Icon, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
@@ -17,13 +17,17 @@ interface IrRulesStepProps {
   renamed?: Set<string>;
   onRenamedChange?: (renamed: Set<string>) => void;
   showErrors?: boolean; // after the user tried to go to the next step: the messages of items and of the list
+  focusItemId?: string | null; // coming back from the review to edit this item: the step scrolls to it
 }
 
 const newRule = (ruleKey: string): IrRuleInstance => ({ id: newId('r'), ruleKey, value: emptyValue() });
 
 // Step 2 of the creation wizard: the rules (OR) and groups of rules (AND) that flag entities
-const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onRenamedChange, showErrors = false }: IrRulesStepProps) => {
+const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onRenamedChange, showErrors = false, focusItemId = null }: IrRulesStepProps) => {
   const { t_i18n } = useFormatter();
+  useEffect(() => {
+    if (focusItemId) document.getElementById(`ir-item-${focusItemId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusItemId]);
   const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
   const [autoOpenFor, setAutoOpenFor] = useState<string | null>(null); // a new group opens its menu once its card is there
   // A requirement needs at least one rule: with none yet, the step opens on the list of rules

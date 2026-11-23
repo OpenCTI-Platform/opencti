@@ -7404,5 +7404,7 @@
   "Add at least one rule": "ルールを少なくとも 1 つ追加してください",
   "matching custom filters": "カスタムフィルターに一致する",
   "any": "すべての",
-  "Or any type…": "または任意のタイプ…"
+  "Or any type…": "または任意のタイプ…",
+  "{count} filters": "{count} 件のフィルター",
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "この要件でエンティティにフラグを付けるもの：ルールを編集すると基準ステップで変更できます"
 }

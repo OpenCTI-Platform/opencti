@@ -68,7 +68,7 @@ const flaggedSide = (rule: IrPresetRule): 'source' | 'target' | null => {
   }
 };
 
-const QueryTooltip = ({ rule, flags }: { rule: IrRuleInstance; flags: string[] }) => {
+export const QueryTooltip = ({ rule, flags }: { rule: IrRuleInstance; flags: string[] }) => {
   const { t_i18n } = useFormatter();
   const chips = presetQueryChips(rule, flags, (text) => presetText(text, t_i18n));
   const side = flaggedSide(getRule(rule.ruleKey));
@@ -269,6 +269,7 @@ export const IrPresetItemCard = ({
   const isGroup = item.kind === 'group';
   return (
     <Box
+      id={`ir-item-${item.id}`}
       sx={{
         border: '1px solid',
         borderColor: isGroup ? 'primary.main' : 'divider',

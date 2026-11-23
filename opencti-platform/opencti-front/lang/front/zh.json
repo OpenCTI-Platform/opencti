@@ -7404,5 +7404,7 @@
   "Add at least one rule": "请至少添加一条规则",
   "matching custom filters": "匹配自定义过滤器",
   "any": "任意",
-  "Or any type…": "或任意类型…"
+  "Or any type…": "或任意类型…",
+  "{count} filters": "{count} 个筛选条件",
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "此需求中标记实体的内容：编辑规则可在条件步骤中修改"
 }

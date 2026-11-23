@@ -50,7 +50,7 @@ export const emptyValue = (): IrPresetValue => ({ entities: [], types: [], terms
 const MAX_NAMED_VALUES = 3;
 
 // "any <Type>" is the entitiesOrType choice; container types are plain type names
-const valueLabels = (def: IrPresetRule, value: IrPresetValue, t: Translate): string[] => [
+export const valueLabels = (def: IrPresetRule, value: IrPresetValue, t: Translate): string[] => [
   ...value.entities.map((e) => e.label),
   ...value.types.map((type) => (def.value === 'entitiesOrType' ? `${t('any')} ${t(type)}` : t(type))),
   ...value.terms,

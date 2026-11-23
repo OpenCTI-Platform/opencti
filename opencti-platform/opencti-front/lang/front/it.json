@@ -7404,5 +7404,7 @@
   "Add at least one rule": "Aggiungi almeno una regola",
   "matching custom filters": "corrispondenti ai filtri personalizzati",
   "any": "qualsiasi",
-  "Or any type…": "O qualsiasi tipo…"
+  "Or any type…": "O qualsiasi tipo…",
+  "{count} filters": "{count} filtri",
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "cosa segnala le entità in questo requisito: modifica una regola per cambiarla nel passaggio dei criteri"
 }
