@@ -21,9 +21,6 @@ const TAGS: { keys: string[]; style: TextStyle }[] = [
 ];
 const TAG_KEYS = TAGS.flatMap(({ keys }) => keys);
 
-// JSON.stringify throws on a BigInt, and a logger must not throw
-const toJsonValue = (_key: string, value: unknown) => (typeof value === 'bigint' ? value.toString() : value);
-
 // Colors are dropped automatically when stdout is not a TTY, unless FORCE_COLOR is set (see util.styleText)
 export const formatPrettyLog = (info: Record<string, unknown>) => {
   const { level, message, timestamp, stack, ...fields } = info;
@@ -40,13 +37,20 @@ export const formatPrettyLog = (info: Record<string, unknown>) => {
     message,
   ];
   const lines = [firstLine.filter((part) => part !== undefined).join(' ')];
+  // Error stacks, also the ones nested in the metadata (e.g. cause.stack), are kept out of the JSON
+  // and printed below it so their line breaks stay readable
+  const stacks = typeof stack === 'string' ? [stack] : [];
   if (Object.keys(metadata).length > 0) {
-    lines.push(JSON.stringify(metadata, toJsonValue, 2));
+    lines.push(JSON.stringify(metadata, (key, value) => {
+      if (key === 'stack' && typeof value === 'string') {
+        stacks.push(value);
+        return undefined;
+      }
+      // JSON.stringify throws on a BigInt, and a logger must not throw
+      return typeof value === 'bigint' ? value.toString() : value;
+    }, 2));
   }
-  // Error stacks are kept out of the JSON so their line breaks stay readable
-  if (typeof stack === 'string') {
-    lines.push(styleText('dim', stack));
-  }
+  lines.push(...stacks.map((errorStack) => styleText('dim', errorStack)));
   return lines.join('\n');
 };
 

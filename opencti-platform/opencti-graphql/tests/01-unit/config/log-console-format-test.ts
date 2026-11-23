@@ -38,6 +38,33 @@ describe('Pretty console log format', () => {
     expect(output).toEqual('error Boom\n{\n  "cause": "unknown"\n}\nError: Boom\n    at test');
   });
 
+  it('should print the stacks nested in the metadata below the JSON with their line breaks, after the top-level one', () => {
+    const output = format({
+      level: 'error',
+      message: 'Boom',
+      stack: 'Error: Boom\n    at top',
+      cause: { name: 'Error', message: 'Cause', stack: 'Error: Cause\n    at cause' },
+      errors: [{ message: 'Inner', stack: 'Error: Inner\n    at inner' }],
+    });
+    expect(output).toEqual([
+      'error Boom',
+      '{',
+      '  "cause": {',
+      '    "name": "Error",',
+      '    "message": "Cause"',
+      '  },',
+      '  "errors": [',
+      '    {',
+      '      "message": "Inner"',
+      '    }',
+      '  ]',
+      '}',
+      'Error: Boom\n    at top',
+      'Error: Cause\n    at cause',
+      'Error: Inner\n    at inner',
+    ].join('\n'));
+  });
+
   it('should print a BigInt in the metadata as a string instead of throwing', () => {
     expect(format({ level: 'info', message: 'Counted', count: 12n })).toEqual('info Counted\n{\n  "count": "12"\n}');
   });
