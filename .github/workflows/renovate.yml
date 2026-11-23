@@ -94,6 +94,8 @@ jobs:
         uses: renovatebot/github-action@acdd6bda8b035c99ce59d5675816af2aa65a1774 # v46.3.14
         with:
           token: ${{ steps.app-token.outputs.token }}
+          # Renovate updates this version itself (docker image ghcr.io/renovatebot/renovate).
+          renovate-version: 44.257.5
         env:
           LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
           RENOVATE_REPOSITORIES: ${{ github.repository }}
