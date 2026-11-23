@@ -2728,7 +2728,7 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
-type SessionEndRequest = { sessionID?: string; session?: unknown };
+type SessionEndRequest = { sessionID?: string; session?: unknown; sessionStore?: { generate?: (req: unknown) => void } };
 type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string } } };
 
 // End a session that reached its maximum lifetime (app:session_max_lifetime): the session is deleted,
@@ -2737,8 +2737,15 @@ type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; ses
 // queries in parallel): each one ends the session, but only the one that actually deleted it records the logout.
 const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser) => {
   const { sessionID } = req;
-  // As express-session does when destroying a session: otherwise the end of the request would save it again
-  delete req.session;
+  // The ended session must not stay on the request: the end of the request would save it again.
+  // The request gets a new empty session instead, as the rest of the request may still use one: a login
+  // mutation sent with the cookie of the ended session binds the user to the session of its request.
+  // This new session is neither saved nor sent as a cookie unless something is put in it (saveUninitialized: false).
+  if (req.sessionStore?.generate) {
+    req.sessionStore.generate(req);
+  } else {
+    delete req.session;
+  }
   if (!sessionID) {
     return;
   }

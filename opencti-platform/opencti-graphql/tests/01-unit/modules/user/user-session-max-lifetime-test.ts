@@ -66,13 +66,13 @@ vi.mock('../../../../src/domain/settings', () => ({
   getSettings: vi.fn().mockResolvedValue({ local_auth: { enabled: true }, platform_organization: null, platform_session_max_concurrent: 0 }),
 }));
 
-import { authenticateUserFromRequest } from '../../../../src/modules/user/user-domain';
+import { authenticateUserFromRequest, sessionAuthenticateUser } from '../../../../src/modules/user/user-domain';
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { publishUserAction } from '../../../../src/listener/UserActionListener';
 import { executionContext } from '../../../../src/utils/access';
 import { endSessionByRawId } from '../../../../src/database/session';
 
-const USER = { id: 'user-1', internal_id: 'user-1', name: 'User 1', user_email: 'user1@opencti.io', groups: [], organizations: [] };
+const USER = { id: 'user-1', internal_id: 'user-1', name: 'User 1', user_email: 'user1@opencti.io', account_status: 'Active', groups: [], organizations: [] };
 
 // A request authenticated by a session opened at the given login time.
 // Each request holds its own copy of the session, as each one reads it from the store.
@@ -142,6 +142,33 @@ describe('authenticateUserFromRequest: maximum lifetime of a session', () => {
     expect(users).toEqual([undefined, undefined, undefined]);
     expect(endSessionByRawId).toHaveBeenCalledTimes(3);
     expect(publishUserAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('should let a login sent with the cookie of an ended session bind the user to a new session', async () => {
+    // As express-session does: the store gives the request a new empty session, with a new id
+    const newSession = () => ({
+      regenerate: vi.fn((callback: (err?: unknown) => void) => callback()),
+      save: vi.fn(),
+    } as Record<string, any>);
+    const req: any = {
+      ...sessionRequest(overLimitLoginTime()),
+      sessionStore: {
+        generate: vi.fn((request: any) => {
+          request.sessionID = 'new-session-id';
+          request.session = newSession();
+        }),
+      },
+    };
+    // The GraphQL context of the login request authenticates it first: the session is over its lifetime
+    expect(await authenticateUserFromRequest(context, req)).toBeUndefined();
+    expect(endSessionByRawId).toHaveBeenCalledWith(SESSION_ID);
+    expect(req.sessionID).toBe('new-session-id');
+
+    // Then the login mutation binds the user to the session of the same request
+    await sessionAuthenticateUser(context, req, { id: USER.id, internal_id: USER.internal_id }, 'local');
+
+    expect(req.session.user).toEqual(expect.objectContaining({ id: USER.id, session_creation: expect.any(String) }));
+    expect(req.session.save).toHaveBeenCalled();
   });
 
   it('should not authenticate the request when the session cannot be deleted', async () => {
