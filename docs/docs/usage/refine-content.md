@@ -15,7 +15,14 @@ There are several possibilities for Enterprise Edition customers to use OpenCTI 
 - Use OpenAI, MistralAI or AzureAI cloud endpoints using your own tokens.
 - Deploy or use local AI endpoints.
 
-[Please read the configuration documentation](../deployment/configuration.md)
+To connect the platform to an AI endpoint, set these parameters (see [AI Service](../deployment/configuration.md#ai-service) in the configuration documentation):
+
+- `ai:enabled` (`AI__ENABLED`): set it to `true`.
+- `ai:type` (`AI__TYPE`): `mistralai`, `openai` or `azureopenai`.
+- `ai:token` (`AI__TOKEN`): the token of the endpoint. Without a token, the platform does not connect to the endpoint.
+- `ai:model` (`AI__MODEL`): the model used for text generation.
+- `ai:endpoint` (`AI__ENDPOINT`): the endpoint URL. For the MistralAI cloud service, set it to `https://api.mistral.ai`: with an empty endpoint, Ask AI works but natural language queries cannot reach the service. For the OpenAI cloud service, you can leave it empty. For a local or self-hosted endpoint, set its URL.
+- For AzureAI only: `ai:version` (`AI__VERSION`), `ai:ai_azure_instance` (`AI__AI_AZURE_INSTANCE`) and `ai:ai_azure_deployment` (`AI__AI_AZURE_DEPLOYMENT`). For AzureAI, `ai:endpoint` (your Azure OpenAI endpoint URL) and `ai:version` are required.
 
 !!! info "Beta Feature"
     
@@ -23,15 +30,17 @@ There are several possibilities for Enterprise Edition customers to use OpenCTI 
 
 ## How it works
 
-Even if in the future, we would like to leverage AI to do [RAG](https://blogs.nvidia.com/blog/what-is-retrieval-augmented-generation/), for the moment we are mostly using AI to analyze and produce texts or images, based on data directly sent into the prompt.
+Ask AI analyzes and produces text based on the data sent directly into the prompt.
 
 This means that if you are using Filigran AI endpoint or a local one, your data is never used to re-train or adapt the model and everything relies on a pre-trained and fixed model. When using the `Ask AI` button in the platform, a prompt is generated with the proper instruction to generate the expected result and use it in the context of the button (in forms, rich text editor etc.).
+
+For the other AI features of the platform, see [Artificial intelligence in OpenCTI](../reference/artificial-intelligence.md) and [Interactions using AI (chatbot)](copilot.md). To run the AI document extraction service on premise, see [Deploy on-premise AI Import Document Extraction Service](../deployment/advanced/ai-import-document.md).
 
 ### Filigran custom model
 
 We are hosting a scalable AI endpoint for all SaaS or On-Prem enterprise edition customers, this endpoint is based on MistralAI with a model that will be adapted over time to be more effective when processing threat intelligence related contents.
 
-The model, which is still in beta version, will be adapted in the upcoming months to reach maturity at the end of 2024. It can be shared with on-prem enterprise edition customers under NDA.
+The model is in beta. It can be shared with on-prem enterprise edition customers under NDA.
 
 ## Functionalities of Ask AI
 

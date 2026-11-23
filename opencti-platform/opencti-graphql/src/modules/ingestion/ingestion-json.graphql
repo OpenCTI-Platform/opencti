@@ -69,6 +69,7 @@ type IngestionJsonAddInputFromImport {
     query_attributes: [IngestionQueryAttribute!]
     authentication_type: IngestionAuthType
     ssl_verify: Boolean
+    markings: [String!]
     jsonMapper: IngestionJsonMapperFromImport!
 }
 

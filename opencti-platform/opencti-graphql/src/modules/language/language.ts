@@ -1,11 +1,11 @@
-import convertLanguageToStix from './language-converter';
+import convertLanguageToStix, { convertLanguageToStix_2_0 } from './language-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import { ENTITY_TYPE_LANGUAGE, type StixLanguage, type StoreEntityLanguage } from './language-types';
+import { ENTITY_TYPE_LANGUAGE, type Stix2Language, type StixLanguage, type StoreEntityLanguage } from './language-types';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 
-const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> = {
+const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage, Stix2Language> = {
   type: {
     id: 'languages',
     name: ENTITY_TYPE_LANGUAGE,
@@ -30,6 +30,7 @@ const LANGUAGE_DEFINITION: ModuleDefinition<StoreEntityLanguage, StixLanguage> =
     return stix.name;
   },
   converter_2_1: convertLanguageToStix,
+  converter_2_0: convertLanguageToStix_2_0,
 };
 
 registerDefinition(LANGUAGE_DEFINITION);

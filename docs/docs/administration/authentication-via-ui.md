@@ -2,7 +2,7 @@
 
 !!! tip "Enterprise edition"
 
-     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](https://docs.opencti.io/latest/administration/enterprise/?h=ente).
+     Please read the information below. The ability to log in via SSO is covered by the [OpenCTI Enterprise Edition license](enterprise.md).
  
 All the configurations listed below require an Enterprise Edition to work, except the Local strategy.
 
@@ -186,6 +186,12 @@ For OpenID, the following fields are mandatory (indicated with a "*" in the form
 - Client ID: The ID of your client access on the Identity Provider
 - Client secret: The secret of your client access on the Identity Provider
 
+##### Token endpoint authentication method
+
+By default, OpenCTI sends the client secret in the body of the token request (`client_secret_post`). Some Identity Providers (e.g. Okta, Authelia) only accept it in the `Authorization` header and reject the request with `invalid_client`. In that case, add an **Extra Configuration** field (see "Add a custom field not present in SAML, LDAP, OpenID" below) with key `token_endpoint_auth_method` and value `client_secret_basic`.
+
+Supported values: `client_secret_basic`, `client_secret_post`. Any other value is ignored and a warning is written to the authentication logs.
+
 #### SAML
 
 For SAML, the following fields are mandatory (indicated with a "*" in the form):
@@ -310,6 +316,7 @@ The UI covers the most commonly used configuration. However, for specific use ca
 Custom fields are directly bound to the underlying authentication library we use (passport). This means that any field supported by the passport library can be added as a custom field in the UI.
 
 In each form, you can use the **Extra Configuration** section to add a new custom field:
+
 - Click on the "+" to add a new field
 - Specify a field type
 - Add a key (the name of the field in the passport library to map to)
@@ -361,11 +368,13 @@ The secret name (`oidc_client_secret` in this example) will appear in the **Use 
 Now that a configuration is defined, you can define the group mapping for all authentications (except Local).
 
 All authentications have these options: 
+
 - **Prevent platform default group association:** in OpenCTI you can allow some groups to be granted by default at user creation. This option allows you to define whether you want any new user created through the defined authentication to get these default groups granted by default. **By default, users will be granted platform default group**.
 - **Auto create groups:** you can decide to automatically create the groups that you have mapped. Please be aware that a group requires a role for a user to have rights [(more information)](../administration/users.md). When performing group mapping, you can enable an option to automatically create specific groups within OpenCTI.
 - **Extend platform groups:** you can decide to have the system retain groups set within OpenCTI that aren't managed by the authentication provider. This option allows you to manage assigning users to groups that are specific to OpenCTI and not have the groups overwritten when the user logs in.
 
 Then for each authentication, you need to provide: 
+
 - the group expression: identification of where to find the group information 
 - the group splitter: if the group information contains multiple groups, this splitter character will be used to extract the individual group names 
 - the group mapping: the mapping between the value of the group in your provider and the groups that exist in the platform. Be sure to type the exact same group name as it exists in the platform to avoid group duplication. 
@@ -504,6 +513,7 @@ Enabling the **app:authentication:force_env** variable will remove any stored au
 In case you have locked yourself out of the application, by disabling local authentication without verifying that you have another working strategy, there is a solution.
 
 This solution however relies on one of the following pre-requisites: 
+
 - a local account with the capability to [Manage Authentication](users.md) exists, and you know its credentials.
 - you have access to the administrator credentials defined in your configuration file.
 

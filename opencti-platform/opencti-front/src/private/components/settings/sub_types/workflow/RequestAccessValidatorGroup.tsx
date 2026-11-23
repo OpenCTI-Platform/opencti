@@ -61,7 +61,7 @@ const RequestAccessValidatorGroup = () => {
         onChange={handleChange}
         multiple={false}
         clearable={false}
-        style={{ width: 280 }}
+        style={{ width: '100%' }}
       />
     </Formik>
   );

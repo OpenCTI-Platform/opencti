@@ -3,6 +3,8 @@ import type { ReadableStream as NodeReadableStream } from 'node:stream/web';
 import { Agent, type Dispatcher, fetch, FormData, Headers, type Response } from 'undici';
 import { getPlatformHttpProxyAgent, TLS_REJECT_UNAUTHORIZED } from '../config/conf';
 import { fromBase64, isNotEmptyField } from '../database/utils';
+import { getHttpMaxRedirects } from '../http/httpConfig';
+import { buildDestinationLookup, checkUrlDestination, InternalDestinationError } from './internal-destination';
 
 export class OpenCTIHeaders {
   [name: string]: string;
@@ -28,6 +30,10 @@ export interface GetHttpClient {
     password: string;
   };
   beforeRedirect?: (redirectUrl: string) => void;
+  // Destination configured by the platform administrator (XTM Hub, XTM One, RabbitMQ management...): internal networks are not checked
+  trusted?: boolean;
+  // Feature named in the logs and errors when the destination is an internal network address
+  feature?: string;
 }
 
 export interface HttpRequestOptions {
@@ -86,7 +92,6 @@ export const getResponseError = (error: unknown): HttpResponseError | null => {
 };
 
 const DEFAULT_ACCEPT = 'application/json, text/plain, */*';
-const DEFAULT_MAX_REDIRECTS = 21;
 const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
 const METHODS_WITH_DEFAULT_FORM_CONTENT_TYPE = new Set(['POST', 'PUT', 'PATCH']);
 const METHODS_WITHOUT_BODY = new Set(['GET', 'HEAD']);
@@ -329,29 +334,72 @@ const readData = async (response: Response, responseType: HttpResponseType, watc
   }
 };
 
-const buildAgent = (rejectUnauthorized: boolean, certificates: Certificates | undefined) => new Agent({
+const DEFAULT_FEATURE = 'Outbound request';
+
+// The checked feature, or undefined for a trusted client
+type DestinationGuard = string | undefined;
+
+const buildAgent = (rejectUnauthorized: boolean, certificates: Certificates | undefined, guard: DestinationGuard) => new Agent({
   headersTimeout: 0,
   bodyTimeout: 0,
   connect: {
     rejectUnauthorized,
+    lookup: guard !== undefined ? buildDestinationLookup(guard) : undefined,
     cert: isNotEmptyField(certificates?.cert) ? fromBase64(certificates?.cert) : undefined,
     key: isNotEmptyField(certificates?.key) ? fromBase64(certificates?.key) : undefined,
     ca: isNotEmptyField(certificates?.ca) ? fromBase64(certificates?.ca) : undefined,
   },
 });
 
-const sharedAgents = new Map<boolean, Agent>();
-const getAgent = (rejectUnauthorized: boolean, certificates: Certificates | undefined) => {
+const sharedAgents = new Map<string, Agent>();
+const getAgent = (rejectUnauthorized: boolean, certificates: Certificates | undefined, guard: DestinationGuard) => {
   if (certificates) {
-    return buildAgent(rejectUnauthorized, certificates);
+    return buildAgent(rejectUnauthorized, certificates, guard);
   }
-  const existing = sharedAgents.get(rejectUnauthorized);
+  const key = `${rejectUnauthorized}|${guard ?? ''}`;
+  const existing = sharedAgents.get(key);
   if (existing) {
     return existing;
   }
-  const agent = buildAgent(rejectUnauthorized, undefined);
-  sharedAgents.set(rejectUnauthorized, agent);
+  const agent = buildAgent(rejectUnauthorized, undefined, guard);
+  sharedAgents.set(key, agent);
   return agent;
+};
+
+// Agent checking the destination of every connection, with the default undici timeouts, for the clients that cannot use getHttpClient (EventSource)
+const destinationCheckedAgents = new Map<string, Agent>();
+export const getDestinationCheckedAgent = (rejectUnauthorized: boolean, feature: string) => {
+  const key = `${rejectUnauthorized}|${feature}`;
+  const existing = destinationCheckedAgents.get(key);
+  if (existing) {
+    return existing;
+  }
+  const agent = new Agent({ connect: { rejectUnauthorized, lookup: buildDestinationLookup(feature) } });
+  destinationCheckedAgents.set(key, agent);
+  return agent;
+};
+
+// A DNS resolution cannot be canceled: stop waiting for it when the request is aborted or times out
+export const untilAborted = async <T>(operation: Promise<T>, signal: AbortSignal | undefined): Promise<T> => {
+  if (!signal) {
+    return operation;
+  }
+  let onAbort: (() => void) | undefined;
+  const aborted = new Promise<never>((_, reject) => {
+    onAbort = () => reject(signal.reason);
+    if (signal.aborted) {
+      onAbort();
+    } else {
+      signal.addEventListener('abort', onAbort, { once: true });
+    }
+  });
+  try {
+    return await Promise.race([operation, aborted]);
+  } finally {
+    if (onAbort) {
+      signal.removeEventListener('abort', onAbort);
+    }
+  }
 };
 
 const createTimeoutWatchdog = (timeout: number) => {
@@ -404,18 +452,19 @@ const toTransportError = (error: unknown, timeout: number, timeoutSignal: AbortS
   if (signal?.aborted) {
     return new HttpClientError('canceled', 'ERR_CANCELED', undefined, { cause: error });
   }
-  const cause = (error as { cause?: { code?: string; message?: string } })?.cause;
+  const cause = error instanceof InternalDestinationError ? error : (error as { cause?: { code?: string; message?: string } })?.cause;
   const message = cause?.message ?? (error as Error)?.message ?? 'Network error';
   return new HttpClientError(message, cause?.code ?? 'ERR_NETWORK', undefined, { cause: error });
 };
 
-export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect }: GetHttpClient) => {
-  const clientAgent = getAgent(rejectUnauthorized ?? TLS_REJECT_UNAUTHORIZED, certificates);
-  const defaultAgent = getAgent(true, undefined);
+export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, responseType, certificates, auth, beforeRedirect, trusted, feature }: GetHttpClient) => {
+  const guard: DestinationGuard = trusted ? undefined : (feature ?? DEFAULT_FEATURE);
+  const clientAgent = getAgent(rejectUnauthorized ?? TLS_REJECT_UNAUTHORIZED, certificates, guard);
+  const defaultAgent = getAgent(true, undefined, guard);
   const request = async (config: HttpRequestConfig, useClientTransport: boolean): Promise<HttpResponse> => {
     const method = (config.method ?? 'GET').toUpperCase();
     const requestTimeout = config.timeout ?? timeout ?? 0;
-    const maxRedirects = config.maxRedirects ?? DEFAULT_MAX_REDIRECTS;
+    const maxRedirects = config.maxRedirects ?? getHttpMaxRedirects();
     const requestHeaders = buildHeaders(headers, config.headers);
     const watchdog = requestTimeout > 0 ? createTimeoutWatchdog(requestTimeout) : undefined;
     const signals = [watchdog?.signal, config.signal].filter((s): s is AbortSignal => s !== undefined);
@@ -439,11 +488,17 @@ export const getHttpClient = ({ baseURL, headers, rejectUnauthorized, timeout, r
     let response: Response;
     try {
       for (let redirectCount = 0; ; redirectCount += 1) {
-        const transportDispatcher: Dispatcher = useClientTransport ? (getProxyDispatcher(currentUrl) ?? clientAgent) : defaultAgent;
+        const proxyDispatcher = useClientTransport ? getProxyDispatcher(currentUrl) : undefined;
+        watchdog?.arm();
+        if (guard !== undefined) {
+          // The socket lookup checks the resolved address, except for an IP address or behind a proxy
+          const destinationUrl = currentUrl;
+          await transport(() => untilAborted(checkUrlDestination(destinationUrl, guard, proxyDispatcher !== undefined), signal));
+        }
+        const transportDispatcher: Dispatcher = useClientTransport ? (proxyDispatcher ?? clientAgent) : defaultAgent;
         const dispatcher = watchdog ? transportDispatcher.compose(observeReceivedBytes(watchdog.arm)) : transportDispatcher;
         const requestInit = { method: currentMethod, headers: requestHeaders, body, signal, redirect: 'manual' as const, dispatcher };
         const requestUrl = currentUrl.href;
-        watchdog?.arm();
         response = await transport(() => fetch(requestUrl, requestInit));
         const location = response.headers.get('location');
         if (maxRedirects === 0 || !location || !REDIRECT_STATUSES.has(response.status)) {

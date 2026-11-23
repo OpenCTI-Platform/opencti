@@ -85,8 +85,8 @@ When clicking on an `Artefact` in the list, you land on its Overview tab. For an
 
 An Indicator is a detection object. It is defined by a search pattern, which could be expressed in various formats such as STIX, Sigma, YARA, among others. This pattern serves as a key to identify potential threats within the data. Furthermore, an Indicator includes additional information that enriches its detection context. This information encompasses:
 
-- Validity dates: Indicators are accompanied by a time frame, specifying the duration of their relevance, and modeled by the `Valid from` and `Valid until` dates.
-- Actionable fields: Linked to the validity dates, the `Revoked` and `Detection` fields can be used to sort Indicators for detection purposes.
+- Validity dates: Indicators are accompanied by a time frame, specifying the duration of their relevance, and modeled by the `Valid from` and `Valid until` dates. To learn how the platform computes these dates, see [Indicators lifecycle management](indicators-lifecycle.md#setting-validity-dates).
+- Actionable fields: Linked to the validity dates, the `Revoked` and `Detection` fields can be used to sort Indicators for detection purposes. When the score of an Indicator reaches the revoke score of its [decay rule](../administration/decay-rules.md), the platform revokes it and sets `Detection` to false.
 - Kill chain phase: They indicate the phase within the cyber kill chain where they are applicable, offering insights into the progression of a potential threat.
 - Types: Indicators are categorized based on their nature, aiding in classification and analysis.
 

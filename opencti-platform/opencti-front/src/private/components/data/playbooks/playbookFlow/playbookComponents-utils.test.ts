@@ -1,8 +1,48 @@
 import { describe, expect, it } from 'vitest';
-import { computeInitialComponentConfigValues, groupAndSortPlaybookComponents, NodeData } from './playbookComponents-utils';
+import {
+  computeInitialComponentConfigValues,
+  filterPlaybookComponentGroups,
+  groupAndSortPlaybookComponents,
+  isRequiredChoiceMissing,
+  missingRequiredChoices,
+  NodeData,
+  requiredChoiceFields,
+} from './playbookComponents-utils';
 import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookConfig } from '../types/playbook-types';
 
 describe('playbookComponents-utils', () => {
+  describe('required choices (#8353)', () => {
+    const schema = {
+      type: 'object',
+      required: ['organizations', 'applyToElements', 'triggerTime', 'name'],
+      properties: {
+        organizations: { type: 'array', items: { type: 'string', oneOf: [] } },
+        applyToElements: { type: 'string', oneOf: [{ const: 'only-main', title: 'Only main' }] },
+        triggerTime: { type: 'string' },
+        name: { type: 'string' },
+      },
+    } as unknown as PlaybookComponentConfigSchema;
+
+    it('keeps the required lists and the required strings with options, not free text', () => {
+      expect(requiredChoiceFields(schema)).toEqual(['organizations', 'applyToElements']);
+      expect(requiredChoiceFields(null)).toEqual([]);
+    });
+
+    it('names the required choices left empty', () => {
+      expect(missingRequiredChoices(schema, { organizations: [], applyToElements: '' })).toEqual(['organizations', 'applyToElements']);
+      expect(missingRequiredChoices(schema, { organizations: ['org'], applyToElements: 'only-main' })).toEqual([]);
+      expect(missingRequiredChoices(schema, { organizations: [{ label: 'Org', value: 'org' }], applyToElements: 'only-main' })).toEqual([]);
+    });
+
+    it('checks one field on its own value, whatever the other required choices', () => {
+      expect(isRequiredChoiceMissing(schema, 'applyToElements', 'only-main')).toBe(false);
+      expect(isRequiredChoiceMissing(schema, 'organizations', ['org'])).toBe(false);
+      expect(isRequiredChoiceMissing(schema, 'applyToElements', '')).toBe(true);
+      expect(isRequiredChoiceMissing(schema, 'organizations', [])).toBe(true);
+      expect(isRequiredChoiceMissing(schema, 'triggerTime', '')).toBe(false);
+    });
+  });
+
   describe('groupAndSortPlaybookComponents', () => {
     const playbook = (overrides: Partial<PlaybookComponent> & { id: string; name: string }): PlaybookComponent => ({
       description: '',
@@ -81,6 +121,35 @@ describe('playbookComponents-utils', () => {
       expect(result).toHaveLength(1);
       expect(result[0].category).toBe('end_playbook');
       expect(result[0].items).toHaveLength(1);
+    });
+  });
+
+  describe('filterPlaybookComponentGroups', () => {
+    const make = (id: string, name: string, description: string, category: PlaybookComponent['category']) => ({
+      id, name, description, category, icon: '', is_entry_point: false, is_internal: false, configuration_schema: '', ports: [],
+    }) as PlaybookComponent;
+    const groups = groupAndSortPlaybookComponents([
+      make('LOG', 'Log data in standard output', 'Print bundle in platform logs', 'transform_and_enrich'),
+      make('AI', 'Transform with AI agent', 'Send the STIX bundle to an AI agent', 'transform_and_enrich'),
+      make('INGEST', 'Send for ingestion', 'Send STIX bundle to knowledge for ingestion', 'end_playbook'),
+    ], false);
+
+    it('keeps every group for an empty or blank search', () => {
+      expect(filterPlaybookComponentGroups(groups, '')).toBe(groups);
+      expect(filterPlaybookComponentGroups(groups, '   ')).toBe(groups);
+    });
+
+    it('matches every word in the name or the description, case insensitive, and drops empty groups', () => {
+      const result = filterPlaybookComponentGroups(groups, 'STIX ingestion');
+      expect(result.map((g) => g.category)).toEqual(['end_playbook']);
+      expect(result[0].items.map((c) => c.id)).toEqual(['INGEST']);
+      expect(filterPlaybookComponentGroups(groups, 'ai AGENT')[0].items.map((c) => c.id)).toEqual(['AI']);
+      expect(filterPlaybookComponentGroups(groups, 'nothing like this')).toEqual([]);
+    });
+
+    it('searches the translated texts and ignores accents', () => {
+      const translate = (value: string) => (value === 'Log data in standard output' ? 'Journaliser les données' : value);
+      expect(filterPlaybookComponentGroups(groups, 'donnees', translate)[0].items.map((c) => c.id)).toEqual(['LOG']);
     });
   });
 

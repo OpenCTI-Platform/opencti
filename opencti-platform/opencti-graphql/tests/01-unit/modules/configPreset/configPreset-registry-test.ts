@@ -16,6 +16,11 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
 }));
+// A family of the Enterprise Edition reads its entities through a domain that checks the license: the platform has it here
+vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
+  checkEnterpriseEdition: vi.fn(),
+}));
 // The markings of a group are read from the cache
 vi.mock('../../../../src/database/cache', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../../../src/database/cache')>();
@@ -53,7 +58,6 @@ import { mockConfigPresetLoaders } from './configPreset-loaders-fixtures';
 import { administratorRole, analystRole, ROLE_CAPABILITIES } from './configPreset-roles-fixtures';
 import { administratorsGroup, analystsGroup } from './configPreset-groups-fixtures';
 import { ALL_MARKINGS, customMarking, papRed, tlpAmber } from './configPreset-markings-fixtures';
-import { BUILT_IN_MARKING_STANDARD_IDS } from '../../../../src/modules/markingDefinition/marking-import';
 import { roleCapabilities } from '../../../../src/modules/user/user-domain';
 import { customLabel, otherLabel } from './configPreset-labels-fixtures';
 import { dnsExclusionList, retiredExclusionList } from './configPreset-exclusionLists-fixtures';
@@ -61,8 +65,12 @@ import { disarmKillChainPhase, killChainPhase, otherKillChainPhase } from './con
 import { customVocabulary, modifiedVocabulary } from './configPreset-vocabularies-fixtures';
 import { customStatusTemplate, defaultStatusTemplate } from './configPreset-statusTemplates-fixtures';
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
+import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
+import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
+import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
+import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -137,14 +145,13 @@ describe('Config preset registry', () => {
       { id: 'messages', label: 'Messages', description: 'Banner, login and consent messages', group: 'platformSettings', itemIds: ['banner', 'login', 'consent', 'noAccess'] },
       { id: 'whitemark', label: 'Remove Filigran logos', description: '', group: 'platformSettings', itemIds: ['whitemark'] },
       { id: 'hiddenEntityTypes', label: 'Hidden entity types', description: 'Entity types hidden in the platform', group: 'dataModel', itemIds: ['hiddenEntityTypes'] },
-      // The markings by definition, without the built-in ones
+      // The markings by definition, built-in ones included
       {
         id: 'markings',
         label: 'Markings',
         description: 'Marking definitions, their colors and orders',
         group: 'securityAccess',
-        itemIds: ALL_MARKINGS
-          .filter(({ standard_id }) => !BUILT_IN_MARKING_STANDARD_IDS.includes(standard_id))
+        itemIds: [...ALL_MARKINGS]
           .sort((a, b) => a.definition.localeCompare(b.definition))
           .map(({ standard_id }) => standard_id),
       },
@@ -165,6 +172,14 @@ describe('Config preset registry', () => {
         itemIds: [administratorsGroup.standard_id, analystsGroup.standard_id],
       },
       { id: 'policies', label: 'Policies', description: 'Password policy, users visibility and main organization', group: 'securityAccess', itemIds: ['policies'] },
+      // The email templates by name
+      {
+        id: 'emailTemplates',
+        label: 'Email templates',
+        description: 'Email templates and their content',
+        group: 'securityAccess',
+        itemIds: [otherEmailTemplate.standard_id, customEmailTemplate.standard_id],
+      },
       // The labels by value
       { id: 'labels', label: 'Labels', description: 'Labels and their colors', group: 'taxonomy', itemIds: [otherLabel.standard_id, customLabel.standard_id] },
       // The exclusion lists by name, in their own group
@@ -207,7 +222,14 @@ describe('Config preset registry', () => {
         group: 'taxonomy',
         itemIds: [fraudCaseTemplate.standard_id, phishingCaseTemplate.standard_id],
       },
+      // The dashboards by name, never an investigation
+      { id: 'dashboards', label: 'Custom dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
+      // The feeds by name; the next feeds of the same name by creation date
+      { id: 'rssFeeds', label: 'RSS feeds', description: 'RSS feeds and their parameters, without their state', group: 'integrations', itemIds: ['Security news', 'Security news (1)'] },
+      { id: 'csvFeeds', label: 'CSV feeds', description: 'CSV feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
+      { id: 'jsonFeeds', label: 'JSON feeds', description: 'JSON feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
+      { id: 'taxiiFeeds', label: 'TAXII feeds', description: 'TAXII feeds and their parameters, without their credentials', group: 'integrations', itemIds: ['Partner/TAXII'] },
       // Every rule the platform declares, by its id
       {
         id: 'ruleEngine',
@@ -216,14 +238,22 @@ describe('Config preset registry', () => {
         group: 'automationRules',
         itemIds: RULES_DECLARATION.map(({ id }) => id),
       },
+      // The fintel designs by name
+      {
+        id: 'fintelDesigns',
+        label: 'Fintel designs',
+        description: 'Fintel designs, their colors and logos',
+        group: 'customization',
+        itemIds: [defaultFintelDesign.standard_id, nightFintelDesign.standard_id],
+      },
     ]);
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'connectors']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'fintelDesigns']);
   });
 
-  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template or a case template name', async () => {
+  it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template, a case template or a fintel design name', async () => {
     const items = await resolveAllItems();
     expect(items.map((item) => [item.label, item.translatable])).toEqual([
       ['Platform configuration', true],
@@ -237,11 +267,14 @@ describe('Config preset registry', () => {
       ['Hidden entity types', true],
       ['INTERNAL:SOC', false],
       ['PAP:RED', false],
+      ['TLP:AMBER', false],
       ['Administrator', false],
       ['Analyst', false],
       ['Administrators', false],
       ['Analysts', false],
       ['Policies', true],
+      ['Built-In Template For Onboarding', false],
+      ['Welcome analyst', false],
       ['APT', false],
       ['tlp:amber', false],
       ['Public DNS resolvers', false],
@@ -257,8 +290,15 @@ describe('Config preset registry', () => {
       ['IN_PROGRESS', false],
       ['Fraud investigation', false],
       ['Phishing triage', false],
+      ['Executive summary', false],
+      ['SOC overview', false],
       ['MITRE', false],
+      ['Security news', false],
+      ['Security news', false],
+      ['Partner/TAXII', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
+      ['Filigran report', false],
+      ['Night briefing', false],
     ]);
   });
 
@@ -279,11 +319,14 @@ describe('Config preset registry', () => {
       'data_model/hidden_entity_types.json',
       `security_access/markings/${customMarking.standard_id}.json`,
       `security_access/markings/${papRed.standard_id}.json`,
+      `security_access/markings/${tlpAmber.standard_id}.json`,
       `security_access/roles/${administratorRole.standard_id}.json`,
       `security_access/roles/${analystRole.standard_id}.json`,
       `security_access/groups/${administratorsGroup.standard_id}.json`,
       `security_access/groups/${analystsGroup.standard_id}.json`,
       'security_access/policies.json',
+      `security_access/email_templates/${otherEmailTemplate.standard_id}.json`,
+      `security_access/email_templates/${customEmailTemplate.standard_id}.json`,
       `taxonomy/labels/${otherLabel.standard_id}.json`,
       `taxonomy/labels/${customLabel.standard_id}.json`,
       `customization/exclusion_lists/${dnsExclusionList.standard_id}.json`,
@@ -299,8 +342,15 @@ describe('Config preset registry', () => {
       `taxonomy/status_templates/${defaultStatusTemplate.standard_id}.json`,
       `taxonomy/case_templates/${fraudCaseTemplate.standard_id}.json`,
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
+      `dashboards/${executiveDashboard.standard_id}.json`,
+      `dashboards/${socDashboard.standard_id}.json`,
       'integrations/connectors/mitre.json',
+      'integrations/rss_feeds/Security news.json',
+      'integrations/rss_feeds/Security news (1).json',
+      'integrations/taxii_feeds/Partner_TAXII.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
+      `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
+      `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -309,6 +359,33 @@ describe('Config preset registry', () => {
     const family = findFamily('platform');
     const item = await findItem('platform', 'platform');
     expect(configPresetItemFilePath(family, { ...item, fileName: 'custom-name.json' })).toBe('platform_settings/custom-name.json');
+  });
+
+  describe('dashboards', () => {
+    it('exports what the dashboard is, never an internal id nor who can open it, not even everyone', async () => {
+      const family = findFamily('dashboards');
+      const soc = await exportConfigPresetItem(context, user, family, await findItem('dashboards', socDashboard.standard_id));
+      expect(soc).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'dashboards.dashboards',
+        id: socDashboard.standard_id,
+        configuration: { name: 'SOC overview', description: 'What the SOC watches', tags: ['soc'], refresh_interval: 300 },
+      });
+      const executive = await exportConfigPresetItem(context, user, family, await findItem('dashboards', executiveDashboard.standard_id));
+      // Shared with everyone on the platform, as the file export of a dashboard: the bundle does not say it.
+      // The description, the tags and the refresh interval are written empty, so that an overwrite can clear them
+      expect(executive.configuration).toEqual({ name: 'Executive summary', description: '', tags: [], refresh_interval: 0 });
+      expect(JSON.stringify([soc, executive])).not.toMatch(/creator-secret-id|created_at|dashboard-id/);
+    });
+
+    it('lists the dashboards only, an investigation is a workspace that is not exported', async () => {
+      const family = findFamily('dashboards');
+      expect((await family.resolveItems(context, user, null, [])).map(({ label }) => label)).toEqual(['Executive summary', 'SOC overview']);
+      expect((await family.resolveItems(context, user, null, [executiveDashboard.standard_id])).map(({ label }) => label)).toEqual(['SOC overview']);
+      expect(await family.resolveItems(context, user, [], [])).toEqual([]);
+      const page = await family.listItems(context, user, { first: 10, search: 'incident' });
+      expect(page.edges).toEqual([]);
+    });
   });
 
   describe('platform configuration', () => {
@@ -386,6 +463,52 @@ describe('Config preset registry', () => {
       expect(await ids({})).toEqual(['mitre']);
       expect(await ids({ excludedIds: ['mitre'] })).toEqual([]);
       expect(await ids({ ids: ['external'] })).toEqual([]);
+    });
+  });
+
+  describe('feeds', () => {
+    const rssFeeds = findFamily('rssFeeds');
+    const taxiiFeeds = findFamily('taxiiFeeds');
+
+    it('exports an RSS feed by name, with its markings by standard id and the confidence of its user, without its user nor its state', async () => {
+      const item = await findItem('rssFeeds', 'Security news');
+      expect(item.dependsOn).toEqual([{ type: 'markings', id: customMarking.standard_id }]);
+      const file = await exportConfigPresetItem(context, user, rssFeeds, item);
+      expect(file).toMatchObject({ type: 'integrations.rssFeeds', id: 'Security news' });
+      expect(file.configuration).toEqual({
+        name: 'Security news',
+        description: 'Daily news',
+        scheduling_period: 'PT1H',
+        uri: 'https://news.example.com/rss',
+        ssl_verify: null,
+        confidence_level: 75,
+        report_types: ['threat-report'],
+        markings: [{ standard_id: customMarking.standard_id, definition_type: customMarking.definition_type, definition: customMarking.definition }],
+        author: null,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/mitre-user-id|current_state_date|2026-03-01|ingestion_running|security-news-id/);
+    });
+
+    it('exports the next feed of the same name as a copy, by creation date', async () => {
+      const file = await exportConfigPresetItem(context, user, rssFeeds, await findItem('rssFeeds', 'Security news (1)'));
+      expect(file.configuration).toMatchObject({ name: 'Security news', uri: 'https://other-news.example.com/rss' });
+    });
+
+    it('exports a TAXII feed with its authentication type, never its credentials nor its cursor', async () => {
+      const item = await findItem('taxiiFeeds', 'Partner/TAXII');
+      expect(item.fileName).toEqual('Partner_TAXII.json');
+      const file = await exportConfigPresetItem(context, user, taxiiFeeds, item);
+      expect(file.configuration).toMatchObject({ name: 'Partner/TAXII', authentication_type: 'basic', version: 'v21', collection: 'collection-id' });
+      expect(JSON.stringify(file)).not.toMatch(/encrypted-credentials|authentication_value|cursor/);
+    });
+
+    it('lists the feeds by name, searched on their name', async () => {
+      const ids = async (args: Parameters<typeof rssFeeds.listItems>[2]) => (await rssFeeds.listItems(context, user, args)).edges.map(({ node }) => node.id);
+      expect(await ids({})).toEqual(['Security news', 'Security news (1)']);
+      expect(await ids({ first: 1 })).toEqual(['Security news']);
+      expect(await ids({ first: 1, after: 'Security news' })).toEqual(['Security news (1)']);
+      expect(await ids({ excludedIds: ['Security news'] })).toEqual(['Security news (1)']);
+      expect(await ids({ search: 'other' })).toEqual([]);
     });
   });
 
@@ -493,6 +616,74 @@ describe('Config preset registry', () => {
     const file = await exportConfigPresetItem(context, user, findFamily('hiddenEntityTypes'), await findItem('hiddenEntityTypes', 'hiddenEntityTypes'));
     expect(file).toMatchObject({ type: 'dataModel.hiddenEntityTypes', id: 'hiddenEntityTypes' });
     expect(file.configuration).toEqual({ hidden_entity_types: ['Channel', 'Malware'] });
+  });
+
+  describe('email templates', () => {
+    const emailTemplates = findFamily('emailTemplates');
+    const pageIds = async (args: Parameters<typeof emailTemplates.listItems>[2]) => (await emailTemplates.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('requires the Enterprise Edition and exports into the Security & Access folder', () => {
+      expect(emailTemplates.requiresEnterpriseEdition).toBe(true);
+      expect(emailTemplates.directory).toBe('security_access/email_templates');
+      expect(emailTemplates.importModes).toEqual(['OVERWRITE', 'COPY']);
+    });
+
+    it('exports an email template in the import format only, with its standard id', async () => {
+      const file = await exportConfigPresetItem(context, user, emailTemplates, await findItem('emailTemplates', customEmailTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'securityAccess.emailTemplates',
+        id: customEmailTemplate.standard_id,
+        configuration: {
+          name: 'Welcome analyst',
+          description: 'Onboarding message for new analysts',
+          email_object: 'Welcome to OpenCTI',
+          sender_email: 'CTI team',
+          template_body: '<p>Hello $user.firstname</p>',
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|custom-email-template-id/);
+    });
+
+    it('exports an empty description for a template that has none, so the import clears the one of the target', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce([{ ...customEmailTemplate, description: null }] as never);
+      const file = await exportConfigPresetItem(context, user, emailTemplates, await findItem('emailTemplates', customEmailTemplate.standard_id));
+      expect(file.configuration).toHaveProperty('description', '');
+    });
+
+    it('opens the first page with the email templates by name, and counts them', async () => {
+      const page = await emailTemplates.listItems(context, user, { first: 1 });
+      expect(pageEntitiesConnection).toHaveBeenCalledWith(context, user, ['EmailTemplate'], {
+        first: 1,
+        after: undefined,
+        search: undefined,
+        orderBy: 'name',
+        orderMode: 'asc',
+        filters: { mode: 'and', filters: [], filterGroups: [] },
+      });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([[otherEmailTemplate.standard_id, 'Built-In Template For Onboarding', false]]);
+      expect(page.pageInfo).toMatchObject({ hasNextPage: true, endCursor: page.edges[0].cursor, globalCount: 2 });
+    });
+
+    it('applies search, ids and excluded ids to the email templates', async () => {
+      expect(await pageIds({ search: 'welcome' })).toEqual([customEmailTemplate.standard_id]);
+      expect(await pageIds({ ids: [otherEmailTemplate.standard_id] })).toEqual([otherEmailTemplate.standard_id]);
+      expect(await pageIds({ excludedIds: [otherEmailTemplate.standard_id] })).toEqual([customEmailTemplate.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the email templates to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await emailTemplates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([otherEmailTemplate.standard_id, customEmailTemplate.standard_id]);
+      expect(await ids(null, [otherEmailTemplate.standard_id])).toEqual([customEmailTemplate.standard_id]);
+      expect(await ids([customEmailTemplate.standard_id], [])).toEqual([customEmailTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
   });
 
   describe('labels', () => {
@@ -873,6 +1064,91 @@ describe('Config preset registry', () => {
     });
   });
 
+  describe('fintel designs', () => {
+    const designs = findFamily('fintelDesigns');
+
+    it('exports a design in the import format only, says whether it is the default, and points to its logo next to it', async () => {
+      const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
+      const file = await exportConfigPresetItem(context, user, designs, item);
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.fintelDesigns',
+        id: defaultFintelDesign.standard_id,
+        configuration: {
+          standard_id: defaultFintelDesign.standard_id,
+          name: 'Filigran report',
+          description: 'The design of the reports',
+          gradiantFromColor: '#00020c',
+          gradiantToColor: '#001bda',
+          textColor: '#ffffff',
+          default: true,
+        },
+        attachment: `customization/fintel_designs/${defaultFintelDesign.standard_id}.logo`,
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|default-fintel-design-id|fintelDesigns\//);
+    });
+
+    it('exports a design without logo nor description without attachment, and as not the default', async () => {
+      const item = await findItem('fintelDesigns', nightFintelDesign.standard_id);
+      const file = await exportConfigPresetItem(context, user, designs, item);
+      expect(file.configuration).toEqual({
+        standard_id: nightFintelDesign.standard_id,
+        name: 'Night briefing',
+        gradiantFromColor: '#00020c',
+        gradiantToColor: '#001bda',
+        default: false,
+      });
+      expect(file.attachment).toBeUndefined();
+      expect(item.attachment).toBeUndefined();
+    });
+
+    it('marks the default design, which no design depends on: it can be left out of the export', async () => {
+      const [first, second] = await designs.resolveItems(context, user, null, []);
+      expect([first.id, first.isDefault, first.dependsOn]).toEqual([defaultFintelDesign.standard_id, true, []]);
+      expect([second.id, second.isDefault, second.dependsOn]).toEqual([nightFintelDesign.standard_id, false, []]);
+      // The same on a page of the dialog
+      const page = await designs.listItems(context, user, { first: 10 });
+      expect(page.edges.map(({ node }) => [node.id, node.isDefault, node.dependsOn])).toEqual([
+        [defaultFintelDesign.standard_id, true, []],
+        [nightFintelDesign.standard_id, false, []],
+      ]);
+    });
+
+    it('marks no design when the platform has no default design', async () => {
+      mockConfigPresetLoaders(entitySettings);
+      vi.mocked(fullEntitiesList).mockImplementation(async (_ctx, _user, types, args) => {
+        const filters = (args as { filters?: { filters: { key: string[] }[] } })?.filters?.filters ?? [];
+        return (types?.[0] === 'FintelDesign' && !filters.some(({ key }) => key[0] === 'default') ? [nightFintelDesign] : []) as never;
+      });
+      const [item] = await designs.resolveItems(context, user, null, []);
+      expect([item.id, item.isDefault, item.dependsOn]).toEqual([nightFintelDesign.standard_id, false, []]);
+    });
+
+    it('reads the logo of a design byte for byte from the storage, by its own key', async () => {
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([PNG_LOGO.subarray(0, 4), PNG_LOGO.subarray(4)]) as never);
+      const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
+      expect(await item.attachment!.read(context, user)).toEqual(PNG_LOGO);
+      expect(downloadFile).toHaveBeenCalledWith('fintelDesigns/default-fintel-design-id');
+    });
+
+    it('refuses to export a design whose logo is missing, too large or not an image, instead of exporting it without its logo, and names it', async () => {
+      const item = await findItem('fintelDesigns', defaultFintelDesign.standard_id);
+      vi.mocked(downloadFile).mockResolvedValue(null);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is missing from the storage');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.alloc(FINTEL_DESIGN_LOGO_MAX_SIZE + 1)]) as never);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is too large');
+      vi.mocked(downloadFile).mockResolvedValue(Readable.from([Buffer.from('not an image')]) as never);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is not a supported image');
+    });
+
+    it('never reads a logo that is not the own file of the design', async () => {
+      vi.mocked(fullEntitiesList).mockResolvedValue([{ ...defaultFintelDesign, file_id: 'import/global/secret.png' }] as never);
+      const [item] = await designs.resolveItems(context, user, [defaultFintelDesign.standard_id], []);
+      await expect(item.attachment!.read(context, user)).rejects.toThrow('The logo of the fintel design "Filigran report" is not its own file');
+      expect(downloadFile).not.toHaveBeenCalled();
+    });
+  });
+
   describe('branding', () => {
     const branding = findFamily('branding');
     const pageIds = async (args: Parameters<typeof branding.listItems>[2]) => (await branding.listItems(context, user, args)).edges.map(({ node }) => node.id);
@@ -1006,11 +1282,17 @@ describe('Config preset registry', () => {
       expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|custom-marking-id/);
     });
 
-    it('never lists nor resolves a built-in marking', async () => {
+    it('lists, resolves and exports a built-in marking like any other', async () => {
       const listed = (await markings.listItems(context, user, { first: 10 })).edges.map(({ node }) => node.id);
-      expect(listed).toContain(customMarking.standard_id);
-      expect(listed).not.toContain(tlpAmber.standard_id);
-      expect(await markings.resolveItems(context, user, [tlpAmber.standard_id], [])).toEqual([]);
+      expect(listed).toEqual([customMarking.standard_id, papRed.standard_id, tlpAmber.standard_id]);
+      const [item] = await markings.resolveItems(context, user, [tlpAmber.standard_id], []);
+      expect(item.id).toEqual(tlpAmber.standard_id);
+      expect((await exportConfigPresetItem(context, user, markings, item)).configuration).toEqual({
+        definition_type: 'TLP',
+        definition: 'TLP:AMBER',
+        x_opencti_color: null,
+        x_opencti_order: 0,
+      });
     });
   });
 

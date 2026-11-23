@@ -166,12 +166,15 @@ export const computeConfigPresetItems = async (
     created: new Set(),
     themeNames: new Set(),
     releasedThemeNames: new Set(),
+    emailTemplateNames: new Set(),
     roleIds: new Set(),
     groupIds: new Set(),
     roleSensitiveRights: new Map(),
     plannedMarkings: new Map(),
     targets: new Map(),
     connectorNames: new Set(),
+    fintelDesignNames: new Set(),
+    renamedFintelDesignIds: new Set(),
     credentials,
     serviceAccounts,
   };
@@ -208,12 +211,14 @@ export const buildConfigPresetImportTypes = (
         key: item.id,
         label: computed.label,
         translatable: computed.translatable,
-        isDefault: family.id === 'branding' && defaultThemeId?.standard_id === item.id,
+        // The default theme is the one the platform item points to; any other default is said by the item itself
+        isDefault: computed.isDefault ?? (family.id === 'branding' && defaultThemeId?.standard_id === item.id),
         exists: computed.exists,
         conflict: computed.conflict,
         fields: computed.fields ?? [],
         isEnabled: computed.isEnabled ?? null,
         credentials: computed.credentials ?? [],
+        serviceAccountRequired: computed.serviceAccountRequired ?? false,
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))
           .map((dependency) => ({ type: dependency.type, key: dependency.id })),

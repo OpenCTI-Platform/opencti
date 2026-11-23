@@ -65,13 +65,17 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'Built-in theme': return t_i18n('Built-in theme');
     case 'Theme already exists': return t_i18n('Theme already exists');
     case 'Theme name already exists': return t_i18n('Theme name already exists');
+    case 'The standard id of the fintel design does not match its id': return t_i18n('The standard id of the fintel design does not match its id');
+    case 'Fintel design already exists': return t_i18n('Fintel design already exists');
+    case 'Fintel design name already exists': return t_i18n('Fintel design name already exists');
+    case 'The logo of the fintel design is too large': return t_i18n('The logo of the fintel design is too large');
+    case 'The logo of the fintel design is not a supported image': return t_i18n('The logo of the fintel design is not a supported image');
     case 'The standard id of the role does not match its name': return t_i18n('The standard id of the role does not match its name');
     case 'Role already exists': return t_i18n('Role already exists');
     case 'Role name already exists': return t_i18n('Role name already exists');
     case 'The Administrator role keeps the bypass capability': return t_i18n('The Administrator role keeps the bypass capability');
     case 'Grants sensitive rights': return t_i18n('Grants sensitive rights');
     case 'Removes sensitive rights': return t_i18n('Removes sensitive rights');
-    case 'Built-in marking': return t_i18n('Built-in marking');
     case 'Marking already exists': return t_i18n('Marking already exists');
     case 'The standard id of the marking does not match its definition': return t_i18n('The standard id of the marking does not match its definition');
     case 'The order of the marking changes': return t_i18n('The order of the marking changes');
@@ -97,6 +101,9 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
     case 'Service account not found': return t_i18n('Service account not found');
     case 'The confidence level of the service account is not changed': return t_i18n('The confidence level of the service account is not changed');
+    case 'Feed already exists': return t_i18n('Feed already exists');
+    case 'Feed name already exists': return t_i18n('Feed name already exists');
+    case 'Several feeds have this name: import it as a copy': return t_i18n('Several feeds have this name: import it as a copy');
     default: break;
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
@@ -118,6 +125,22 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
   const missingCredentials = reason.match(/^Configuration to provide: (.+)$/)?.[1];
   if (missingCredentials) {
     return t_i18n('Configuration to provide: {keys}', { values: { keys: missingCredentials } });
+  }
+  const emptyUriParameters = reason.match(/^URI parameters left empty: (.+)$/)?.[1];
+  if (emptyUriParameters) {
+    return t_i18n('URI parameters left empty: {parameters}', { values: { parameters: emptyUriParameters } });
+  }
+  const missingAuthor = reason.match(/^Author not found: (.+)$/)?.[1];
+  if (missingAuthor) {
+    return t_i18n('Author not found: {name}', { values: { name: missingAuthor } });
+  }
+  const missingDefaultValues = reason.match(/^Mapper default values not found: (.+)$/)?.[1];
+  if (missingDefaultValues) {
+    return t_i18n('Mapper default values not found: {attributes}', { values: { attributes: missingDefaultValues } });
+  }
+  const createdJsonMapper = reason.match(/^JSON mapper created: (.+)$/)?.[1];
+  if (createdJsonMapper) {
+    return t_i18n('JSON mapper created: {name}', { values: { name: createdJsonMapper } });
   }
   const unavailableConnector = reason.match(/^Connector not available on this platform: (.+)$/)?.[1];
   if (unavailableConnector) {

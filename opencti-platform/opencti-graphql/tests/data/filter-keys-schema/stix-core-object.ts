@@ -232,6 +232,7 @@ const stixCoreObjectFilterKeys: string[] = [
   'swid',
   'languages',
   'vendor',
+  'x_opencti_purl',
   'user_id',
   'credential',
   'account_login',

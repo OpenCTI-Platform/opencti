@@ -5,7 +5,7 @@ When you click on "Threats" in the left-side bar, you access all the "Threats" t
 From the `Threats` section, users can access the following tabs:
 
 - `Threat actors (Group)`: Threat actor (Group) represents a physical group of attackers operating an Intrusion set, using malware and attack infrastructure, etc.
-- `Threat actors (Indvidual)`: Threat actor (Individual) represents a real attacker that can be described by physical and personal attributes and motivations. Threat actor (Individual) operates Intrusion set, uses malware and infrastructure, etc.
+- `Threat actors (Individual)`: Threat actor (Individual) represents a real attacker that can be described by physical and personal attributes and motivations. Threat actor (Individual) operates Intrusion set, uses malware and infrastructure, etc.
 - `Intrusion sets`: Intrusion set is an important concept in Cyber Threat Intelligence field. It is a consistent set of technical and non-technical elements corresponding of what, how and why a Threat actor acts. it is particularly useful for associating multiple attacks and malicious actions to a defined Threat, even without sufficient information regarding who did them. Often, with you understanding of the threat growing, you will link an Intrusion set to a Threat actor (either a Group or an Individual).
 - `Campaigns`: Campaign represents a series of attacks taking place in a certain period of time and/or targeting a consistent subset of Organization/Individual.
 
@@ -56,7 +56,7 @@ Several intrusion sets may be linked to one threat actor. All the entities descr
 - the possible reuse
 - "false flag" type of attacks
 
-As OpenCTI is very customizable, each organization or individual may use these categories as they wish. Instead, it is also possible to use the import feed for the choice of categories.
+As OpenCTI is very customizable, each organization or individual may define and distinguish intrusion sets as they wish, or rely on the intrusion sets as defined by the sources they import.
 
 ![Intrusion set Cards](assets/instrusion-set-cards.png)
 

@@ -61,7 +61,7 @@ OpenCTI uses different mechanisms to be able to publish actions (audit) or data 
 
     :white_check_mark: Supported
     
-    :cross_mark: Not supported for now
+    :cross_mark: Not supported
     
     :prohibited: Not applicable
 

@@ -35,6 +35,7 @@ import {
   logMalformedRequest,
   normalizeUploadError,
 } from './httpUtils';
+import { getMaxPayloadBodySize } from './httpConfig';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 import { onSessionPresenceClose, onSessionPresenceConnect } from '../modules/session/session-presence-ws';
 
@@ -162,7 +163,7 @@ const createHttpServer = async () => {
   });
   await apolloServer.start();
 
-  const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
+  const requestSizeLimit = getMaxPayloadBodySize();
   app.use(express.json({ limit: requestSizeLimit }));
   const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
   const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;

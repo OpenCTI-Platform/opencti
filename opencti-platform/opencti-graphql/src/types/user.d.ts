@@ -36,6 +36,9 @@ interface UserApiToken {
   created_at: string;
   expires_at: string | null;
   masked_token: string;
+  // Set by the platform only, for a token it issues and revokes on behalf of an entity (e.g. a managed connector)
+  managed_by_type?: string;
+  managed_by_id?: string;
 }
 
 interface AuthUser extends BasicStoreIdentifier {

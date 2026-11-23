@@ -1,5 +1,6 @@
 import { initializeOnlyRedisLockClient, lockResource } from '../database/redis';
 import { logApp } from '../config/conf';
+import { serializeChildLockError } from './child-lock-error';
 const PARENT_PROCESS_SCHEDULE_LISTENER = 2000;
 
 interface InternalLock {
@@ -33,7 +34,7 @@ initializeOnlyRedisLockClient().then(() => {
       // freshly-acquired locks against the final activeLocks drain below.
       if (shutdownInProgress) {
         if (process.send) {
-          process.send({ operation: data.operation, error: new Error('Child lock manager is shutting down'), type: data.type, success: false });
+          process.send({ operation: data.operation, error: serializeChildLockError(new Error('Child lock manager is shutting down')), type: data.type, success: false });
         }
         return;
       }
@@ -54,7 +55,7 @@ initializeOnlyRedisLockClient().then(() => {
         }
       } catch (err) {
         if (process.send) {
-          process.send({ operation: data.operation, error: err, type: data.type, success: false });
+          process.send({ operation: data.operation, error: serializeChildLockError(err), type: data.type, success: false });
         }
       }
     }
@@ -69,7 +70,7 @@ initializeOnlyRedisLockClient().then(() => {
           }
         } catch (err) {
           if (process.send) {
-            process.send({ operation: data.operation, error: err, type: data.type, success: false });
+            process.send({ operation: data.operation, error: serializeChildLockError(err), type: data.type, success: false });
           }
         } finally {
           activeLocks.delete(data.operation);

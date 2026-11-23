@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { anchorOverrideGlobs, compareConfigs, rootAnchorGlob, serializeConfig } from '../oxlintrc.mjs';
+import { anchorOverrideGlobs, compareConfigs, excludeBlockIgnores, rootAnchorGlob, serializeConfig } from '../oxlintrc.mjs';
 
 test('anchors a slash-less pattern to the package root', () => {
   assert.equal(rootAnchorGlob('*.js'), './*.js');
@@ -74,4 +74,48 @@ test('compareConfigs: a trailing difference is drift', () => {
   const result = compareConfigs('a\nb\n', 'a\n');
   assert.equal(result.match, false);
   assert.match(result.reason, /first difference at line 2/);
+});
+
+test('turns a block\'s rules off for its own ignores, right after the migrated override', () => {
+  const eslintConfig = [
+    { ignores: ['dist/**'] },
+    { rules: { eqeqeq: 'error' } },
+    { files: ['src/**/*.ts'], ignores: ['src/picker/**'], rules: { 'no-restricted-imports': ['error', { patterns: [] }] } },
+    { files: ['**/*.entries.ts'], rules: { 'no-restricted-imports': 'error' } },
+  ];
+  const oxlintrc = {
+    rules: { eqeqeq: 'error' },
+    overrides: [
+      { files: ['src/**/*.ts'], rules: { 'no-restricted-imports': ['error', { patterns: [] }] } },
+      { files: ['**/*.entries.ts'], rules: { 'no-restricted-imports': 'error' } },
+    ],
+  };
+  const { config, excluded } = excludeBlockIgnores(oxlintrc, eslintConfig);
+  assert.deepEqual(config.overrides, [
+    { files: ['src/**/*.ts'], rules: { 'no-restricted-imports': ['error', { patterns: [] }] } },
+    { files: ['src/picker/**'], rules: { 'no-restricted-imports': 'off' } },
+    { files: ['**/*.entries.ts'], rules: { 'no-restricted-imports': 'error' } },
+  ]);
+  assert.deepEqual(excluded, [{ override: 0, files: ['src/picker/**'] }]);
+  assert.equal(oxlintrc.overrides.length, 2, 'input is not mutated');
+});
+
+test('refuses block ignores when an earlier block already enables the rule (off would hide it)', () => {
+  const eslintConfig = [
+    { rules: { 'no-restricted-imports': 'error' } },
+    { files: ['src/**'], ignores: ['src/picker/**'], rules: { 'no-restricted-imports': 'warn' } },
+  ];
+  const oxlintrc = { rules: {}, overrides: [{ files: ['src/**'], rules: { 'no-restricted-imports': 'warn' } }] };
+  assert.throws(() => excludeBlockIgnores(oxlintrc, eslintConfig), /no-restricted-imports.*earlier/);
+});
+
+test('refuses block ignores when no migrated override matches the block', () => {
+  const eslintConfig = [{ files: ['src/**'], ignores: ['src/picker/**'], rules: { a: 'error' } }];
+  assert.throws(() => excludeBlockIgnores({ rules: {}, overrides: [] }, eslintConfig), /src\/\*\*/);
+});
+
+test('leaves configs without block ignores untouched', () => {
+  const eslintConfig = [{ ignores: ['dist/**'] }, { files: ['*.js'], rules: { a: 'off' } }];
+  const oxlintrc = { rules: {}, overrides: [{ files: ['*.js'], rules: { a: 'off' } }] };
+  assert.deepEqual(excludeBlockIgnores(oxlintrc, eslintConfig), { config: oxlintrc, excluded: [] });
 });

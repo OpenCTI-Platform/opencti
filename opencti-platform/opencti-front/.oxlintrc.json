@@ -356,6 +356,65 @@
     },
     {
       "files": [
+        "src/**/*.{js,jsx,ts,tsx}"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^@mui/x-date-pickers(/(DatePicker|DateTimePicker|TimePicker))?$",
+                "importNames": [
+                  "DatePicker",
+                  "DateTimePicker",
+                  "TimePicker"
+                ],
+                "allowTypeImports": true,
+                "message": "Use the wrappers of components/common/input/picker, which own the section selection (#19228)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/components/common/input/picker/**"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    },
+    {
+      "files": [
+        "**/*.entries.{ts,tsx}"
+      ],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "regex": "^(?!(react|mdi-material-ui|@mui/icons-material|@filigran/design-system|(\\.{1,2}/)+utils/hooks/capabilities)$)",
+                "allowTypeImports": true,
+                "message": "*.entries.ts(x) are eagerly loaded by the pages search: only type imports, capability constants (utils/hooks/capabilities) and icons are allowed."
+              },
+              {
+                "regex": "^@filigran/design-system$",
+                "allowImportNames": [
+                  "Icon"
+                ],
+                "allowTypeImports": true,
+                "message": "*.entries.ts(x) are eagerly loaded by the pages search: only the Icon component of @filigran/design-system is allowed."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
         "tests_e2e/**",
         "script/**"
       ],

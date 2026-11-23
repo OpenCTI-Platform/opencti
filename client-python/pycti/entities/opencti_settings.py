@@ -67,7 +67,7 @@ class Settings:
             }
             platform_ai_enabled
             platform_openaev_url
-            platform_opengrc_url
+            platform_opencrq_url
             platform_ai_type
             platform_ai_model
             platform_ai_has_token

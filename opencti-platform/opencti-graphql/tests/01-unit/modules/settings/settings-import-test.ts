@@ -21,7 +21,8 @@ import { getSettings, getSettingsFromDatabase, settingsEditField } from '../../.
 import { findById } from '../../../../src/modules/theme/theme-domain';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { isEnterpriseEdition } from '../../../../src/enterprise-edition/ee';
-import { propagatePasswordValidityChange } from '../../../../src/modules/user/user-domain';
+import { ADMIN_PASSWORD_POLICY_MISMATCH_REASON, propagatePasswordValidityChange } from '../../../../src/modules/user/user-domain';
+import conf from '../../../../src/config/conf';
 import { importMessage, importPlatformConfiguration, importPolicies, importWhitemark } from '../../../../src/modules/settings/settings-import';
 import { isConfigImportSensitiveChangeAllowed } from '../../../../src/modules/user/sensitive-config-import';
 import { ConfigImportMode } from '../../../../src/modules/configImport/configImport-types';
@@ -264,6 +265,17 @@ describe('importPolicies', () => {
     const withPlatform = await importPolicies(context, user, policies({ password_policy_max_length: null }), overwrite);
     expect(withPlatform).toMatchObject({ status: 'failed', code: 'invalid' });
     expect(settingsEditField).not.toHaveBeenCalled();
+  });
+
+  it('refuses a password policy that the configured admin password does not match when app:admin:secure_by_default is on, without writing', async () => {
+    conf.set('app:admin:secure_by_default', true);
+    try {
+      const result = await importPolicies(context, user, policies({ password_policy_min_length: 200 }), overwrite);
+      expect(result).toMatchObject({ status: 'failed', code: 'invalid', reason: ADMIN_PASSWORD_POLICY_MISMATCH_REASON });
+      expect(settingsEditField).not.toHaveBeenCalled();
+    } finally {
+      conf.clear('app:admin:secure_by_default');
+    }
   });
 
   it('leaves out and reports a main organization that is not on this platform, and never creates it', async () => {

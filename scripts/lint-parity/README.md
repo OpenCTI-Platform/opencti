@@ -85,8 +85,12 @@ The script's own tests: `node --test "scripts/lint-parity/test/*.test.mjs"` from
 
 `sync.mjs` runs `@oxlint/migrate` into a scratch directory, post-processes the
 result in memory, and writes `.oxlintrc.json`. The post-processing (turn every
-category off, drop options of disabled rules, copy the global ignores, anchor
-the override globs) lives in `sync.mjs` and `oxlintrc.mjs`.
+category off, drop options of disabled rules, copy the global ignores, turn a
+block's own `ignores` into an override that sets its rules off, anchor the
+override globs) lives in `sync.mjs` and `oxlintrc.mjs`. oxlint overrides cannot
+exclude files (a `!` pattern in `files` is just another match), and
+`@oxlint/migrate` drops block-level `ignores`; the sync fails rather than guess
+when an earlier block already enables the same rule.
 
 `yarn lint:ox:check` (`sync.mjs --check`) runs the same generation but compares
 the result with the committed file byte for byte instead of writing it. It

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { oxlintConfigRules, toComparableRuleId, toEslintRuleId } from './normalize.mjs';
-import { anchorOverrideGlobs, compareConfigs, serializeConfig } from './oxlintrc.mjs';
+import { anchorOverrideGlobs, compareConfigs, excludeBlockIgnores, serializeConfig } from './oxlintrc.mjs';
 
 // Regenerates .oxlintrc.json from eslint.config.ts (run from a package dir) so that
 // oxlint runs exactly the rules ESLint enables, then reports what could not be carried over.
@@ -115,7 +115,13 @@ const main = async () => {
   stripOffRuleOptions(migrated.rules);
   (migrated.overrides ?? []).forEach((override) => stripOffRuleOptions(override.rules));
   migrated.ignorePatterns = [...new Set(globalIgnores(eslintConfig))];
-  const { config: oxlintrc, rewritten } = anchorOverrideGlobs(migrated);
+  let excludeResult;
+  try {
+    excludeResult = excludeBlockIgnores(migrated, eslintConfig);
+  } catch (error) {
+    fail(error.message);
+  }
+  const { config: oxlintrc, rewritten } = anchorOverrideGlobs(excludeResult.config);
   const generated = serializeConfig(oxlintrc);
   const file = path.join(packageDir, OXLINTRC);
 
@@ -146,6 +152,7 @@ const main = async () => {
 
   console.log(`${OXLINTRC} written: ${oxlintRules.size} rules enabled, ${oxlintrc.ignorePatterns.length} ignore patterns`);
   printList('override globs anchored to the package root (ESLint flat config semantics)', rewritten.map((item) => `override ${item.override}: ${item.before} -> ${item.after}`));
+  printList('block ignores turned into an override that sets the block\'s rules off', excludeResult.excluded.map((item) => `after override ${item.override}: ${item.files.join(', ')}`));
   printList('ESLint-only, unsupported by oxlint', unsupported);
   printList('options differ, check in triage', optionsDiffer);
 };

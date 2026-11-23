@@ -1,11 +1,16 @@
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CUSTOM_VIEW } from '../customView/customView-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../entitySetting/entitySetting-types';
 import { ENTITY_TYPE_FORM } from '../form/form-types';
+import { ENTITY_TYPE_INGESTION_CSV } from '../ingestion/ingestion-types';
+import { ENTITY_TYPE_CSV_MAPPER } from '../internal/csvMapper/csvMapper-types';
+import { ENTITY_TYPE_JSON_MAPPER } from '../internal/jsonMapper/jsonMapper-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../playbook/playbook-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION, ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
+import { userMergeSettleRestrictedMembersDefaults } from './userMerge-restrictedMembers';
 
 /**
  * How the payload sits on the document, and — as a direct consequence — whether Elasticsearch
@@ -44,10 +49,19 @@ export interface UserMergeBlobTarget {
   /** Set when the same field answers for more than one register row. */
   alsoCovers?: string[];
   activity?: UserMergeBlobActivity;
+  /**
+   * `json` only: a step run on the payload before the generic rewrite, for the part of it that
+   * re-pointing an id is not enough to settle. Returns the payload unchanged when it has nothing
+   * to do.
+   */
+  settle?: (raw: unknown, sourceId: string, targetId: string) => unknown;
 }
 
 /**
  * Every JSON payload the platform stores as an opaque blob and that can name a user.
+ *
+ * A new payload of this kind is not found by any schema walk: nothing declares which of its keys
+ * accept a User. Adding it here, with a register row, is the only thing that makes the merge see it.
  *
  * `History.context_data` is deliberately absent for the same reason it was left out of the
  * filter handler: its volume is of a different order, it is a frozen snapshot that is never
@@ -148,6 +162,38 @@ export const USER_MERGE_BLOB_TARGETS: UserMergeBlobTarget[] = [
     alsoCovers: ['case-rfi-terminal.request-access-applicant-id'],
     entityType: ENTITY_TYPE_CONTAINER_CASE_RFI,
     path: 'x_opencti_request_access',
+    shape: 'json',
+  },
+  {
+    // The authorized members defaults are serialized entries that can name both accounts: they
+    // are collapsed first, the strongest access right winning, as on the live field.
+    id: 'entity-setting-attributes-configuration',
+    registerRow: 'entity-setting.attributes-configuration-default-values',
+    entityType: ENTITY_TYPE_ENTITY_SETTING,
+    path: 'attributes_configuration',
+    shape: 'json',
+    settle: userMergeSettleRestrictedMembersDefaults,
+  },
+  {
+    id: 'csv-mapper-representations',
+    registerRow: 'mapper.representations-default-values',
+    entityType: ENTITY_TYPE_CSV_MAPPER,
+    path: 'representations',
+    shape: 'json',
+  },
+  {
+    id: 'json-mapper-representations',
+    registerRow: 'mapper.representations-default-values',
+    entityType: ENTITY_TYPE_JSON_MAPPER,
+    path: 'representations',
+    shape: 'json',
+  },
+  {
+    // A CSV feed can carry its own copy of a mapper instead of pointing at one.
+    id: 'ingestion-csv-inline-mapper',
+    registerRow: 'mapper.representations-default-values',
+    entityType: ENTITY_TYPE_INGESTION_CSV,
+    path: 'csv_mapper',
     shape: 'json',
   },
 ];

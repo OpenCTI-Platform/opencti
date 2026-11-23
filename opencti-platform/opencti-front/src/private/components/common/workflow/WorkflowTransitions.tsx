@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ComponentProps, FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
 import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
 import {
@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from '@filigran/design-system';
 import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
-import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutlined } from '@mui/icons-material';
+import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutlined, LockOpenOutlined, LockOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,6 +31,7 @@ import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { Close } from 'mdi-material-ui';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusEntityQuery } from './__generated__/WorkflowStatusEntityQuery.graphql';
@@ -46,6 +47,41 @@ import WorkflowTransitionInputs, {
   hasTransitionComment,
   WORKFLOW_TRANSITION_COMMENT_FIELD_ID,
 } from './WorkflowTransitionInputs';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+
+const parseBlockingConditions = (blockingConditions: string | null | undefined): FilterGroup | null => {
+  if (!blockingConditions) return null;
+  try {
+    return JSON.parse(blockingConditions) as FilterGroup;
+  } catch {
+    return null;
+  }
+};
+
+// A disabled transition carries the knowledge condition the entity does not meet yet.
+// The tooltip wraps the item from outside: a disabled item ignores pointer events.
+const BlockedTransitionTooltip = ({ event, blockingConditions, children }: {
+  event: string;
+  blockingConditions: string | null | undefined;
+  children: React.ReactNode;
+}) => {
+  const { t_i18n } = useFormatter();
+  const filters = parseBlockingConditions(blockingConditions);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span data-testid={`workflow-blocked-transition-${event}`} style={{ display: 'block' }}>
+          {children}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>
+        <Text as="span" variant="content-compact">{t_i18n('Requires')}</Text>
+        {filters && <FilterIconButton filters={filters} variant="small" />}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
 
 // The reason only lives in a tooltip, so the trigger is a button: keyboard and screen-reader users reach it too.
 const WorkflowErrorHint = ({ message, severity }: { message: string; severity: 'error' | 'warning' }) => (
@@ -89,6 +125,8 @@ interface WorkflowTransitionsViewProps {
   onCompleted?: () => void;
   onFailed?: () => void;
   transitionButtons?: TransitionButtonsOptions;
+  // Small next to an entity status chip, default next to the other draft toolbar buttons
+  buttonSize?: ComponentProps<typeof Button>['size'];
 }
 
 const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
@@ -102,6 +140,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   onCompleted,
   onFailed,
   transitionButtons,
+  buttonSize,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -230,7 +269,9 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     </Box>
   ) : null;
 
-  if (workflowInstance.allowedTransitions.length === 0) {
+  const blockedTransitions = workflowInstance.blockedTransitions ?? [];
+  const transitionCount = workflowInstance.allowedTransitions.length + blockedTransitions.length;
+  if (transitionCount === 0) {
     return divergence;
   }
 
@@ -250,6 +291,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
         <Button
           key={transition.event}
           variant="primary"
+          size={buttonSize}
           onClick={() => fireTransition(transition)}
           disabled={approving || clearing || !!wizard}
         >
@@ -285,10 +327,11 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     <>
       <Box data-testid="workflow-transitions-actions" sx={{ display: 'contents' }}>
         {divergence}
-        {!transitionButtons && workflowInstance.allowedTransitions.length > 1 ? (
+        {!transitionButtons && transitionCount > 1 ? (
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
+                size={buttonSize}
                 disabled={approving || clearing || !!wizard}
                 endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
               >
@@ -318,11 +361,43 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   </MenuItem>
                 );
               })}
+              {blockedTransitions.map((transition) => (
+                <BlockedTransitionTooltip
+                  key={transition.event}
+                  event={transition.event}
+                  blockingConditions={transition.blockingConditions}
+                >
+                  <MenuItem
+                    disabled
+                    style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal', gap: 8 }}
+                  >
+                    <LockOutlined fontSize="small" />
+                    <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
+                  </MenuItem>
+                </BlockedTransitionTooltip>
+              ))}
             </MenuContent>
           </Menu>
         ) : (
           <>
             {workflowInstance.allowedTransitions.map(renderTransitionButton)}
+            {blockedTransitions.map((transition) => (
+              <BlockedTransitionTooltip
+                key={transition.event}
+                event={transition.event}
+                blockingConditions={transition.blockingConditions}
+              >
+                {transitionButtons ? (
+                  <FdsButton priority="secondary" disabled>
+                    {transition.event}
+                  </FdsButton>
+                ) : (
+                  <Button variant="secondary" size={buttonSize} startIcon={<LockOutlined fontSize="small" />} disabled>
+                    {transition.event}
+                  </Button>
+                )}
+              </BlockedTransitionTooltip>
+            ))}
           </>
         )}
       </Box>
@@ -451,7 +526,9 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const { canEdit } = useGetCurrentUserAccessRight(entity.currentUserAccessRight);
-  const enabled = canEdit && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
+  // Inside a draft only the draft's own workflow moves: the entity keeps showing its status, read only.
+  const draftContext = useDraftContext();
+  const enabled = !draftContext && canEdit && isWorkflowUiEnabledForType(entityType, isFeatureEnable) && !!entity.workflowInstance;
   const request = useRef<Subscription | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshFailed, setRefreshFailed] = useState(false);
@@ -486,6 +563,18 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
     });
   };
 
+  // Knowledge conditions (assignee, labels, markings, confidence...) are evaluated on the server: any edit of the
+  // entity can flip one, and our own edits never come back through the subscription. The modification date moves
+  // on every edit, the people ids cover the edits that Relay applies to the store before the server answers.
+  const peopleKey = [entity.objectAssignee, entity.objectParticipant].map((people) => (people ?? []).map(({ id }) => id).join(',')).join('|');
+  const changeKey = `${entity.updated_at ?? ''}|${peopleKey}`;
+  const seenChange = useRef({ id: entity.id, key: changeKey });
+  useEffect(() => {
+    const seen = seenChange.current;
+    seenChange.current = { id: entity.id, key: changeKey };
+    if (seen.id === entity.id && seen.key !== changeKey) refresh();
+  }, [entity.id, changeKey]);
+
   if (!enabled) return null;
   return (
     <>
@@ -501,6 +590,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         onCompleted={refresh}
         onFailed={refreshOnFailure ? refresh : undefined}
         transitionButtons={transitionButtons}
+        buttonSize="small"
       />
     </>
   );

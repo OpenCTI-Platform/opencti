@@ -198,7 +198,7 @@ describe('Workflow transition and the entity status write', () => {
     expect(report.x_opencti_workflow_id).toBe(validatedStatusId);
   });
 
-  it('refuses a transition on an entity created inside a draft, which has no live version to write the status on', async () => {
+  it('refuses a transition on an entity created inside a draft', async () => {
     const draftId = await addDraft(draftIds);
     const created = await queryAsAdmin({
       query: REPORT_ADD_MUTATION,
@@ -209,27 +209,24 @@ describe('Workflow transition and the entity status write', () => {
     const draftContext = { ...testContext, draft_context: draftId };
 
     expect(await getAllowedTransitions(draftContext, ADMIN_USER, draftReportId)).toEqual([]);
-    const result = await triggerWorkflowEvent(draftContext, ADMIN_USER, draftReportId, 'validate_event');
-
-    expect(result).toMatchObject({ success: false, reason: 'This entity has no live version to write the workflow status on' });
+    await expect(triggerWorkflowEvent(draftContext, ADMIN_USER, draftReportId, 'validate_event'))
+      .rejects.toThrow('Workflow transitions cannot be applied to an entity while in a draft');
   });
 
-  it('checks the confidence level against the live entity, not its draft copy, when triggered from a draft', async () => {
-    // Live entity at 90, draft copy at 50: the status is written on the live one
+  it('refuses a transition on a live entity when triggered from a draft, so unpublished changes are never approved', async () => {
     const reportId = await addReport(90);
     reportIds.push(reportId);
     const draftId = await addDraft(draftIds);
     const patched = await queryAsAdmin({ query: REPORT_CONFIDENCE_PATCH_MUTATION, variables: { id: reportId, input: [{ key: 'confidence', value: ['50'] }] } }, draftId);
     expect(patched.errors).toBeUndefined();
     const draftContext = { ...testContext, draft_context: draftId };
-    const lowConfidenceUser = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }], 50);
 
-    // Control: a user above the live confidence level can take the transition from the draft
-    const adminTransitions = await getAllowedTransitions(draftContext, ADMIN_USER, reportId);
-    expect(adminTransitions.map((transition) => transition.event)).toEqual(['validate_event']);
+    // Control: outside the draft, the same user can take the transition
+    const liveTransitions = await getAllowedTransitions(testContext, ADMIN_USER, reportId);
+    expect(liveTransitions.map((transition) => transition.event)).toEqual(['validate_event']);
 
-    expect(await getAllowedTransitions(draftContext, lowConfidenceUser, reportId)).toEqual([]);
-    const result = await triggerWorkflowEvent(draftContext, lowConfidenceUser, reportId, 'validate_event');
-    expect(result).toMatchObject({ success: false, reason: 'Your confidence level is too low to update this entity' });
+    expect(await getAllowedTransitions(draftContext, ADMIN_USER, reportId)).toEqual([]);
+    await expect(triggerWorkflowEvent(draftContext, ADMIN_USER, reportId, 'validate_event'))
+      .rejects.toThrow('Workflow transitions cannot be applied to an entity while in a draft');
   });
 });
