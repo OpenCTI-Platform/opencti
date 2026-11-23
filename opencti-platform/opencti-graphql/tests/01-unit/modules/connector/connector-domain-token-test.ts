@@ -299,6 +299,31 @@ describe('managed connector token', () => {
     expect(redisStore.has('composer:connector:connector-b:token:user-1')).toBe(true);
   });
 
+  it('should revoke the token of the previous user when the user of a managed connector is cleared', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    await readToken(connectorA);
+    mockPatchAttribute.mockResolvedValueOnce({ element: { ...connectorA, connector_user_id: '' } });
+
+    await managedConnectorEdit(context, user, { id: 'connector-a', name: 'connector-a', title: 'connector-a', connector_user_id: '', manager_contract_configuration: [] });
+
+    expect(userTokens).toEqual([]);
+    expect(redisStore.has('composer:connector:connector-a:token:user-1')).toBe(false);
+  });
+
+  it('should revoke the tokens of the user the connector runs as when the edit starts, reloaded under the edit lock', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    await readToken(connectorA);
+    // Loaded before the lock while a concurrent edit was moving it from user-2 to user-1
+    mockStoreLoadById.mockImplementationOnce(async () => ({ ...connectorA, connector_user_id: 'user-2' }));
+    mockPatchAttribute.mockResolvedValueOnce({ element: { ...connectorA, connector_user_id: 'user-3' } });
+    mockLockResources.mockClear();
+
+    await managedConnectorEdit(context, user, { id: 'connector-a', name: 'connector-a', title: 'connector-a', connector_user_id: 'user-3', manager_contract_configuration: [] });
+
+    expect(mockLockResources.mock.calls).toEqual([[['managed-connector-edit-connector-a']], [['composer-token-user-1']]]);
+    expect(userTokens).toEqual([]);
+  });
+
   it('should not revoke any token when a managed connector is edited without changing its user', async () => {
     const connectorA = managedConnector('connector-a', 'catalog-x');
     await readToken(connectorA);

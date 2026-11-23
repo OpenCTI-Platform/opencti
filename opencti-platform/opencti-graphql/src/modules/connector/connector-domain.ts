@@ -905,61 +905,79 @@ export const managedConnectorEdit = async (
   user: AuthUser,
   input: EditManagedConnectorInput,
 ) => {
-  const conn = await storeLoadById<BasicStoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR);
-  if (isEmptyField(conn)) {
+  const found = await storeLoadById<BasicStoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR);
+  if (isEmptyField(found)) {
     throw UnsupportedError('Connector not found', { id: input.id });
   }
-  const targetContract = conn.manager_contract;
-  if (!targetContract) {
-    throw UnsupportedError('Target contract not found');
-  }
-  const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
-  if (connectorManagers?.length < 1) {
-    throw FunctionalError('There is no connector manager configured');
-  }
-  const currentManager = connectorManagers[0];
-  const contractConfigurations = computeConnectorTargetContract(
-    input.manager_contract_configuration,
-    targetContract,
-    currentManager.public_key,
-    conn.manager_contract_configuration,
-  );
-  const patch: any = {
-    name: input.name,
-    title: input.title,
-    connector_type: targetContract.connector_type,
-    connector_user_id: input.connector_user_id,
-    manager_contract_configuration: contractConfigurations,
-  };
-
-  const { element } = await patchAttribute<StoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
-  // Moved to another user: the previous user must not keep a valid token of the connector
-  if (isManagedConnector(conn) && input.connector_user_id && input.connector_user_id !== conn.connector_user_id) {
-    try {
-      await revokeConnectorToken(context, conn);
-    } catch (err) {
-      logApp.warn('[OPENCTI-MODULE] Unable to revoke the previous user token of a managed connector', { cause: err, connectorId: conn.internal_id });
+  // One edit at a time per connector, reloaded under the lock: each edit must see, and revoke the tokens of,
+  // the user the connector actually runs as, not the one a concurrent edit just replaced
+  const resourceId = `managed-connector-edit-${found.internal_id}`;
+  let lock;
+  try {
+    lock = await lockResources([resourceId]);
+    const conn = await storeLoadById<BasicStoreEntityConnector>(context, user, found.internal_id, ENTITY_TYPE_CONNECTOR);
+    if (isEmptyField(conn)) {
+      throw UnsupportedError('Connector not found', { id: input.id });
     }
-  }
+    const targetContract = conn.manager_contract;
+    if (!targetContract) {
+      throw UnsupportedError('Target contract not found');
+    }
+    const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
+    if (connectorManagers?.length < 1) {
+      throw FunctionalError('There is no connector manager configured');
+    }
+    const currentManager = connectorManagers[0];
+    const contractConfigurations = computeConnectorTargetContract(
+      input.manager_contract_configuration,
+      targetContract,
+      currentManager.public_key,
+      conn.manager_contract_configuration,
+    );
+    const patch: any = {
+      name: input.name,
+      title: input.title,
+      connector_type: targetContract.connector_type,
+      connector_user_id: input.connector_user_id,
+      manager_contract_configuration: contractConfigurations,
+    };
 
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `creates ${ENTITY_TYPE_CONNECTOR} \`${input.name}\``,
-    context_data: {
-      entity_type: ENTITY_TYPE_CONNECTOR, id: input.id, input: {
-        id: input.id,
-        name: input.name,
-        title: input.title,
-        connector_user_id: input.connector_user_id,
+    const { element } = await patchAttribute<StoreEntityConnector>(context, user, input.id, ENTITY_TYPE_CONNECTOR, patch);
+    // Moved to another user, or its user cleared: the previous user must not keep a valid token of the connector
+    if (isManagedConnector(conn) && input.connector_user_id !== conn.connector_user_id) {
+      try {
+        await revokeConnectorToken(context, conn);
+      } catch (err) {
+        logApp.warn('[OPENCTI-MODULE] Unable to revoke the previous user token of a managed connector', { cause: err, connectorId: conn.internal_id });
+      }
+    }
+
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `creates ${ENTITY_TYPE_CONNECTOR} \`${input.name}\``,
+      context_data: {
+        entity_type: ENTITY_TYPE_CONNECTOR, id: input.id, input: {
+          id: input.id,
+          name: input.name,
+          title: input.title,
+          connector_user_id: input.connector_user_id,
+        },
       },
-    },
-  });
-  // Notify configuration change for caching system
-  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
-  return element;
+    });
+    // Notify configuration change for caching system
+    await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+    return element;
+  } catch (error) {
+    if ((error as { name?: string }).name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [resourceId] });
+    }
+    throw error;
+  } finally {
+    await lock?.unlock();
+  }
 };
 
 export const managedConnectorAdd = async (
