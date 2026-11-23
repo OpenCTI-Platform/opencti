@@ -7406,5 +7406,6 @@
   "any": "qualsiasi",
   "Or any type…": "O qualsiasi tipo…",
   "{count} filters": "{count} filtri",
-  "what flags entities in this requirement: edit a rule to change it on the criteria step": "cosa segnala le entità in questo requisito: modifica una regola per cambiarla nel passaggio dei criteri"
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "cosa segnala le entità in questo requisito: modifica una regola per cambiarla nel passaggio dei criteri",
+  "Select rule": "Seleziona regola"
 }

@@ -7406,5 +7406,6 @@
   "any": "すべての",
   "Or any type…": "または任意のタイプ…",
   "{count} filters": "{count} 件のフィルター",
-  "what flags entities in this requirement: edit a rule to change it on the criteria step": "この要件でエンティティにフラグを付けるもの：ルールを編集すると基準ステップで変更できます"
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "この要件でエンティティにフラグを付けるもの：ルールを編集すると基準ステップで変更できます",
+  "Select rule": "ルールを選択"
 }

@@ -7406,5 +7406,6 @@
   "any": "любой",
   "Or any type…": "Или любой тип…",
   "{count} filters": "Фильтров: {count}",
-  "what flags entities in this requirement: edit a rule to change it on the criteria step": "что отмечает сущности в этом требовании: измените правило на шаге критериев"
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "что отмечает сущности в этом требовании: измените правило на шаге критериев",
+  "Select rule": "Выберите правило"
 }

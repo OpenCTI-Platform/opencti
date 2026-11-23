@@ -7406,5 +7406,6 @@
   "any": "모든",
   "Or any type…": "또는 모든 유형…",
   "{count} filters": "필터 {count}개",
-  "what flags entities in this requirement: edit a rule to change it on the criteria step": "이 요구 사항에서 엔터티를 표시하는 항목: 규칙을 편집하면 기준 단계에서 변경할 수 있습니다"
+  "what flags entities in this requirement: edit a rule to change it on the criteria step": "이 요구 사항에서 엔터티를 표시하는 항목: 규칙을 편집하면 기준 단계에서 변경할 수 있습니다",
+  "Select rule": "규칙 선택"
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button as FdsButton, Chip, Icon, Text } from '@filigran/design-system';
+import { Button as FdsButton, Chip, Icon, Select, SelectContent, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
@@ -20,6 +20,8 @@ interface IrRulesStepProps {
   focusItemId?: string | null; // coming back from the review to edit this item: the step scrolls to it
 }
 
+const ADVANCED = '__advanced__'; // the "Advanced search criteria" choice of the rule select
+
 const newRule = (ruleKey: string): IrRuleInstance => ({ id: newId('r'), ruleKey, value: emptyValue() });
 
 // Step 2 of the creation wizard: the rules (OR) and groups of rules (AND) that flag entities
@@ -30,8 +32,6 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
   }, [focusItemId]);
   const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
   const [autoOpenFor, setAutoOpenFor] = useState<string | null>(null); // a new group opens its menu once its card is there
-  // A requirement needs at least one rule: with none yet, the step opens on the list of rules
-  const [addMenuOpen, setAddMenuOpen] = useState(() => items.length === 0);
   const type = IR_PIR_TYPES.find((p) => p.key === pirType);
   const typeLabel = t_i18n(type?.label ?? pirType);
   const flagLabels = flags.map((f) => t_i18n(`entity_${f}`));
@@ -143,16 +143,36 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
             />
           </React.Fragment>
         ))}
+        {/* A requirement needs at least one rule: with none yet, the step starts on a select of the rules */}
+        {items.length === 0 && (
+          <Box sx={{ maxWidth: 480 }}>
+            <Select
+              defaultOpen
+              value=""
+              onValueChange={(value) => (value === ADVANCED ? addCustom() : addRule(value))}
+            >
+              <SelectLabel>{t_i18n('Select rule')}</SelectLabel>
+              <SelectTrigger className="w-full" aria-label={t_i18n('Select rule')}>
+                <SelectValue placeholder={t_i18n('Select rule')} />
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" align="start" sideOffset={4} aria-label={menuHeading}>
+                {rulesForType(pirType, flags).map((rule) => <SelectItem key={rule.key} value={rule.key}>{`${t_i18n(rule.sentence)}…`}</SelectItem>)}
+                <SelectSeparator />
+                <SelectItem value={ADVANCED}>{t_i18n('Advanced search criteria')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </Box>
+        )}
         <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-          <IrAddRuleMenu
-            heading={menuHeading}
-            rules={rulesForType(pirType, flags)}
-            onPick={addRule}
-            onAdvanced={addCustom}
-            open={addMenuOpen}
-            onOpenChange={setAddMenuOpen}
-            trigger={<FdsButton type="button" priority="secondary" size="sm" startIcon={<Icon name="plus" size={16} />}>{t_i18n('Add rule')}</FdsButton>}
-          />
+          {items.length > 0 && (
+            <IrAddRuleMenu
+              heading={menuHeading}
+              rules={rulesForType(pirType, flags)}
+              onPick={addRule}
+              onAdvanced={addCustom}
+              trigger={<FdsButton type="button" priority="secondary" size="sm" startIcon={<Icon name="plus" size={16} />}>{t_i18n('Add rule')}</FdsButton>}
+            />
+          )}
           <Button variant="tertiary" size="small" startIcon={<Icon name="plus" size={16} />} onClick={addGroup}>{t_i18n('Add group')}</Button>
         </Box>
       </Box>
