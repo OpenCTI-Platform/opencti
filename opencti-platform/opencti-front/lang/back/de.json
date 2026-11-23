@@ -886,6 +886,7 @@
   "Password policy, users visibility and main organization": "Passwortrichtlinie, Sichtbarkeit der Benutzer und Hauptorganisation",
   "Password valid until": "Passwort gültig bis",
   "Password validity in days": "Gültigkeitsdauer des Passworts in Tagen",
+  "Pastel colours": "Pastellfarben",
   "Path": "Pfad",
   "Path encoding": "Pfadkodierung",
   "Pattern": "Muster",
@@ -1360,6 +1361,5 @@
   "XTM Hub Token": "XTM-Hub-Token",
   "XTM One intent": "XTM Eine Absicht",
   "XTM One registration manager": "XTM One Registrierungsmanager",
-  "XTM1 CGU acceptance status": "XTM1 CGU-Annahmestatus",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Intelligence-Requirement-Manager"
+  "XTM1 CGU acceptance status": "XTM1 CGU-Annahmestatus"
 }

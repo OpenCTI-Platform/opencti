@@ -886,6 +886,7 @@
   "Password policy, users visibility and main organization": "Парольная политика, видимость пользователей и основная организация",
   "Password valid until": "Пароль действителен до",
   "Password validity in days": "Срок действия пароля в днях",
+  "Pastel colours": "Пастельные цвета",
   "Path": "Путь",
   "Path encoding": "Кодирование пути",
   "Pattern": "Шаблон",
@@ -1360,6 +1361,5 @@
   "XTM Hub Token": "Токен концентратора XTM",
   "XTM One intent": "Намерение XTM One",
   "XTM One registration manager": "Менеджер регистрации XTM One",
-  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Менеджер разведывательных требований"
+  "XTM1 CGU acceptance status": "Статус принятия XTM1 CGU"
 }

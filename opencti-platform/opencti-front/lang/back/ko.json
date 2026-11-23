@@ -886,6 +886,7 @@
   "Password policy, users visibility and main organization": "비밀번호 정책, 사용자 표시 여부 및 주 조직",
   "Password valid until": "비밀번호 유효 기간:",
   "Password validity in days": "비밀번호 유효 기간 (일)",
+  "Pastel colours": "파스텔 색상",
   "Path": "경로",
   "Path encoding": "경로 인코딩",
   "Pattern": "패턴",
@@ -1360,6 +1361,5 @@
   "XTM Hub Token": "XTM 허브 토큰",
   "XTM One intent": "XTM One 의도",
   "XTM One registration manager": "XTM One 등록 관리자",
-  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "인텔리전스 요구사항 관리자"
+  "XTM1 CGU acceptance status": "XTM1 CGU 승인 상태"
 }

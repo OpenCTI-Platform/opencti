@@ -886,6 +886,7 @@
   "Password policy, users visibility and main organization": "Política de contraseñas, visibilidad de los usuarios y organización principal",
   "Password valid until": "Contraseña válida hasta el",
   "Password validity in days": "Vigencia de la contraseña en días",
+  "Pastel colours": "Colores pastel",
   "Path": "Ruta",
   "Path encoding": "Codificación de ruta",
   "Pattern": "Patrón",
@@ -1360,6 +1361,5 @@
   "XTM Hub Token": "Token del concentrador XTM",
   "XTM One intent": "Intento de XTM One",
   "XTM One registration manager": "Gestor de inscripciones XTM One",
-  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC",
-  "INTELLIGENCE_REQUIREMENT_MANAGER": "Gestor de requisitos de inteligencia"
+  "XTM1 CGU acceptance status": "XTM1 Estado de aceptación de la UGC"
 }
