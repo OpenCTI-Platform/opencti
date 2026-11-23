@@ -49,7 +49,7 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../../database/redis';
-import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
+import { isSessionOverMaxLifetime, killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -2728,7 +2728,33 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string } } };
+type SessionDestroyRequest = { session?: { destroy: (callback: (err?: unknown) => void) => void } };
+type SessionAuthRequest = OriginRequest & SessionDestroyRequest & { session?: { user?: { id: string; session_creation?: string } } };
+
+// End a session that reached its maximum lifetime (app:session_max_lifetime): the session is destroyed,
+// so its user must log in again, and the logout is recorded in the activity log.
+export const endSessionOverMaxLifetime = async (req: SessionDestroyRequest, user: AuthUser) => {
+  await new Promise<void>((resolve) => {
+    if (!req.session) {
+      resolve();
+      return;
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        logApp.error('Fail to destroy a session over its maximum lifetime', { cause: err, user_id: user.id });
+      }
+      resolve();
+    });
+  });
+  await publishUserAction({
+    user,
+    event_type: 'authentication',
+    event_access: 'administration',
+    event_scope: 'logout',
+    context_data: { reason: 'max_lifetime' },
+  });
+};
+
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {
@@ -2757,8 +2783,14 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   if (sessionUser) {
     const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(sessionUser.id);
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
+    const authUser = userWithOrigin(req, { ...sessionUser, ...logged });
+    // The maximum lifetime is counted from the login: the activity of the user never extends it
+    if (isSessionOverMaxLifetime(sessionUser)) {
+      // The user of the session may no longer be in the cache: the logout is recorded with its session identity
+      await endSessionOverMaxLifetime(req, authUser as AuthUser);
+      return undefined;
+    }
+    return authUser;
   }
   // endregion
   // region Direct authentication
