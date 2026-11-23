@@ -1,6 +1,5 @@
-// Imported first by every backend entry point (platform, lock child process, safeEjs worker), as each thread or process has its
-// own Object.prototype. Imported before any dependency loads: no property can be added to Object.prototype afterwards.
-// tests/01-unit/config/prototype-seal-test.ts checks that every build entry point imports it first.
+// Bundled ahead of every backend entry point by esbuild (BUILD_INJECTED_MODULES in builder/entry-points.ts): each thread or
+// process has its own Object.prototype, and it is sealed before any dependency loads, so none can add a property to it.
 // Sealed rather than frozen: its existing members stay writable, as dependencies (moment, ipaddr.js, bluebird...) assign
 // toString, valueOf or constructor on their own prototypes, which throws in strict mode once Object.prototype is frozen.
 Object.seal(Object.prototype);

@@ -1,5 +1,3 @@
-// Must stay the first import: Object.prototype is sealed before any dependency loads (see config/prototype-seal.ts).
-import './config/prototype-seal';
 import './instrumentation';
 
 import { context, propagation, trace } from '@opentelemetry/api';

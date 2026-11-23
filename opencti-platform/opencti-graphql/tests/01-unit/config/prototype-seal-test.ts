@@ -1,32 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import ts from 'typescript';
+import vm from 'node:vm';
+import esbuild from 'esbuild';
 import '../../../src/config/prototype-seal';
 
 const PACKAGE_ROOT = fileURLToPath(new URL('../../../', import.meta.url));
-const SEAL_MODULE = path.join(PACKAGE_ROOT, 'src/config/prototype-seal.ts');
 
 // The list belongs to the tool project (tsconfig.tool.json), which the test project does not reference:
 // a dynamic import keeps the type checker out of it.
 const ENTRY_POINTS_MODULE = new URL('../../../builder/entry-points.ts', import.meta.url).href;
-const { BUILD_ENTRY_POINTS } = await import(ENTRY_POINTS_MODULE) as { BUILD_ENTRY_POINTS: string[] };
-
-// One-off scripts an operator runs by hand: they never process user input.
-const UNSEALED_ENTRY_POINTS = ['script/script-clean-relations.ts', 'script/script-insert-dataset.ts'];
-const SEALED_ENTRY_POINTS = BUILD_ENTRY_POINTS.filter((entryPoint) => !UNSEALED_ENTRY_POINTS.includes(entryPoint));
-
-// Resolves the module the file's first statement imports, when that statement is a side-effect import.
-const resolveFirstSideEffectImport = (entryPoint: string) => {
-  const filePath = path.join(PACKAGE_ROOT, entryPoint);
-  const source = ts.createSourceFile(filePath, fs.readFileSync(filePath, 'utf8'), ts.ScriptTarget.Latest);
-  const [first] = source.statements;
-  if (!first || !ts.isImportDeclaration(first) || first.importClause || !ts.isStringLiteral(first.moduleSpecifier)) {
-    return undefined;
-  }
-  return path.resolve(path.dirname(filePath), `${first.moduleSpecifier.text}.ts`);
-};
+const { BUILD_INJECTED_MODULES } = await import(ENTRY_POINTS_MODULE) as { BUILD_INJECTED_MODULES: string[] };
 
 // A dedicated file: the seal applies to the whole test process (ci-unit isolates each test file).
 describe('Object.prototype seal', () => {
@@ -52,11 +35,21 @@ describe('Object.prototype seal', () => {
     expect(literalPrototype.constructor).toBe(Legacy);
   });
 
-  // Each process or thread has its own Object.prototype, and the seal only works if it lands before
-  // any dependency loads. Checked on the sources, so it holds without a build and fails on a new entry
-  // point or on an import sort that moves the seal down.
-  it.each(SEALED_ENTRY_POINTS)('should seal Object.prototype first in the %s entry point', (entryPoint) => {
-    expect(resolveFirstSideEffectImport(entryPoint), `${entryPoint} must start with: import '<relative path>/config/prototype-seal';`)
-      .toBe(SEAL_MODULE);
+  // Each process or thread has its own Object.prototype, and the seal only works if it lands before any
+  // dependency loads. Bundles a stand-in entry point with the build's injected modules and runs it in a
+  // fresh context, whose Object.prototype this test process has not sealed. No full build needed.
+  it('should seal Object.prototype before the code of every built entry point', async () => {
+    const { outputFiles } = await esbuild.build({
+      stdin: { contents: 'globalThis.sealedOnEntry = Object.isSealed(Object.prototype);', resolveDir: PACKAGE_ROOT },
+      inject: BUILD_INJECTED_MODULES,
+      absWorkingDir: PACKAGE_ROOT,
+      bundle: true,
+      platform: 'node',
+      write: false,
+      logLevel: 'silent',
+    });
+    const context = vm.createContext({});
+    vm.runInContext(outputFiles[0].text, context);
+    expect(context.sealedOnEntry).toBe(true);
   });
 });
