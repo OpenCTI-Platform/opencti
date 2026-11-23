@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import passport from 'passport';
 import * as conf from '../../../src/config/conf';
 import createApp, {
   decodeStoragePath,
@@ -12,6 +13,18 @@ import { sanitizeReferer } from '../../../src/http/httpUtils';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
+import { sessionAuthenticateUser } from '../../../src/domain/user';
+import { AuthType, EnvStrategyType, PROVIDERS, type ProviderConfiguration } from '../../../src/modules/authenticationProvider/providers-configuration';
+
+vi.mock('../../../src/http/ipWhitelistMiddleware', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, checkIpWhitelistForRequest: vi.fn() };
+});
+vi.mock('../../../src/domain/user', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, sessionAuthenticateUser: vi.fn() };
+});
 
 vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
   createAuthenticatedContext: vi.fn(),
@@ -311,6 +324,110 @@ describe('storage routes: draft authorization', () => {
     await handleStorageEncrypted(req, res);
 
     expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
+// One SSO provider and the two form providers, as registered at startup
+const AUTH_PROVIDERS: ProviderConfiguration[] = [
+  { name: 'oidc', type: AuthType.AUTH_SSO, strategy: EnvStrategyType.STRATEGY_OPENID, provider: 'oidc' },
+  { name: 'local', type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LOCAL, provider: 'local' },
+  { name: 'ldap', type: AuthType.AUTH_FORM, strategy: EnvStrategyType.STRATEGY_LDAP, provider: 'ldap' },
+];
+const registerAuthProviders = () => PROVIDERS.splice(0, PROVIDERS.length, ...AUTH_PROVIDERS);
+const clearAuthProviders = () => PROVIDERS.splice(0, PROVIDERS.length);
+
+const setupAuthRoutes = async () => {
+  const routes = new Map<string, (req: any, res: any, next: any) => any>();
+  // The routes are registered with their middlewares before the handler
+  const register = vi.fn((path: unknown, ...handlers: any[]) => {
+    if (typeof path === 'string') {
+      routes.set(path, handlers[handlers.length - 1]);
+    }
+  });
+  const app: any = { set: vi.fn(), use: vi.fn(), get: register, post: vi.fn(), delete: vi.fn(), put: vi.fn(), patch: vi.fn(), all: register };
+  await createApp(app, {} as any);
+  const find = (suffix: string) => Array.from(routes.entries()).find(([path]) => path.endsWith(suffix))?.[1];
+  return { login: find('/auth/:provider'), callback: find('/auth/:provider/callback') };
+};
+
+describe('httpPlatform: /auth/:provider/callback', () => {
+  const loggedUser = { id: 'user-id', user_email: 'user@example.com' };
+  const buildRequest = (provider: string) => ({ params: { provider }, query: {}, body: {}, session: { destroy: vi.fn() }, headers: {}, ip: '10.0.0.1' }) as any;
+  const buildResponse = () => ({ redirect: vi.fn(), cookie: vi.fn() }) as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    registerAuthProviders();
+    vi.mocked(sessionAuthenticateUser).mockResolvedValue(undefined as any);
+    vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(false);
+    vi.spyOn(passport, '_strategy' as any).mockReturnValue({ logger: { error: vi.fn() } });
+    vi.spyOn(passport, 'authenticate').mockImplementation(((_provider: string, _options: unknown, callback: any) => () => callback(null, loggedUser)) as any);
+  });
+
+  afterEach(() => {
+    clearAuthProviders();
+  });
+
+  it('should authenticate the session of an SSO provider', async () => {
+    const { callback } = await setupAuthRoutes();
+    const req = buildRequest('oidc');
+    const res = buildResponse();
+
+    await callback?.(req, res, vi.fn());
+
+    expect(sessionAuthenticateUser).toHaveBeenCalledWith(expect.anything(), req, loggedUser, 'oidc');
+    expect(res.cookie).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+
+  // The form providers are served by the login form only
+  it.each(['local', 'ldap', 'unknown'])('should refuse the %s provider', async (provider) => {
+    const { callback } = await setupAuthRoutes();
+    const res = buildResponse();
+
+    await callback?.(buildRequest(provider), res, vi.fn());
+
+    expect(passport.authenticate).not.toHaveBeenCalled();
+    expect(sessionAuthenticateUser).not.toHaveBeenCalled();
+    expect(res.cookie).toHaveBeenCalledWith('opencti_flash', 'AUTH_ERROR', expect.anything());
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('httpPlatform: /auth/:provider', () => {
+  const buildRequest = (provider: string) => ({ params: { provider }, query: {}, body: {}, session: {}, headers: {} }) as any;
+  const buildResponse = () => ({ status: vi.fn().mockReturnThis(), send: vi.fn(), cookie: vi.fn() }) as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    registerAuthProviders();
+    vi.spyOn(passport, '_strategy' as any).mockReturnValue({});
+    vi.spyOn(passport, 'authenticate').mockImplementation((() => vi.fn()) as any);
+  });
+
+  afterEach(() => {
+    clearAuthProviders();
+  });
+
+  it('should start the login of an SSO provider', async () => {
+    const { login } = await setupAuthRoutes();
+    const res = buildResponse();
+
+    login?.(buildRequest('oidc'), res, vi.fn());
+
+    expect(passport.authenticate).toHaveBeenCalledWith('oidc', expect.anything(), expect.any(Function));
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  // The form providers are served by the login form only
+  it.each(['local', 'ldap', 'unknown'])('should refuse the %s provider', async (provider) => {
+    const { login } = await setupAuthRoutes();
+    const res = buildResponse();
+
+    login?.(buildRequest(provider), res, vi.fn());
+
+    expect(passport.authenticate).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(503);
   });
 });
