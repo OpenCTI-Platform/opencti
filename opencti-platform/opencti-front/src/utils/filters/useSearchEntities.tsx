@@ -550,6 +550,7 @@ const useSearchEntities = ({
         types: searchScope?.[key]?.filter((type) => type !== 'External-Reference') || entityTypes,
         search: event.target.value !== 0 ? event.target.value : '',
         count: 100,
+        filters: searchContext.searchFilters?.[key],
       })
         .toPromise()
         .then((data) => {
@@ -974,7 +975,19 @@ const useSearchEntities = ({
           break;
         case 'fromTypes':
         case 'toTypes':
-          // for source type and target type, we need:
+          // the search scope of the key, if any, restricts the types (e.g. the possible targets of a relationship type)
+          if (searchScope?.[filterKey]) {
+            unionSetEntities(
+              filterKey,
+              searchScope[filterKey].map((type) => ({
+                label: t_i18n(displayEntityTypeForTranslation(type)),
+                value: type,
+                type,
+              })).sort((a, b) => a.label.localeCompare(b.label)),
+            );
+            break;
+          }
+          // otherwise, for source type and target type, we need:
           // the observables
           // the stix domain objects
           // the stix core relationships
@@ -1067,7 +1080,7 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
+      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap, parentFilterKey);
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':

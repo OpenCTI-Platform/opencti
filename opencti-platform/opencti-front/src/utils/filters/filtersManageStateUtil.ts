@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { Filter, FilterGroup, FilterValue } from './filtersHelpers-types';
-import { DEFAULT_WITHIN_FILTER_VALUES, mapFilterGroupTree } from './filtersUtils';
+import { DEFAULT_WITHIN_FILTER_VALUES, mapFilterGroupTree, NO_VALUES_FILTER_OPERATORS } from './filtersUtils';
 
 type FiltersLocalStorageUtilProps<U> = {
   filters: FilterGroup;
@@ -124,6 +124,30 @@ export const handleChangeOperatorFiltersUtil = ({ filters, id, operator }: Filte
       };
     }
     return f;
+  });
+};
+
+/**
+ * Merges a change (operator and/or values) into the sub-filter `subKey` of a nested filter value,
+ * or appends the sub-filter when it is missing.
+ */
+export const handleChangeSubFilterUtil = ({ filters, id, subKey, change }: FiltersLocalStorageUtilProps<{
+  id: string;
+  subKey: string;
+  change: { operator?: string; values?: string[] };
+}>): FilterGroup => {
+  return updateFilters(filters, (f) => {
+    if (f.id !== id) return f;
+    const subFilterExists = f.values.some((v) => v?.key === subKey);
+    // Clearing a sub-filter that does not exist yet (e.g. a blur on an empty input) must not create an empty one
+    if (!subFilterExists && change.operator === undefined && (change.values ?? []).length === 0) return f;
+    const values = subFilterExists
+      ? f.values.map((v) => (v?.key === subKey ? { ...v, ...change } : v))
+      : [...f.values, { key: subKey, operator: change.operator ?? 'eq', values: change.values ?? [] }];
+    // Editing a sub-filter means the nested filter has values again: an empty / not empty parent is switched back to eq,
+    // in the same change (two successive changes would be lost by the adapters that do not chain them)
+    const operator = NO_VALUES_FILTER_OPERATORS.includes(f.operator ?? 'eq') ? 'eq' : f.operator;
+    return { ...f, operator, values };
   });
 };
 
