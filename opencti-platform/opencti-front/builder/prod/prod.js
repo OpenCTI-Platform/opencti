@@ -55,7 +55,7 @@ const buildPath = "./builder/prod/build";
             <link id="favicon" rel="shortcut icon" href="%APP_FAVICON%">
             <link id="manifest" rel="manifest" href="%APP_MANIFEST%">
             %APP_SCRIPT_SNIPPET%
-            <script>window.BASE_PATH = "%BASE_PATH%"</script>
+            <meta name="base-path" content="%BASE_PATH%">
             ${jsImport}
             ${cssImport}
             <title>%APP_TITLE%</title>
