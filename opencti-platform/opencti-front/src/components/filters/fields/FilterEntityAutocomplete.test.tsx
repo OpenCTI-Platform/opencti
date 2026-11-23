@@ -9,17 +9,6 @@ import testRender, { createMockUserContext } from '../../../utils/tests/test-ren
 const searchedValues = vi.hoisted(() => [] as string[]);
 const searchedEntities = vi.hoisted(() => ({ current: {} as Record<string, FilterOptionValue[]> }));
 vi.mock('../../../utils/filters/useSearchEntities', () => ({
-  default: () => [{
-    objectLabel: [
-      { value: 'label-1', label: 'Ransomware', type: 'Label', color: '#ff0000' },
-      { value: 'label-2', label: 'APT', type: 'Label', color: '#00ff00' },
-      { value: 'label-3', label: 'Finance', type: 'Label', color: '#0000ff' },
-    ],
-  }, (_key: string, _cache: unknown, _setCache: unknown, event: { target: { value: string } }) => {
-    searchedValues.push(event.target.value);
-  }],
-}));
-vi.mock('../../../utils/filters/useSearchEntities', () => ({
   default: () => [searchedEntities.current, (_key: string, _cache: unknown, _setCache: unknown, event: { target: { value: string } }) => {
     searchedValues.push(event.target.value);
   }],
@@ -106,6 +95,16 @@ describe('FilterEntityAutocomplete', () => {
 
   describe('with values already selected', () => {
     const labelFilter: Filter = { id: 'filter-1', key: 'objectLabel', operator: 'eq', values: ['label-1', 'label-2'], mode: 'or' };
+
+    beforeEach(() => {
+      searchedEntities.current = {
+        objectLabel: [
+          { value: 'label-1', label: 'Ransomware', type: 'Label', color: '#ff0000' },
+          { value: 'label-2', label: 'APT', type: 'Label', color: '#00ff00' },
+          { value: 'label-3', label: 'Finance', type: 'Label', color: '#0000ff' },
+        ],
+      };
+    });
 
     const renderWithSelection = () => {
       const helpers = {
