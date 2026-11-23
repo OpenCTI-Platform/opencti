@@ -128,7 +128,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
     accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
     text: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
-  }, pastelColours ?? false);
+  }, pastelColours ?? true);
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

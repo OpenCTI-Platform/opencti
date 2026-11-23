@@ -480,7 +480,7 @@ const ProfileOverviewComponent = (props) => {
                   component={Switch}
                   variant="outlined"
                   name="pastel_colours"
-                  checked={initialValues.pastel_colours ?? false}
+                  checked={initialValues.pastel_colours ?? true}
                   onChange={(_, value) => handleSubmitField('pastel_colours', value)}
                 />
               </ListItem>

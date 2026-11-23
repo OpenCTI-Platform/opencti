@@ -6,7 +6,8 @@ export interface TagProps {
   label?: string | number | null;
   color?: string | null;
   /** A predefined level (critical, high, medium, low, info, neutral): drawn in the
-   *  standard colour every XTM Platform module uses, pastel when the user opted in.
+   *  standard colour every XTM Platform module uses, pastel while the user's preference
+   *  is on (the OpenCTI default).
    *  A `color` (user data: a label, a custom marking) outranks it in the library. */
   severity?: ChipSeverity;
   onClick?: (e: React.MouseEvent) => void;

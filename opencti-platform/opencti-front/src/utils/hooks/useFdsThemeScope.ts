@@ -41,8 +41,9 @@ const useFdsThemeScope = (
   themeName: string | undefined,
   custom: FdsCustomTheme = {},
   /** The user's "Pastel colours" preference: the `pastel` root class the library's
-   *  `pastel:` variant reads. Off by default: standard colours, as in every module. */
-  pastel = false,
+   *  `pastel:` variant reads. On by default in OpenCTI (no breaking change for
+   *  existing users); turned off, the chips draw the standard colours every module uses. */
+  pastel = true,
 ): FdsThemeMode => {
   const mode: FdsThemeMode = isLightThemeName(themeName) ? 'light' : 'dark';
   const { background, paper, nav, primary, secondary, accent, text } = custom;
