@@ -104,7 +104,9 @@ describe('XTM One counterpart client', () => {
     connect();
     mocks.post.mockRejectedValueOnce(Object.assign(new Error('nf'), { response: { status: 404 } }));
     await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'not_supported' });
-    mocks.post.mockRejectedValueOnce(Object.assign(new Error('boom'), { response: { status: 403 } }));
+    mocks.post.mockRejectedValueOnce(Object.assign(new Error('denied'), { response: { status: 403 } }));
+    await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'forbidden' });
+    mocks.post.mockRejectedValueOnce(Object.assign(new Error('boom'), { response: { status: 502 } }));
     await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
     mocks.post.mockResolvedValueOnce({ data: {} });
     await expect(fetchXtmOneAssets(['web-01'], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });

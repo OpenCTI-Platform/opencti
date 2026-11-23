@@ -99,13 +99,26 @@ describe('OpenAEV client', () => {
     expect(mocks.post.mock.calls[0][0]).toBe('/api/tenants/tenant%2Fa/xtm/objects/threats');
   });
 
-  it('a 404 (no such route, or an unknown tenant) is not_supported', async () => {
+  it('a 404 (no such route) is not_supported', async () => {
     connect();
     mocks.post.mockRejectedValueOnce(Object.assign(new Error('nf'), { status: 404 }));
     await expect(fetchOpenAevObjects('assets', ['web-01'], ALICE)).rejects.toMatchObject({ reason: 'not_supported' });
   });
 
-  it.each([401, 403, 500, 502])('a %s is unavailable', async (status) => {
+  it('a 403 (no OpenAEV right on that kind) is forbidden', async () => {
+    connect();
+    mocks.post.mockRejectedValueOnce(Object.assign(new Error('denied'), { status: 403 }));
+    await expect(fetchOpenAevObjects('assets', ['web-01'], ALICE)).rejects.toMatchObject({ reason: 'forbidden' });
+  });
+
+  it('trusts the administrator-configured URL past the outbound guard', async () => {
+    connect();
+    mocks.post.mockResolvedValue({ data: [] });
+    await fetchOpenAevObjects('assets', ['web-01'], ALICE);
+    expect(mocks.clientOptions[0].trusted).toBe(true);
+  });
+
+  it.each([401, 500, 502])('a %s is unavailable', async (status) => {
     connect();
     mocks.post.mockRejectedValueOnce(Object.assign(new Error('boom'), { status }));
     await expect(fetchOpenAevObjects('assets', ['web-01'], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });

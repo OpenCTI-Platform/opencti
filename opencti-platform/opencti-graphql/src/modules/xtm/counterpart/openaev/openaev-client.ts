@@ -38,8 +38,9 @@ export const isOpenAevConnected = (): boolean => !!getOpenAevUrl();
 /**
  * Asks OpenAEV which of the given keys it holds (POST /api/tenants/{tenant}/xtm/objects/{kind}),
  * as the calling user: OpenAEV reads them under that user's rights, tenant scope and markings.
- * Throws CounterpartLookupError: not_supported on a 404 (no such route, or a wrong tenant id:
- * OpenAEV answers 404 for an unknown tenant), unavailable on anything else.
+ * Throws CounterpartLookupError: not_supported on a 404 (an OpenAEV without the route),
+ * forbidden on a 403 (the user lacks OpenAEV's SEARCH right on that kind: draws nothing for that
+ * user), unavailable on anything else (a wrong tenant id answers 401 from XtmUserJwtExtractor).
  */
 export const fetchOpenAevObjects = async (path: OpenAevObjectPath, keys: string[], caller: CounterpartCaller): Promise<OpenAevLocalObject[]> => {
   const url = getOpenAevUrl();
@@ -49,6 +50,8 @@ export const fetchOpenAevObjects = async (path: OpenAevObjectPath, keys: string[
   try {
     const httpClient = getHttpClient({
       baseURL: url,
+      // xtm:openaev_url is set by the platform administrator, like XTM One and XTM Hub.
+      trusted: true,
       responseType: 'json',
       timeout: OPENAEV_TIMEOUT_MS,
       headers: {

@@ -1,3 +1,4 @@
+import { LRUCache } from 'lru-cache';
 import type { AuthContext, AuthUser } from '../../../../types/user';
 import { logApp } from '../../../../config/conf';
 import { CounterpartLookupError, type CounterpartCaller } from './counterpart-errors';
@@ -90,6 +91,8 @@ export interface CounterpartProvider {
 export const MAX_COUNTERPART_KEYS = 200;
 export const MAX_COUNTERPART_IDS = 200;
 export const COUNTERPART_CACHE_TTL_MS = 2 * 60 * 1000;
+// Bound of the per-user answer cache (C4): the least recently used entries go first.
+export const COUNTERPART_CACHE_MAX_ENTRIES = 50_000;
 
 const CVE_PATTERN = /^CVE-\d{4}-\d{4,}$/;
 const MITRE_PATTERN = /^[TS]\d{4}(\.\d{3})?$|^(TA|M|G|S|C)\d{4}$/;
@@ -178,19 +181,31 @@ export const registerCounterpartProvider = (provider: CounterpartProvider) => {
 
 // Short-TTL cache of found counterparts and known misses, per USER, product, kind and key: each
 // product answers under the caller's own rights, so one user's answer is never served to another.
-// An unavailable answer is never cached (C10).
+// An unavailable answer is never cached (C10). Bounded in size and evicted at the TTL (C4); the
+// TTL is also checked on read against the injected clock.
 interface CacheEntry { at: number; value: XtmCounterpart | null }
-const cache = new Map<string, CacheEntry>();
+const cache = new LRUCache<string, CacheEntry>({ max: COUNTERPART_CACHE_MAX_ENTRIES, ttl: COUNTERPART_CACHE_TTL_MS });
 const cacheKey = (userId: string, product: string, kind: CounterpartKind, key: string) => `${userId}|${product}|${kind}|${key}`;
 
 // A product route that answered 404 does not exist on that product version: remembered per
-// product and kind (the route) for the process lifetime, with one warning per product and route.
-const unsupportedRoutes = new Set<string>();
+// product and kind (the route) for the TTL, then asked again once (R1: the product may be upgraded
+// or enable the route without OpenCTI restarting). One warning per product and route per process.
+const unsupportedRoutes = new Map<string, number>();
+const warnedRoutes = new Set<string>();
 const routeKey = (product: string, kind: CounterpartKind) => `${product}|${kind}`;
+
+// A route that answered 403 to one user (R2): that user has no right to read that kind there.
+// Draws nothing for that user only, for the TTL; never a warning, never another user's answer.
+const forbiddenRoutes = new LRUCache<string, number>({ max: COUNTERPART_CACHE_MAX_ENTRIES, ttl: COUNTERPART_CACHE_TTL_MS });
+const forbiddenKey = (userId: string, product: string, kind: CounterpartKind) => `${userId}|${product}|${kind}`;
+
+const isFresh = (at: number | undefined, now: () => number) => at !== undefined && now() - at < COUNTERPART_CACHE_TTL_MS;
 
 export const resetCounterpartCache = () => {
   cache.clear();
   unsupportedRoutes.clear();
+  warnedRoutes.clear();
+  forbiddenRoutes.clear();
 };
 
 type KeyAnswer = { status: 'found'; counterpart: XtmCounterpart } | { status: 'not_found' | 'not_supported' | 'unavailable' };
@@ -204,7 +219,11 @@ const resolveKeys = async (
   now: () => number,
 ): Promise<Map<string, KeyAnswer>> => {
   const answers = new Map<string, KeyAnswer>();
-  if (!provider.supports(kind) || unsupportedRoutes.has(routeKey(provider.product, kind))) {
+  if (
+    !provider.supports(kind)
+    || isFresh(unsupportedRoutes.get(routeKey(provider.product, kind)), now)
+    || isFresh(forbiddenRoutes.get(forbiddenKey(caller.id, provider.product, kind)), now)
+  ) {
     keys.forEach((key) => answers.set(key, { status: 'not_supported' }));
     return answers;
   }
@@ -233,12 +252,18 @@ const resolveKeys = async (
     const reason = error instanceof CounterpartLookupError ? error.reason : 'unavailable';
     if (reason === 'not_supported') {
       const route = routeKey(provider.product, kind);
-      if (!unsupportedRoutes.has(route)) {
-        unsupportedRoutes.add(route);
+      unsupportedRoutes.set(route, now());
+      if (!warnedRoutes.has(route)) {
+        warnedRoutes.add(route);
         logApp.warn('[XTM] Counterpart route not supported by the connected product', { product: provider.product, kind });
       }
     }
-    missing.forEach((key) => answers.set(key, { status: reason }));
+    if (reason === 'forbidden') {
+      forbiddenRoutes.set(forbiddenKey(caller.id, provider.product, kind), now());
+    }
+    // A user without rights there sees what a product without the route shows: nothing.
+    const status = reason === 'forbidden' ? 'not_supported' : reason;
+    missing.forEach((key) => answers.set(key, { status }));
   }
   return answers;
 };

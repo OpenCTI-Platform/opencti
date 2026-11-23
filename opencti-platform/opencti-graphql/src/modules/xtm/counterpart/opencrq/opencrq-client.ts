@@ -7,7 +7,8 @@ import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-error
 const OPENCRQ_TIMEOUT_MS = 5000;
 const OPENCRQ_LOOKUP_PROCEDURE = 'xtm.lookup';
 // A JWT XTM One signed for the calling user, addressed to OpenCRQ (OpenCRQ #29): OpenCRQ reads the facts as
-// that person when it verifies, the links only otherwise.
+// that person when it verifies and the person reaches the tenant; otherwise it answers 200 with the
+// links only (no facts), never an error, so a user without rights there sees the emblem without figures.
 export const XTM_USER_TOKEN_HEADER = 'X-XTM-User-Token';
 
 // The kinds OpenCRQ keys its objects by (OpenCRQ XTM_LOOKUP_KINDS): threats by STIX id, CVEs, assets by hostname.
@@ -48,7 +49,7 @@ export const isOpenCrqConnected = (): boolean => !!getOpenCrqUrl();
  * Asks OpenCRQ which of the given keys it holds (tRPC query GET {api}/xtm.lookup?input=...), as the
  * calling user: OpenCRQ applies that user's rights, the financial facts only for a user with them.
  * Throws CounterpartLookupError: not_supported on a 404 (an OpenCRQ without the procedure),
- * unavailable on anything else.
+ * forbidden on a 403, unavailable on anything else.
  */
 export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[], caller: CounterpartCaller): Promise<OpenCrqLocalObject[]> => {
   const apiUrl = getOpenCrqApiUrl();
@@ -61,6 +62,8 @@ export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[
     const userToken = await exchangeXtmOneUserToken(caller, url);
     const httpClient = getHttpClient({
       baseURL: apiUrl,
+      // xtm:opencrq_url and xtm:opencrq_api_url are set by the platform administrator.
+      trusted: true,
       responseType: 'json',
       timeout: OPENCRQ_TIMEOUT_MS,
       headers: {

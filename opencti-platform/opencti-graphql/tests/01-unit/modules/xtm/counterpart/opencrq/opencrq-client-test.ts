@@ -115,6 +115,8 @@ describe('OpenCRQ client', () => {
     connect();
     mocks.get.mockRejectedValueOnce(Object.assign(new Error('nf'), { status: 404 }));
     await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'not_supported' });
+    mocks.get.mockRejectedValueOnce(Object.assign(new Error('denied'), { status: 403 }));
+    await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'forbidden' });
     mocks.get.mockRejectedValueOnce(Object.assign(new Error('boom'), { status: 401 }));
     await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
     mocks.get.mockResolvedValueOnce({ data: { result: {} } });

@@ -184,6 +184,42 @@ describe('XTM counterparts: id-based resolution', () => {
     expect((await resolveCounterpartsOfSources([CVE], ALICE, [aev]))[0].status).toBe('not_found');
   });
 
+  it('asks a 404 route again once the TTL has passed, warning once per process (R1)', async () => {
+    const aev = provider(true, ['web-01'], 'openaev');
+    let clock = 1_000;
+    const now = () => clock;
+    aev.resolve.mockRejectedValueOnce(new CounterpartLookupError('not_supported', 'no route'));
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev], now))[0].status).toBe('not_supported');
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev], now))[0].status).toBe('not_supported');
+    expect(aev.resolve).toHaveBeenCalledTimes(1);
+    clock += COUNTERPART_CACHE_TTL_MS + 1;
+    // The product enabled the route meanwhile: one call per product and route, then found.
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev], now))[0].status).toBe('found');
+    expect(aev.resolve).toHaveBeenCalledTimes(2);
+    // Still unsupported after the TTL: asked again, no second warning.
+    aev.resolve.mockRejectedValueOnce(new CounterpartLookupError('not_supported', 'no route'));
+    clock += COUNTERPART_CACHE_TTL_MS + 1;
+    expect((await resolveCounterpartsOfSources([OTHER_SYSTEM], ALICE, [aev], now))[0].status).toBe('not_supported');
+    expect(mocks.warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('a 403 draws nothing for that user only, cached for the TTL, without a warning (R2)', async () => {
+    const aev = provider(true, ['web-01'], 'openaev');
+    let clock = 1_000;
+    const now = () => clock;
+    aev.resolve.mockRejectedValueOnce(new CounterpartLookupError('forbidden', 'no right'));
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev], now))[0].status).toBe('not_supported');
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev], now))[0].status).toBe('not_supported');
+    expect(aev.resolve).toHaveBeenCalledTimes(1);
+    // Bob has the right: his own call, his own answer.
+    expect((await resolveCounterpartsOfSources([SYSTEM], BOB, [aev], now))[0].status).toBe('found');
+    expect(aev.resolve).toHaveBeenCalledTimes(2);
+    expect(mocks.warn).not.toHaveBeenCalled();
+    clock += COUNTERPART_CACHE_TTL_MS + 1;
+    expect((await resolveCounterpartsOfSources([SYSTEM], ALICE, [aev], now))[0].status).toBe('found');
+    expect(aev.resolve).toHaveBeenCalledTimes(3);
+  });
+
   it('a kind the product does not support is not_supported without a call', async () => {
     const crq = { ...provider(true, []), product: 'opencrq', supports: (kind: string) => kind !== 'ALERT' };
     const results = await resolveCounterpartsOfSources([{ id: 'inc-1', kind: 'ALERT', keys: ['https://edr.example.com/a/1'] }], ALICE, [crq]);
