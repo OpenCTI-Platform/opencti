@@ -41,7 +41,9 @@ describe('severityTone', () => {
     [5, 'info'],
     [7, 'high'],
     [9, 'critical'],
-    [9.8, undefined],
+    [9.8, 'critical'],
+    [10, 'critical'],
+    [10.5, 'neutral'],
   ])('keeps the CVSS bands: %p is %p', (score, tone) => {
     expect(cvssTone(score)).toBe(tone);
   });
