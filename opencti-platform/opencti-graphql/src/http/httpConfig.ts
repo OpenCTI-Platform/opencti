@@ -12,6 +12,12 @@ export const isUnsecureHttpResourceAllowed = () => {
   return IS_HTTP_ALLOWED;
 };
 
+// The script snippet is inline HTML: the CSP allows inline scripts only when a snippet is configured.
+const IS_SCRIPT_SNIPPET_CONFIGURED: boolean = (nconf.get('app:script_snippet')?.trim() ?? '') !== '';
+export const isScriptSnippetConfigured = () => {
+  return IS_SCRIPT_SNIPPET_CONFIGURED;
+};
+
 export const isDevMode = () => {
   return DEV_MODE;
 };
