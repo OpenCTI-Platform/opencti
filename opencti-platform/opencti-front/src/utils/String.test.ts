@@ -11,6 +11,7 @@ import {
   splitAndTrimArray,
   uniqWithByFields,
   computeDuplicates,
+  removeAccentsAndLowerCase,
 } from './String';
 
 describe('String utils', () => {
@@ -297,6 +298,20 @@ describe('String utils', () => {
 
     it('should support a custom separator', () => {
       expect(splitAndTrimArray(['a; b', 'c; d'], ';')).toEqual(['a', 'b', 'c', 'd']);
+    });
+  });
+
+  describe('removeAccentsAndLowerCase', () => {
+    it('should remove accents and lower case the string', () => {
+      expect(removeAccentsAndLowerCase('Éléphant Çà Où')).toEqual('elephant ca ou');
+    });
+
+    it('should keep non accented characters and spaces as they are', () => {
+      expect(removeAccentsAndLowerCase('  Malware-42_x  ')).toEqual('  malware-42_x  ');
+    });
+
+    it('should return an empty string for an empty string', () => {
+      expect(removeAccentsAndLowerCase('')).toEqual('');
     });
   });
 });

@@ -1,4 +1,4 @@
-import { ArchitectureOutlined } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import React from 'react';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
@@ -96,7 +96,7 @@ const useNavMenu = (): NavGroup[] => {
     id: 'draft-overview',
     label: t_i18n('Draft overview'),
     englishLabel: 'Draft overview',
-    icon: <ArchitectureOutlined />,
+    icon: <Icon name="drafting-compass" size={16} />,
     link: `/dashboard/data/import/draft/${draftContext.id}`,
   };
 

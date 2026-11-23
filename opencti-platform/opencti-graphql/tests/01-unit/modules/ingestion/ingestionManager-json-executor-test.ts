@@ -6,6 +6,7 @@ const executeJsonQueryMock = vi.fn();
 const queueDetailsMock = vi.fn();
 const pushBundleToConnectorQueueMock = vi.fn();
 const updateBuiltInConnectorInfoMock = vi.fn();
+const findJsonIngestionByIdMock = vi.fn();
 
 vi.mock('../../../../src/config/conf', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../src/config/conf')>();
@@ -27,6 +28,7 @@ vi.mock('../../../../src/modules/ingestion/ingestion-json-domain', async (import
   findAllJsonIngestion: findAllJsonIngestionMock,
   patchJsonIngestion: patchJsonIngestionMock,
   executeJsonQuery: executeJsonQueryMock,
+  findById: findJsonIngestionByIdMock,
 }));
 
 vi.mock('../../../../src/domain/connector', () => ({
@@ -120,6 +122,49 @@ describe('Ingestion manager - jsonExecutor', () => {
 
     expect(pushBundleToConnectorQueueMock).not.toHaveBeenCalled();
     expect(patchJsonIngestionMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should push nothing and keep the previous state when the feed was stopped during the run', async () => {
+    executeJsonQueryMock.mockResolvedValue({ objects: stixObjects, variables: { offset: 10 }, nextExecutionState: { offset: 5 }, aborted: true });
+
+    const { jsonExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    await expect(jsonExecutor({} as any)).resolves.toBeUndefined();
+
+    expect(executeJsonQueryMock).toHaveBeenCalledWith(expect.anything(), jsonIngestion, expect.objectContaining({ isStopped: expect.any(Function) }));
+    expect(pushBundleToConnectorQueueMock).not.toHaveBeenCalled();
+    expect(patchJsonIngestionMock).not.toHaveBeenCalled();
+  });
+
+  it('should give the json query a stop check that re-reads the feed by its internal id', async () => {
+    executeJsonQueryMock.mockResolvedValue({ objects: [], variables: {}, nextExecutionState: {} });
+
+    const { jsonExecutor } = await import('../../../../src/manager/ingestionManager');
+
+    await expect(jsonExecutor({} as any)).resolves.toBeUndefined();
+
+    const { isStopped } = executeJsonQueryMock.mock.calls[0][2];
+    findJsonIngestionByIdMock.mockResolvedValueOnce({ ingestion_running: true });
+    await expect(isStopped()).resolves.toBe(false);
+    findJsonIngestionByIdMock.mockResolvedValueOnce({ ingestion_running: false });
+    await expect(isStopped()).resolves.toBe(true);
+    expect(findJsonIngestionByIdMock).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'json-internal--1');
+  });
+
+  it('should answer the feed running state through the stop check', async () => {
+    const { buildIngestionStopCheck } = await import('../../../../src/manager/ingestionManager');
+
+    const running = buildIngestionStopCheck({} as any, async () => ({ ingestion_running: true }), 'json-internal--1');
+    const stopped = buildIngestionStopCheck({} as any, async () => ({ ingestion_running: false }), 'json-internal--1');
+    const deleted = buildIngestionStopCheck({} as any, async () => undefined, 'json-internal--1');
+    const unreadable = buildIngestionStopCheck({} as any, async () => {
+      throw new Error('read failed');
+    }, 'json-internal--1');
+
+    await expect(running()).resolves.toBe(false);
+    await expect(stopped()).resolves.toBe(true);
+    await expect(deleted()).resolves.toBe(true);
+    await expect(unreadable()).resolves.toBe(false);
   });
 
   it('should catch query errors, log them and update the last execution date and status', async () => {

@@ -1,11 +1,11 @@
-import { TrackChanges } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { PIRAPI } from '../../../utils/hooks/capabilities';
 
 export const pir: MenuEntry = {
   path: '/dashboard/pirs',
   label: 'PIR',
-  icon: <TrackChanges />,
+  icon: <Icon name="radar" size={16} />,
   keywords: ['priority', 'intelligence', 'requirement', 'watchlist', 'relevance'],
   requiredCapabilities: [PIRAPI],
 };

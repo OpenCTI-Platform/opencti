@@ -47,6 +47,14 @@ export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
 };
 
+// OpenCRQ instance URL (XTM__OPENCRQ_URL). XTM__OPENGRC_URL, the former product name, is read as a deprecated fallback.
+export const getOpenCrqUrl = () => {
+  const opencrqUrl = nconf.get('xtm:opencrq_url');
+  if (isNotEmptyField(opencrqUrl)) return opencrqUrl;
+  const deprecatedOpenGrcUrl = nconf.get('xtm:opengrc_url');
+  return isNotEmptyField(deprecatedOpenGrcUrl) ? deprecatedOpenGrcUrl : '';
+};
+
 export const getApplicationInfo = () => ({
   version: PLATFORM_VERSION,
   debugStats: {}, // Lazy loaded
@@ -151,7 +159,9 @@ export const getSettings = async (context) => {
     platform_map_tile_server_dark: null,
     platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
-    platform_opengrc_url: nconf.get('xtm:opengrc_url'),
+    platform_opencrq_url: getOpenCrqUrl(),
+    // Deprecated: OpenGRC is the former name of OpenCRQ, kept for API backward-compatibility.
+    platform_opengrc_url: getOpenCrqUrl(),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),

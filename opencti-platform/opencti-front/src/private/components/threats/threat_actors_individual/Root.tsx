@@ -16,8 +16,8 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import ThreatActorIndividualKnowledge from './ThreatActorIndividualKnowledge';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import ThreatActorIndividualKnowledge, { THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES } from './ThreatActorIndividualKnowledge';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getPaddingRight } from '../../../../utils/utils';
@@ -47,7 +47,11 @@ const subscription = graphql`
 `;
 
 const ThreatActorIndividualQuery = graphql`
-  query RootThreatActorIndividualQuery($id: String!, $relatedRelationshipTypes: [String!]) {
+  query RootThreatActorIndividualQuery(
+    $id: String!
+    $relatedRelationshipTypes: [String!]
+    $observablesFilters: FilterGroup
+  ) {
     threatActorIndividual(id: $id) {
       id
       draftVersion {
@@ -61,7 +65,10 @@ const ThreatActorIndividualQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(
+        relatedRelationshipTypes: $relatedRelationshipTypes
+        observablesFilters: $observablesFilters
+      )
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
       ...FileImportViewer_entity
@@ -147,6 +154,7 @@ const RootThreatActorIndividualComponent = ({
                     'countries',
                   ]}
                   data={threatActorIndividual}
+                  observablesRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES}
                   relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
                 />
               )}
@@ -238,6 +246,7 @@ const Root = () => {
     {
       id: threatActorIndividualId,
       relatedRelationshipTypes: THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES,
+      observablesFilters: buildObservablesKnowledgeBarFilters(THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES),
     },
   );
   return (

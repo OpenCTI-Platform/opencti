@@ -102,6 +102,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   is_hidden: Boolean
   order: Int
   color: String
+  parent_name: String
 }
 
 # Ordering
@@ -146,6 +147,7 @@ input VocabularyAddInput {
   category: VocabularyCategory!
   order: Int
   color: String
+  parent_name: String
   created: DateTime
   modified: DateTime
   aliases: [String!]

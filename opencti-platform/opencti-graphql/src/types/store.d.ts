@@ -542,6 +542,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   comment: string;
   // custom
   x_opencti_product: string;
+  x_opencti_purl: string;
   // date
   attribute_date: Date;
   ctime: Date;

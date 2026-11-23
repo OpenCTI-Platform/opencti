@@ -220,6 +220,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'bootstrap_wizard_skipped',
   'submenu_auto_collapse',
   'monochrome_labels',
+  'pastel_colours',
   'unsubscribed_news_feed_types',
   'password',
   'draft_context',
@@ -433,14 +434,23 @@ type RoleSortKey = (role: BasicStoreEntity) => R.Ord;
 export const userRoles = async (context: AuthContext, _user: AuthUser, userId: string, opts: UserRolesArgs) => {
   const { orderBy, orderMode } = opts;
   const platformUsers = await getEntitiesMapFromCache<UserWithStoreRoles>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const userLoaded = platformUsers.get(userId)!;
+  const userLoaded = platformUsers.get(userId);
+  let roles: BasicStoreEntity[];
+  if (userLoaded) {
+    roles = userLoaded.roles ?? [];
+  } else {
+    // The users cache can miss the user while it is rebuilt (after a group membership change):
+    // resolve the roles from the database instead of failing the whole query
+    const [userRolesFromDb] = await batchRolesForUsers(context, SYSTEM_USER, [userId]);
+    roles = userRolesFromDb ?? [];
+  }
   if (orderBy) {
     if (orderMode === 'desc') {
-      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
+      return R.sortWith<BasicStoreEntity>([R.descend(R.prop(orderBy) as RoleSortKey)])(roles);
     }
-    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(userLoaded.roles);
+    return R.sortWith<BasicStoreEntity>([R.ascend(R.prop(orderBy) as RoleSortKey)])(roles);
   }
-  return userLoaded.roles;
+  return roles;
 };
 
 export const userGroupsPaginated = async (context: AuthContext, user: AuthUser, userId: string, opts: EntityOptions<BasicGroupEntity>) => {
@@ -2963,7 +2973,19 @@ export interface GeneratedToken {
 
 // Add token
 type TokenAddInput = Omit<UserTokenAddInput, 'duration'> & Partial<Pick<UserTokenAddInput, 'duration'>>;
-const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUser, input: TokenAddInput, auditMessage: (token: UserApiToken) => string) => {
+// The entity a platform-issued token belongs to: never part of a GraphQL input, so no user can tag a token
+export interface TokenManagedBy {
+  type: string;
+  id: string;
+}
+const addToken = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetUser: AuthUser,
+  input: TokenAddInput,
+  auditMessage: (token: UserApiToken) => string,
+  managedBy?: TokenManagedBy,
+) => {
   const { duration, name } = input;
   let expires_at = null;
   if (duration && duration !== TokenDuration.Unlimited) {
@@ -2989,6 +3011,7 @@ const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUs
     created_at: now,
     expires_at,
     masked_token,
+    ...(managedBy ? { managed_by_type: managedBy.type, managed_by_id: managedBy.id } : {}),
   };
   const updates = [{ key: apiTokens.name, value: [newToken], operation: UPDATE_OPERATION_ADD as EditOperation }];
   const { element } = await updateAttribute(context, user, targetUser.id, ENTITY_TYPE_USER, updates);
@@ -3020,13 +3043,13 @@ const addToken = async (context: AuthContext, user: AuthUser, targetUser: AuthUs
 export const addUserToken = async (context: AuthContext, user: AuthUser, input: UserTokenAddInput) => {
   return await addToken(context, user, user, input, (token) => `generated a new API token '${token.name}'`);
 };
-export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: TokenAddInput) => {
+export const addUserTokenByAdmin = async (context: AuthContext, user: AuthUser, userId: string, input: TokenAddInput, managedBy?: TokenManagedBy) => {
   // Load target user
   const userToEdit = await internalLoadById(context, user, userId) as unknown as AuthUser;
   if (!userToEdit) {
     throw FunctionalError('User not found', { userId });
   }
-  return await addToken(context, user, userToEdit, input, (token) => `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`);
+  return await addToken(context, user, userToEdit, input, (token) => `generated a new API token '${token.name}' for user '${userToEdit.user_email}'`, managedBy);
 };
 
 // Revoke token

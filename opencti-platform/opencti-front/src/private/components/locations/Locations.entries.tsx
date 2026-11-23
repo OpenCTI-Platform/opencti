@@ -1,5 +1,4 @@
-import { FlagOutlined, MapOutlined, PlaceOutlined, PublicOutlined } from '@mui/icons-material';
-import { CityVariantOutline } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -11,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/locations/regions',
     label: 'Regions',
     entityType: 'Region',
-    icon: <PublicOutlined fontSize="small" />,
+    icon: <Icon name="custom/globe-line" size={16} />,
     keywords: ['continent', 'subregion', 'geography'],
     ...knowledge,
   },
@@ -19,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/locations/countries',
     label: 'Countries',
     entityType: 'Country',
-    icon: <FlagOutlined fontSize="small" />,
+    icon: <Icon name="flag" size={16} />,
     keywords: ['Country', 'nation', 'State', 'geography', 'Map'],
     ...knowledge,
   },
@@ -27,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/locations/administrative_areas',
     label: 'Administrative areas',
     entityType: 'Administrative-Area',
-    icon: <MapOutlined fontSize="small" />,
+    icon: <Icon name="map" size={16} />,
     keywords: ['State', 'province', 'county', 'department', 'district', 'geography'],
     ...knowledge,
   },
@@ -35,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/locations/cities',
     label: 'Cities',
     entityType: 'City',
-    icon: <CityVariantOutline fontSize="small" />,
+    icon: <Icon name="custom/city" size={16} />,
     keywords: ['City', 'town', 'geolocation', 'geography'],
     ...knowledge,
   },
@@ -43,7 +42,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/locations/positions',
     label: 'Positions',
     entityType: 'Position',
-    icon: <PlaceOutlined fontSize="small" />,
+    icon: <Icon name="map-pin" size={16} />,
     keywords: ['coordinates', 'gps', 'Latitude', 'Longitude', 'address', 'geolocation'],
     ...knowledge,
   },

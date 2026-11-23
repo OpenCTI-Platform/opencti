@@ -35,6 +35,7 @@ vi.mock('../../../../src/config/conf', () => ({
   default: { get: vi.fn() },
   logApp: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   PLATFORM_VERSION: '6.0.0-test',
+  PLATFORM_BUILD_VERSION: '6.0.0-test-dev.abc1234',
 }));
 
 let redisRegistrationResult: object | null = null;
@@ -146,6 +147,8 @@ describe('registerWithXtmOne', () => {
     expect(callArgs.platform_url).toBe('https://opencti.test');
     expect(callArgs.platform_title).toBe('Test OpenCTI');
     expect(callArgs.platform_id).toBe('settings-internal-id-123');
+    // The build version, so a rolling upgrade is a version change for XTM One
+    expect(callArgs.platform_version).toBe('6.0.0-test-dev.abc1234');
     expect(callArgs.enterprise_license_pem).toBe('test-pem');
     expect(callArgs.license_type).toBe('enterprise');
     expect(callArgs.business_vertical).toBe('cti');

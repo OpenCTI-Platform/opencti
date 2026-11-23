@@ -109,6 +109,7 @@ type User implements BasicObject & InternalObject {
   submenu_show_icons: Boolean
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  pastel_colours: Boolean
   unsubscribed_news_feed_types: [String!]
   # Technical
   editContext: [EditUserContext!]
@@ -166,6 +167,7 @@ type MeUser implements BasicObject & InternalObject {
   bootstrap_wizard_skipped: Boolean @ff(flags: ["CONFIG_PRESET"], softFail: true)
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
+  pastel_colours: Boolean
   unsubscribed_news_feed_types: [String!]
   can_manage_sensitive_config: Boolean
   draftContext: DraftWorkspace

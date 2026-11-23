@@ -1,4 +1,4 @@
-import { PLATFORM_VERSION, logApp } from '../../../config/conf';
+import { PLATFORM_BUILD_VERSION, logApp } from '../../../config/conf';
 import { CguStatus } from '../../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreSettings } from '../../../types/settings';
@@ -132,7 +132,8 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
     platform_identifier: 'opencti',
     platform_url: settings.platform_url || '',
     platform_title: settings.platform_title || 'OpenCTI Platform',
-    platform_version: PLATFORM_VERSION,
+    // -dev.<sha7> on a rolling build, so XTM One sees a rolling upgrade as a version change
+    platform_version: PLATFORM_BUILD_VERSION,
     platform_id: getXtmOnePlatformId(settings),
     enterprise_license_pem: pem,
     license_type: licenseType,

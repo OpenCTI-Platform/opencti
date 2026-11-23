@@ -7,9 +7,8 @@ import { useFormatter } from '../../../components/i18n';
 import usePublicDashboardViz from './usePublicDashboardViz';
 import usePublicWidgetDefaultDates from './usePublicWidgetDefaultDates';
 import WidgetContainer from '../../../components/dashboard/WidgetContainer';
-import type { WidgetTimeSeriesBreakdownData } from '../../../components/dashboard/WidgetTimeSeriesBreakdown';
 import WidgetBreakdownErrorBoundary from '../../../components/dashboard/WidgetBreakdownErrorBoundary';
-import TimeSeriesBreakdownContent from '../../../components/dashboard/TimeSeriesBreakdownContent';
+import TimeSeriesBreakdownContent, { type SelectTimeSeriesBreakdown } from '../../../components/dashboard/TimeSeriesBreakdownContent';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { getWidgetInterval } from '../../../utils/widget/widgetUtils';
 import { getBreakdownDefaultStartDate } from '../../../utils/widget/widgetBreakdown';
@@ -17,7 +16,7 @@ import { getBreakdownDefaultStartDate } from '../../../utils/widget/widgetBreakd
 interface PublicTimeSeriesBreakdownQueryProps<TQuery extends OperationType> {
   // Takes the public dashboard, the widget and the dates: every breakdown setting is read from the stored widget
   query: GraphQLTaggedNode;
-  selectBreakdown: (data: TQuery['response']) => WidgetTimeSeriesBreakdownData | null | undefined;
+  selectBreakdown: SelectTimeSeriesBreakdown<TQuery>;
 }
 
 /**

@@ -6,7 +6,9 @@ import {
   isEntityFieldAnOpenVocabulary,
   openVocabularies,
   seedVocabularyInput,
+  systemSubcategoryParentFromDescription,
 } from '../../../../src/modules/vocabulary/vocabulary-utils';
+import { getVocabularyChildCategories } from '../../../../src/modules/vocabulary/vocabulary-domain';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../../../src/schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { VocabularyCategory } from '../../../../src/generated/graphql';
@@ -41,11 +43,11 @@ describe('System asset vocabularies', () => {
   it('should ship the OpenAEV asset taxonomy values', () => {
     expect(openVocabularies.system_category_ov.map(({ key }) => key)).toEqual([
       'HOST', 'CONTAINER_WORKLOAD', 'CLOUD_RESOURCE', 'WEB_APPLICATION', 'NETWORK_DEVICE', 'MOBILE_DEVICE',
-      'IOT_OT_DEVICE', 'IDENTITY', 'SAAS_APPLICATION', 'AI_TARGET', 'SECURITY_PLATFORM', 'GENERIC_ASSET',
+      'IOT_OT_DEVICE', 'IDENTITY', 'SAAS_APPLICATION', 'AI_TARGET', 'SECURITY_PLATFORM', 'GENERIC_ASSET', 'SOURCE_CODE',
     ]);
     expect(openVocabularies.system_criticality_ov.map(({ key }) => key)).toEqual(['VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW', 'UNKNOWN']);
     expect(openVocabularies.system_internet_facing_ov.map(({ key }) => key)).toEqual(['yes', 'no', 'unknown']);
-    expect(openVocabularies.system_subcategory_ov).toHaveLength(80);
+    expect(openVocabularies.system_subcategory_ov).toHaveLength(85);
     const subcategories = openVocabularies.system_subcategory_ov.map(({ key }) => key);
     expect(new Set(subcategories).size).toEqual(subcategories.length);
   });
@@ -84,14 +86,49 @@ describe('System asset vocabularies', () => {
     expect(plain).not.toHaveProperty('color');
   });
 
-  it('should end every subcategory description with an existing category, which the form narrows on', () => {
+  it('should name an existing category in parent_name of every subcategory, which the form narrows on', () => {
     const categories = openVocabularies.system_category_ov.map(({ key }) => key);
-    openVocabularies.system_subcategory_ov.forEach(({ key, description }) => {
-      const category = description?.match(/\(category: ([A-Z_]+)\)$/)?.[1];
-      expect(categories, key).toContain(category);
-      // The meaning comes before the category, never the category alone
-      expect(description?.replace(/\(category: [A-Z_]+\)$/, '').trim().length, key).toBeGreaterThan(5);
+    openVocabularies.system_subcategory_ov.forEach(({ key, description, parent_name }) => {
+      expect(categories, key).toContain(parent_name);
+      // The description is the meaning alone: the link never lives in a text the administrator edits (#20006)
+      expect(description, key).not.toMatch(/\(category: /);
+      expect(description?.trim().length, key).toBeGreaterThan(5);
     });
+    // The five host subcategories of the issue keep their category
+    const hosts = openVocabularies.system_subcategory_ov.filter(({ parent_name }) => parent_name === 'HOST').map(({ key }) => key);
+    expect(hosts).toEqual(expect.arrayContaining(['SERVER', 'WORKSTATION', 'LAPTOP', 'VIRTUAL_MACHINE', 'HYPERVISOR']));
+  });
+
+  it('should ship the Source code category of the OpenAEV taxonomy with its five subcategories', () => {
+    const sourceCode = openVocabularies.system_category_ov.find(({ key }) => key === 'SOURCE_CODE');
+    expect(sourceCode).toMatchObject({ order: 13, description: 'Code repository, pipeline or package your teams build and ship.' });
+    const codeSubcategories = openVocabularies.system_subcategory_ov.filter(({ parent_name }) => parent_name === 'SOURCE_CODE').map(({ key }) => key);
+    expect(codeSubcategories).toEqual(['CODE_REPOSITORY', 'CI_CD_PIPELINE', 'PACKAGE_REGISTRY', 'SOFTWARE_PACKAGE', 'CODE_OTHER']);
+  });
+
+  it('should seed parent_name with the subcategory and leave it out elsewhere', () => {
+    const server = openVocabularies.system_subcategory_ov.find(({ key }) => key === 'SERVER')!;
+    expect(seedVocabularyInput(VocabularyCategory.SystemSubcategoryOv, server)).toMatchObject({ name: 'SERVER', parent_name: 'HOST' });
+    expect(seedVocabularyInput(VocabularyCategory.SystemCategoryOv, openVocabularies.system_category_ov[0])).not.toHaveProperty('parent_name');
+  });
+
+  it('should carry a rename of a system category to the subcategories only', () => {
+    expect(getVocabularyChildCategories(VocabularyCategory.SystemCategoryOv)).toEqual([VocabularyCategory.SystemSubcategoryOv]);
+    expect(getVocabularyChildCategories(VocabularyCategory.SystemSubcategoryOv)).toEqual([]);
+    expect(getVocabularyChildCategories(VocabularyCategory.AccountTypeOv)).toEqual([]);
+  });
+
+  it('should read the category of a subcategory written before parent_name from its description, for the migration', () => {
+    // Every seeded subcategory as 7.261116.0 stored it: the description ends with its category
+    openVocabularies.system_subcategory_ov.forEach(({ key, description, parent_name }) => {
+      expect(systemSubcategoryParentFromDescription(`${description} (category: ${parent_name})`), key).toEqual({ parentName: parent_name, description });
+    });
+    // A custom category key may hold any character but a closing parenthesis
+    expect(systemSubcategoryParentFromDescription('My probe (category: CUSTOM-HOST)')).toEqual({ parentName: 'CUSTOM-HOST', description: 'My probe' });
+    // A custom subcategory that names no category keeps no parent: selectable under every category, as before
+    expect(systemSubcategoryParentFromDescription('A custom subcategory')).toBeUndefined();
+    expect(systemSubcategoryParentFromDescription('')).toBeUndefined();
+    expect(systemSubcategoryParentFromDescription(null)).toBeUndefined();
   });
 });
 

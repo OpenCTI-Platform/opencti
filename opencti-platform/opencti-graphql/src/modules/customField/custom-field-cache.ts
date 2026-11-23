@@ -116,17 +116,21 @@ export const getDynamicTypeAttributeForEntityType = async (
 
     const entitySetting = getCustomFieldSettingForEntityType(cfDef, entityType);
     const isMandatory = entitySetting?.mandatory ?? false;
+    // A custom field has a single default_value string (validateCustomFieldDefaultValue), unlike
+    // the ref default values of the native attributes, so it is wrapped as its own single value.
+    const defaultValue = entitySetting?.default_value;
     resultAttributes.push({
       name: cfDef.name,
       type: attributeType,
       label: cfDef.label,
+      description: cfDef.description || null,
       mandatory: isMandatory,
       mandatoryType: isMandatory ? 'external' : 'no',
       editDefault: true,
       multiple: cfDef.multiple ?? false,
       upsert: true,
       scale: undefined,
-      defaultValues: undefined,
+      defaultValues: defaultValue ? [{ id: defaultValue, name: defaultValue }] : undefined,
     });
   }
   return resultAttributes;

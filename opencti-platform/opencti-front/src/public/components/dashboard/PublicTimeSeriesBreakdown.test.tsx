@@ -23,6 +23,9 @@ vi.mock('react-relay', async (importOriginal) => ({
     if (mocks.error) throw mocks.error;
     return mocks.response;
   },
+  // The breakdown is read as the query response holds it, unmasked: WidgetTimeSeriesBreakdown.test.tsx reads it
+  // through its fragment
+  useFragment: (_fragment: unknown, data: unknown) => data,
 }));
 // The query of the widget is loaded with these variables
 vi.mock('./usePublicDashboardViz', () => ({

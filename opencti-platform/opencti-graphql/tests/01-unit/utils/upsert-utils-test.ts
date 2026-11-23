@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert } from '../../../src/utils/upsert-utils';
+import { buildUpdatePatchForUpsert, generateAttributesInputsForUpsert, isDateLimitSentinel, isStoredLimitDateKeptValid } from '../../../src/utils/upsert-utils';
+import { FROM_START_STR, UNTIL_END_STR } from '../../../src/utils/format';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { testContext } from '../../utils/testQuery';
 
@@ -124,5 +125,48 @@ describe('buildUpdatePatchForUpsert - indicator confidence gating', () => {
       const inputs = generateAttributesInputsForUpsert(synchronizedContext, makeUser(), existingIndicator, ENTITY_TYPE_INDICATOR, result, lowerConfidence);
       expect(inputs.find((i) => i.key === 'confidence')).toEqual({ key: 'confidence', value: [20] });
     });
+  });
+});
+
+describe('isDateLimitSentinel', () => {
+  it('should flag the start sentinel on a start limit date', () => {
+    expect(isDateLimitSentinel('first_seen', FROM_START_STR)).toBe(true);
+    expect(isDateLimitSentinel('start_time', new Date(0))).toBe(true);
+    expect(isDateLimitSentinel('valid_from', FROM_START_STR)).toBe(true);
+  });
+
+  it('should flag the end sentinel on an end limit date', () => {
+    expect(isDateLimitSentinel('last_seen', UNTIL_END_STR)).toBe(true);
+    expect(isDateLimitSentinel('stop_time', new Date(UNTIL_END_STR))).toBe(true);
+  });
+
+  it('should not flag a real date, an empty value, a crossed sentinel or another attribute', () => {
+    expect(isDateLimitSentinel('first_seen', '2026-10-23T00:00:00.000Z')).toBe(false);
+    expect(isDateLimitSentinel('first_seen', null)).toBe(false);
+    expect(isDateLimitSentinel('first_seen', UNTIL_END_STR)).toBe(false);
+    expect(isDateLimitSentinel('last_seen', FROM_START_STR)).toBe(false);
+    expect(isDateLimitSentinel('created', FROM_START_STR)).toBe(false);
+  });
+});
+
+describe('isStoredLimitDateKeptValid', () => {
+  const stored = { valid_from: '2026-08-01T00:00:00.000Z', valid_until: '2026-11-13T00:00:00.000Z' };
+
+  it('should keep the stored end date when it still bounds the period', () => {
+    expect(isStoredLimitDateKeptValid('valid_until', stored, { valid_from: '2026-10-01T00:00:00.000Z', valid_until: UNTIL_END_STR })).toBe(true);
+    expect(isStoredLimitDateKeptValid('valid_until', stored, { valid_until: UNTIL_END_STR })).toBe(true);
+  });
+
+  it('should not keep the stored end date when the new start date is after it (issue #19796)', () => {
+    expect(isStoredLimitDateKeptValid('valid_until', stored, { valid_from: '2026-11-18T00:00:00.000Z', valid_until: UNTIL_END_STR })).toBe(false);
+  });
+
+  it('should not keep the stored start date when the new end date is before it', () => {
+    expect(isStoredLimitDateKeptValid('first_seen', { first_seen: '2026-10-01T00:00:00.000Z' }, { first_seen: FROM_START_STR, last_seen: '2026-09-01T00:00:00.000Z' })).toBe(false);
+  });
+
+  it('should keep any stored date without a pair or without a stored value', () => {
+    expect(isStoredLimitDateKeptValid('created', stored, {})).toBe(true);
+    expect(isStoredLimitDateKeptValid('last_seen', {}, { first_seen: '2026-11-18T00:00:00.000Z', last_seen: UNTIL_END_STR })).toBe(true);
   });
 });

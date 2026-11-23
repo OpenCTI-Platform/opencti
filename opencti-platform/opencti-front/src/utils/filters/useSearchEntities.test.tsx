@@ -137,6 +137,7 @@ vi.mock('@components/data/DataTableToolBar', () => ({
 }));
 
 import useSearchEntities from './useSearchEntities';
+import { ME_FILTER_VALUE } from './filtersUtils';
 
 const createEvent = (value: string) => ({
   target: { value },
@@ -258,6 +259,95 @@ describe('useSearchEntities', () => {
     expect(labelOptions.some((e) => e.value === null)).toBe(true);
     expect(labelOptions.some((e) => e.value === 'label-1')).toBe(true);
     expect(labelOptions.some((e) => e.value === 'label-2')).toBe(true);
+    // the searched labels are ranked by relevance, "No label" is not searched
+    expect(labelOptions.filter((e) => e.ranked).map((e) => e.value)).toEqual(['label-1', 'label-2']);
+  });
+
+  it('should not rank the labels of a search without a term', async () => {
+    const mockLabelsData = { labels: { edges: [{ node: { id: 'label-1', value: 'phishing', color: '#ff0000' } }] } };
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve(mockLabelsData) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('objectLabel', {}, vi.fn(), createEvent(''));
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].objectLabel?.some((e) => e.value === 'label-1')).toBe(true);
+    });
+    expect(result.current[0].objectLabel?.some((e) => e.ranked)).toBe(false);
+  });
+
+  it('should not rank the markings, which are not searched', () => {
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('objectMarking', {}, vi.fn(), createEvent('tlp'));
+    });
+
+    const markingOptions = result.current[0].objectMarking ?? [];
+    expect(markingOptions).toHaveLength(2);
+    expect(markingOptions.some((e) => e.ranked)).toBe(false);
+  });
+
+  it('should rank the searched members, after @me and ahead of the unsearched built-in accounts', async () => {
+    mockFetchQuery.mockReturnValue({
+      toPromise: () => Promise.resolve({
+        members: { edges: [{ node: { id: 'user-2', entity_type: 'User', name: 'Rule' } }] },
+        systemMembers: { edges: [{ node: { id: 'system-1', entity_type: 'User', name: 'RULE MANAGER' } }] },
+      }),
+    });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('members_user', {}, vi.fn(), createEvent('rule'));
+    });
+
+    await waitFor(() => {
+      expect(result.current[0].members_user).toBeDefined();
+    });
+    expect(mockFetchQuery).toHaveBeenCalledWith(
+      'objectAssigneeFieldMembersSearchQuery',
+      expect.objectContaining({ search: 'rule', entityTypes: ['User'] }),
+    );
+    expect(result.current[0].members_user?.map(({ value, ranked }) => ({ value, ranked: !!ranked }))).toEqual([
+      { value: ME_FILTER_VALUE, ranked: false },
+      { value: 'user-2', ranked: true },
+      { value: 'system-1', ranked: false },
+    ]);
+  });
+
+  it('should order the searched vocabularies by relevance, not by their configured order', () => {
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ vocabularies: { edges: [] } }) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('computed_reliability', {}, vi.fn(), createEvent('reliable'));
+    });
+
+    expect(mockFetchQuery).toHaveBeenCalledWith(
+      'vocabularySearchQuery',
+      expect.objectContaining({ search: 'reliable', orderBy: '_score', orderMode: 'desc' }),
+    );
+  });
+
+  it('should keep the default vocabulary order when no term is typed', () => {
+    mockFetchQuery.mockReturnValue({ toPromise: () => Promise.resolve({ vocabularies: { edges: [] } }) });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+    const [, searchEntities] = result.current;
+
+    act(() => {
+      searchEntities('computed_reliability', {}, vi.fn(), createEvent(''));
+    });
+
+    const variables = mockFetchQuery.mock.calls.find(([query]) => query === 'vocabularySearchQuery')?.[1];
+    expect(variables).toBeDefined();
+    expect(variables).not.toHaveProperty('orderBy');
+    expect(variables).not.toHaveProperty('orderMode');
   });
 
   it('should fetch stix core objects for id filter', async () => {
@@ -293,6 +383,56 @@ describe('useSearchEntities', () => {
     const [entities] = result.current;
     const idOptions = entities.id ?? [];
     expect(idOptions.some((e) => e.value === 'obj-1')).toBe(true);
+  });
+
+  it('should ignore the answer to an older search of the same key, which would replace the latest relevance order', async () => {
+    // each query answers when the test resolves it, in the order the test chooses
+    const answers: Array<(data: unknown) => void> = [];
+    mockFetchQuery.mockImplementation(() => ({
+      toPromise: () => new Promise((resolve) => {
+        answers.push(resolve);
+      }),
+    }));
+    const labelsAnswer = (...names: string[]) => ({
+      labels: { edges: names.map((name) => ({ node: { id: name, value: name, color: '#000000' } })) },
+    });
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+
+    act(() => {
+      result.current[1]('objectLabel', {}, vi.fn(), createEvent('sc'));
+    });
+    act(() => {
+      result.current[1]('objectLabel', {}, vi.fn(), createEvent('scr'));
+    });
+    // the answer to "scr" comes back first, then the one to "sc"
+    await act(async () => answers[1](labelsAnswer('SCR test')));
+    await act(async () => answers[0](labelsAnswer('scan', 'SCR test')));
+
+    expect(result.current[0].objectLabel?.map((e) => e.value)).toEqual([null, 'SCR test']);
+  });
+
+  it('should keep the answers of all the sources queried by the latest search of a key', async () => {
+    mockFetchQuery.mockImplementation((query: string) => ({
+      toPromise: () => Promise.resolve(query === 'objectAssigneeFieldMembersSearchQuery'
+        ? { members: { edges: [{ node: { id: 'user-2', entity_type: 'User', name: 'Scr user' } }] }, systemMembers: { edges: [] } }
+        : { stixCoreObjects: { edges: [{ node: {
+            id: 'obj-1',
+            entity_type: 'Malware',
+            parent_types: ['Stix-Domain-Object', 'Stix-Core-Object'],
+            name: 'Scr malware',
+            representative: { main: 'Scr malware' },
+          } }] } }),
+    }));
+    const { result } = renderHook(() => useSearchEntities(defaultOptions));
+
+    act(() => {
+      result.current[1]('contextEntityId', {}, vi.fn(), createEvent('scr'));
+    });
+
+    await waitFor(() => {
+      const values = (result.current[0].contextEntityId ?? []).map((e) => e.value);
+      expect(values).toEqual(expect.arrayContaining(['obj-1', 'user-2']));
+    });
   });
 
   it('should build relationship_type options from available types', () => {

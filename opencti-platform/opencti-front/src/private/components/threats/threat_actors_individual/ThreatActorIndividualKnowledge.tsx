@@ -13,6 +13,9 @@ import EntityStixCoreRelationshipsIndicators from '../../common/stix_core_relati
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 import useAuth from '../../../../utils/hooks/useAuth';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'known-as'];
+
 const threatActorIndividualKnowledgeFragment = graphql`
   fragment ThreatActorIndividualKnowledge_ThreatActorIndividual on ThreatActorIndividual {
     id
@@ -303,7 +306,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
               defaultStartTime={threatActorIndividual.first_seen}
               defaultStopTime={threatActorIndividual.last_seen}
               isRelationReversed={false}
-              relationshipTypes={['related-to', 'known-as']}
+              relationshipTypes={THREAT_ACTOR_INDIVIDUAL_OBSERVABLES_RELATIONSHIP_TYPES}
             />
           )}
         />

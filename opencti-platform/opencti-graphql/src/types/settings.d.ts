@@ -45,6 +45,7 @@ export type SmtpConfiguration = {
   port: number;
   use_ssl: boolean;
   reject_unauthorized: boolean;
+  require_tls?: boolean;
   auth_type?: SmtpAuthType;
   username: string;
   password_encrypted: string;

@@ -728,6 +728,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           languages
           vendor
           version
+          x_opencti_purl
         }
         ... on Url {
           value
