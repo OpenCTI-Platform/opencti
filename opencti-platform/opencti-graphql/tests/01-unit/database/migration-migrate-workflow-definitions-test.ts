@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { up } from '../../../src/migrations/1795084122000-migrate-workflow-definitions';
+import { up } from '../../../src/migrations/1795449700000-migrate-workflow-definitions';
 import { logMigration } from '../../../src/config/conf';
 import { StatusScope } from '../../../src/generated/graphql';
 import { logWorkflowMigrationSummary, migrateAllWorkflowDefinitions } from '../../../src/modules/workflow/workflow-migration';
@@ -41,12 +41,21 @@ describe('migration migrate-workflow-definitions', () => {
     expect(next).toHaveBeenCalledWith();
   });
 
-  it('should log the error and continue the startup when the migration itself fails', async () => {
-    vi.mocked(migrateAllWorkflowDefinitions).mockRejectedValue(new Error('elastic is down'));
+  it('should fail the migration so it is replayed on the next start when the migration itself fails', async () => {
+    const error = new Error('elastic is down');
+    vi.mocked(migrateAllWorkflowDefinitions).mockRejectedValue(error);
     const next = await runMigration();
     expect(logWorkflowMigrationSummary).not.toHaveBeenCalled();
-    expect(vi.mocked(logMigration.error).mock.calls.map(([message]) => message).join('\n')).toContain('elastic is down');
+    expect(vi.mocked(logMigration.error).mock.calls.map(([message]) => message).join('\n')).toContain('replayed on the next start');
     expect(next).toHaveBeenCalledTimes(1);
-    expect(next).toHaveBeenCalledWith();
+    expect(next).toHaveBeenCalledWith(error);
+  });
+
+  it('should wrap a non-Error rejection before failing the migration', async () => {
+    vi.mocked(migrateAllWorkflowDefinitions).mockRejectedValue('lock timeout');
+    const next = await runMigration();
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(next.mock.calls[0][0]).toBeInstanceOf(Error);
+    expect(next.mock.calls[0][0].message).toBe('lock timeout');
   });
 });
