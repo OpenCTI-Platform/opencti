@@ -196,16 +196,22 @@ const DECISION_FROM: Record<Decision, string[]> = { accepted: ['proposed'], reje
 
 interface TriageResult { line: Line; verdict?: IrTriageVerdict; error?: string; loading: boolean }
 
-// A date cell: the short numeric date, cut with an ellipsis when the column is narrow, the full date and time in the tooltip
+// A date cell: the short numeric date, cut with an ellipsis when the column is narrow, the full date and time in the design system tooltip
 const DateCell = ({ short, full }: { short: string; full: string }) => (
-  <Text
-    as="span"
-    variant="content-caption"
-    title={full}
-    style={{ display: 'block', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-  >
-    {short}
-  </Text>
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+        <Text
+          as="span"
+          variant="content-caption"
+          style={{ display: 'block', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {short}
+        </Text>
+      </Box>
+    </TooltipTrigger>
+    <TooltipContent>{full}</TooltipContent>
+  </Tooltip>
 );
 
 const IrEntities = ({ irId }: { irId: string }) => {
@@ -279,14 +285,25 @@ const IrEntities = ({ irId }: { irId: string }) => {
       label: 'Entity',
       percentWidth: 22,
       isSortable: true,
-      render: (line: Line) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
-          <Text as="span" variant="content-compact-medium" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {line.match_entity_name ?? line.entity?.representative.main ?? line.match_entity_id}
-          </Text>
-          <Text as="span" variant="content-caption" style={{ opacity: 0.6, whiteSpace: 'nowrap' }}>{t_i18n(`entity_${line.match_entity_type}`)}</Text>
-        </Box>
-      ),
+      render: (line: Line) => {
+        // The name ellipsizes; the design system tooltip shows it in full
+        const name = line.match_entity_name ?? line.entity?.representative.main ?? line.match_entity_id;
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+                  <Text as="span" variant="content-compact-medium" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {name}
+                  </Text>
+                </Box>
+              </TooltipTrigger>
+              <TooltipContent>{name}</TooltipContent>
+            </Tooltip>
+            <Text as="span" variant="content-caption" style={{ opacity: 0.6, whiteSpace: 'nowrap' }}>{t_i18n(`entity_${line.match_entity_type}`)}</Text>
+          </Box>
+        );
+      },
     },
     match_status: { id: 'match_status', label: 'Status', percentWidth: 9, isSortable: true, render: (line: Line) => <StatusChip status={line.match_status} excluded={line.match_excluded} t={t_i18n} /> },
     match_score: { id: 'match_score', label: 'Score', percentWidth: 10, isSortable: true, render: (line: Line) => <ScoreBar score={line.match_score} excluded={line.match_excluded} /> },

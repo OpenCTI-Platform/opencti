@@ -229,15 +229,20 @@ export const StatusChip = ({ status, excluded, t }: { status: string; excluded?:
   return <Chip label={t(chip.label)} severity={chip.severity} size="sm" />;
 };
 
-// The bar uses the primary token; an excluded entity reads "Not eligible" (the word of its status chip), never a dash
+// The bar uses the primary token; an excluded entity reads "Not eligible" (the word of its status chip), never a dash.
+// In a narrow column the number stays whole and the bar gives way (70 px at most, 24 px at least);
+// an excluded entity has no score to draw, so its words take the whole cell
 export const ScoreBar = ({ score, excluded }: { score: number; excluded?: boolean }) => {
   const { t_i18n } = useFormatter();
+  if (excluded) {
+    return <Box component="span" sx={{ fontWeight: 600, fontSize: 13 }}>{t_i18n('Not eligible')}</Box>;
+  }
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Box sx={{ width: 70, height: 6, borderRadius: 3, bgcolor: 'action.hover', overflow: 'hidden' }}>
-        <Box sx={{ width: `${excluded ? 0 : score}%`, height: '100%', bgcolor: 'primary.main' }} />
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+      <Box sx={{ flex: '0 1 70px', minWidth: 24, height: 6, borderRadius: 3, bgcolor: 'action.hover', overflow: 'hidden' }}>
+        <Box sx={{ width: `${score}%`, height: '100%', bgcolor: 'primary.main' }} />
       </Box>
-      <Box component="span" sx={{ fontWeight: 600, fontSize: 13, minWidth: 26 }}>{excluded ? t_i18n('Not eligible') : score}</Box>
+      <Box component="span" sx={{ flexShrink: 0, fontWeight: 600, fontSize: 13, minWidth: 26, whiteSpace: 'nowrap' }}>{score}</Box>
     </Box>
   );
 };
