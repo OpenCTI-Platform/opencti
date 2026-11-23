@@ -1,4 +1,3 @@
-import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useTheme } from '@mui/material/styles';
 import Tag from '@common/tag/Tag';
@@ -23,6 +22,9 @@ const PALETTE_NAMES: string[] = ['primary', 'secondary', 'error', 'warning', 'su
  * A connector type or use case chip of the ingestion catalog, drawn by the design-system
  * Chip (one style everywhere: tone fill and hairline in the tone ink). A palette name
  * resolves to the theme colour, a hex colour is used as is, `default` is the neutral tone.
+ * A clipped label shows the design-system Chip's own truncation tooltip; `tooltipLabel`
+ * (the hidden use cases of the "+N" chip) is passed to Tag only when it adds something,
+ * so a chip never opens two tooltips at once (DS Chip contract RULE-06).
  */
 const IngestionCatalogChip = ({
   label,
@@ -37,24 +39,15 @@ const IngestionCatalogChip = ({
     ? (theme.palette[color as PaletteName] as { main?: string } | undefined)?.main
     : color && color !== 'default' ? color : undefined;
 
-  const chip = (
+  return (
     <Tag
       label={label}
       color={resolvedColor}
       severity={resolvedColor ? undefined : 'neutral'}
       labelTextTransform="none"
-      disableTooltip
+      tooltipTitle={withTooltip && tooltipLabel && tooltipLabel !== label ? tooltipLabel : undefined}
       style={{ marginRight: isInlist ? theme.spacing(1) : 0 }}
     />
-  );
-
-  if (!withTooltip) {
-    return chip;
-  }
-  return (
-    <Tooltip title={tooltipLabel || label}>
-      <span style={{ display: 'inline-flex', minWidth: 0, maxWidth: '100%' }}>{chip}</span>
-    </Tooltip>
   );
 };
 
