@@ -2,9 +2,8 @@ import useGranted, { INVESTIGATION_INUPDATE, KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_K
 import { useGetCurrentUserAccessRight } from '../../../../../utils/authorizedMembers';
 
 /**
- * - canEdit: change the investigation from its enrichments (add the results to the graph, mark them as reviewed, delete them),
- *   which the server allows with the same rights as canRefresh: without them, these actions are hidden,
- * - canRefresh: run a connector again on an entity (askEnrichment linked to the investigation),
+ * - canEdit: change the investigation from its enrichments (run a connector again on an entity, add the results to the graph,
+ *   mark them as reviewed, delete them), all checked by validateEnrichmentInvestigation on the server: without it, these actions are hidden,
  * - canLaunch: start a bulk enrichment on the selection, a knowledge background task which also needs KNOWLEDGE_KNUPDATE.
  */
 const useInvestigationEnrichmentRights = (currentUserAccessRight: string | null | undefined) => {
@@ -12,12 +11,11 @@ const useInvestigationEnrichmentRights = (currentUserAccessRight: string | null 
   const canEnrichInvestigation = useGranted([INVESTIGATION_INUPDATE, KNOWLEDGE_KNENRICHMENT], true);
   const canUpdateKnowledge = useGranted([KNOWLEDGE_KNUPDATE]);
 
-  const canRefresh = canEditAccess && canEnrichInvestigation;
+  const canEdit = canEditAccess && canEnrichInvestigation;
 
   return {
-    canEdit: canRefresh,
-    canRefresh,
-    canLaunch: canRefresh && canUpdateKnowledge,
+    canEdit,
+    canLaunch: canEdit && canUpdateKnowledge,
   };
 };
 
