@@ -4403,6 +4403,7 @@
   "Paste your Filigran OpenCTI Enterprise Edition license": "Paste your Filigran OpenCTI Enterprise Edition license",
   "Paste your Filigran OpenCTI LTS license": "Paste your Filigran OpenCTI LTS license",
   "Paste, drop, or click to add images": "Paste, drop, or click to add images",
+  "Pastel colours": "Pastel colours",
   "patch": "patch",
   "Path in token": "Path in token",
   "Pattern": "Pattern",
@@ -5375,6 +5376,7 @@
   "Show": "Show",
   "Show {count} more": "Show {count} more",
   "Show all correlated entities": "Show all correlated entities",
+  "Show chips in soft pastel fills instead of the standard outlined colours.": "Show chips in soft pastel fills instead of the standard outlined colours.",
   "Show conversations": "Show conversations",
   "Show left navigation submenu icons": "Show left navigation submenu icons",
   "Show less": "Show less",
@@ -6791,11 +6793,11 @@
   "x_opencti_main_observable_type": "Main Observable type",
   "x_opencti_negative": "Qualification",
   "x_opencti_organization_type": "Organization type",
+  "x_opencti_purl": "PURL",
   "X_opencti_reliability": "Reliability",
   "x_opencti_reliability": "Reliability",
   "X_opencti_score": "Score",
   "x_opencti_score": "Score",
-  "x_opencti_purl": "PURL",
   "x_opencti_score_gt": "Score greater than",
   "x_opencti_score_lte": "Score less than or equal",
   "X_opencti_workflow_id": "Status",
@@ -6930,7 +6932,5 @@
   "zero": "zero",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out",
-  "Pastel colours": "Pastel colours",
-  "Show chips in soft pastel fills instead of the standard outlined colours.": "Show chips in soft pastel fills instead of the standard outlined colours."
+  "Zoom out": "Zoom out"
 }
