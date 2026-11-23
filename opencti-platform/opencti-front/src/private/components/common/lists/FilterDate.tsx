@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useRef, useState, KeyboardEvent } from 'react';
 import { buildDate, dateFiltersValueForDisplay, isAcceptedFromView } from '../../../../utils/Time';
 import DatePicker from '../../../../components/common/input/picker/BaseDatePicker';
+import { isImeComposing } from '../../../../utils/domEvent';
 
 interface FilterDateProps {
   defaultHandleAddFilter: (
@@ -67,7 +68,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   };
 
   const handleValidateDate = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Enter' && dateState) {
+    if (event.key === 'Enter' && !isImeComposing(event) && dateState) {
       handleAcceptDate(dateState as Date);
     }
   };

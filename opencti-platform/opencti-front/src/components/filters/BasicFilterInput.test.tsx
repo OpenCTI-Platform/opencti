@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import BasicFilterInput from './BasicFilterInput';
 import type { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
@@ -33,6 +33,18 @@ describe('BasicFilterInput', () => {
 
     expect(handleAddSingleValueFilter).toHaveBeenCalledTimes(1);
     expect(handleAddSingleValueFilter).toHaveBeenCalledWith('filter-1', 'emotet');
+  });
+
+  it('leaves Enter to the input method while it composes text', async () => {
+    const { user, handleAddSingleValueFilter } = renderInput();
+    await user.type(screen.getByLabelText('Name'), 'emo');
+
+    fireEvent.keyDown(screen.getByLabelText('Name'), { key: 'Enter', isComposing: true });
+    fireEvent.keyDown(screen.getByLabelText('Name'), { key: 'Enter', keyCode: 229 });
+    expect(handleAddSingleValueFilter).not.toHaveBeenCalled();
+
+    await user.keyboard('{Enter}');
+    expect(handleAddSingleValueFilter).toHaveBeenCalledWith('filter-1', 'emo');
   });
 
   it('commits only the cleared value when the clear button is clicked', async () => {
