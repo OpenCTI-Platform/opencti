@@ -41,12 +41,16 @@ const smtpConfigurationQuery = graphql`
         port
         use_ssl
         reject_unauthorized
+        require_tls
         auth_type
         username
         oauth_user
         oauth_client_id
         oauth_issuer
         oauth_refresh_token_expires_at
+    }
+    smtpConfigurationDefaults {
+        require_tls
     }
   }
 `;
@@ -67,7 +71,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
   refetch,
 }) => {
   const { t_i18n, nsdt } = useFormatter();
-  const { smtpConfiguration } = usePreloadedQuery(smtpConfigurationQuery, smtpConfigurationQueryRef);
+  const { smtpConfiguration, smtpConfigurationDefaults } = usePreloadedQuery(smtpConfigurationQuery, smtpConfigurationQueryRef);
 
   const [formOpen, setFormOpen] = useState(false);
   const [testDialogOpen, setTestDialogOpen] = useState(false);
@@ -211,6 +215,10 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
                 <TableCell>{renderBoolean(smtpConfiguration?.reject_unauthorized)}</TableCell>
               </TableRow>
               <TableRow>
+                <TableCell>{t_i18n('Require STARTTLS')}</TableCell>
+                <TableCell>{renderBoolean(smtpConfiguration?.use_ssl ? null : smtpConfiguration?.require_tls)}</TableCell>
+              </TableRow>
+              <TableRow>
                 <TableCell>{t_i18n('Authentication type')}</TableCell>
                 <TableCell>{renderText(authType)}</TableCell>
               </TableRow>
@@ -267,6 +275,7 @@ const SmtpConfigurationComponent: FunctionComponent<SmtpConfigurationComponentPr
             >
               <SmtpConfigurationForm
                 smtpConfiguration={smtpConfiguration ?? null}
+                defaults={smtpConfigurationDefaults}
                 onCompleted={handleFormCompleted}
                 onCancel={() => setFormOpen(false)}
               />

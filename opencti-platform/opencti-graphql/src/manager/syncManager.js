@@ -353,7 +353,7 @@ const syncManagerInstance = (syncId) => {
     const token = await decryptSynchronizerCredential(syncElement.token);
     const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
     abortController = new AbortController();
-    const streamClient = getHttpClient({ headers, rejectUnauthorized: syncElement.ssl_verify, responseType: 'stream' });
+    const streamClient = getHttpClient({ headers, rejectUnauthorized: syncElement.ssl_verify, responseType: 'stream', feature: 'Synchronizer' });
     const response = await streamClient.get(sseUri, { signal: abortController.signal });
     const queue = [];
     const parser = createParser({
@@ -430,6 +430,7 @@ const syncManagerInstance = (syncId) => {
         rejectUnauthorized: sync.ssl_verify,
         responseType: 'arraybuffer',
         timeout: FILE_FETCH_TIMEOUT,
+        feature: 'Synchronizer',
       };
       const httpClient = getHttpClient(httpClientOptions);
       lastState = sync.current_state_date;

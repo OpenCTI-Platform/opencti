@@ -1055,6 +1055,7 @@ export const convertSoftwareToStix = (instance: StoreCyberObservable): SCO.StixS
     vendor: instance.vendor,
     version: instance.version,
     x_opencti_product: instance.x_opencti_product,
+    x_opencti_purl: instance.x_opencti_purl,
   };
 };
 

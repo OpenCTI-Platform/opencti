@@ -8,6 +8,8 @@ import { Theme } from '../../../components/Theme';
 import { THEME_DARK_DEFAULT_BACKGROUND } from '../../../components/ThemeDark';
 import logoOpenAEVDark from '../../../static/images/logo_open_aev_dark.svg';
 import logoOpenAEVLight from '../../../static/images/logo_open_aev_light.svg';
+import logoOpenCRQDark from '../../../static/images/logo_open_crq_dark.svg';
+import logoOpenCRQLight from '../../../static/images/logo_open_crq_light.svg';
 import logoXTMHubDark from '../../../static/images/logo_xtm_hub_dark.svg';
 import logoXTMHubLight from '../../../static/images/logo_xtm_hub_light.svg';
 import LogoCollapsedOrange from '../../../static/images/logo_orange.svg';
@@ -25,6 +27,7 @@ import { readNavOpen, readSelectedMenu, writeNavOpen, writeSelectedMenu } from '
 import useNavMenu, { NavGroup, NavItem, NavSubItem } from './useNavMenu';
 
 const OPENAEV_FALLBACK_URL = 'https://filigran.io/solutions/open-aev/';
+const OPENCRQ_FALLBACK_URL = 'https://filigran.io/products/opencrq';
 const XTMHUB_FALLBACK_URL = 'https://hub.filigran.io';
 
 export const navBarQuery = graphql`
@@ -119,10 +122,23 @@ export const NavBarView: React.FC<NavBarViewProps> = ({
     </NavbarSubmenuItem>
   );
 
+  const ROW_ICON_COLLAPSED = 'inline-flex shrink-0 text-default-primary mr-0.5';
+  const ROW_ICON_EXPANDED = [
+    'inline-flex shrink-0 text-default-secondary',
+    'group-hover:text-default-primary group-focus-visible:text-default-primary group-[[aria-current=page]]:text-default-primary',
+  ].join(' ');
+
   // FDS-WORKAROUND #7: row body re-implemented for asChild — remove when asChild composes the row body — see fds-migration/LIBRARY-FEEDBACK.md #7
   const renderRowBody = (icon: React.ReactNode, label: string) => (
     <>
-      <span className="inline-flex shrink-0" aria-hidden="true">{icon}</span>
+      {/* Same icon tones as the library's own (non-asChild) row: subtle at rest, primary on hover, focus, current
+          page and while collapsed. */}
+      <span
+        className={collapsed ? ROW_ICON_COLLAPSED : ROW_ICON_EXPANDED}
+        aria-hidden="true"
+      >
+        {icon}
+      </span>
       <span className={collapsed ? 'sr-only' : 'flex-1 truncate text-left'}>{label}</span>
     </>
   );
@@ -192,6 +208,7 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
     me: { submenu_auto_collapse: submenuAutoCollapse, submenu_show_icons: submenuShowIcons, draftContext },
     settings: {
       platform_openaev_url: openAEVUrl,
+      platform_opencrq_url: openCRQUrl,
       platform_xtmhub_url: xtmhubUrl,
       xtm_hub_registration_status: xtmhubStatus,
     },
@@ -297,6 +314,13 @@ const NavBarComponent: React.FC<NavBarComponentProps> = ({ queryRef }) => {
               // Option logos fill their own slot; a fixed width overflows it.
               logo: <img src={isLightTheme ? logoOpenAEVLight : logoOpenAEVDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
               href: isNotEmptyField(openAEVUrl) ? (openAEVUrl as string) : OPENAEV_FALLBACK_URL,
+            },
+            {
+              id: 'opencrq',
+              label: t_i18n('OpenCRQ'),
+              tooltip: isNotEmptyField(openCRQUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenCRQ now'),
+              logo: <img src={isLightTheme ? logoOpenCRQLight : logoOpenCRQDark} alt="" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />,
+              href: isNotEmptyField(openCRQUrl) ? (openCRQUrl as string) : OPENCRQ_FALLBACK_URL,
             },
             {
               id: 'xtmhub',

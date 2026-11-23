@@ -24,7 +24,7 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import HtmlDisplay from '../../../../components/HtmlDisplay';
 import useAttributes from '../../../../utils/hooks/useAttributes';
-import { isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
+import { isOngoingExport, isPdfPasswordError } from './StixCoreObjectContentPdfUtils';
 import { filterContentTabFiles, isContainerWithContent, isContentTabImage, isPreviewOnlyFile, resolveContentFileMimeType } from './StixCoreObjectContentFileUtils';
 import StixCoreObjectContentImageViewer from './StixCoreObjectContentImageViewer';
 import { StixCoreObjectContent_stixCoreObject$data, StixCoreObjectContent_stixCoreObject$key } from './__generated__/StixCoreObjectContent_stixCoreObject.graphql';
@@ -209,7 +209,7 @@ const getExportFiles = (stixCoreObject: StixCoreObjectData): ExportFile[] => {
     [...exportFiles].filter((n) => {
       return (
         n.metaData?.mimetype === 'application/pdf'
-        || n.uploadStatus === 'progress'
+        || isOngoingExport(n)
       );
     }),
   );
@@ -440,7 +440,7 @@ const getInitialContentState = (stixCoreObject: StixCoreObjectData, params: Cont
   let onProgressExportFileName: string | undefined;
   if (params.currentFileId && (!params.contentSelected || params.forceFile)) {
     const onProgressExportFile = exportFiles.find(
-      (file) => file.id === params.currentFileId && file.uploadStatus === 'progress',
+      (file) => file.id === params.currentFileId && isOngoingExport(file),
     );
     if (onProgressExportFile) {
       isLoading = true;
@@ -541,7 +541,7 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
       refetch();
     });
     const initialFile = getAllFiles(stixCoreObject).find((f) => f.id === initialState.currentFileId);
-    if (initialFile?.uploadStatus !== 'progress') {
+    if (!isOngoingExport(initialFile)) {
       loadFileContent(initialState.currentFileId);
     }
     return () => {

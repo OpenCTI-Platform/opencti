@@ -40,10 +40,19 @@ import { buildAvailableProviders } from './setting-auth';
 import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout';
 import { CguStatus, PlatformEeSource } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
+import { checkPolicyAcceptsAdminPassword } from '../modules/user/user-domain';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
+};
+
+// OpenCRQ instance URL (XTM__OPENCRQ_URL). XTM__OPENGRC_URL, the former product name, is read as a deprecated fallback.
+export const getOpenCrqUrl = () => {
+  const opencrqUrl = nconf.get('xtm:opencrq_url');
+  if (isNotEmptyField(opencrqUrl)) return opencrqUrl;
+  const deprecatedOpenGrcUrl = nconf.get('xtm:opengrc_url');
+  return isNotEmptyField(deprecatedOpenGrcUrl) ? deprecatedOpenGrcUrl : '';
 };
 
 export const getApplicationInfo = () => ({
@@ -150,7 +159,9 @@ export const getSettings = async (context) => {
     platform_map_tile_server_dark: null,
     platform_map_tile_server_light: null,
     platform_openaev_url: nconf.get('xtm:openaev_url'),
-    platform_opengrc_url: nconf.get('xtm:opengrc_url'),
+    platform_opencrq_url: getOpenCrqUrl(),
+    // Deprecated: OpenGRC is the former name of OpenCRQ, kept for API backward-compatibility.
+    platform_opengrc_url: getOpenCrqUrl(),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
@@ -389,6 +400,12 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     if (invalidEntries.length > 0) {
       throw UnsupportedError(`Invalid IP address or CIDR entries in allow list: ${invalidEntries.join(', ')}`);
     }
+  }
+
+  // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
+  const passwordPolicyEdits = data.filter((inputData) => inputData.key.startsWith('password_policy_'));
+  if (passwordPolicyEdits.length > 0) {
+    checkPolicyAcceptsAdminPassword(context, { ...settings, ...Object.fromEntries(passwordPolicyEdits.map((inputData) => [inputData.key, inputData.value?.[0]])) });
   }
 
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);

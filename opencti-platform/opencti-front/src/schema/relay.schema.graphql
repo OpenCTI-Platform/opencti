@@ -1084,6 +1084,7 @@ type CSVFeedAddInputFromImport {
   markings: [String!]!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
 }
 
@@ -2311,6 +2312,7 @@ type ConfigPresetImportItem {
   isEnabled: Boolean
   key: String!
   label: String!
+  serviceAccountRequired: Boolean!
   translatable: Boolean!
 }
 
@@ -5074,6 +5076,7 @@ type ExternalReferenceEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): ExternalReference
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
 }
@@ -5376,6 +5379,17 @@ enum FileOrdering {
   lastModified
   name
   objectMarking
+}
+
+input FileRefInput {
+  embedded: Boolean
+  file_markings: [String]
+  mime_type: String
+  name: String!
+  no_trigger_import: Boolean
+  storage_key: String!
+  sync_id: ID!
+  version: DateTime
 }
 
 type FilesMetrics {
@@ -7396,6 +7410,7 @@ type IngestionJsonAddInputFromImport {
   description: String
   headers: [IngestionHeader!]
   jsonMapper: IngestionJsonMapperFromImport!
+  markings: [String!]
   name: String!
   pagination_with_sub_page: Boolean
   pagination_with_sub_page_attribute_path: String
@@ -7502,12 +7517,14 @@ input IngestionRssAddInput {
 }
 
 type IngestionRssAddInputFromImport {
+  created_by_ref: DefaultMarkingDefinition
   current_state_date: DateTime
   description: String
   name: String!
   object_marking_refs: [DefaultMarkingDefinition]
   report_types: [String!]
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String
 }
 
@@ -9082,6 +9099,7 @@ type MeUser implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
+  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   representative: Representative!
@@ -9366,7 +9384,7 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
   configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
@@ -12263,7 +12281,7 @@ type Query {
   savedFilter(id: ID!): SavedFilter
   savedFilters(after: ID, filters: FilterGroup, first: Int, orderBy: SavedFilterOrdering, orderMode: OrderingMode, search: String): SavedFilterConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
-  schemaAttributes: [AttributesMap]
+  schemaAttributes(entityType: String): [AttributesMap]
   schemaRelationsRefTypesMapping: [StixRelationshipRefSchema!]!
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
   sector(id: String): Sector
@@ -12278,6 +12296,7 @@ type Query {
   sessions: [UserSession]
   settings: Settings!
   smtpConfiguration: SmtpConfiguration
+  smtpConfigurationDefaults: SmtpConfigurationDefaults!
   status(id: String!): Status
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(after: ID, first: Int, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
@@ -13942,7 +13961,8 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_no_access_message: String
   platform_notifier_auto_trigger_assignee: Boolean!
   platform_openaev_url: String
-  platform_opengrc_url: String
+  platform_opencrq_url: String
+  platform_opengrc_url: String @deprecated(reason: "OpenGRC was renamed OpenCRQ. Use platform_opencrq_url, which returns the same value.")
   platform_organization: Organization
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   platform_providers: [Provider!]!
@@ -14030,6 +14050,7 @@ type SmtpConfiguration {
   oauth_user: String
   port: Int
   reject_unauthorized: Boolean
+  require_tls: Boolean
   sender_email_address: String
   smtp_enabled: Boolean!
   use_db_config: Boolean!
@@ -14050,11 +14071,16 @@ input SmtpConfigurationAddInput {
   password: String
   port: Int
   reject_unauthorized: Boolean
+  require_tls: Boolean
   sender_email_address: String
   smtp_enabled: Boolean
   use_db_config: Boolean
   use_ssl: Boolean
   username: String
+}
+
+type SmtpConfigurationDefaults {
+  require_tls: Boolean!
 }
 
 type Software implements BasicObject & StixCoreObject & StixCyberObservable & StixObject {
@@ -14110,6 +14136,7 @@ type Software implements BasicObject & StixCoreObject & StixCyberObservable & St
   x_opencti_inferences: [Inference]
   x_opencti_modified_at: DateTime
   x_opencti_product: String
+  x_opencti_purl: String
   x_opencti_score: Int
   x_opencti_stix_ids: [StixId]
 }
@@ -14129,6 +14156,7 @@ input SoftwareAddInput {
   vendor: String
   version: String
   x_opencti_product: String
+  x_opencti_purl: String
 }
 
 type SoftwareConnection {
@@ -14635,6 +14663,7 @@ type StixCyberObservableEditMutations {
   exportPush(file: Upload!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixCyberObservable
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   promote: StixCyberObservable @deprecated(reason: "[>=6.2 & <6.8]. Use `promoteToIndicator`.")
   promoteToIndicator: Indicator
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
@@ -14775,6 +14804,7 @@ type StixDomainObjectEditMutations {
   exportPush(file: Upload!, file_markings: [String]!): Boolean
   fieldPatch(commitMessage: String, input: [EditInput]!, references: [String]): StixDomainObject
   importPush(embedded: Boolean, file: Upload!, fileMarkings: [String], fintelTemplateId: String, fromTemplate: Boolean, noTriggerImport: Boolean, version: DateTime): File
+  importPushRef(fileRef: FileRefInput!): File
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(relationship_type: String, toId: StixRef!): StixDomainObject
   relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
@@ -16012,9 +16042,11 @@ type TaxiiFeedAddInputFromImport {
   authentication_type: String!
   authentication_value: String!
   collection: String!
+  confidence_to_score: Boolean
   description: String!
   name: String!
   scheduling_period: String
+  ssl_verify: Boolean
   uri: String!
   version: String!
 }
@@ -16956,6 +16988,7 @@ enum TriggersOrdering {
 
 type TypeAttribute {
   defaultValues: [DefaultValue!]
+  description: String
   editDefault: Boolean!
   label: String
   mandatory: Boolean!
@@ -17079,6 +17112,7 @@ type User implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
+  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime
@@ -17501,6 +17535,7 @@ type Vocabulary implements BasicObject & StixMetaObject & StixObject {
   modified: DateTime
   name: String!
   order: Int
+  parent_name: String
   parent_types: [String!]!
   refreshed_at: DateTime
   representative: Representative!
@@ -17524,6 +17559,7 @@ input VocabularyAddInput {
   "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   order: Int
+  parent_name: String
   stix_id: StixId
   update: Boolean
   x_opencti_stix_ids: [StixId]

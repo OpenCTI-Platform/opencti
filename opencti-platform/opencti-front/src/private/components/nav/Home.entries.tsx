@@ -1,10 +1,10 @@
-import { Home } from '@mui/icons-material';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 
 export const home: MenuEntry = {
   path: '/dashboard',
   label: 'Home',
-  icon: <Home />,
+  icon: <Icon name="house" size={16} />,
   keywords: ['Overview', 'cockpit', 'landscape'],
   exact: true,
 };

@@ -282,7 +282,7 @@ export async function handleWebhookNotification(configurationString: string | un
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
 
-  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT };
+  const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT, feature: 'Webhook' };
   const httpClient = getHttpClient(httpClientOptions);
 
   await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });

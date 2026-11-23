@@ -1,5 +1,4 @@
-import { BugReportOutlined, SurroundSoundOutlined, WebAssetOutlined } from '@mui/icons-material';
-import { Biohazard } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -11,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/arsenal/malwares',
     label: 'Malwares',
     entityType: 'Malware',
-    icon: <Biohazard fontSize="small" />,
+    icon: <Icon name="custom/malware" size={16} />,
     keywords: ['ransomware', 'trojan', 'rat', 'backdoor', 'loader', 'infostealer', 'botnet', 'Implant', 'virus'],
     ...knowledge,
   },
@@ -19,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/arsenal/channels',
     label: 'Channels',
     entityType: 'Channel',
-    icon: <SurroundSoundOutlined fontSize="small" />,
+    icon: <Icon name="megaphone" size={16} />,
     keywords: ['telegram', 'discord', 'forum', 'darkweb', 'social', 'Paste'],
     ...knowledge,
   },
@@ -27,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/arsenal/tools',
     label: 'Tools',
     entityType: 'Tool',
-    icon: <WebAssetOutlined fontSize="small" />,
+    icon: <Icon name="wrench" size={16} />,
     keywords: ['software', 'hacktool', 'dual', 'lolbin', 'lotl', 'living', 'cobalt', 'mimikatz'],
     ...knowledge,
   },
@@ -35,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/arsenal/vulnerabilities',
     label: 'Vulnerabilities',
     entityType: 'Vulnerability',
-    icon: <BugReportOutlined fontSize="small" />,
+    icon: <Icon name="bug" size={16} />,
     keywords: ['Vulnerability', 'cve', 'cvss', 'epss', 'kev', 'cisa', 'cwe', 'CPE', 'nvd', 'exploit', 'weakness', 'patch', 'advisory', '0day', 'zero'],
     ...knowledge,
   },

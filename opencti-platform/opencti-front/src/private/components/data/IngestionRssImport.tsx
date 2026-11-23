@@ -1,5 +1,7 @@
 import React, { BaseSyntheticEvent, FunctionComponent, useRef, useState } from 'react';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
+import IngestionFeedImportDialog from '@components/data/IngestionFeedImportDialog';
+import useConfigPresetPartialImportAccess from '@components/settings/config_preset/import/partial/useConfigPresetPartialImportAccess';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -25,6 +27,11 @@ export const rssFeedImportQuery = graphql`
         label
         value
       }
+      ssl_verify
+      created_by_ref {
+        label
+        value
+      }
     }
   }
 `;
@@ -35,11 +42,15 @@ interface IngestionRssImportProps {
   hideTrigger?: boolean;
   // Called when the prefilled creation drawer closes (creation or cancel).
   onClose?: () => void;
+  // Called after feeds are imported from a configuration bundle.
+  onBundleImported?: () => void;
 }
-const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ paginationOptions, hideTrigger, onClose }) => {
+const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ paginationOptions, hideTrigger, onClose, onBundleImported }) => {
   const { fileId, serviceInstanceId } = useParams();
   const navigate = useNavigate();
   const inputFileRef = useRef<HTMLInputElement>(null);
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [bundleImportOpen, setBundleImportOpen] = useState(false);
   const [open, setOpen] = useState<boolean>(false);
   const [ingestRssData, setIngestRssData] = useState<IngestionRssImportQuery$data['ingestionRssAddInputFromImport'] | undefined>(undefined);
   const { t_i18n } = useFormatter();
@@ -97,7 +108,7 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
           size="small"
           sx={{ marginLeft: 1 }}
           title={t_i18n('Import an RSS Feed')}
-          onClick={() => inputFileRef?.current?.click()}
+          onClick={() => (canImportFromBundle ? setBundleImportOpen(true) : inputFileRef?.current?.click())}
         >
           <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
@@ -108,6 +119,17 @@ const IngestionRssImport: FunctionComponent<IngestionRssImportProps> = ({ pagina
         accept="application/JSON"
         onChange={fileImport}
       />
+      {canImportFromBundle && (
+        <IngestionFeedImportDialog
+          open={bundleImportOpen}
+          onClose={() => setBundleImportOpen(false)}
+          title={t_i18n('Import an RSS Feed')}
+          type="rssFeeds"
+          itemsLabel={t_i18n('RSS feeds')}
+          fileInputRef={inputFileRef}
+          onImported={onBundleImported}
+        />
+      )}
       <IngestionRssCreation
         open={open}
         handleClose={() => {

@@ -16,6 +16,7 @@ vi.mock('../../../src/database/redis', () => ({
   delEditContext: vi.fn(),
   redisGetWork: vi.fn(),
 }));
+vi.mock('../../../src/lock/master-lock', () => ({ lockResources: vi.fn(async () => ({ unlock: vi.fn() })) }));
 vi.mock('../../../src/modules/connector/connector-redis', () => ({
   redisSetConnectorHealthMetrics: vi.fn(),
   redisGetConnectorHealthMetrics: vi.fn(),

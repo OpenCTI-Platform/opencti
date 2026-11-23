@@ -141,7 +141,8 @@
       "email": "admin@opencti.io",
       "password": "ChangeMe",
       "token": "ChangeMe",
-      "externally_managed": false
+      "externally_managed": false,
+      "secure_by_default": false
     },
     "group_confidence_level": {
       "max_confidence_default": 100
@@ -171,6 +172,10 @@
   "demo_mode": false,
   "tls": {
     "reject_unauthorized": false
+  },
+  "outbound_requests": {
+    "block_internal_destinations": false,
+    "allow_list": []
   },
   "http_proxy": "",
   "https_proxy": "",
@@ -241,6 +246,7 @@
     "xtm_one_token": "",
     "openaev_url": "",
     "openaev_token": "",
+    "opencrq_url": "",
     "opengrc_url": "",
     "opengrc_token": "",
     "xtmhub_url": "https://hub.filigran.io",

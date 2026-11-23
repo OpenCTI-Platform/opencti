@@ -1,4 +1,4 @@
-import { ArchiveOutline, HexagonOutline, ServerNetwork, ShieldSearch } from 'mdi-material-ui';
+import { Icon } from '@filigran/design-system';
 import type { MenuEntry } from '../common/menus/menuEntry';
 import { KNOWLEDGE } from '../../../utils/hooks/capabilities';
 
@@ -10,7 +10,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/observations/observables',
     label: 'Observables',
     entityType: 'Stix-Cyber-Observable',
-    icon: <HexagonOutline fontSize="small" />,
+    icon: <Icon name="hexagon" size={16} />,
     keywords: ['sco', 'ipv4', 'ipv6', 'Domain', 'Hostname', 'URL', 'Hash', 'MD5', 'sha256', 'Email'],
     ...knowledge,
   },
@@ -18,7 +18,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/observations/artifacts',
     label: 'Artifacts',
     entityType: 'Artifact',
-    icon: <ArchiveOutline fontSize="small" />,
+    icon: <Icon name="box" size={16} />,
     keywords: ['Sample', 'Malware', 'binary', 'Payload'],
     ...knowledge,
   },
@@ -26,7 +26,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/observations/indicators',
     label: 'Indicators',
     entityType: 'Indicator',
-    icon: <ShieldSearch fontSize="small" />,
+    icon: <Icon name="file-search" size={16} />,
     keywords: ['iocs', 'compromise', 'signature', 'yara', 'sigma', 'snort', 'suricata', 'pattern', 'blocklist'],
     ...knowledge,
   },
@@ -34,7 +34,7 @@ const menuEntries: MenuEntry[] = [
     path: '/dashboard/observations/infrastructures',
     label: 'Infrastructures',
     entityType: 'Infrastructure',
-    icon: <ServerNetwork fontSize="small" />,
+    icon: <Icon name="custom/infrastructure" size={16} />,
     keywords: ['c2', 'c&c', 'command', 'Control', 'hosting', 'botnet', 'Server'],
     ...knowledge,
   },
