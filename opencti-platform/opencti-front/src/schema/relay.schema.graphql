@@ -9099,6 +9099,7 @@ type MeUser implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
+  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   representative: Representative!
@@ -12480,8 +12481,6 @@ type Query {
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
-  xtmConnections: [XtmConnection!]!
-  xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]!
 }
 
 input QueryAttribute {
@@ -17113,6 +17112,7 @@ type User implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
+  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime
@@ -18550,38 +18550,4 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
   registered
   unregistered
-}
-
-type XtmConnection {
-  connected: Boolean!
-  product: String!
-}
-
-type XtmCounterpart {
-  facts: [XtmCounterpartFact!]!
-  key: String!
-  object_id: String!
-  object_name: String
-  object_type: String!
-  object_url: String!
-  product: String!
-}
-
-type XtmCounterpartFact {
-  key: String!
-  value: String!
-}
-
-type XtmCounterpartResult {
-  counterpart: XtmCounterpart
-  id: String!
-  product: String!
-  status: XtmCounterpartStatus!
-}
-
-enum XtmCounterpartStatus {
-  found
-  not_found
-  not_supported
-  unavailable
 }
