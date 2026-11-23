@@ -158,6 +158,17 @@ describe('useGraphParser', () => {
     });
   });
 
+  describe('buildLink', () => {
+    it('labels a procedure component with its position in the sequence', () => {
+      const component = constructRelationship({ id: 'component-1', entity_type: 'component-of', relationship_type: 'component-of', component_index: 2 });
+      expect(parser.buildLink(component).label).toMatch(/ #2$/);
+    });
+
+    it('labels other relationships without a position', () => {
+      expect(parser.buildLink(constructRelationship({ id: 'uses-1' })).label).not.toContain('#');
+    });
+  });
+
   describe('buildGraphData', () => {
     it('should promote both sides of a relationship nested on both ends to nodes', () => {
       // Two "leaf" relationships, each linking two plain entities.

@@ -38,6 +38,7 @@ const PROCEDURE_DEFINITION: ModuleDefinition<StoreEntityProcedure, StixProcedure
   overviewLayoutCustomization: [
     { key: 'details', width: 6, label: 'Entity details' },
     { key: 'basicInformation', width: 6, label: 'Basic information' },
+    { key: 'components', width: 12, label: 'Components' },
     { key: 'latestCreatedRelationships', width: 6, label: 'Latest created relationships' },
     { key: 'latestContainers', width: 6, label: 'Latest containers' },
     { key: 'externalReferences', width: 6, label: 'External references' },

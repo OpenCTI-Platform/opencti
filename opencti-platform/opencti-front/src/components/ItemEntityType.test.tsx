@@ -7,6 +7,7 @@ import ItemEntityType from './ItemEntityType';
 describe('ItemEntityType', () => {
   it.each([
     ['has-observable', 'has observable'],
+    ['component-of', 'component of'],
     ['procedure-command', 'Command'],
     ['procedure-source', 'Sources'],
   ])('translates the %s relationship label', (relationshipType, label) => {

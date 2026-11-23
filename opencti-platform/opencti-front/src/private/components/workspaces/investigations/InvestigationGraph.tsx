@@ -304,6 +304,7 @@ const investigationGraphObjectsFragment = graphql`
                   relationship_type
                   start_time
                   stop_time
+                  component_index
                 }
               }
               to {

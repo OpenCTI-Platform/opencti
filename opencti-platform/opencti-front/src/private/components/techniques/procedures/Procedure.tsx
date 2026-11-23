@@ -10,6 +10,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import ProcedureDetails from './ProcedureDetails';
+import ProcedureComponents from './ProcedureComponents';
 import { Procedure_procedure$key } from './__generated__/Procedure_procedure.graphql';
 
 const ProcedureFragment = graphql`
@@ -61,6 +62,7 @@ const ProcedureFragment = graphql`
     workflowEnabled
     ...WorkflowStatusStixDomainObject_data
     ...ProcedureDetails_procedure
+    ...ProcedureComponents_procedure
   }
 `;
 
@@ -87,6 +89,12 @@ const Procedure: React.FC<ProcedureProps> = ({ procedureData }) => {
               return (
                 <Grid key={key} size={width}>
                   <StixDomainObjectOverview stixDomainObject={procedure} />
+                </Grid>
+              );
+            case 'components':
+              return (
+                <Grid key={key} size={width}>
+                  <ProcedureComponents procedure={procedure} />
                 </Grid>
               );
             case 'latestCreatedRelationships':
