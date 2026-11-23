@@ -12,6 +12,7 @@ import useHelper from '../../../../utils/hooks/useHelper';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { AuthenticationGlobalSettingsQuery } from './__generated__/AuthenticationGlobalSettingsQuery.graphql';
+import { formatSessionMaxLifetime } from './sessionMaxLifetimeUtils';
 
 const authenticationGlobalSettingsQuery = graphql`
   query AuthenticationGlobalSettingsQuery {
@@ -25,9 +26,6 @@ const authenticationGlobalSettingsQuery = graphql`
     }
   }
 `;
-
-const ONE_MINUTE = 60 * 1000;
-const ONE_HOUR = 60 * ONE_MINUTE;
 
 const authenticationGlobalSettingsMutation = graphql`
   mutation AuthenticationGlobalSettingsMutation($id: ID!, $input: [EditInput]!) {
@@ -90,21 +88,11 @@ const AuthenticationGlobalSettingsContent = () => {
       .catch(() => false);
   };
 
-  // The maximum lifetime of a session comes from the platform configuration (in ms): it is only displayed
-  const formatSessionMaxLifetime = (maxLifetime: number) => {
-    if (maxLifetime <= 0) {
-      return t_i18n('Unlimited');
-    }
-    if (maxLifetime % ONE_HOUR === 0) {
-      return `${maxLifetime / ONE_HOUR} ${t_i18n('hours')}`;
-    }
-    return `${Math.round(maxLifetime / ONE_MINUTE)} ${t_i18n('minutes')}`;
-  };
-
   const initialValues = {
     otp_mandatory: settings.otp_mandatory ?? false,
     platform_session_max_concurrent: settings.platform_session_max_concurrent ?? 0,
-    platform_session_max_lifetime: formatSessionMaxLifetime(settings.platform_session_max_lifetime ?? 0),
+    // Comes from the platform configuration: only displayed
+    platform_session_max_lifetime: formatSessionMaxLifetime(settings.platform_session_max_lifetime ?? 0, t_i18n),
     platform_session_presence_enabled: settings.platform_session_presence_enabled,
   };
 
