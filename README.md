@@ -10,6 +10,13 @@
   <a href="https://community.filigran.io"><img src="https://img.shields.io/badge/community-slack-001BDA?style=flat-square&labelColor=0A0C1C&logo=slack&logoColor=white" alt="community"></a>
 </p>
 
+> **Community workshop:** Join us as Taylor Walton (of SOCFortress) walks through his working SOC stack: OpenCTI → OpenAEV → Wazuh → Velociraptor. Taylor will be joined by OpenCTI's product owner to cover what's coming next for OpenCTI and OpenAEV.
+>
+> [Register](https://events.filigran.io/register/e751635a-9aec-49f5-801c-40cfded49c87?utm_medium=community&utm_source=github) · Dec 10 at 10 AM New York City time
+>
+> Join us on the
+> [Filigran Community Slack](https://community.filigran.io/?utm_medium=community&utm_source=github).
+
 <p align="center"><b>The open source threat intelligence platform at the heart of Continuous Threat Exposure Management.</b></p>
 
 OpenCTI turns cyber threat intelligence into a living knowledge graph: who targets you, how they operate, which vulnerabilities and tools they rely on, and what your defenses already cover. It is the threat intelligence foundation of CTEM in the XTM Platform: know the adversary in OpenCTI, validate your exposure to it with [OpenAEV](https://github.com/OpenAEV-Platform/openaev), quantify the risk with [OpenCRQ](https://github.com/OpenCRQ-Platform/opencrq), and drive the whole loop with [XTM One](https://github.com/XTM-One-Platform/xtm-one).
