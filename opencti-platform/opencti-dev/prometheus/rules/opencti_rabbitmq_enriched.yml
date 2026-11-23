@@ -12,12 +12,16 @@ groups:
             "(.*)(listen|push)_([a-f0-9-]{36}).*"
           )
           * on(connector_id) group_left(name, type)
-          label_replace(
-            opencti_connector_identity_info,
-            "connector_id",
-            "$1",
-            "id",
-            "(.*)"
+          # max by: several instances sharing a CONNECTOR_ID would otherwise make
+          # the join fail with "found duplicate series for the match group"
+          max by (connector_id, name, type) (
+            label_replace(
+              opencti_connector_identity_info,
+              "connector_id",
+              "$1",
+              "id",
+              "(.*)"
+            )
           )
       - record: opencti:rabbitmq_detailed_queue_consumers:enriched
         expr: |
@@ -29,12 +33,16 @@ groups:
             "(.*)(listen|push)_([a-f0-9-]{36}).*"
           )
           * on(connector_id) group_left(name, type)
-          label_replace(
-            opencti_connector_identity_info,
-            "connector_id",
-            "$1",
-            "id",
-            "(.*)"
+          # max by: several instances sharing a CONNECTOR_ID would otherwise make
+          # the join fail with "found duplicate series for the match group"
+          max by (connector_id, name, type) (
+            label_replace(
+              opencti_connector_identity_info,
+              "connector_id",
+              "$1",
+              "id",
+              "(.*)"
+            )
           )
       - record: opencti:rabbitmq_queue_messages_acked_total:enriched
         expr: |
@@ -46,10 +54,14 @@ groups:
             "(.*)(listen|push)_([a-f0-9-]{36}).*"
           )
           * on(connector_id) group_left(name, type)
-          label_replace(
-            opencti_connector_identity_info,
-            "connector_id",
-            "$1",
-            "id",
-            "(.*)"
+          # max by: several instances sharing a CONNECTOR_ID would otherwise make
+          # the join fail with "found duplicate series for the match group"
+          max by (connector_id, name, type) (
+            label_replace(
+              opencti_connector_identity_info,
+              "connector_id",
+              "$1",
+              "id",
+              "(.*)"
+            )
           )
