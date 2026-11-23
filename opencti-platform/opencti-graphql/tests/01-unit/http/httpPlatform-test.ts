@@ -661,6 +661,22 @@ describe('httpPlatform: /auth/:provider/callback', () => {
     expect(res.redirect).toHaveBeenCalledTimes(1);
   });
 
+  // The local provider is served by the login form only
+  it('should refuse the local provider', async () => {
+    mockProviderCallback(null, loggedUser);
+    vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(false);
+    const handler = await setupCallbackHandler();
+    const req = { ...buildRequest(), params: { provider: 'local' } };
+    const res = buildResponse();
+
+    await handler?.(req, res, vi.fn());
+
+    expect(passport.authenticate).not.toHaveBeenCalled();
+    expect(sessionAuthenticateUser).not.toHaveBeenCalled();
+    expect(res.cookie).toHaveBeenCalledWith('opencti_flash', 'AUTH_ERROR', expect.anything());
+    expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+
   it('should send the provider error code when the session login raises a provider error', async () => {
     mockProviderCallback(null, loggedUser);
     vi.mocked(checkIpWhitelistForRequest).mockResolvedValue(false);
@@ -672,5 +688,46 @@ describe('httpPlatform: /auth/:provider/callback', () => {
 
     expect(res.cookie).toHaveBeenCalledWith('opencti_flash', 'ENTERPRISE_EDITION_REQUIRED', expect.anything());
     expect(res.redirect).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('httpPlatform: /auth/:provider', () => {
+  const setupLoginHandler = async () => {
+    const routes = new Map<string, (req: any, res: any, next: any) => void>();
+    const app: any = {
+      set: vi.fn(),
+      use: vi.fn(),
+      get: vi.fn((path: unknown, ...handlers: any[]) => {
+        if (typeof path === 'string') {
+          routes.set(path, handlers[handlers.length - 1]);
+        }
+      }),
+      post: vi.fn(),
+      delete: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      all: vi.fn(),
+    };
+    await createApp(app, {} as any);
+    const loginRoute = Array.from(routes.entries()).find(([path]) => path.endsWith('/auth/:provider'));
+    return loginRoute?.[1];
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // The local provider is served by the login form only
+  it('should refuse the local provider', async () => {
+    vi.spyOn(passport, '_strategy' as any).mockReturnValue({});
+    vi.spyOn(passport, 'authenticate').mockImplementation((() => vi.fn()) as any);
+    const handler = await setupLoginHandler();
+    const req = { params: { provider: 'local' }, query: {}, body: {}, session: {}, headers: {} } as any;
+    const res = { status: vi.fn().mockReturnThis(), send: vi.fn(), cookie: vi.fn() } as any;
+
+    handler?.(req, res, vi.fn());
+
+    expect(passport.authenticate).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(503);
   });
 });

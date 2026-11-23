@@ -63,15 +63,19 @@ import {
   postChatbotMessageFeedback,
   deleteChatbotMessageFeedback,
 } from './httpChatbotProxy';
-import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { LOCAL_STRATEGY_IDENTIFIER, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
+import { AuthenticationFailure } from '../config/errors';
 import { getMaxPayloadBodySize } from './httpConfig';
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
+
+// The passport routes serve the redirect-based providers: the local provider is served by the login form only
+const isServedByPassportRoutes = (provider) => provider !== LOCAL_STRATEGY_IDENTIFIER;
 
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
@@ -463,7 +467,7 @@ const createApp = async (app, schema) => {
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
       const { provider } = req.params;
-      const strategy = passport._strategy(provider);
+      const strategy = isServedByPassportRoutes(provider) ? passport._strategy(provider) : undefined;
       if (!strategy) {
         setCookieError(res, `Unknown authentication provider '${provider}'`);
         logApp.info('Unknown authentication provider', { provider });
@@ -529,6 +533,10 @@ const createApp = async (app, schema) => {
     });
 
     try {
+      if (!isServedByPassportRoutes(provider)) {
+        logApp.info('Authentication provider not served by the callback route', { provider });
+        throw AuthenticationFailure();
+      }
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       // Check the IP whitelist before the session login: a rejected login must never be authenticated,
