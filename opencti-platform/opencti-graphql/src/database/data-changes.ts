@@ -109,6 +109,12 @@ export const generateRestoreMessage = (instance: any) => {
   return generateCreateDeleteMessage('restore', instance);
 };
 
+// Fields removed from the schema whose recorded history must stay readable, with their label.
+// Procedures stored their observables in this ref before they became has-observable relationships.
+const REMOVED_HISTORY_FIELDS: Record<string, string> = {
+  'Procedure--procedureObservables': 'Observables',
+};
+
 const resolveAttribute = (field: string) => {
   const fieldSplit = field.split('--');
   const key = fieldSplit[1];
@@ -153,7 +159,11 @@ export const humanizeRawValue = (resolvedMap: Record<string, string>,
 const humanizeChangeValues = (resolvedMap: Record<string, string>,
   field: string, changeValues: ChangeValue[] | undefined, format: Formating = DefaultFormating): string[] => {
   const attribute = resolveAttribute(field);
-  if (!attribute) throw UnsupportedError('Cant resolve attribute', { field });
+  if (!attribute) {
+    // A field since removed from the schema keeps its recorded values, so the old history still reads.
+    if (REMOVED_HISTORY_FIELDS[field]) return (changeValues ?? []).map((v) => v.raw);
+    throw UnsupportedError('Cant resolve attribute', { field });
+  }
   const humanChangedValues: string[] = [];
   const values = changeValues ?? [];
   for (let index = 0; index < values.length; index += 1) {
@@ -167,7 +177,7 @@ const humanizeChangeValues = (resolvedMap: Record<string, string>,
 const humanizeHistoryChange = (resolvedMap: Record<string, string>,
   attribute: AttributeDefinition | null, change: Change, format: Formating = DefaultFormating) => {
   return {
-    field: attribute?.label ?? change.field,
+    field: attribute?.label ?? REMOVED_HISTORY_FIELDS[change.field] ?? change.field,
     changes_added: humanizeChangeValues(resolvedMap, change.field, change.changes_added, format),
     changes_removed: humanizeChangeValues(resolvedMap, change.field, change.changes_removed, format),
   };
@@ -238,25 +248,25 @@ export const generateMessageFromChanges = (resolvedMap: Record<string, string>,
       if ((human.changes_added ?? []).length > 0) {
         const message = convertChange(human.changes_added);
         if (actions['adds']) {
-          actions['adds'].push({ message, field: attribute?.label });
+          actions['adds'].push({ message, field: attribute?.label ?? REMOVED_HISTORY_FIELDS[field] });
         } else {
-          actions['adds'] = [{ message, field: attribute?.label }];
+          actions['adds'] = [{ message, field: attribute?.label ?? REMOVED_HISTORY_FIELDS[field] }];
         }
       }
       if ((human.changes_removed ?? []).length > 0) {
         const message = convertChange(human.changes_removed);
         if (actions['removes']) {
-          actions['removes'].push({ message, field: attribute?.label });
+          actions['removes'].push({ message, field: attribute?.label ?? REMOVED_HISTORY_FIELDS[field] });
         } else {
-          actions['removes'] = [{ message, field: attribute?.label }];
+          actions['removes'] = [{ message, field: attribute?.label ?? REMOVED_HISTORY_FIELDS[field] }];
         }
       }
     } else {
       const message = convertChange(human.changes_added, true);
       if (actions['replaces']) {
-        actions['replaces'].push({ message, field: attribute?.label });
+        actions['replaces'].push({ message, field: attribute?.label ?? REMOVED_HISTORY_FIELDS[field] });
       } else {
-        actions['replaces'] = [{ message, field: attribute?.label }];
+        actions['replaces'] = [{ message, field: attribute?.label ?? REMOVED_HISTORY_FIELDS[field] }];
       }
     }
   }
