@@ -21,6 +21,7 @@ import { useFormatter } from '../i18n';
 import { useDataTableContext } from './components/DataTableContext';
 import DataTablePagination from './DataTablePagination';
 import { DataTableDisplayFiltersProps, DataTableFiltersProps, DataTableVariant } from './dataTableTypes';
+import { dataTableToolbarLeftGroupStyle, dataTableToolbarRightGroupStyle, dataTableToolbarRowStyle } from './dataTableToolbarLayout';
 
 export const DataTableDisplayFilters = ({
   availableFilterKeys,
@@ -121,16 +122,8 @@ const DataTableFilters = ({
 
   return (
     <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
-      {/* `alignItems: center`: without it the row defaults to `stretch`, so the left group (which centres its own
-          children) and the right group of 36px toggles resolved to different centre lines — measured 305 against
-          303 on the entity Analyses tab, which is the 2px misalignment reported there. */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', flex: 1, alignItems: 'center' }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: theme.spacing(1),
-        }}
-        >
+      <div style={dataTableToolbarRowStyle(theme.spacing(1))}>
+        <div style={dataTableToolbarLeftGroupStyle(theme.spacing(1))}>
           {hasFilters && (
             <Filters
               isDatatable
@@ -150,7 +143,7 @@ const DataTableFilters = ({
             />
           )}
         </div>
-        <div style={{ display: 'flex', gap: theme.spacing(1), flexShrink: 0 }}>
+        <div style={dataTableToolbarRightGroupStyle(theme.spacing(1))}>
           {(variant === DataTableVariant.default) && (
             <DataTablePagination
               page={page}
