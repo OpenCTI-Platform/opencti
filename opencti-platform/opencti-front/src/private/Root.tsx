@@ -220,6 +220,7 @@ const meUserFragment = graphql`
     submenu_show_icons
     submenu_auto_collapse
     monochrome_labels
+    pastel_colours
     default_dashboards {
       id
       name
@@ -542,6 +543,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryData }) => 
           <ConnectedThemeProvider
             settings={settings}
             activeTheme={activeTheme}
+            pastelColours={me.pastel_colours}
           >
             <ConnectedIntlProvider settings={settings}>
               <AppDataProvider

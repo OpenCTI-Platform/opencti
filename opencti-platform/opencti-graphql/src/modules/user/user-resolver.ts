@@ -119,6 +119,7 @@ const userResolvers: Resolvers = {
     submenu_show_icons: (current) => current.submenu_show_icons ?? false,
     submenu_auto_collapse: (current) => current.submenu_auto_collapse ?? true,
     monochrome_labels: (current) => current.monochrome_labels ?? false,
+    pastel_colours: (current) => current.pastel_colours ?? false,
     unsubscribed_news_feed_types: (current) => current.unsubscribed_news_feed_types ?? [],
     groups: (current, args, context) => userGroupsPaginated(context, context.user, current.id, args),
     objectOrganization: (current, args, context) => userOrganizationsPaginated(context, context.user, current.id, args),

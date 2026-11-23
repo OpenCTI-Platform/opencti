@@ -1,10 +1,14 @@
-import { Chip } from '@filigran/design-system';
+import { Chip, type ChipSeverity } from '@filigran/design-system';
 import { Tooltip } from '@mui/material';
 import React from 'react';
 
 export interface TagProps {
   label?: string | number | null;
   color?: string | null;
+  /** A predefined level (critical, high, medium, low, info, neutral): drawn in the
+   *  standard colour every XTM Platform module uses, pastel when the user opted in.
+   *  A `color` (user data: a label, a custom marking) outranks it in the library. */
+  severity?: ChipSeverity;
   onClick?: (e: React.MouseEvent) => void;
   /** Middle click: browsers fire it as auxclick, never as click. */
   onAuxClick?: (e: React.MouseEvent) => void;
@@ -32,6 +36,7 @@ export interface TagProps {
 const Tag = ({
   label,
   color,
+  severity,
   onClick,
   onAuxClick,
   onDelete,
@@ -60,6 +65,7 @@ const Tag = ({
       id={id}
       label={text}
       color={color ?? undefined}
+      severity={severity}
       startIcon={icon}
       onClick={onClick}
       onAuxClick={onAuxClick}
