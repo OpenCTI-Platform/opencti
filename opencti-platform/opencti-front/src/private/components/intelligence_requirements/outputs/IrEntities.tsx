@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Chip, Text } from '@filigran/design-system';
+import { Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
@@ -299,10 +299,22 @@ const IrEntities = ({ irId }: { irId: string }) => {
       render: (line: Line) => {
         const proof = line.match_explanations[0];
         if (!proof) return '-';
+        // The cell ellipsizes; the design system tooltip shows every explanation in full, one per line
+        const entityName = line.match_entity_name ?? line.entity?.representative.main ?? '';
+        const sentences = line.match_explanations.map((e) => `${criterionName(criteria, e.criterion_id)} · ${explanationSentence(t_i18n, e, entityName)}`);
         return (
-          <Text as="span" variant="content-caption" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {`${criterionName(criteria, proof.criterion_id)} · ${explanationSentence(t_i18n, proof, line.match_entity_name ?? line.entity?.representative.main ?? '')}${line.match_explanations.length > 1 ? ` (+${line.match_explanations.length - 1})` : ''}`}
-          </Text>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Box sx={{ minWidth: 0, overflow: 'hidden' }}>
+                <Text as="span" variant="content-caption" style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {`${sentences[0]}${sentences.length > 1 ? ` (+${sentences.length - 1})` : ''}`}
+                </Text>
+              </Box>
+            </TooltipTrigger>
+            <TooltipContent>
+              {sentences.map((s, i) => <div key={i}>{s}</div>)}
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },
@@ -314,25 +326,32 @@ const IrEntities = ({ irId }: { irId: string }) => {
       render: (line: Line) => {
         // The first reason's name ellipsizes, its points stay whole in a non-shrinking chip; the other reasons are
         // counted as caption text "(+N)", as in the column next to it, so the count never reads as points;
-        // every reason is in the tooltip
+        // every reason, with its points, is in the design system tooltip, one per line
         const reasons = line.match_score_breakdown
           .filter((o) => o.kind !== 'condition' && o.hit && o.points !== 0)
           .map((o) => ({ name: o.name, points: `${o.points > 0 ? '+' : ''}${o.points}` }));
         if (reasons.length === 0) return '-';
         return (
-          <Box title={reasons.map((r) => `${r.name} ${r.points}`).join('\n')} sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
-            <Text as="span" variant="content-caption" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {reasons[0].name}
-            </Text>
-            <Box sx={{ flexShrink: 0 }}>
-              <Chip label={reasons[0].points} size="sm" />
-            </Box>
-            {reasons.length > 1 && (
-              <Text as="span" variant="content-caption" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
-                {`(+${reasons.length - 1})`}
-              </Text>
-            )}
-          </Box>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
+                <Text as="span" variant="content-caption" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {reasons[0].name}
+                </Text>
+                <Box sx={{ flexShrink: 0 }}>
+                  <Chip label={reasons[0].points} size="sm" />
+                </Box>
+                {reasons.length > 1 && (
+                  <Text as="span" variant="content-caption" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                    {`(+${reasons.length - 1})`}
+                  </Text>
+                )}
+              </Box>
+            </TooltipTrigger>
+            <TooltipContent>
+              {reasons.map((r, i) => <div key={i}>{`${r.name} ${r.points}`}</div>)}
+            </TooltipContent>
+          </Tooltip>
         );
       },
     },
