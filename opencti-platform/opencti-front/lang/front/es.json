@@ -7395,9 +7395,13 @@
   "Entities are flagged when they match any rule or group: rules are joined with OR. To require several rules at once, put them in a group: rules in a group are joined with AND.": "Las entidades se marcan cuando coinciden con cualquier regla o grupo: las reglas se unen con O. Para exigir varias reglas a la vez, colóquelas en un grupo: las reglas de un grupo se unen con Y.",
   "Add rule": "Añadir regla",
   "Add group": "Añadir grupo",
-  "The type sets what the requirement flags and the rules you can pick on the next step.": "El tipo define qué marca el requisito y las reglas que puede elegir en el siguiente paso.",
   "Rules not defined yet": "Reglas aún no definidas",
   "Choose a PIR type": "Elija un tipo de PIR",
   "Flagged types": "Tipos marcados",
-  "Choose at least one type to flag": "Elija al menos un tipo para marcar"
+  "Choose at least one type to flag": "Elija al menos un tipo para marcar",
+  "Add a value": "Añada un valor",
+  "Add filters": "Añada filtros",
+  "Add at least one rule": "Añada al menos una regla",
+  "matching custom filters": "que coinciden con filtros personalizados",
+  "any": "cualquier"
 }

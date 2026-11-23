@@ -7395,9 +7395,13 @@
   "Entities are flagged when they match any rule or group: rules are joined with OR. To require several rules at once, put them in a group: rules in a group are joined with AND.": "Les entités sont signalées lorsqu'elles correspondent à une règle ou à un groupe : les règles sont reliées par OU. Pour exiger plusieurs règles à la fois, placez-les dans un groupe : les règles d'un groupe sont reliées par ET.",
   "Add rule": "Ajouter une règle",
   "Add group": "Ajouter un groupe",
-  "The type sets what the requirement flags and the rules you can pick on the next step.": "Le type définit ce que le besoin signale et les règles proposées à l'étape suivante.",
   "Rules not defined yet": "Règles pas encore définies",
   "Choose a PIR type": "Choisissez un type de PIR",
   "Flagged types": "Types signalés",
-  "Choose at least one type to flag": "Choisissez au moins un type à signaler"
+  "Choose at least one type to flag": "Choisissez au moins un type à signaler",
+  "Add a value": "Ajoutez une valeur",
+  "Add filters": "Ajoutez des filtres",
+  "Add at least one rule": "Ajoutez au moins une règle",
+  "matching custom filters": "correspondant aux filtres personnalisés",
+  "any": "tout"
 }

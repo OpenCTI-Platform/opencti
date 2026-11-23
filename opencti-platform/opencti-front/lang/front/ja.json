@@ -7395,9 +7395,13 @@
   "Entities are flagged when they match any rule or group: rules are joined with OR. To require several rules at once, put them in a group: rules in a group are joined with AND.": "エンティティは、いずれかのルールまたはグループに一致するとフラグ付けされます。ルールは OR で結合されます。複数のルールを同時に必須にするには、グループにまとめます。グループ内のルールは AND で結合されます。",
   "Add rule": "ルールを追加",
   "Add group": "グループを追加",
-  "The type sets what the requirement flags and the rules you can pick on the next step.": "タイプによって、要件がフラグ付けする対象と、次のステップで選べるルールが決まります。",
   "Rules not defined yet": "ルールはまだ定義されていません",
   "Choose a PIR type": "PIR タイプを選択してください",
   "Flagged types": "フラグ付けするタイプ",
-  "Choose at least one type to flag": "フラグ付けするタイプを少なくとも 1 つ選択してください"
+  "Choose at least one type to flag": "フラグ付けするタイプを少なくとも 1 つ選択してください",
+  "Add a value": "値を追加してください",
+  "Add filters": "フィルターを追加してください",
+  "Add at least one rule": "ルールを少なくとも 1 つ追加してください",
+  "matching custom filters": "カスタムフィルターに一致する",
+  "any": "すべての"
 }

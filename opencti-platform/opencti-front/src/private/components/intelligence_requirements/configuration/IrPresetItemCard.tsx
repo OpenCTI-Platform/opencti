@@ -18,6 +18,23 @@ export interface IrItemError {
   message: string;
 }
 
+type Translate = (text: string) => string;
+
+/**
+ * The English texts of the preset draft (validation messages, words of the default names), as literal
+ * keys so that the extraction keeps them in the catalogs. Any other text is translated as it is.
+ */
+export const presetText = (text: string, t_i18n: Translate): string => {
+  switch (text) {
+    case 'Add a value': return t_i18n('Add a value');
+    case 'Add filters': return t_i18n('Add filters');
+    case 'Add at least one rule': return t_i18n('Add at least one rule');
+    case 'matching custom filters': return t_i18n('matching custom filters');
+    case 'any': return t_i18n('any');
+    default: return t_i18n(text);
+  }
+};
+
 const ErrorText = ({ children }: { children: ReactNode }) => (
   <Text as="p" variant="content-caption" style={{ marginTop: 4 }}>
     <Box component="span" sx={{ color: 'error.main' }}>{children}</Box>
@@ -53,19 +70,22 @@ const flaggedSide = (rule: IrPresetRule): 'source' | 'target' | null => {
 
 const QueryTooltip = ({ rule, flags }: { rule: IrRuleInstance; flags: string[] }) => {
   const { t_i18n } = useFormatter();
-  const chips = presetQueryChips(rule, flags, t_i18n);
+  const chips = presetQueryChips(rule, flags, (text) => presetText(text, t_i18n));
   const side = flaggedSide(getRule(rule.ruleKey));
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 360 }}>
       <Text as="div" variant="content-compact-bold">{t_i18n('Query this rule runs')}</Text>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 0.75, rowGap: 0.25 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.75 }}>
         {chips.map((chip, index) => (
           <React.Fragment key={`${chip.key}-${index}`}>
             {index > 0 && <Text as="span" variant="content-caption">{t_i18n('AND')}</Text>}
-            <Text as="span" variant="content-compact">
-              {`${chip.key} ${chip.operator ?? '='} `}
-              <Box component="span" sx={chip.fromUser ? { color: 'primary.main', fontWeight: 600 } : undefined}>{chip.values || '…'}</Box>
-            </Text>
+            {/* a read-only chip: the FDS Chip takes a plain label, and the value the user gave is coloured on its own */}
+            <Box component="span" sx={{ display: 'inline-block', bgcolor: 'action.selected', borderRadius: 0.5, px: 0.75, py: 0.25 }}>
+              <Text as="span" variant="content-caption">
+                {`${chip.key} ${chip.operator ?? '='} `}
+                <Box component="span" sx={chip.fromUser ? { color: 'primary.main', fontWeight: 600 } : undefined}>{chip.values || '…'}</Box>
+              </Text>
+            </Box>
           </React.Fragment>
         ))}
       </Box>
@@ -106,7 +126,7 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error }: {
           </IconButton>
         )}
       </Box>
-      {error && <ErrorText>{t_i18n(error)}</ErrorText>}
+      {error && <ErrorText>{presetText(error, t_i18n)}</ErrorText>}
     </Box>
   );
 };
@@ -289,7 +309,7 @@ export const IrPresetItemCard = ({
           <IrFilterBuilder value={item.filters} onChange={onFilters} />
         </Suspense>
       )}
-      {itemError && <ErrorText>{t_i18n(itemError)}</ErrorText>}
+      {itemError && <ErrorText>{presetText(itemError, t_i18n)}</ErrorText>}
     </Box>
   );
 };

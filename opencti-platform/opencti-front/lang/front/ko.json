@@ -7395,9 +7395,13 @@
   "Entities are flagged when they match any rule or group: rules are joined with OR. To require several rules at once, put them in a group: rules in a group are joined with AND.": "엔티티는 규칙이나 그룹 중 하나에 일치하면 플래그됩니다. 규칙은 OR로 결합됩니다. 여러 규칙을 동시에 요구하려면 그룹에 넣으세요. 그룹 안의 규칙은 AND로 결합됩니다.",
   "Add rule": "규칙 추가",
   "Add group": "그룹 추가",
-  "The type sets what the requirement flags and the rules you can pick on the next step.": "유형에 따라 요구사항이 플래그하는 대상과 다음 단계에서 선택할 수 있는 규칙이 정해집니다.",
   "Rules not defined yet": "아직 정의된 규칙이 없습니다",
   "Choose a PIR type": "PIR 유형을 선택하세요",
   "Flagged types": "플래그할 유형",
-  "Choose at least one type to flag": "플래그할 유형을 하나 이상 선택하세요"
+  "Choose at least one type to flag": "플래그할 유형을 하나 이상 선택하세요",
+  "Add a value": "값을 추가하세요",
+  "Add filters": "필터를 추가하세요",
+  "Add at least one rule": "규칙을 하나 이상 추가하세요",
+  "matching custom filters": "사용자 지정 필터와 일치하는",
+  "any": "모든"
 }

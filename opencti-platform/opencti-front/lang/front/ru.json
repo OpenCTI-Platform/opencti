@@ -7395,9 +7395,13 @@
   "Entities are flagged when they match any rule or group: rules are joined with OR. To require several rules at once, put them in a group: rules in a group are joined with AND.": "Сущности отмечаются, если соответствуют любому правилу или группе: правила объединяются через ИЛИ. Чтобы требовать несколько правил одновременно, поместите их в группу: правила в группе объединяются через И.",
   "Add rule": "Добавить правило",
   "Add group": "Добавить группу",
-  "The type sets what the requirement flags and the rules you can pick on the next step.": "Тип определяет, что отмечает требование, и правила, доступные на следующем шаге.",
   "Rules not defined yet": "Правила ещё не определены",
   "Choose a PIR type": "Выберите тип PIR",
   "Flagged types": "Отмечаемые типы",
-  "Choose at least one type to flag": "Выберите хотя бы один тип для отметки"
+  "Choose at least one type to flag": "Выберите хотя бы один тип для отметки",
+  "Add a value": "Добавьте значение",
+  "Add filters": "Добавьте фильтры",
+  "Add at least one rule": "Добавьте хотя бы одно правило",
+  "matching custom filters": "соответствующие пользовательским фильтрам",
+  "any": "любой"
 }

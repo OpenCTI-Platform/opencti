@@ -10,9 +10,23 @@ import { useFormatter } from '../../../../components/i18n';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
 import IrTypeStep from './IrTypeStep';
 import IrRulesStep from './IrRulesStep';
-import { IR_PIR_TYPES, type IrPirType } from './irPresetRules';
-import { presetItemsToDraft, validatePresetItems, type IrPresetGeneral, type IrPresetItem } from './irPresetDraft';
+import { IR_PIR_TYPES, rulesForType, type IrPirType } from './irPresetRules';
+import { defaultItemName, presetItemsToDraft, validatePresetItems, type IrPresetGeneral, type IrPresetItem } from './irPresetDraft';
+import { presetText } from './IrPresetItemCard';
 import { writeConfigView } from './irSentence';
+
+// The items still possible with other flagged types (Threat custom): a rule that no longer fits goes,
+// so does a group left without rules; advanced search criteria go only when nothing is flagged anymore.
+const itemsForFlags = (items: IrPresetItem[], flags: string[]): IrPresetItem[] => {
+  const offered = new Set(rulesForType('threat_custom', flags).map((rule) => rule.key));
+  return items.flatMap((item): IrPresetItem[] => {
+    if (item.kind === 'rule') return offered.has(item.rule.ruleKey) ? [item] : [];
+    if (item.kind === 'custom') return flags.length > 0 ? [item] : [];
+    const rules = item.rules.filter((rule) => offered.has(rule.ruleKey));
+    if (rules.length === 0 && item.rules.length > 0) return [];
+    return [{ ...item, rules }];
+  });
+};
 
 const emptyGeneral = (): IrPresetGeneral => ({ name: '', question: '', description: '', priority: 'medium' });
 
@@ -38,6 +52,8 @@ const IrCreationWizard = () => {
     if (index === 1) return validatePresetItems(items).length === 0;
     return true;
   };
+  // a rule without its value keeps the user on the criteria step
+  const missingValue = step === 1 && validatePresetItems(items).some((e) => e.ruleId);
   const next = () => {
     if (!canLeave(step)) {
       setTriedNext((tried) => tried.map((v, i) => (i === step ? true : v)));
@@ -65,7 +81,13 @@ const IrCreationWizard = () => {
             showErrors={triedNext[0]}
             onChange={(p) => {
               if (p.general) setGeneral(p.general);
-              if (p.flags) setCustomFlags(p.flags);
+              if (p.flags) {
+                setCustomFlags(p.flags);
+                // a group that lost its first rule takes the name of its new first one, unless renamed
+                setItems(itemsForFlags(items, p.flags).map((item) => (renamed.has(item.id)
+                  ? item
+                  : { ...item, name: defaultItemName('threat_custom', item, (text) => presetText(text, t_i18n)) })));
+              }
               if (p.pirType && p.pirType !== pirType) {
                 // the rules of a type do not carry over to another one
                 setPirType(p.pirType);
@@ -101,7 +123,7 @@ const IrCreationWizard = () => {
       <Box sx={{ display: 'flex', gap: 1, mt: 2, maxWidth: 1100 }}>
         {step > 0 && <Button variant="secondary" onClick={() => setStep(step - 1)}>{t_i18n('Back')}</Button>}
         <Box sx={{ flex: 1 }} />
-        {step < steps.length - 1 && <Button onClick={next}>{t_i18n('Next')}</Button>}
+        {step < steps.length - 1 && <Button disabled={missingValue} onClick={next}>{t_i18n('Next')}</Button>}
       </Box>
     </Box>
   );

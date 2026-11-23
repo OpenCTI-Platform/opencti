@@ -7395,9 +7395,13 @@
   "Entities are flagged when they match any rule or group: rules are joined with OR. To require several rules at once, put them in a group: rules in a group are joined with AND.": "实体匹配任一规则或组时即被标记：规则之间以 OR 连接。要同时满足多条规则，请将它们放入一个组：组内规则以 AND 连接。",
   "Add rule": "添加规则",
   "Add group": "添加组",
-  "The type sets what the requirement flags and the rules you can pick on the next step.": "类型决定该需求标记的内容以及下一步可选的规则。",
   "Rules not defined yet": "规则尚未定义",
   "Choose a PIR type": "请选择 PIR 类型",
   "Flagged types": "标记的类型",
-  "Choose at least one type to flag": "请至少选择一个要标记的类型"
+  "Choose at least one type to flag": "请至少选择一个要标记的类型",
+  "Add a value": "请添加一个值",
+  "Add filters": "请添加过滤器",
+  "Add at least one rule": "请至少添加一条规则",
+  "matching custom filters": "匹配自定义过滤器",
+  "any": "任意"
 }

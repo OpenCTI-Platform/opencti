@@ -39,10 +39,7 @@ const IrTypeStep = ({ general, pirType, flags, onChange, showErrors = false }: I
       </Box>
       <Textarea label={t_i18n('Intelligence question')} value={general.question} onChange={(e) => setGeneral({ question: e.target.value })} />
       <Box>
-        <Text as="div" variant="title-sm" id="ir-pir-type-label" style={{ marginBottom: 4 }}>{t_i18n('PIR type')}</Text>
-        <Text as="p" variant="content-caption" style={{ marginBottom: 12, opacity: 0.8 }}>
-          {t_i18n('The type sets what the requirement flags and the rules you can pick on the next step.')}
-        </Text>
+        <Text as="div" variant="title-sm" id="ir-pir-type-label" style={{ marginBottom: 12 }}>{t_i18n('PIR type')}</Text>
         <RadioGroup
           aria-labelledby="ir-pir-type-label"
           value={pirType ?? ''}

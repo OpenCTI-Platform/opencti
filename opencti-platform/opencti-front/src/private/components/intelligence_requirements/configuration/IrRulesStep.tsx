@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { IR_PIR_TYPES, rulesForGroup, rulesForType, type IrPirType } from './irPresetRules';
 import { defaultItemName, emptyValue, validatePresetItems, type IrPresetItem, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
 import { newId } from './irConfigTypes';
-import { IrAddRuleMenu, IrJoinDivider, IrPresetItemCard } from './IrPresetItemCard';
+import { IrAddRuleMenu, IrJoinDivider, IrPresetItemCard, presetText } from './IrPresetItemCard';
 
 interface IrRulesStepProps {
   pirType: IrPirType;
@@ -16,7 +16,7 @@ interface IrRulesStepProps {
   // ids of the items the user renamed: the others follow their default name as values change
   renamed?: Set<string>;
   onRenamedChange?: (renamed: Set<string>) => void;
-  showErrors?: boolean; // after the user tried to go to the next step
+  showErrors?: boolean; // after the user tried to go to the next step: the messages of items and of the list
 }
 
 const newRule = (ruleKey: string): IrRuleInstance => ({ id: newId('r'), ruleKey, value: emptyValue() });
@@ -29,11 +29,13 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
   const typeLabel = t_i18n(type?.label ?? pirType);
   const flagLabels = flags.map((f) => t_i18n(`entity_${f}`));
   const menuHeading = t_i18n('{type} rules', { values: { type: typeLabel } });
-  const errors = showErrors ? validatePresetItems(items) : [];
+  // a rule without its value says so at once; the other messages wait for the user to try the next step
+  const errors = validatePresetItems(items).filter((e) => e.ruleId || showErrors);
+  const translate = (text: string) => presetText(text, t_i18n);
 
   // Every change goes through here: the items the user did not rename take their default name
   const commit = (next: IrPresetItem[], nextRenamed: Set<string> = renamed) => onChange(
-    next.map((item) => (nextRenamed.has(item.id) ? item : { ...item, name: defaultItemName(pirType, item, t_i18n) })),
+    next.map((item) => (nextRenamed.has(item.id) ? item : { ...item, name: defaultItemName(pirType, item, translate) })),
   );
   const update = (id: string, change: (item: IrPresetItem) => IrPresetItem | null) => commit(
     items.flatMap((item) => {
@@ -100,7 +102,7 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
         </Text>
         {errors.filter((e) => e.itemId === '').map((e) => (
           <Text key={e.message} as="p" variant="content-caption" style={{ marginBottom: 12 }}>
-            <Box component="span" sx={{ color: 'error.main' }}>{t_i18n(e.message)}</Box>
+            <Box component="span" sx={{ color: 'error.main' }}>{translate(e.message)}</Box>
           </Text>
         ))}
         {items.map((item, index) => (
