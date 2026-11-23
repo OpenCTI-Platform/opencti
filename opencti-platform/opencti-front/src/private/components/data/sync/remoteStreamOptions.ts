@@ -4,6 +4,8 @@
  * from the component so they are unit tested without rendering anything.
  */
 
+import { removeAccentsAndLowerCase } from '../../../../utils/String';
+
 export interface RemoteStreamOption {
   value: string;
   label: string;
@@ -17,11 +19,7 @@ export interface RemoteStreamOption {
 const REMOTE_STREAM_GROUP_SEPARATOR = ' · ';
 
 /** Lower case, accents removed, trimmed: what both the query and the stream text are compared on. */
-const normalizeStreamSearch = (value?: string | null): string => (value ?? '')
-  .normalize('NFD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLowerCase()
-  .trim();
+const normalizeStreamSearch = (value?: string | null): string => removeAccentsAndLowerCase(value ?? '').trim();
 
 /**
  * Keeps the streams whose name or description contains every word of the query,
