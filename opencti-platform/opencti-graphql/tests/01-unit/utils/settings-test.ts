@@ -21,7 +21,8 @@ describe('XTM Hub settings helper', () => {
     const registrationDate = data.find((item) => item.key === 'xtm_hub_registration_date');
     const lastConnectivityCheck = data.find((item) => item.key === 'xtm_hub_last_connectivity_check');
     const shouldSendConnectivityEmail = data.find((item) => item.key === 'xtm_hub_should_send_connectivity_email');
-    expect(data.length).toEqual(8);
+    const organizationName = data.find((item) => item.key === 'xtm_hub_organization_name');
+    expect(data.length).toEqual(9);
     expect(xtmHubToken).toBeTruthy();
     expect(registrationStatus).toBeTruthy();
     expect(userId).toBeTruthy();
@@ -31,6 +32,8 @@ describe('XTM Hub settings helper', () => {
     expect(registrationDate).toBeTruthy();
     expect(lastConnectivityCheck).toBeTruthy();
     expect(shouldSendConnectivityEmail).toBeTruthy();
+    // A new registration may target another workspace: the previous organization is cleared
+    expect(organizationName?.value).toEqual([]);
   });
   it('should not complete XTM Data', () => {
     const mockInput: InputSettingsData[] = [
@@ -52,7 +55,8 @@ describe('XTM Hub settings helper', () => {
     ];
 
     const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
-    expect(data.length).toEqual(mockInput.length);
+    expect(data.length).toEqual(mockInput.length + 1);
+    expect(data.find((item) => item.key === 'xtm_hub_organization_name')?.value).toEqual([]);
     expect(data.find((item) => item.key === 'xtm_hub_registration_user_id')?.value).toEqual(['']);
     expect(data.find((item) => item.key === 'xtm_hub_registration_user_name')?.value).toEqual(['']);
     expect(data.find((item) => item.key === 'xtm_hub_registration_date')?.value).toEqual(['']);
@@ -66,6 +70,16 @@ describe('XTM Hub settings helper', () => {
     ];
 
     const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
-    expect(data.length).toEqual(2);
+    expect(data.length).toEqual(3);
+    expect(data.find((item) => item.key === 'xtm_hub_organization_name')?.value).toEqual([]);
+  });
+  it('should keep an organization name explicitly given with the token', () => {
+    const mockInput: InputSettingsData[] = [
+      { key: 'xtm_hub_token', value: ['d0e2a7ac-288b-4f46-bb45-c4557893ff47'] },
+      { key: 'xtm_hub_organization_name', value: ['Filigran'] },
+    ];
+
+    const data = completeXTMHubDataForRegistration(ADMIN_USER, mockInput);
+    expect(data).toEqual(mockInput);
   });
 });

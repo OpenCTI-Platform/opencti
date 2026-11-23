@@ -1598,6 +1598,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
   xtm_hub_commercial_model: XTMHubCommercialModel
+  xtm_hub_organization_name: String
   # Notifiers
   platform_notifier_auto_trigger_assignee: Boolean!
   # AI insight

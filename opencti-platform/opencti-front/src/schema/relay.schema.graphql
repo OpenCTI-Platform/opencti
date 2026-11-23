@@ -9099,8 +9099,8 @@ type MeUser implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
-  pastel_colours: Boolean
   password_valid_until: DateTime
+  pastel_colours: Boolean
   personal_notifiers: [Notifier!]
   representative: Representative!
   restrict_delete: Boolean
@@ -9633,13 +9633,21 @@ type Mutation {
   playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
-  playbookDeleteNode(id: ID!, nodeId: ID!, keepChildren: Boolean): Playbook
+  playbookDeleteNode(id: ID!, keepChildren: Boolean, nodeId: ID!): Playbook
   playbookDuplicate(id: ID!): String!
   playbookExecute(entityId: String!, id: ID!): Boolean
   playbookFieldPatch(commitMessage: String, id: ID!, input: [EditInput!]!, references: [String]): Playbook
   playbookImport(file: Upload!): String!
   playbookInsertNode(childNodeId: ID!, id: ID!, input: PlaybookAddNodeInput!, parentNodeId: ID!, parentPortId: ID!): PlaybookInsertResult!
+
+  """
+  Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId.
+  """
   playbookMoveNode(id: ID!, nodeId: ID!, parentNodeId: ID!, parentPortId: ID!): String!
+
+  """
+  Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent.
+  """
   playbookRelink(fromNodeId: ID, fromPortId: ID, id: ID!, linkId: ID!, toNodeId: ID!): String!
   playbookReplaceNode(id: ID!, input: PlaybookAddNodeInput!, nodeId: ID!): String!
   playbookStepExecution(bundle: String!, data_instance_id: ID!, event_id: ID!, execution_id: ID!, execution_start: DateTime!, playbook_id: ID!, previous_bundle: String!, previous_step_id: ID!, step_id: ID!): Boolean
@@ -11515,10 +11523,12 @@ input PlaybookAddNodeInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
 
-  "Node this node is linked from: required for every node but the entry point, given with parentPortId."
+  """
+  Node this node is linked from: required for every node but the entry point, given with parentPortId.
+  """
   parentNodeId: ID
 
-  "Out port of parentNodeId the link leaves from."
+  """Out port of parentNodeId the link leaves from."""
   parentPortId: ID
   position: PositionInput!
 }
@@ -13993,6 +14003,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_commercial_model: XTMHubCommercialModel
   xtm_hub_last_connectivity_check: DateTime
+  xtm_hub_organization_name: String
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_registration_user_id: String
@@ -17112,8 +17123,8 @@ type User implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
-  pastel_colours: Boolean
   password_valid_until: DateTime
+  pastel_colours: Boolean
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime
   representative: Representative!
