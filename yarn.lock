@@ -1963,9 +1963,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.11.0":
-  version: 1.11.0
-  resolution: "@filigran/design-system@npm:1.11.0"
+"@filigran/design-system@npm:1.12.1":
+  version: 1.12.1
+  resolution: "@filigran/design-system@npm:1.12.1"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/a1d89eb146433c5a43c0be9883664c3e0c2d5855d657d2657558ab6a48b6848ed846cd611e21abc1cd2af8614856cdc6ecbb2695907033e1b6602fdc5614e1cb
+  checksum: 10c0/df8017f2766f89e5984a131e18c2c691cc5bf64b7663a1ff604ca9cec440250619151ae6da720d885f0a6eef79536b97ce6c7df9276bd6e3117e9f89e8ab7ff8
   languageName: node
   linkType: hard
 
@@ -18680,9 +18680,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.61.0, openai@npm:^7.47.0":
-  version: 7.61.0
-  resolution: "openai@npm:7.61.0"
+"openai@npm:7.62.0, openai@npm:^7.47.0":
+  version: 7.62.0
+  resolution: "openai@npm:7.62.0"
   peerDependencies:
     "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
     "@smithy/hash-node": ">=4.3.0 <5"
@@ -18706,7 +18706,7 @@ __metadata:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/571dda19412bbdeadb34514c704ae6566d38badb44895b2969c9ced448fc4def0941ef408d937bcbd66e705d1fb9efc79c2ea0937bd48540bc1949e34ba92d56
+  checksum: 10c0/0c6a40c073d8813837e8f8636b0ae8f5ce16212e915bff2b70c41e4781d9ea23774d9b2d29613743ad951cae2040a926ef717d9080c351ef730dd73fd0b5ad0e
   languageName: node
   linkType: hard
 
@@ -18722,7 +18722,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:7.0.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.11.0"
+    "@filigran/design-system": "npm:1.12.1"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
@@ -19011,7 +19011,7 @@ __metadata:
     node-forge: "npm:1.4.3"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.6.0"
-    openai: "npm:7.61.0"
+    openai: "npm:7.62.0"
     openid-client: "npm:6.9.0"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"

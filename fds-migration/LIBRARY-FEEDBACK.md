@@ -3177,3 +3177,28 @@ the pages, ArrowDown must highlight the first row (the screen reader announces
 it), Enter on a page opens it, Enter with no highlight starts the classic
 search, Escape closes the list without clearing the field, and a click on a
 row must not blur the input first.
+
+---
+
+## 85. Pastel is the product default, against `Chip` RULE-07 — a recorded deviation, not a gap
+
+**Where.** `useFdsThemeScope.ts` and the user preference `pastel_colours`
+(#20305, #20306). An unset value resolves to `true`, so the document root
+carries the `pastel` class and every severity chip draws the pastel fill.
+
+**Library contract.** The `Chip` contract of `@filigran/design-system` 1.11.0,
+RULE-07: never set pastel as a product default; the standard outlined colour
+is the default and pastel is a user opt-in.
+
+**Deviation.** OpenCTI keeps pastel on by default. Decision of Samuel
+Hassine, 23 Nov 2026, to avoid a breaking change for existing users and
+instances. XTM One and OpenCRQ follow the contract (standard by default).
+Raised by the UX review of #20306 (advisory A2), not a finding.
+
+**Ask.** The library either names this exception in RULE-07 (a product may
+ship pastel as its default during a transition) or the OpenCTI default flips
+to standard in a later release.
+
+**Removal test.** At a release where an unset `pastel_colours` resolves to
+`false`, or at a library pin whose RULE-07 allows the exception, close this
+entry.

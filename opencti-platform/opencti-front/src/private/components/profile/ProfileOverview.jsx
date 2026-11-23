@@ -474,7 +474,7 @@ const ProfileOverviewComponent = (props) => {
               <ListItem style={{ padding: '10px 0 0 0' }}>
                 <ListItemText
                   primary={t('Pastel colours')}
-                  secondary={t('Show severity, priority and marking chips in soft pastel fills instead of the standard colours.')}
+                  secondary={t('Show chips in soft pastel fills instead of the standard outlined colours.')}
                 />
                 <Field
                   component={Switch}

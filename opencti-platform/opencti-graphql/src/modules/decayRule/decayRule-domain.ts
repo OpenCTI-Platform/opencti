@@ -40,7 +40,7 @@ export interface DecayChartData {
 export interface DecayModel {
   decay_lifetime: number; // in days
   decay_pound: number; // can be changed in other model when feature is ready.
-  decay_points: number[]; // reactions points
+  decay_points?: number[]; // reactions points, optional in the schema
   decay_revoke_score: number; // revoked when score is <= 20
 }
 
