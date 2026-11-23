@@ -167,4 +167,27 @@ describe('LocalStrategyForm, API Basic authentication', () => {
     const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
     expect(input.api_basic_auth_enabled).toBe(true);
   });
+
+  // An upgraded platform has no saved value: saving another setting must not store the one shown
+  it('does not send the setting when only another one is changed', async () => {
+    const { user } = renderForm(3, false, null);
+    await user.clear(historyInput());
+    await user.type(historyInput(), '5');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
+    const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
+    expect(input.password_policy_history_count).toBe(5);
+    expect(input).not.toHaveProperty('api_basic_auth_enabled');
+  });
+
+  it('sends the setting when it is turned off', async () => {
+    const { user } = renderForm(3, false, null);
+    await user.click(basicAuthSwitch());
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
+    const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
+    expect(input.api_basic_auth_enabled).toBe(false);
+  });
 });

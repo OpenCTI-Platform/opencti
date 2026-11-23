@@ -222,7 +222,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
           password_policy_history_count: Number(values.password_policy_history_count) || 0,
           ...(isLockoutFeatureEnabled && lockoutInput),
-          api_basic_auth_enabled: values.api_basic_auth_enabled,
+          // Sent only when the switch changed: a missing value means the admin never chose, which a later release relies on
+          ...(values.api_basic_auth_enabled !== initialValues.api_basic_auth_enabled && { api_basic_auth_enabled: values.api_basic_auth_enabled }),
         },
       },
       onCompleted: () => {
