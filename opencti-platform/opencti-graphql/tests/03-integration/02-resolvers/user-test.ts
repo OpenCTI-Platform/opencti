@@ -1279,14 +1279,23 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
   });
   it('should user deleted', async () => {
-    // Delete user
-    await queryAsUser(USER_EDITOR, {
-      query: DELETE_QUERY,
+    // Make the user an administrator of the organization, next to USER_EDITOR
+    await queryAsAdminWithSuccess({
+      query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
+      variables: { id: testOrganizationId, memberId: userInternalId },
+    });
+    // Delete user, as an organization administrator that cannot edit authorized_authorities
+    await queryAsUserWithSuccess(USER_EDITOR, {
+      query: DELETE_QUERY, // +1 update event of organization (administrator removed)
       variables: { id: userInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
+    // Verify the deleted user is no longer an administrator of the organization, and the other one still is
+    const organization = await elLoadById(testContext, SYSTEM_USER, testOrganizationId) as unknown as { authorized_authorities?: string[] };
+    expect(organization.authorized_authorities).not.toContain(userInternalId);
+    expect(organization.authorized_authorities).toContain(userEditorId);
   });
 });
 

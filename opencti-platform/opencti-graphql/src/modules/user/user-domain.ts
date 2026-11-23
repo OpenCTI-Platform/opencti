@@ -187,7 +187,7 @@ import {
   LOCAL_STRATEGY_IDENTIFIER,
   PROVIDERS,
 } from '../authenticationProvider/providers-configuration';
-import { addOrganization } from '../organization/organization-domain';
+import { addOrganization, organizationAdminRemoveDeletedUser } from '../organization/organization-domain';
 import { logAuthInfo } from '../authenticationProvider/providers-logger';
 import { hashSHA256 } from '../../utils/hash';
 import { normalizeEmail } from '../../utils/email';
@@ -1788,6 +1788,8 @@ export const userDelete = async (context: AuthContext, user: AuthUser, userId: s
   await deleteAllIngestionDeduplicationRulesForUser(context, user, userId);
 
   const deleted = await deleteElementById<StoreEntityUser>(context, user, userId, ENTITY_TYPE_USER);
+  // After the deletion, so a refused deletion never strips a live user of its administration
+  await organizationAdminRemoveDeletedUser(context, userId);
   const actionEmail = ENABLED_DEMO_MODE ? REDACTED_USER.user_email : deleted.user_email;
   await publishUserAction({
     user,

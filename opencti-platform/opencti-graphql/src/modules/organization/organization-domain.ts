@@ -18,9 +18,9 @@ import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from './organization-types';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicObject, EditInput, OrganizationAddInput, ResolversTypes } from '../../generated/graphql';
+import { type BasicObject, type EditInput, FilterMode, type OrganizationAddInput, type ResolversTypes } from '../../generated/graphql';
 import { AlreadyDeletedError, FunctionalError } from '../../config/errors';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES } from '../../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { BasicStoreEntity } from '../../types/store';
 import { checkScore } from '../../utils/format';
@@ -140,6 +140,30 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   });
   await organizationUsersCacheRefresh(context, user, organizationId);
   return updated;
+};
+
+/**
+ * Drops a deleted user from the administrators of every organization that lists it, so that no
+ * organization keeps an administrator that cannot be removed any more.
+ *
+ * Runs with the system user: an organization administrator may delete a user of its organization
+ * but may not change `authorized_authorities`, and the clean-up must not depend on who deletes.
+ * Scoped to organizations: on feeds, collections and background tasks the same field holds
+ * capability names, not user ids.
+ */
+export const organizationAdminRemoveDeletedUser = async (context: AuthContext, userId: string) => {
+  const filters = {
+    mode: FilterMode.And,
+    filterGroups: [],
+    filters: [{ key: ['authorized_authorities'], values: [userId] }],
+  };
+  const organizations = await fullEntitiesList<BasicStoreEntityOrganization>(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_ORGANIZATION], { filters });
+  for (let i = 0; i < organizations.length; i += 1) {
+    const organization = organizations[i];
+    const authorities = (organization.authorized_authorities ?? []).filter((authority) => authority !== userId);
+    await editAuthorizedAuthorities(context, SYSTEM_USER, organization.id, authorities);
+    await organizationUsersCacheRefresh(context, SYSTEM_USER, organization.id);
+  }
 };
 
 export const findGrantableGroups = async (context: AuthContext, user: AuthUser, organization: BasicStoreEntityOrganization) => {
