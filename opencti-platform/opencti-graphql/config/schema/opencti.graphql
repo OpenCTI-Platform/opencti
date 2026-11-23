@@ -1539,6 +1539,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_ip_whitelist_exclusions: [Member!]
   platform_session_idle_timeout: Int
   platform_session_timeout: Int
+  platform_session_max_lifetime: Int
   platform_whitemark: Boolean
   platform_demo: Boolean
   platform_reference_attachment: Boolean

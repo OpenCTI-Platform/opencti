@@ -19,11 +19,15 @@ const authenticationGlobalSettingsQuery = graphql`
       id
       otp_mandatory
       platform_session_max_concurrent
+      platform_session_max_lifetime
       platform_session_presence_enabled
       platform_session_presence_supported
     }
   }
 `;
+
+const ONE_MINUTE = 60 * 1000;
+const ONE_HOUR = 60 * ONE_MINUTE;
 
 const authenticationGlobalSettingsMutation = graphql`
   mutation AuthenticationGlobalSettingsMutation($id: ID!, $input: [EditInput]!) {
@@ -86,9 +90,21 @@ const AuthenticationGlobalSettingsContent = () => {
       .catch(() => false);
   };
 
+  // The maximum lifetime of a session comes from the platform configuration (in ms): it is only displayed
+  const formatSessionMaxLifetime = (maxLifetime: number) => {
+    if (maxLifetime <= 0) {
+      return t_i18n('Unlimited');
+    }
+    if (maxLifetime % ONE_HOUR === 0) {
+      return `${maxLifetime / ONE_HOUR} ${t_i18n('hours')}`;
+    }
+    return `${Math.round(maxLifetime / ONE_MINUTE)} ${t_i18n('minutes')}`;
+  };
+
   const initialValues = {
     otp_mandatory: settings.otp_mandatory ?? false,
     platform_session_max_concurrent: settings.platform_session_max_concurrent ?? 0,
+    platform_session_max_lifetime: formatSessionMaxLifetime(settings.platform_session_max_lifetime ?? 0),
     platform_session_presence_enabled: settings.platform_session_presence_enabled,
   };
 
@@ -126,6 +142,16 @@ const AuthenticationGlobalSettingsContent = () => {
                 label={t_i18n('Max concurrent sessions (0 equals no maximum)')}
                 fullWidth
                 onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
+              />
+              <Field
+                component={TextField}
+                variant="outlined"
+                name="platform_session_max_lifetime"
+                label={t_i18n('Maximum session lifetime')}
+                disabled
+                fullWidth
+                style={{ marginTop: 20 }}
+                helperText={t_i18n('Set in the platform configuration (app:session_max_lifetime). When a session reaches it, its user must log in again, even when active.')}
               />
               {isFeatureEnable('SESSION_PRESENCE') && (
                 <>

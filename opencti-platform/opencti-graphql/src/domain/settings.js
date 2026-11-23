@@ -260,6 +260,7 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_no_access_message',
   'platform_session_idle_timeout',
   'platform_session_timeout',
+  'platform_session_max_lifetime',
   'platform_session_max_concurrent',
   'platform_session_presence_enabled',
   'analytics_google_analytics_v4',
