@@ -110,7 +110,8 @@ const HistoryDefinition: AttributeDefinition[] = [
       id,
       { name: 'provider', label: 'Provider', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'username', label: 'Username', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-      { name: 'reason', label: 'Reason', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: SESSION_PRESENCE_FEATURE_FLAG },
+      // Reason of a logout: not behind the session presence flag, as the end of a session over its maximum lifetime gives one as well
+      { name: 'reason', label: 'Reason', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'message', label: 'Message', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'commit', label: 'Commit', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'element_id', label: 'Element ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
