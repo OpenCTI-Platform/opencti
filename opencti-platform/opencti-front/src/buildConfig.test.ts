@@ -21,6 +21,11 @@ describe('base path build configuration', () => {
     expect(indexHtml).toContain('<base href="%BASE_PATH%/">');
   });
 
+  it('index.html — has no inline script, as the Content-Security-Policy blocks them', () => {
+    expect(indexHtml).not.toMatch(/<script(?![^>]*\ssrc=)[^>]*>/i);
+    expect(indexHtml).toContain('<meta name="base-path" content="%BASE_PATH%">');
+  });
+
   it('index.html — static asset references are relative (not absolute)', () => {
     expect(indexHtml).not.toMatch(/src="\/assets\//);
     expect(indexHtml).not.toMatch(/href="\/assets\//);

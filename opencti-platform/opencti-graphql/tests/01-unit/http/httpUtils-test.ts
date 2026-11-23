@@ -76,6 +76,7 @@ describe('buildHelmetParameters coverage', () => {
 
   it('should most secure option works fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isScriptSnippetConfigured').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('');
 
@@ -91,7 +92,7 @@ describe('buildHelmetParameters coverage', () => {
           imgSrc: ["'self'", 'data:', 'blob:', 'https://*'],
           manifestSrc: ["'self'", 'data:', 'https://*'],
           objectSrc: ["'self'", 'data:', 'https://*'],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           upgradeInsecureRequests: [],
@@ -119,7 +120,7 @@ describe('buildHelmetParameters coverage', () => {
           imgSrc: ["'self'", 'data:', 'blob:', 'https://*'],
           manifestSrc: ["'self'", 'data:', 'https://*'],
           objectSrc: ["'self'", 'data:', 'https://*'],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           upgradeInsecureRequests: [],
@@ -139,6 +140,7 @@ describe('buildHelmetParameters coverage', () => {
 
   it('should less secure options work fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'isScriptSnippetConfigured').mockReturnValue(true);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(true);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('https://myctidomain.com');
     const publicHelmetParam = buildPublicHelmetParameters();

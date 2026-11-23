@@ -11,12 +11,6 @@ import { createClient } from 'graphql-ws';
 import uploadMiddleware from './uploadMiddleware';
 import type { RelayError } from './relayTypes';
 
-declare global {
-  interface Window {
-    BASE_PATH?: string;
-  }
-}
-
 interface ServiceMessage {
   type: string;
   text?: unknown;
@@ -63,7 +57,8 @@ export class ApplicationError extends Error {
 }
 
 // Network
-const basePath = window.BASE_PATH ?? '';
+// The backend fills the base path in a meta element of index.html, as the CSP blocks inline scripts.
+const basePath = document.querySelector<HTMLMetaElement>('meta[name="base-path"]')?.content ?? '';
 const isEmptyPath = R.isEmpty(basePath);
 const contextPath = isEmptyPath || basePath === '/' ? '' : basePath;
 export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
