@@ -440,7 +440,7 @@ describe('httpPlatform: /health details behavior', () => {
     });
   });
 
-  it('should return 503 with failing dependencies without probing them', async () => {
+  it('should return 503 without naming the failing dependencies nor probing them', async () => {
     vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({
       initialized: true,
       isHealthy: false,
@@ -453,7 +453,8 @@ describe('httpPlatform: /health details behavior', () => {
     await healthHandler?.({ query: { health_access_key: 'secret' } }, res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'redis: Redis seems down' });
+    // The raw error of a dependency can name hosts and ports: only the details request gets it.
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Some dependencies are unavailable' });
   });
 
   it('should name the failing dependencies on a 503 when details=true', async () => {

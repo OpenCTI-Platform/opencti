@@ -3,6 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
+import { getRequestId, isUserFacingError, safeErrorMessage } from '../http/httpUtils';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -238,7 +239,9 @@ export const authenticate = async (req, res, next) => {
       sendErrorStatus(req, res, 401);
     }
   } catch (err) {
-    res.statusMessage = `Error in stream: ${err.message}`;
+    // The status text reaches the client: the error itself stays in the log (NIST SP 800-53 SI-11).
+    logApp.error('Error in stream authentication', { cause: err, request_id: getRequestId(res) });
+    res.statusMessage = 'Error in stream';
     sendErrorStatus(req, res, 500);
   }
 };
@@ -349,7 +352,8 @@ export const authenticateForPublic = async (req, res, next) => {
         context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       }
     } catch (e) {
-      res.statusMessage = e.message ?? 'Public stream configuration error';
+      logApp.error('Error in public stream configuration', { cause: e, request_id: getRequestId(res) });
+      res.statusMessage = isUserFacingError(e) ? e.message : 'Public stream configuration error';
       sendErrorStatus(req, res, 500);
       return;
     }
@@ -727,7 +731,8 @@ const createSseMiddleware = () => {
       await initBroadcasting(req, res, client, processor);
       await processor.start(startStreamId);
     } catch (err) {
-      res.statusMessage = `Error in stream: ${err.message}`;
+      logApp.error('Error in stream', { cause: err, request_id: getRequestId(res) });
+      res.statusMessage = 'Error in stream';
       sendErrorStatus(req, res, 500);
     }
   };
@@ -748,7 +753,8 @@ const createSseMiddleware = () => {
         sendErrorStatus(req, res, 401);
       }
     } catch (err) {
-      res.statusMessage = `Error in connection management: ${err.message}`;
+      logApp.error('Error in stream connection management', { cause: err, request_id: getRequestId(res) });
+      res.statusMessage = 'Error in connection management';
       sendErrorStatus(req, res, 500);
     }
   };
@@ -1198,9 +1204,10 @@ const createSseMiddleware = () => {
           logApp.info('[STREAM] Client disconnected during processing', { cause: err, id, type: 'live' });
           return;
         }
-        logApp.error('[STREAM] Processing error', { cause: err, id, type: 'live' });
+        const requestId = getRequestId(res);
+        logApp.error('[STREAM] Processing error', { cause: err, id, type: 'live', request_id: requestId });
         if (channel.connected()) {
-          await channel.sendEvent(undefined, 'error', { stream: id, message: err.message });
+          await channel.sendEvent(undefined, 'error', { stream: id, message: safeErrorMessage(err), request_id: requestId });
         }
       }
     } catch (e) {

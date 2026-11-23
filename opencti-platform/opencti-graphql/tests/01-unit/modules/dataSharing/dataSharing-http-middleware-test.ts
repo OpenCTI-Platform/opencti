@@ -207,7 +207,7 @@ describe('authenticateForPublic middleware', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.statusMessage).toContain('Public user not found');
+    expect(res.statusMessage).toBe('Public stream configuration error');
   });
 
   it('calls next() with authenticated user on a private stream', async () => {
@@ -404,7 +404,7 @@ describe('authenticate middleware (OTP enforcement)', () => {
 
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.statusMessage).toContain('boom');
+    expect(res.statusMessage).toBe('Error in stream');
   });
 });
 

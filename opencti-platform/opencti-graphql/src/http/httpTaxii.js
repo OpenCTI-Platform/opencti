@@ -6,7 +6,7 @@ import express from 'express';
 import { parse as parseContentType } from 'content-type';
 import { findById as findWorkById } from '../domain/work';
 import { basePath, getBaseUrl, logApp } from '../config/conf';
-import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
+import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../modules/dataSharing/taxiiCollection-domain';
 import { executionContext, isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER, TAXIIAPI } from '../utils/access';
@@ -22,6 +22,7 @@ import { isIngestionRunning } from '../modules/ingestion/ingestion-common';
 import { getMaxPayloadBodySize, getMaxPayloadBodySizeInBytes } from './httpConfig';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
+import { getRequestId, isUserFacingError, SERVER_ERROR_MESSAGE } from './httpUtils';
 import { pushBundleToConnectorQueue } from '../manager/ingestionManager/ingestionManagerPushToQueue';
 
 const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
@@ -36,11 +37,20 @@ const sendJsonResponse = (res, data) => {
   res.json(data);
 };
 
-const errorConverter = (e) => {
+// The TAXII error message resource. A platform failure gets a generic title: its message can name
+// internal components (NIST SP 800-53 SI-11). The full error is logged with the error_id given to the client.
+const errorConverter = (e, res) => {
+  const httpStatus = e?.extensions?.data?.http_status || 500;
+  const errorId = getRequestId(res);
+  const isCallerError = httpStatus < 500 || isUserFacingError(e);
+  if (!isCallerError) {
+    logApp.error('TAXII request failed', { cause: e, request_id: errorId });
+  }
   return {
-    title: e.message,
+    title: isCallerError ? e.message : SERVER_ERROR_MESSAGE,
+    error_id: errorId,
     error_code: e?.extensions?.code,
-    http_status: e?.extensions?.data?.http_status || 500,
+    http_status: httpStatus,
   };
 };
 
@@ -123,7 +133,7 @@ const initTaxiiApi = (app) => {
       };
       sendJsonResponse(res, discovery);
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -139,7 +149,7 @@ const initTaxiiApi = (app) => {
       };
       sendJsonResponse(res, rootContent);
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -150,7 +160,7 @@ const initTaxiiApi = (app) => {
       const collections = await restAllCollections(context, context.user);
       sendJsonResponse(res, { collections });
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -163,7 +173,7 @@ const initTaxiiApi = (app) => {
       }
       sendJsonResponse(res, restBuildCollection(collection));
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -181,7 +191,7 @@ const initTaxiiApi = (app) => {
       }
       sendJsonResponse(res, manifest);
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -199,7 +209,7 @@ const initTaxiiApi = (app) => {
       }
       sendJsonResponse(res, stix);
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -218,7 +228,7 @@ const initTaxiiApi = (app) => {
       }
       sendJsonResponse(res, stix);
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -238,7 +248,7 @@ const initTaxiiApi = (app) => {
       const versions = data ? [updatedAt] : [];
       sendJsonResponse(res, { versions });
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -269,7 +279,7 @@ const initTaxiiApi = (app) => {
       // Then parse json body
       return next();
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   }, JsonTaxiiMiddleware, async (req, res) => {
@@ -279,7 +289,7 @@ const initTaxiiApi = (app) => {
       const { objects = [] } = req.body;
 
       if (objects.length === 0) {
-        throw UnsupportedError('Objects required');
+        throw TaxiiError('Objects required', 400);
       }
 
       const stixObjects = handleConfidenceToScoreTransformation(ingestion, objects);
@@ -297,7 +307,7 @@ const initTaxiiApi = (app) => {
         pending_count: objects.length,
       });
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
@@ -307,9 +317,9 @@ const initTaxiiApi = (app) => {
     try {
       const context = await checkAuthenticationFromRequest(req, res);
       const work = await findWorkById(context, context.user, status_id);
-      if (!work) throw UnsupportedError('Work not found', { status_id });
+      if (!work) throw TaxiiError('Work not found', 404);
       const stats = await computeWorkStatus(work);
-      if (!stats) throw UnsupportedError('Work not found', { status_id });
+      if (!stats) throw TaxiiError('Work not found', 404);
       const failure_count = (work.errors ?? []).length;
       const total_count = parseInt(stats.import_expected_number, 10);
       const processed_number = stats.import_processed_number ? parseInt(stats.import_processed_number, 10) : 0;
@@ -325,14 +335,14 @@ const initTaxiiApi = (app) => {
         pending_count,
       });
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });
   // Unsupported api (delete)
   app.delete(`${basePath}/taxii2/root/collections/:id/objects/:object_id/`, async (_req, res) => {
-    const e = UnsupportedError('Unsupported operation');
-    const errorDetail = errorConverter(e);
+    const e = TaxiiError('Unsupported operation', 405);
+    const errorDetail = errorConverter(e, res);
     res.status(errorDetail.http_status).send(errorDetail);
   });
 };

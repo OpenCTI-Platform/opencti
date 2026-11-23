@@ -34,6 +34,7 @@ import {
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
+  requestIdMiddleware,
 } from './httpUtils';
 import { getMaxPayloadBodySize } from './httpConfig';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
@@ -90,7 +91,9 @@ const createHttpServer = async () => {
   const app = express();
   // Disable the X-Powered-By header to avoid leaking framework information.
   app.disable('x-powered-by');
-  // Rate limiter must be first registered so it applies to all requests including /graphql
+  // Request id first, so every response carries it, the rate limited ones included.
+  app.use(requestIdMiddleware);
+  // Rate limiter must be registered before the other middlewares so it applies to all requests including /graphql
   // Even before session so it avoid creating session on rate limited requests.
   app.use(rateLimit(buildRateLimiterOptions()));
   app.use(await getSessionMiddleware());

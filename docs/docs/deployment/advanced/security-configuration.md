@@ -40,6 +40,14 @@ To avoid leaking sensitive information in your logs, you can configure the list 
 
 More information can be found in the [configuration page](../configuration.md#errors).
 
+## Error messages and request id
+
+The error responses of the HTTP endpoints (files, authentication, health check, TAXII, CSV feeds, live streams, chatbot) do not expose internal details. A platform failure answers a generic message, and the full error is written in the platform logs. The messages written for the caller (authentication, access, validation, not found) are kept.
+
+Every response carries an `X-Request-ID` header, also given in the error bodies (`request_id`, or `error_id` for TAXII) and written in the error log line. To investigate an error, search the logs for this id. When the request already has a `X-Request-ID` header, for example set by a reverse proxy, the platform reuses it if it is at most 128 characters of letters, digits, `.`, `_` and `-`.
+
+The health check (`/health`) only names the failing dependencies and their errors with the access key and `details=true`.
+
 ## Audit request headers
 
 To enhance your audit logs, you can specify a list of HTTP headers to be included in the trace (`app:audit_logs:trace_request_headers`).

@@ -15,7 +15,8 @@ vi.mock('../../../../src/database/raw-file-storage', () => ({
   downloadFile: mockDownloadFile,
 }));
 
-vi.mock('../../../../src/http/httpUtils', () => ({
+vi.mock('../../../../src/http/httpUtils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/http/httpUtils')>()),
   setCookieError: mockSetCookieError,
 }));
 
@@ -100,6 +101,6 @@ describe('catalog-http', () => {
     await handleCatalogLogoViewRequest(req, res, vi.fn());
     expect(mockSetCookieError).toHaveBeenCalledWith(res, 'storage failure');
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'storage failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
