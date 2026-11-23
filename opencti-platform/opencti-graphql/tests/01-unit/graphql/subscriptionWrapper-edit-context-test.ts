@@ -54,15 +54,45 @@ describe('subscribeToInstanceEvents edit context functions', () => {
     process.off('unhandledRejection', onUnhandledRejection);
   });
 
-  it('should fail the subscription when the pre function rejects', async () => {
-    const preError = new Error('Instance cannot be found.');
+  it('should log a warning and still subscribe when the pre function rejects', async () => {
+    const preError = new Error('Connection is closed.');
     const preFn = vi.fn(() => Promise.reject(preError));
 
-    await expect(subscribeToInstanceEvents(undefined, context, INSTANCE_ID, [TOPIC], { preFn })).rejects.toBe(preError);
+    const subscription = await subscribeToInstanceEvents(undefined, context, INSTANCE_ID, [TOPIC], { preFn });
     await flushPromises();
 
+    expect(subscription[Symbol.asyncIterator]).toBeTypeOf('function');
     expect(preFn).toHaveBeenCalledTimes(1);
-    expect(internalLoadById).not.toHaveBeenCalled();
+    expect(internalLoadById).toHaveBeenCalledTimes(1);
+    expect(pubSubAsyncIterator).toHaveBeenCalledTimes(1);
+    expect(logApp.warn).toHaveBeenCalledWith('[SUBSCRIPTION] Error setting edit context', { cause: preError, id: INSTANCE_ID });
+    expect(unhandledRejections).toEqual([]);
+  });
+
+  it('should log a warning and still subscribe when the pre function throws synchronously', async () => {
+    const preError = new Error('Pre failed');
+    const preFn = vi.fn(() => {
+      throw preError;
+    });
+
+    await subscribeToInstanceEvents(undefined, context, INSTANCE_ID, [TOPIC], { preFn });
+    await flushPromises();
+
+    expect(internalLoadById).toHaveBeenCalledTimes(1);
+    expect(logApp.warn).toHaveBeenCalledWith('[SUBSCRIPTION] Error setting edit context', { cause: preError, id: INSTANCE_ID });
+    expect(unhandledRejections).toEqual([]);
+  });
+
+  it('should fail the subscription when the instance cannot be loaded, even if the pre function rejects', async () => {
+    const preError = new Error('User cannot be found.');
+    const preFn = vi.fn(() => Promise.reject(preError));
+    vi.mocked(internalLoadById).mockResolvedValue(undefined as any);
+
+    await expect(subscribeToInstanceEvents(undefined, context, INSTANCE_ID, [TOPIC], { preFn }))
+      .rejects.toThrow('You are not allowed to listen this.');
+    await flushPromises();
+
+    expect(logApp.warn).toHaveBeenCalledWith('[SUBSCRIPTION] Error setting edit context', { cause: preError, id: INSTANCE_ID });
     expect(pubSubAsyncIterator).not.toHaveBeenCalled();
     expect(unhandledRejections).toEqual([]);
   });

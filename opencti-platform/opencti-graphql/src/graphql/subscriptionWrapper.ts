@@ -13,12 +13,14 @@ import type { BasicStoreSettingsMessage } from '../types/settings';
 // Edit context helpers (setEditContext / delEditContext callers) are async.
 type EditContextFn = () => Promise<unknown> | void;
 
-const cleanEditContext = async (cleanFn: EditContextFn, id: string) => {
+// The edit context is only a presence indicator: a failure to set or clean it must not
+// break the subscription (live updates). Access is checked by the instance load, and the
+// edit context key expires on its own.
+const runEditContextFn = async (fn: EditContextFn, id: string, action: 'setting' | 'cleaning') => {
   try {
-    await cleanFn();
+    await fn();
   } catch (err) {
-    // The edit context key expires on its own, a failed clean only delays its removal.
-    logApp.warn('[SUBSCRIPTION] Error cleaning edit context', { cause: err, id });
+    logApp.warn(`[SUBSCRIPTION] Error ${action} edit context`, { cause: err, id });
   }
 };
 
@@ -77,7 +79,7 @@ export const subscribeToInstanceEvents = async (
   } = {},
 ): Promise<AsyncIterable<any>> => {
   const { preFn, cleanFn, notifySelf = false, type } = opts;
-  if (preFn) await preFn();
+  if (preFn) await runEditContextFn(preFn, id, 'setting');
   const item = await internalLoadById(context, context.user, id, { baseData: true, type });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
   const filtering = await withFilter(
@@ -99,7 +101,7 @@ export const subscribeToInstanceEvents = async (
   )(parent, { id }, context);
   if (cleanFn) {
     return withCancel(filtering, () => {
-      void cleanEditContext(cleanFn, id);
+      void runEditContextFn(cleanFn, id, 'cleaning');
     });
   }
   return {
