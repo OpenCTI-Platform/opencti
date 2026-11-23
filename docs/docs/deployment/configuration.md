@@ -131,6 +131,7 @@ To prepare for the upcoming version that blocks internal destinations by default
 | app:app_logs:logs_level           | APP__APP_LOGS__LOGS_LEVEL           | info                                                                                     | The application log level                                          |
 | app:app_logs:logs_files           | APP__APP_LOGS__LOGS_FILES           | `true`                                                                                   | If application logs is logged into files                           |
 | app:app_logs:logs_console         | APP__APP_LOGS__LOGS_CONSOLE         | `true`                                                                                   | If application logs is logged to console (useful for containers)   |
+| app:app_logs:logs_console_format  | APP__APP_LOGS__LOGS_CONSOLE_FORMAT  | `json` (`pretty` in development from a terminal)                                         | Console logs format: `json`, or `pretty` for a colored human-readable output |
 | app:app_logs:logs_max_files       | APP__APP_LOGS__LOGS_MAX_FILES       | 7                                                                                        | Maximum number of daily files in logs                              |
 | app:app_logs:logs_directory       | APP__APP_LOGS__LOGS_DIRECTORY       | ./logs                                                                                   | File logs directory                                                |
 | app:app_logs:logs_redacted_inputs | APP__APP_LOGS__LOGS_REDACTED_INPUTS | `["password","secret","token","api_tokens","authentication_value","enterprise_license"]` | List of GraphQL input fields to redact from logs (e.g. `password`) |
@@ -141,6 +142,7 @@ To prepare for the upcoming version that blocks internal destinations by default
 |:-------------------------------------|:---------------------------------------|:------------------------------------|:-----------------------------------------------------------|
 | app:audit_logs:logs_files            | APP__AUDIT_LOGS__LOGS_FILES            | `true`                              | If audit logs is logged into files                         |
 | app:audit_logs:logs_console          | APP__AUDIT_LOGS__LOGS_CONSOLE          | `true`                              | If audit logs is logged to console (useful for containers) |
+| app:audit_logs:logs_console_format   | APP__AUDIT_LOGS__LOGS_CONSOLE_FORMAT   | `json` (`pretty` in development from a terminal) | Console logs format: `json`, or `pretty` for a colored human-readable output |
 | app:audit_logs:logs_max_files        | APP__AUDIT_LOGS__LOGS_MAX_FILES        | 7                                   | Maximum number of daily files in logs                      |
 | app:audit_logs:logs_directory        | APP__AUDIT_LOGS__LOGS_DIRECTORY        | ./logs                              | Audit logs directory                                       |
 | app:audit_logs:trace_request_headers | APP__AUDIT_LOGS__TRACE_REQUEST_HEADERS | `["user-agent", "x-forwarded-for"]` | List of HTTP headers to include in audit logs              |
@@ -569,6 +571,8 @@ Environment variables:
 | garbage_collection_manager:deleted_retention_days    | GARBAGE_COLLECTION_MANAGER__DELETED_RETENTION_DAYS    | 7                                | Days after which elements in trash are deleted                                                                                                 |
 | -                                                    | -                                                     | -                                | -                                                                                                                                              |
 | telemetry_manager:lock_key                           | TELEMETRY_MANAGER__LOCK_KEY                           | telemetry_manager_lock           | Lock key for the manager in Redis                                                                                                              |
+| telemetry_manager:exporter_prometheus                | TELEMETRY_MANAGER__EXPORTER_PROMETHEUS                |                                  | Port exposing the Filigran telemetry metrics to Prometheus (for example `14271`); unset keeps the endpoint off                                 |
+| telemetry_manager:exporter_prometheus_host           | TELEMETRY_MANAGER__EXPORTER_PROMETHEUS_HOST           | `0.0.0.0`                        | IPv4 address the Filigran telemetry Prometheus endpoint listens on                                                                             |
 
 
 !!! note "Manager's duties"

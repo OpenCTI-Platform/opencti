@@ -532,7 +532,8 @@ export const stixCoreObjectsDistributionByEntity = async (context, user, args) =
   if (findFiltersFromKey(filters.filters ?? [], INSTANCE_REGARDING_OF).length > 0) {
     finalFilters = {
       ...filters,
-      filters: finalFilters.filters.map((n) => (n.key === INSTANCE_REGARDING_OF ? {
+      // Filter keys arrive as arrays from the API (['regardingOf']), so compare the content, not the reference
+      filters: finalFilters.filters.map((n) => ([n.key].flat().includes(INSTANCE_REGARDING_OF) ? {
         ...n,
         values: [
           ...n.values.filter((i) => i.key !== 'id'),

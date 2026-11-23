@@ -6,6 +6,7 @@ import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import nconf from 'nconf';
 import { basePath, logApp } from '../config/conf';
+import { errorBody, getRequestId } from './httpUtils';
 import { memoizeAsync } from '../utils/memoize';
 import { downloadFile, downloadFileRange, downloadLocalFileRange, getFileMetadata } from '../database/raw-file-storage';
 
@@ -69,10 +70,10 @@ const initHttpMaps = (app, {
       }
       result.stream.pipe(res);
     } catch (e) {
-      logApp.error('Error serving map file', { cause: e });
+      logApp.error('Error serving map file', { cause: e, request_id: getRequestId(res) });
       if (!res.headersSent) {
         res.removeHeader('Cache-Control');
-        res.status(503).send({ status: 'error', error: e.message });
+        res.status(503).send(errorBody(res, e));
       } else {
         res.destroy(e);
       }
@@ -114,10 +115,10 @@ const initHttpMaps = (app, {
       res.status(200);
       await (acceptsGzip ? pipeline(source, res) : pipeline(source, createGunzip(), res));
     } catch (e) {
-      logApp.error('Error serving countries file', { cause: e });
+      logApp.error('Error serving countries file', { cause: e, request_id: getRequestId(res) });
       if (!res.headersSent) {
         res.removeHeader('Cache-Control');
-        res.status(503).send({ status: 'error', error: e.message });
+        res.status(503).send(errorBody(res, e));
       } else {
         res.destroy(e);
       }

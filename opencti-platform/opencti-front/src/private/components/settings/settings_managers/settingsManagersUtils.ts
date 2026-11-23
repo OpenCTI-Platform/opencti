@@ -1,3 +1,5 @@
+import { removeAccentsAndLowerCase } from '../../../../utils/String';
+
 export type ManagerDomain = 'core' | 'knowledge' | 'ingestion' | 'notifications' | 'defense' | 'enterprise' | 'ecosystem' | 'other';
 
 export type ManagerStatusFilter = 'all' | 'enabled' | 'disabled' | 'unlicensed';
@@ -146,7 +148,7 @@ export const countManagers = (managers: ManagerItem[]): ManagerCounts => {
   return { all: managers.length, enabled: count('enabled'), disabled: count('disabled'), unlicensed: count('unlicensed') };
 };
 
-const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+const normalize = (value: string) => removeAccentsAndLowerCase(value).trim();
 
 /** Keeps the managers matching the status filter and whose label, humanized id or raw id contains every word of the search. */
 export const filterManagers = (
