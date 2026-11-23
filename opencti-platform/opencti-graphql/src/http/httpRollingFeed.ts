@@ -32,19 +32,21 @@ type NeighborsMap = Map<string, Map<string, BasicStoreBase[]>>;
 
 // A platform failure gets a generic title and no details: its message and data can name internal
 // components (NIST SP 800-53 SI-11). The full error is logged with the request_id given to the client.
-const errorConverter = (e: any, res: Express.Response) => {
+// The typed errors (config/errors) are GraphQL errors: their code and data are in `extensions`.
+export const errorConverter = (e: any, res: Express.Response) => {
   const requestId = getRequestId(res);
-  const httpStatus = e.data?.http_status || 500;
+  const data = e?.extensions?.data ?? {};
+  const httpStatus = data.http_status || 500;
   if (!isUserFacingError(e)) {
     logApp.error('CSV feed request failed', { cause: e, request_id: requestId });
     return { title: SERVER_ERROR_MESSAGE, request_id: requestId, http_status: httpStatus };
   }
-  const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
+  const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'), R.dissoc('genre'))(data);
   return {
     title: e.message,
     request_id: requestId,
-    error_code: e.name,
-    description: e.data?.reason,
+    error_code: e.extensions?.code,
+    description: data.reason,
     http_status: httpStatus,
     details,
   };

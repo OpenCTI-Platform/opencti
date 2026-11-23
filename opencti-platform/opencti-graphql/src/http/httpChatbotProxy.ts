@@ -644,7 +644,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
           }
         }
       } catch {
-        // If parsing fails, fall back to the error message
+        // If parsing fails, fall back to the generic error message.
       }
 
       // Return errors as SSE stream so the chatbot displays
@@ -1353,7 +1353,7 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
           }
         }
       } catch {
-        // If parsing fails, fall back to the error message
+        // If parsing fails, fall back to the generic error message.
       }
       setCookieError(res, message);
       res.setHeader('Content-Type', 'text/event-stream');
