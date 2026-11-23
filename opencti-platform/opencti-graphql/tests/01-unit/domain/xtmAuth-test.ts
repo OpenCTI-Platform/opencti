@@ -8,6 +8,7 @@ vi.mock('../../../src/config/conf', () => ({
     get: (key: string) => {
       const config: Record<string, any> = {
         'xtm:xtm_one_url': 'https://xtm-one.example.com',
+        'xtm:xtm_one_token': 'xtm-one-service-token',
         'xtm:auth:token_ttl': 300,
       };
       return config[key];
