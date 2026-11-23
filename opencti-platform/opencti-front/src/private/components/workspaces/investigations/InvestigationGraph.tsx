@@ -304,7 +304,6 @@ const investigationGraphObjectsFragment = graphql`
                   relationship_type
                   start_time
                   stop_time
-                  component_index
                 }
               }
               to {
@@ -332,6 +331,7 @@ const investigationGraphObjectsFragment = graphql`
               relationship_type
               start_time
               stop_time
+              component_index
               confidence
               is_inferred
               created
