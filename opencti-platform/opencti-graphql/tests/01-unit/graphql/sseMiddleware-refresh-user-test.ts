@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The maximum lifetime of a session is read from the configuration, which is loaded with the first import
+vi.hoisted(() => {
+  process.env.APP__SESSION_MAX_LIFETIME = String(12 * 60 * 60 * 1000);
+});
+
 vi.mock('../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../src/config/conf');
   return {
@@ -144,6 +149,44 @@ describe('refreshStreamUser', () => {
     const { user: refreshed } = await refreshServedStreamUser(req, { isPublicUser: true });
 
     expect(refreshed.id).toBe('public-user-id');
+  });
+
+  describe('with a stream opened with a session', () => {
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+    const withSession = (req: any, loginTime: number) => ({
+      ...req,
+      session: { user: { id: req.user.id, session_creation: new Date(loginTime).toISOString() } },
+    });
+
+    it('should serve the user while the session is under its maximum lifetime', async () => {
+      const user = buildUser();
+      const req = withSession(buildRequest(user), Date.now() - TWELVE_HOURS + 60 * 1000);
+      mockPlatformUsers(user);
+
+      const { user: refreshed } = await refreshServedStreamUser(req);
+
+      expect(refreshed.id).toBe('user-id');
+    });
+
+    it('should not serve the user once the session reached its maximum lifetime', async () => {
+      const user = buildUser();
+      const req = withSession(buildRequest(user), Date.now() - TWELVE_HOURS - 60 * 1000);
+      mockPlatformUsers(user);
+
+      const refreshed = await refreshStreamUser(req);
+
+      expect(refreshed.error).toBe('the session of the user reached its maximum lifetime');
+    });
+
+    it('should not check the session of the requester of a public stream', async () => {
+      const publicUser = buildUser({ id: 'public-user-id', internal_id: 'public-user-id' });
+      const req = withSession(buildRequest(publicUser, undefined), Date.now() - TWELVE_HOURS - 60 * 1000);
+      mockPlatformUsers(publicUser);
+
+      const { user: refreshed } = await refreshServedStreamUser(req, { isPublicUser: true });
+
+      expect(refreshed.id).toBe('public-user-id');
+    });
   });
 
   describe('with an applicant impersonated by the authenticated user', () => {

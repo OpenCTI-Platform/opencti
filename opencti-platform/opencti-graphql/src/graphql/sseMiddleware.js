@@ -8,6 +8,7 @@ import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elCount, elList, elFindByIds } from '../database/engine';
+import { isSessionOverMaxLifetime } from '../database/session';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -165,6 +166,10 @@ export const refreshStreamUser = async (req, { isPublicUser = false } = {}) => {
   // Same check as on any other request (locked, disabled or expired account), which matters most for a leaked token
   if (!isPublicUser && !isUserAccountActive(cachedUser)) {
     return { error: 'the account of the user is no longer active' };
+  }
+  // A stream opened with a session ends with it, when the session reaches its maximum lifetime
+  if (!isPublicUser && req.session?.user && isSessionOverMaxLifetime(req.session.user)) {
+    return { error: 'the session of the user reached its maximum lifetime' };
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isInsidePlatformOrganization = isUserInPlatformOrganization(cachedUser, settings);

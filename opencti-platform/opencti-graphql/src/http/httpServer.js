@@ -16,7 +16,8 @@ import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/c
 import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
 import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
-import { getSessionMiddleware } from '../database/session';
+import { getSessionMiddleware, isSessionOverMaxLifetime } from '../database/session';
+import { endSessionOverMaxLifetime } from '../modules/user/user-domain';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -80,6 +81,11 @@ export const extractWsSessionContext = async (context) => {
     const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(wsSession?.user.id);
     sessionContext.user = { ...wsSession?.user, ...logged, origin };
+    // A subscription is authenticated by the session as well: its maximum lifetime applies
+    if (isSessionOverMaxLifetime(wsSession.user)) {
+      await endSessionOverMaxLifetime(req, sessionContext.user);
+      throw ForbiddenAccess('User must be authenticated');
+    }
     sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
     return sessionContext;
   }
