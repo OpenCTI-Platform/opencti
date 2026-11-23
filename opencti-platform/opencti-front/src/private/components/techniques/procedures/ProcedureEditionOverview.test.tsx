@@ -9,9 +9,11 @@ import type { ProcedureEditionOverview_procedure$key } from './__generated__/Pro
 
 type Option = { value: string; label: string };
 
-const { mockFieldPatch, mockSaveObservables, nextSelection, Empty } = vi.hoisted(() => ({
+const { mockFieldPatch, mockSaveObservables, mockSaveComponents, nextComponents, nextSelection, Empty } = vi.hoisted(() => ({
   mockFieldPatch: vi.fn(),
   mockSaveObservables: vi.fn(),
+  mockSaveComponents: vi.fn(),
+  nextComponents: [] as Array<Record<string, unknown>>,
   nextSelection: {} as Record<string, unknown>,
   // Fields not under test render nothing
   Empty: () => null,
@@ -35,6 +37,24 @@ vi.mock('../../../../utils/hooks/useFormEditor', () => ({
 
 // Observables are has-observable relationships, saved apart from the field patch.
 vi.mock('./ProcedureObservablesEditor', () => ({ saveProcedureObservables: mockSaveObservables }));
+
+vi.mock('./ProcedureComponentsEditor', () => ({
+  saveProcedureComponents: mockSaveComponents,
+  searchObservables: vi.fn(),
+  createTextObservable: vi.fn(),
+}));
+
+// The components field under test: a button changes the sequence to the rows the test prepared.
+vi.mock('./ProcedureComponentsField', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./ProcedureComponentsField')>();
+  return {
+    ...actual,
+    __esModule: true,
+    default: ({ onChange }: { onChange: (rows: unknown) => void }) => (
+      <button type="button" onClick={() => onChange(nextComponents)}>change components</button>
+    ),
+  };
+});
 
 vi.mock('../../../../utils/hooks/useEntitySettings', () => ({
   useIsMandatoryAttribute: () => ({ mandatoryAttributes: [] }),
@@ -93,6 +113,7 @@ const procedure = {
   procedureCommand: { id: 'process-1', entity_type: 'Process', observable_value: 'whoami' },
   procedureObservables: { edges: [observable('obs-1'), observable('obs-2')] },
   procedureSources: [{ id: 'source-1', entity_type: 'Organization', name: 'Source' }],
+  procedureComponents: [],
   createdBy: null,
   objectMarking: [],
   externalReferences: { edges: [{ node: { id: 'ext-1', source_name: 'mitre', description: null, url: 'https://example.com', external_id: null } }] },
@@ -160,5 +181,41 @@ describe('Component: ProcedureEditionOverview, ref fields', () => {
     const refInputs = input.filter(({ key }: { key: string }) => ['procedureObservables', 'procedureSources', 'externalReferences'].includes(key));
     expect(refInputs).toEqual([]);
     expect(mockSaveObservables).toHaveBeenCalledWith('procedure-1', { added: [], removed: ['obs-2'] });
+  });
+});
+
+describe('Component: ProcedureEditionOverview, components', () => {
+  const component = (id: string, type: string) => ({ id, entity_type: 'Text', observable_value: id, type });
+
+  beforeEach(() => {
+    mockFieldPatch.mockReset();
+    mockSaveComponents.mockReset();
+  });
+
+  it('saves the sequence as soon as it changes', async () => {
+    nextComponents.splice(0, nextComponents.length, component('wbadmin', 'primary'), component('quiet', 'secondary'));
+    renderForm();
+    fireEvent.click(screen.getByText('change components'));
+    await waitFor(() => expect(mockSaveComponents).toHaveBeenCalledTimes(1));
+    expect(mockSaveComponents).toHaveBeenCalledWith('procedure-1', [{ id: 'wbadmin', type: 'primary' }, { id: 'quiet', type: 'secondary' }]);
+  });
+
+  it('saves nothing while the first component is secondary', async () => {
+    nextComponents.splice(0, nextComponents.length, component('quiet', 'secondary'), component('wbadmin', 'primary'));
+    renderForm();
+    fireEvent.click(screen.getByText('change components'));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(mockSaveComponents).not.toHaveBeenCalled();
+  });
+
+  it('saves the sequence with the commit under enforced references', async () => {
+    nextComponents.splice(0, nextComponents.length, component('wbadmin', 'primary'));
+    renderForm(true);
+    fireEvent.click(screen.getByText('change components'));
+    expect(mockSaveComponents).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('submit'));
+    await waitFor(() => expect(mockSaveComponents).toHaveBeenCalledWith('procedure-1', [{ id: 'wbadmin', type: 'primary' }]));
   });
 });

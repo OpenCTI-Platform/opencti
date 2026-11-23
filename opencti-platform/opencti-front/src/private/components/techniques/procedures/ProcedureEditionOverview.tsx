@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
@@ -28,6 +28,8 @@ import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { ProcedureEditionOverview_procedure$key } from './__generated__/ProcedureEditionOverview_procedure.graphql';
 import { saveProcedureObservables } from './ProcedureObservablesEditor';
+import ProcedureComponentsField, { canSaveComponents, ComponentRow } from './ProcedureComponentsField';
+import { createTextObservable, saveProcedureComponents, searchObservables } from './ProcedureComponentsEditor';
 
 const procedureMutationFieldPatch = graphql`
   mutation ProcedureEditionOverviewFieldPatchMutation(
@@ -115,6 +117,15 @@ const ProcedureEditionOverviewFragment = graphql`
       id
       entity_type
       observable_value
+    }
+    procedureComponents {
+      component_index
+      component_type
+      observable {
+        id
+        entity_type
+        observable_value
+      }
     }
     procedureObservables(first: 100) {
       edges {
@@ -227,6 +238,20 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
 }) => {
   const { t_i18n } = useFormatter();
   const procedure = useFragment(ProcedureEditionOverviewFragment, data);
+  const initialComponents: ComponentRow[] = [...(procedure.procedureComponents ?? [])]
+    .sort((a, b) => a.component_index - b.component_index)
+    .map((c) => ({ ...c.observable, type: c.component_type === 'primary' ? 'primary' : 'secondary' }));
+  const [components, setComponents] = useState<ComponentRow[]>(initialComponents);
+  const componentsInput = (rows: ComponentRow[]) => rows.map(({ id, type }) => ({ id, type }));
+  const componentsChanged = (rows: ComponentRow[]) => JSON.stringify(componentsInput(rows)) !== JSON.stringify(componentsInput(initialComponents));
+  // Like the drawer's other fields, the sequence saves as it changes, and only while every row is valid.
+  // Under enforced references it saves with the form's commit.
+  const handleComponentsChange = (rows: ComponentRow[]) => {
+    setComponents(rows);
+    if (!enableReferences && canSaveComponents(rows)) {
+      saveProcedureComponents(procedure.id, componentsInput(rows));
+    }
+  };
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(PROCEDURE_TYPE);
   const dateSchema = Yup.date()
@@ -309,6 +334,9 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
       ...buildRefsPatch('externalReferences', initialValues.externalReferences, externalReferences),
     ];
 
+    if (canSaveComponents(components) && componentsChanged(components)) {
+      saveProcedureComponents(procedure.id, componentsInput(components));
+    }
     // Observables are has-observable relationships: saved apart, they cannot carry the commit message.
     saveProcedureObservables(procedure.id, diffIds(initialValues.procedureObservables, procedureObservables));
     editor.fieldPatch({
@@ -470,6 +498,14 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
             style={fieldSpacingContainerStyle}
             onChange={handleSubmitRefs}
           />
+          <div style={fieldSpacingContainerStyle}>
+            <ProcedureComponentsField
+              rows={components}
+              onChange={handleComponentsChange}
+              search={searchObservables}
+              createText={createTextObservable}
+            />
+          </div>
           <StixCoreObjectsField
             name="procedureCommand"
             label={t_i18n('Command')}
