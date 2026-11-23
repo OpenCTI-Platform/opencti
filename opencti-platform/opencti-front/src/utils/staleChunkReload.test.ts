@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
-import { initStaleChunkReload, isReloadingForStaleChunk, isStaleChunkReloadPending, resetStaleChunkReloadForTests } from './staleChunkReload';
+import { initStaleChunkReload, isReloadingForStaleChunk, isStaleChunkReloadPending, onStaleChunkReloadCanceled, resetStaleChunkReloadForTests } from './staleChunkReload';
 
 // What Vite rejects a lazy import with when a file of a previous build is gone
 const chunkError = new TypeError('Failed to fetch dynamically imported module: https://opencti/assets/RootSearch-4RXO6ypR.js');
@@ -80,6 +80,25 @@ describe('initStaleChunkReload', () => {
     expect(isStaleChunkReloadPending()).toBe(false);
   });
 
+  it.each([
+    ['Firefox', new TypeError('error loading dynamically imported module: https://opencti/assets/RootSearch-4RXO6ypR.js')],
+    ['Safari', new TypeError('Importing a module script failed.')],
+  ])('reloads the page for the %s message of a missing chunk', (_browser, error) => {
+    dispatchPreloadError(error);
+
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not reload for a chunk that loaded but threw while running: a real bug, not a stale build', () => {
+    // Vite dispatches the event for any rejection of the lazy import, evaluation errors included
+    const evaluationError = new TypeError('value.split is not a function');
+
+    dispatchPreloadError(evaluationError);
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(isReloadingForStaleChunk(evaluationError)).toBe(false);
+  });
+
   it('lets the error reach the error boundary, which hides it while the page reloads', () => {
     const event = dispatchPreloadError(chunkError);
 
@@ -132,5 +151,81 @@ describe('isReloadingForStaleChunk', () => {
     dispatchPreloadError(chunkError);
 
     expect(isReloadingForStaleChunk(chunkError)).toBe(false);
+  });
+});
+
+describe('a reload the user cancels', () => {
+  let dispose: () => void;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    sessionStorage.clear();
+    resetStaleChunkReloadForTests();
+    // A beforeunload prompt can keep the page: reload() then returns and nothing unloads
+    dispose = initStaleChunkReload({ reload: () => {} });
+  });
+
+  afterEach(() => {
+    dispose();
+    vi.useRealTimers();
+  });
+
+  it('stops hiding the error when the page is still there after a while', () => {
+    const onCanceled = vi.fn();
+    const unsubscribe = onStaleChunkReloadCanceled(onCanceled);
+    dispatchPreloadError(chunkError);
+
+    vi.advanceTimersByTime(10_000);
+
+    expect(isStaleChunkReloadPending()).toBe(false);
+    expect(isReloadingForStaleChunk(chunkError)).toBe(false);
+    expect(onCanceled).toHaveBeenCalledTimes(1);
+    unsubscribe();
+  });
+
+  it('counts from the answer to a beforeunload prompt, so leaving after a long wait shows no error', () => {
+    dispatchPreloadError(chunkError);
+    vi.advanceTimersByTime(8_000);
+
+    // The prompt blocks the page: the timer resumes only once the user answers
+    window.dispatchEvent(new Event('beforeunload'));
+    vi.advanceTimersByTime(8_000);
+
+    expect(isReloadingForStaleChunk(chunkError)).toBe(true);
+    vi.advanceTimersByTime(2_000);
+    expect(isReloadingForStaleChunk(chunkError)).toBe(false);
+  });
+
+  it('does not reload again soon after a canceled reload', () => {
+    const reload = vi.fn<() => void>();
+    dispose();
+    dispose = initStaleChunkReload({ reload });
+    dispatchPreloadError(chunkError);
+    vi.advanceTimersByTime(10_000);
+
+    dispatchPreloadError(cssError);
+
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(isReloadingForStaleChunk(cssError)).toBe(false);
+  });
+
+  it('stops counting once disposed', () => {
+    const onCanceled = vi.fn();
+    const unsubscribe = onStaleChunkReloadCanceled(onCanceled);
+    dispatchPreloadError(chunkError);
+
+    dispose();
+    vi.advanceTimersByTime(10_000);
+
+    expect(onCanceled).not.toHaveBeenCalled();
+    unsubscribe();
+  });
+
+  it('keeps hiding the error while the page may still be unloading', () => {
+    dispatchPreloadError(chunkError);
+
+    vi.advanceTimersByTime(5_000);
+
+    expect(isReloadingForStaleChunk(chunkError)).toBe(true);
   });
 });

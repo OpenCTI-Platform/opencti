@@ -5,12 +5,25 @@ import LtsLicenseRoot from './LtsLicenseRoot';
 import { HighLevelError } from './Error';
 import LoginRoot from '../../public/LoginRoot';
 import withRouter from '../../utils/compat_router/withRouter';
-import { isReloadingForStaleChunk } from '../../utils/staleChunkReload';
+import { isReloadingForStaleChunk, onStaleChunkReloadCanceled } from '../../utils/staleChunkReload';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = { error: null, stack: null };
+  }
+
+  componentDidMount() {
+    // A canceled reload leaves the hidden error in place: show it now
+    this.unsubscribeReloadCanceled = onStaleChunkReloadCanceled(() => {
+      if (this.state.error) {
+        this.forceUpdate();
+      }
+    });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeReloadCanceled();
   }
 
   componentDidCatch(error, stack) {

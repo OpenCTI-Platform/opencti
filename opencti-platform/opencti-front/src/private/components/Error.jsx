@@ -9,7 +9,7 @@ import { useFormatter } from '../../components/i18n';
 import withRouter from '../../utils/compat_router/withRouter';
 import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
 import { logger } from '../../utils/logging/logger';
-import { isReloadingForStaleChunk } from '../../utils/staleChunkReload';
+import { isReloadingForStaleChunk, onStaleChunkReloadCanceled } from '../../utils/staleChunkReload';
 
 // --- Region UI errors components
 // -------------------------------
@@ -60,6 +60,19 @@ class ErrorBoundaryComponent extends React.Component {
   static getDerivedStateFromError(error) {
     // Update state so the next render will show the fallback UI.
     return { error };
+  }
+
+  componentDidMount() {
+    // A canceled reload leaves the hidden error in place: show it now
+    this.unsubscribeReloadCanceled = onStaleChunkReloadCanceled(() => {
+      if (this.state.error) {
+        this.forceUpdate();
+      }
+    });
+  }
+
+  componentWillUnmount() {
+    this.unsubscribeReloadCanceled();
   }
 
   componentDidCatch(error, errorInfo) {

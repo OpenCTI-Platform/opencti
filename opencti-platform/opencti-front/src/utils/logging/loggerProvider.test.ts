@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logger } from './logger';
-import { initLogger } from './loggerProvider';
+import { initLogger, resetLoggerForTests } from './loggerProvider';
 import { initStaleChunkReload, resetStaleChunkReloadForTests } from '../staleChunkReload';
 
 vi.mock('./logger', async (importOriginal) => {
@@ -24,8 +24,9 @@ describe('unhandled promise rejections', () => {
     dispose = initStaleChunkReload({ reload: () => {} });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     dispose();
+    await resetLoggerForTests();
     vi.mocked(logger.error).mockClear();
   });
 

@@ -106,3 +106,14 @@ export const initLogger = (isDev: boolean = import.meta.env.DEV): LoggerProvider
   document.addEventListener('visibilitychange', onPageHidden);
   return provider;
 };
+
+// Undoes initLogger, so a test leaves no global provider or listener to the next one
+export const resetLoggerForTests = async () => {
+  window.removeEventListener('error', onUncaughtError);
+  window.removeEventListener('unhandledrejection', onUnhandledRejection);
+  document.removeEventListener('visibilitychange', onPageHidden);
+  const current = provider;
+  provider = undefined;
+  logs.disable();
+  await current?.shutdown();
+};

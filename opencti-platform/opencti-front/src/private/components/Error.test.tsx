@@ -1,4 +1,5 @@
 import React from 'react';
+import { act } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../utils/tests/test-render';
 import { logger } from '../../utils/logging/logger';
@@ -35,6 +36,7 @@ describe('ErrorBoundary with a chunk of a previous build', () => {
 
   afterEach(() => {
     dispose();
+    vi.useRealTimers();
     vi.mocked(console.error).mockRestore();
     vi.mocked(logger.error).mockClear();
   });
@@ -47,6 +49,20 @@ describe('ErrorBoundary with a chunk of a previous build', () => {
 
     expect(logger.error).not.toHaveBeenCalled();
     expect(container.textContent).toEqual('');
+  });
+
+  it('shows the error once the reload was canceled', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    window.dispatchEvent(Object.assign(new Event('vite:preloadError', { cancelable: true }), { payload: staleChunkError }));
+    const { container } = renderCrash(staleChunkError);
+
+    // A beforeunload prompt kept the page
+    act(() => {
+      vi.advanceTimersByTime(10_000);
+    });
+
+    expect(logger.error).not.toHaveBeenCalled();
+    expect(container.textContent).not.toEqual('');
   });
 
   it('logs and shows the error when no reload is pending', () => {
