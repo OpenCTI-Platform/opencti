@@ -18680,9 +18680,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:7.61.0, openai@npm:^7.47.0":
-  version: 7.61.0
-  resolution: "openai@npm:7.61.0"
+"openai@npm:7.62.0, openai@npm:^7.47.0":
+  version: 7.62.0
+  resolution: "openai@npm:7.62.0"
   peerDependencies:
     "@aws-sdk/credential-provider-node": ">=3.972.0 <4"
     "@smithy/hash-node": ">=4.3.0 <5"
@@ -18706,7 +18706,7 @@ __metadata:
       optional: true
     zod:
       optional: true
-  checksum: 10c0/571dda19412bbdeadb34514c704ae6566d38badb44895b2969c9ced448fc4def0941ef408d937bcbd66e705d1fb9efc79c2ea0937bd48540bc1949e34ba92d56
+  checksum: 10c0/0c6a40c073d8813837e8f8636b0ae8f5ce16212e915bff2b70c41e4781d9ea23774d9b2d29613743ad951cae2040a926ef717d9080c351ef730dd73fd0b5ad0e
   languageName: node
   linkType: hard
 
@@ -19011,7 +19011,7 @@ __metadata:
     node-forge: "npm:1.4.3"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.6.0"
-    openai: "npm:7.61.0"
+    openai: "npm:7.62.0"
     openid-client: "npm:6.9.0"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
