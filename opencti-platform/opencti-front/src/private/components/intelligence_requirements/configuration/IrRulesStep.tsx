@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../components/i18n';
 import { IR_PIR_TYPES, rulesForGroup, rulesForType, type IrPirType } from './irPresetRules';
-import { defaultItemName, emptyValue, validatePresetItems, type IrPresetItem, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
+import { defaultItemName, emptyValue, isContainerRule, validatePresetItems, type IrPresetItem, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
 import { newId } from './irConfigTypes';
 import { IrAddRuleMenu, IrJoinDivider, IrPresetItemCard, presetText } from './IrPresetItemCard';
 
@@ -25,6 +25,7 @@ const newRule = (ruleKey: string): IrRuleInstance => ({ id: newId('r'), ruleKey,
 const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onRenamedChange, showErrors = false }: IrRulesStepProps) => {
   const { t_i18n } = useFormatter();
   const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
+  const [autoOpenFor, setAutoOpenFor] = useState<string | null>(null); // a new group opens its menu once its card is there
   const type = IR_PIR_TYPES.find((p) => p.key === pirType);
   const typeLabel = t_i18n(type?.label ?? pirType);
   const flagLabels = flags.map((f) => t_i18n(`entity_${f}`));
@@ -62,7 +63,7 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
   const addGroup = () => {
     const id = newId('i');
     commit([...items, { id, kind: 'group', name: '', rules: [] }]);
-    setGroupMenuFor(id);
+    setAutoOpenFor(id);
   };
 
   return (
@@ -111,11 +112,17 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
             <IrPresetItemCard
               item={item}
               flags={flags}
-              groupRules={rulesForGroup(pirType, flags)}
+              // one container rule per group: it makes the criterion, a second one could only be a condition
+              groupRules={rulesForGroup(pirType, flags).filter((rule) => !(isContainerRule(rule.key) && item.kind === 'group' && item.rules.some((r) => isContainerRule(r.ruleKey))))}
               menuHeading={menuHeading}
               errors={errors.filter((e) => e.itemId === item.id)}
               groupMenuOpen={groupMenuFor === item.id}
               onGroupMenuOpenChange={(open) => setGroupMenuFor(open ? item.id : null)}
+              autoOpenMenu={autoOpenFor === item.id}
+              onAutoOpened={() => {
+                setAutoOpenFor(null);
+                setGroupMenuFor(item.id);
+              }}
               onRename={(name) => rename(item.id, name)}
               onRemove={() => update(item.id, () => null)}
               onRuleValue={(ruleId, value) => update(item.id, (current) => setRuleValue(current, ruleId, value))}

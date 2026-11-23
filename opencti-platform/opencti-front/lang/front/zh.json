@@ -7403,5 +7403,6 @@
   "Add filters": "请添加过滤器",
   "Add at least one rule": "请至少添加一条规则",
   "matching custom filters": "匹配自定义过滤器",
-  "any": "任意"
+  "any": "任意",
+  "Or any type…": "或任意类型…"
 }

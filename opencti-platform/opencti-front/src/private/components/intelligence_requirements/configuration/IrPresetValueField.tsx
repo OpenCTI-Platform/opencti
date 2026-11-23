@@ -18,6 +18,7 @@ interface Option {
 
 interface FieldProps {
   rule: IrPresetRule;
+  flags?: string[]; // the flagged types: what "Is one of" searches, as it has no types of its own
   value: IrPresetValue;
   onChange: (v: IrPresetValue) => void;
 }
@@ -113,17 +114,23 @@ const LabelsValueField = ({ value, onChange }: Omit<FieldProps, 'rule'>) => {
  * value.entities: picked entities or labels; value.types: "any <Type>" choices or container types;
  * value.terms: vocabulary values, keywords and text; value.number: the number.
  */
-export const IrPresetValueField = ({ rule, value, onChange }: FieldProps) => {
+export const IrPresetValueField = ({ rule, flags, value, onChange }: FieldProps) => {
   const { t_i18n } = useFormatter();
+  const searchTypes = rule.valueTypes ?? flags;
+  // The picker labels an entity "<name> (<type>)"; the value keeps the plain name, used in names and queries
+  const plainEntities = (entities: IrPresetValue['entities']) => entities.map((e) => {
+    const suffix = ` (${t_i18n(`entity_${e.type}`)})`;
+    return e.label.endsWith(suffix) ? { ...e, label: e.label.slice(0, -suffix.length) } : e;
+  });
   const typeOptions: Option[] = (rule.valueTypes ?? []).map((type) => ({ value: type, label: t_i18n(`entity_${type}`) }));
   switch (rule.value) {
     case 'entities':
       return (
         <div style={FIELD_STYLE}>
           <IrEntityPicker
-            types={rule.valueTypes}
+            types={searchTypes}
             value={value.entities}
-            onChange={(entities) => onChange({ ...value, entities })}
+            onChange={(entities) => onChange({ ...value, entities: plainEntities(entities) })}
             placeholder={t_i18n('Search…')}
           />
         </div>
@@ -133,9 +140,9 @@ export const IrPresetValueField = ({ rule, value, onChange }: FieldProps) => {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flex: '1 1 480px' }}>
           <div style={FIELD_STYLE}>
             <IrEntityPicker
-              types={rule.valueTypes}
+              types={searchTypes}
               value={value.entities}
-              onChange={(entities) => onChange({ ...value, entities })}
+              onChange={(entities) => onChange({ ...value, entities: plainEntities(entities) })}
               placeholder={t_i18n('Search…')}
             />
           </div>
@@ -144,7 +151,7 @@ export const IrPresetValueField = ({ rule, value, onChange }: FieldProps) => {
               values={value.types}
               options={typeOptions.map((o) => ({ value: o.value, label: `${t_i18n('Any')} ${o.label}` }))}
               onChange={(types) => onChange({ ...value, types })}
-              placeholder={t_i18n('Search…')}
+              placeholder={t_i18n('Or any type…')}
             />
           </div>
         </div>

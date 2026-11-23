@@ -195,6 +195,7 @@ describe('each rule kind as a criterion', () => {
   it('keywords: a keywords group as entry and a keywords criterion on it', () => {
     const d = one({ id: 'x', ruleKey: 'mentions', value: v({ terms: ['ransomware'] }) });
     expect(d.criteria[0].kind).toBe('keywords');
+    expect(d.criteria[0].target_types).toEqual(['Malware']);
     expect(groupOf(d)).toMatchObject({ kind: 'keywords', role: 'entry', keywords: ['ransomware'] });
   });
   it('custom: an attribute criterion on the flagged types with the chosen filters', () => {
@@ -229,6 +230,37 @@ describe('each rule kind as a condition', () => {
   });
   it('keywords: refuses to be a condition', () => {
     expect(() => inGroup({ id: 'x', ruleKey: 'mentions', value: v({ terms: ['a'] }) })).toThrow('keywords');
+  });
+});
+
+describe('container rules in a group', () => {
+  const groupDraft = (pirType: IrPirType, flags: string[], rules: { id: string; ruleKey: string; value: IrPresetValue }[]) => presetItemsToDraft(
+    general,
+    pirType,
+    flags,
+    [{ id: 'g', kind: 'group', name: 'Group name', rules }],
+  );
+  it('makes the container rule the criterion and the targets rule its link condition', () => {
+    const d = groupDraft('malware', ['Malware'], [targetsRule, { id: 'c', ruleKey: 'in-container', value: v({ types: ['Report'] }) }]);
+    const [criterion] = d.criteria;
+    expect(criterion).toMatchObject({ name: 'Group name', kind: 'graph', relationship_types: ['object'], direction: 'outgoing', target_types: ['Malware'] });
+    expect(JSON.parse(d.groups.find((g) => g.id === criterion.from_group_ids[0])!.filters!).filters[0]).toMatchObject({ key: ['entity_type'], values: ['Report'] });
+    expect(criterion.conditions).toHaveLength(1);
+    expect(criterion.conditions[0].link?.relationship_types).toEqual(['targets']);
+    expect(d.groups.find((g) => g.id === criterion.conditions[0].link!.group_ids[0])).toMatchObject({ kind: 'list', role: 'context', entities: [fs] });
+  });
+  it('makes a data leak the criterion and the email domains its filter condition', () => {
+    const flags = ['User-Account', 'Email-Addr', 'Credential'];
+    const d = groupDraft('credential', flags, [
+      { id: 'd', ruleKey: 'in-domains', value: v({ terms: ['acme.com'] }) },
+      { id: 'l', ruleKey: 'data-leak', value: emptyValue() },
+    ]);
+    const [criterion] = d.criteria;
+    expect(criterion).toMatchObject({ kind: 'graph', relationship_types: ['object'], direction: 'outgoing', target_types: flags });
+    expect(JSON.parse(d.groups.find((g) => g.id === criterion.from_group_ids[0])!.filters!).filters.map((f: { values: string[] }) => f.values)).toEqual([['Case-Incident'], ['data-leak']]);
+    expect(criterion.conditions).toHaveLength(1);
+    expect(criterion.conditions[0].link).toBeNull();
+    expect(JSON.parse(criterion.conditions[0].filters!).filterGroups).toHaveLength(3);
   });
 });
 

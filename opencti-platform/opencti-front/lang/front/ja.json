@@ -7403,5 +7403,6 @@
   "Add filters": "フィルターを追加してください",
   "Add at least one rule": "ルールを少なくとも 1 つ追加してください",
   "matching custom filters": "カスタムフィルターに一致する",
-  "any": "すべての"
+  "any": "すべての",
+  "Or any type…": "または任意のタイプ…"
 }

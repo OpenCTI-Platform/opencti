@@ -275,7 +275,7 @@ const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], gr
     case 'keywords': {
       if (!asCriterion) throw new Error('A keywords rule cannot be a condition of a group');
       const groupId = addGroup({ kind: 'keywords', role: 'entry', keywords: value.terms });
-      return { criterion: { kind: 'keywords', from_group_ids: [groupId] }, condition: { filters: null, link: null }, groups };
+      return { criterion: { kind: 'keywords', from_group_ids: [groupId], target_types: flags }, condition: { filters: null, link: null }, groups };
     }
     default: {
       const unhandled: never = build;
@@ -283,6 +283,14 @@ const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], gr
     }
   }
 };
+
+// A container rule cannot be a condition: the engine reads an `object` link from the flagged entity as
+// "it contains a member", the reverse of "it is mentioned in". In a group, it is the rule that makes the criterion.
+export const isContainerRule = (ruleKey: string) => ['container', 'containerFixed'].includes(getRule(ruleKey).build.kind);
+const containerFirst = (rules: IrRuleInstance[]): IrRuleInstance[] => [
+  ...rules.filter((rule) => isContainerRule(rule.ruleKey)),
+  ...rules.filter((rule) => !isContainerRule(rule.ruleKey)),
+];
 
 export const presetItemsToDraft = (
   general: IrPresetGeneral,
@@ -306,7 +314,7 @@ export const presetItemsToDraft = (
       criteria.push(criterionOf(item.name, { criterion: { kind: 'attribute', target_types: flags, target_filters: item.filters } }));
       return;
     }
-    const rules = item.kind === 'rule' ? [item.rule] : item.rules;
+    const rules = item.kind === 'rule' ? [item.rule] : containerFirst(item.rules);
     if (rules.length === 0) return;
     const [first, ...others] = rules;
     const firstParts = buildParts(getRule(first.ruleKey), first.value, flags, item.name, true);

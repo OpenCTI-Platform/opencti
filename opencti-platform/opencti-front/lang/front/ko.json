@@ -7403,5 +7403,6 @@
   "Add filters": "필터를 추가하세요",
   "Add at least one rule": "규칙을 하나 이상 추가하세요",
   "matching custom filters": "사용자 지정 필터와 일치하는",
-  "any": "모든"
+  "any": "모든",
+  "Or any type…": "또는 모든 유형…"
 }

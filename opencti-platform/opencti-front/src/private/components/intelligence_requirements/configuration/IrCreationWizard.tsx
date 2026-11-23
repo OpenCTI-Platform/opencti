@@ -48,7 +48,7 @@ const IrCreationWizard = () => {
 
   const flags = pirType === 'threat_custom' ? customFlags : (IR_PIR_TYPES.find((p) => p.key === pirType)?.flags ?? []);
   const canLeave = (index: number) => {
-    if (index === 0) return !!general.name.trim() && !!pirType && flags.length > 0;
+    if (index === 0) return !!general.name.trim() && !!general.question.trim() && !!pirType && flags.length > 0;
     if (index === 1) return validatePresetItems(items).length === 0;
     return true;
   };

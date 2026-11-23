@@ -37,7 +37,13 @@ const IrTypeStep = ({ general, pirType, flags, onChange, showErrors = false }: I
           onChange={(v) => setGeneral({ priority: v as IrPriority })}
         />
       </Box>
-      <Textarea label={t_i18n('Intelligence question')} value={general.question} onChange={(e) => setGeneral({ question: e.target.value })} />
+      <Textarea
+        label={t_i18n('Intelligence question')}
+        required
+        value={general.question}
+        onChange={(e) => setGeneral({ question: e.target.value })}
+        error={showErrors && !general.question.trim() ? t_i18n('This field is required') : undefined}
+      />
       <Box>
         <Text as="div" variant="title-sm" id="ir-pir-type-label" style={{ marginBottom: 12 }}>{t_i18n('PIR type')}</Text>
         <RadioGroup

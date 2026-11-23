@@ -7403,5 +7403,6 @@
   "Add filters": "Fügen Sie Filter hinzu",
   "Add at least one rule": "Fügen Sie mindestens eine Regel hinzu",
   "matching custom filters": "passend zu benutzerdefinierten Filtern",
-  "any": "beliebig"
+  "any": "beliebig",
+  "Or any type…": "Oder beliebiger Typ…"
 }

@@ -114,7 +114,7 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error }: {
         </Text>
         <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
           <Suspense fallback={<Spinner size="sm" />}>
-            <IrPresetValueField rule={def} value={rule.value} onChange={onChange} />
+            <IrPresetValueField rule={def} flags={flags} value={rule.value} onChange={onChange} />
           </Suspense>
         </Box>
         <IconButton aria-label={t_i18n('Query this rule runs')} tooltip={<QueryTooltip rule={rule} flags={flags} />}>
@@ -223,6 +223,8 @@ interface IrPresetItemCardProps {
   menuHeading: string;
   errors: IrItemError[];
   groupMenuOpen: boolean;
+  autoOpenMenu?: boolean; // opens the menu of a new group, once its trigger is laid out
+  onAutoOpened?: () => void;
   onGroupMenuOpenChange: (open: boolean) => void;
   onRename: (name: string) => void;
   onRemove: () => void;
@@ -239,6 +241,8 @@ export const IrPresetItemCard = ({
   menuHeading,
   errors,
   groupMenuOpen,
+  autoOpenMenu = false,
+  onAutoOpened,
   onGroupMenuOpenChange,
   onRename,
   onRemove,
@@ -248,6 +252,18 @@ export const IrPresetItemCard = ({
   onFilters,
 }: IrPresetItemCardProps) => {
   const { t_i18n } = useFormatter();
+  // two frames: the card and its trigger are laid out before the menu measures where to open
+  useEffect(() => {
+    if (!autoOpenMenu) return undefined;
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => onAutoOpened?.());
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
+  }, [autoOpenMenu]);
   const ruleError = (ruleId: string) => errors.find((e) => e.ruleId === ruleId)?.message;
   const itemError = errors.find((e) => !e.ruleId)?.message;
   const isGroup = item.kind === 'group';
