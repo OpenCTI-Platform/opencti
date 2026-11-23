@@ -4,6 +4,7 @@ import Tag from '@common/tag/Tag';
 import type { Theme } from './Theme';
 import stopEvent from '../utils/domEvent';
 import { isWashVisibleOn } from '../utils/Colors';
+import { markingTone } from '../utils/severityTone';
 import FieldOrEmpty from './FieldOrEmpty';
 
 interface Marking {
@@ -31,48 +32,16 @@ const ChipMarking = ({
 }: ChipMarkingProps) => {
   const theme = useTheme<Theme>();
 
-  const getColor = () => {
-    // The admin's colour wins whenever it can be seen.
-    const stored = markingDefinition.x_opencti_color;
-    if (stored) {
-      return isWashVisibleOn(stored, theme.palette.background.paper) ? stored : undefined;
-    }
-
-    let color;
-
-    switch (markingDefinition.definition) {
-      case 'CD':
-      case 'CD-SF':
-      case 'DR':
-      case 'DR-SF':
-      case 'TLP:RED':
-      case 'PAP:RED':
-        color = theme.palette.severity.critical;
-        break;
-      case 'TLP:AMBER':
-      case 'TLP:AMBER+STRICT':
-      case 'PAP:AMBER':
-        color = theme.palette.severity.high;
-        break;
-      case 'NP':
-      case 'TLP:GREEN':
-      case 'PAP:GREEN':
-        color = theme.palette.severity.low;
-        break;
-      case 'SF':
-        color = theme.palette.severity.info;
-        break;
-      case 'NONE':
-        color = undefined;
-        break;
-      default:
-        color = theme.palette.severity.none;
-    }
-
-    return color;
-  };
-
-  const itemMarkingColor = getColor();
+  // A predefined marking (TLP, PAP, DR/NP/SF/CD) takes the tone every XTM Platform
+  // module draws for it (pastel by default in OpenCTI, standard when the user turns
+  // pastel off). A custom
+  // marking keeps its administrator's colour whenever it can be seen.
+  const predefined = markingTone(markingDefinition.definition);
+  const stored = markingDefinition.x_opencti_color;
+  const itemMarkingColor = predefined === undefined && stored && isWashVisibleOn(stored, theme.palette.background.paper)
+    ? stored
+    : undefined;
+  const itemMarkingTone = predefined ?? (predefined === undefined && !stored ? 'neutral' : undefined);
   const hasClickCallback = onClick !== undefined;
 
   return (
@@ -81,6 +50,7 @@ const ChipMarking = ({
       labelTextTransform="none"
       disableTooltip={disableTooltip}
       {...itemMarkingColor && { color: itemMarkingColor }}
+      {...itemMarkingTone && { severity: itemMarkingTone }}
       {...hasClickCallback && {
         onClick: (e) => {
           stopEvent(e);

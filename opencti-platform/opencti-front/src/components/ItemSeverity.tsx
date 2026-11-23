@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { SxProps, useTheme } from '@mui/material/styles';
+import { SxProps } from '@mui/material/styles';
 import Tag from '@common/tag/Tag';
-import type { Theme } from './Theme';
 import { EMPTY_VALUE } from '../utils/String';
+import { severityTone } from '../utils/severityTone';
 
 interface ItemSeverityProps {
   label?: string | null;
@@ -14,28 +14,8 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
   label,
   severity,
 }) => {
-  const theme = useTheme<Theme>();
   if (!severity) {
     return <>{EMPTY_VALUE}</>;
-  }
-
-  let severityColor: string;
-  switch (severity?.toLowerCase()) {
-    case 'low':
-      severityColor = theme.palette.severity.low;
-      break;
-    case 'medium':
-      severityColor = theme.palette.severity.medium;
-      break;
-    case 'high':
-      severityColor = theme.palette.severity.high;
-      break;
-    case 'critical':
-      severityColor = theme.palette.severity.critical;
-      break;
-    default:
-      severityColor = theme.palette.severity.default;
-      break;
   }
 
   const sxStyle: SxProps = {
@@ -45,6 +25,6 @@ const ItemSeverity: FunctionComponent<ItemSeverityProps> = ({
     },
   };
 
-  return <Tag label={label} color={severityColor} sx={sxStyle} />;
+  return <Tag label={label} severity={severityTone(severity)} sx={sxStyle} />;
 };
 export default ItemSeverity;

@@ -21,6 +21,30 @@ describe('Hook: useFdsThemeScope', () => {
    */
   const token = (name: string) => root().style.getPropertyValue(name);
 
+  it('sets the pastel class by default: OpenCTI keeps pastel (no breaking change)', () => {
+    renderHook(() => useFdsThemeScope('Dark'));
+
+    expect(root().classList.contains('pastel')).toBe(true);
+  });
+
+  it('leaves the pastel class off when the user turned pastel off: standard colours', () => {
+    renderHook(() => useFdsThemeScope('Dark', {}, false));
+
+    expect(root().classList.contains('pastel')).toBe(false);
+  });
+
+  it('toggles the pastel class on the root with the user preference', () => {
+    const { rerender } = renderHook(
+      ({ pastel }: { pastel: boolean }) => useFdsThemeScope('Light', {}, pastel),
+      { initialProps: { pastel: true } },
+    );
+    expect(root().classList.contains('pastel')).toBe(true);
+    expect(root().classList.contains('light')).toBe(true);
+
+    rerender({ pastel: false });
+    expect(root().classList.contains('pastel')).toBe(false);
+  });
+
   it('writes the class on the document root, not on a container', () => {
     renderHook(() => useFdsThemeScope('Light'));
 
