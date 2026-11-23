@@ -21,7 +21,13 @@ Authorization: Bearer <your API token>
 
 To create and use API tokens, the user's role must grant the `Allow token usage` capability, found under `API usage with authorization header` (see [the list of capabilities](../administration/users.md#list-of-capabilities)). A request with an unknown or expired token, or with the token of a user who lacks this capability, is handled as an unauthenticated request: it gets the error `You must be logged in to do this.`
 
-The API also accepts HTTP basic authentication (`Authorization: Basic ...`) with the email and local password of a user whose role grants the `Allow basic auth usage` capability. This page uses tokens.
+The API can also accept HTTP Basic authentication (`Authorization: Basic ...`) with the email and local password of a user whose role grants the `Allow basic auth usage` capability. Basic authentication sends a password with every request: use API tokens for scripts and integrations. This page uses tokens.
+
+Basic authentication is controlled by the **Allow API Basic authentication** switch of the [local authentication](../administration/authentication-via-ui.md#api-basic-authentication):
+
+- A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled.
+- While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated: a GraphQL request gets the error `You must be logged in to do this.`
+- Basic authentication checks a local password, so it is also refused while the local authentication is disabled, unless `APP__AUTHENTICATION__FORCE_LOCAL` is `true`. This applies to upgraded platforms too (see [breaking changes](../deployment/breaking-changes.md#api-basic-authentication)).
 
 ### Generate a token
 

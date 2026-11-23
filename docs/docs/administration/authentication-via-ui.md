@@ -71,6 +71,16 @@ Please be careful before disabling it:
 
 - you should ensure that you have at least another authentication working (meaning that not only you get successfully authenticated, but that both your group mapping & organization mapping are correct) before disabling it.
 
+#### API Basic authentication
+
+The API can authenticate a request with HTTP Basic authentication (`Authorization: Basic ...`): the email and local password of a user whose role grants the `Allow basic auth usage` capability. It sends a password with every request, so scripts and integrations should use [API tokens](../reference/api.md#authentication) instead.
+
+In the local authentication drawer, the **Allow API Basic authentication** switch controls it:
+
+- A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled: disable it once your scripts and integrations use API tokens.
+- While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated, and it is not counted as a failed login attempt.
+- Basic authentication checks a local password, so it is also refused while the local authentication is disabled, unless `APP__AUTHENTICATION__FORCE_LOCAL` is `true`. This applies to upgraded platforms too: a platform with the local authentication disabled stops accepting Basic authentication at upgrade (see [breaking changes](../deployment/breaking-changes.md#api-basic-authentication)).
+
 #### Define password policy
 
 By clicking on the local authentication you can manage your local password policies. Administrators can specify requirements such as minimum/maximum number of characters, symbols, digits, and more to ensure robust password security across the platform. Here are all the parameters available:

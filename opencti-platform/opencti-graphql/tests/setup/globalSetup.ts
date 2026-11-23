@@ -13,7 +13,12 @@ import cacheManager from '../../src/manager/cacheManager';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
 import { initLockedUserEmailTemplate } from '../../src/modules/emailTemplate/emailTemplate-domain';
 import { initializeInternalQueues } from '../../src/modules/connector/connector-rabbitmq';
-import { executionContext } from '../../src/utils/access';
+import { executionContext, SYSTEM_USER } from '../../src/utils/access';
+import { getSettingsFromDatabase } from '../../src/domain/settings';
+import { patchAttribute } from '../../src/database/middleware';
+import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
+import { resetCacheForEntity } from '../../src/database/cache';
+import type { BasicStoreSettings } from '../../src/types/settings';
 import { initializeData } from '../../src/database/data-initialization';
 import { startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage';
@@ -48,6 +53,10 @@ const initializePlatform = async () => {
   await initializeBucket();
   await initializeSchema();
   await initializeData(context, true);
+  // A new platform starts with the API Basic authentication disabled: the test HTTP clients still log in with it
+  const settings = await getSettingsFromDatabase(context) as unknown as BasicStoreSettings;
+  await patchAttribute(context, SYSTEM_USER, settings.id, ENTITY_TYPE_SETTINGS, { api_basic_auth_enabled: true });
+  resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   await initializeAdminUser(context);
   await initDefaultNotifiers(context);
   // As platformInit: the built-in template exists only behind the feature flag of the local authentication lockout

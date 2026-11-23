@@ -39,6 +39,7 @@ import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/set
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
 import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
 import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
+import { isApiBasicAuthEnabled } from '../modules/user/user-basic-auth';
 
 const settingsResolvers = {
   Query: {
@@ -76,6 +77,7 @@ const settingsResolvers = {
     password_policy_history_count: (settings) => readPasswordHistoryCount(settings),
     // Each lockout field falls back to its default when the settings hold none
     ...Object.fromEntries(Object.entries(LOCAL_AUTH_LOCKOUT_DEFAULTS).map(([key, defaultValue]) => [key, (settings) => settings[key] ?? defaultValue])),
+    api_basic_auth_enabled: (settings) => isApiBasicAuthEnabled(settings),
     editContext: (settings) => fetchEditContext(settings.id),
     platform_messages: (settings, _, context) => getMessagesFilteredByRecipients(context.user, settings),
     messages_administration: (settings) => JSON.parse(settings.platform_messages ?? '[]'),

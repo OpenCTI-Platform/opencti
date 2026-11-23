@@ -25,9 +25,10 @@ vi.mock('react-relay', async (importOriginal) => {
 
 const HISTORY_LABEL = 'Number of recent passwords that cannot be reused (0 equals disabled)';
 
-const renderForm = (historyCount: number | null = 3, lockoutEnabled = false) => {
+const renderForm = (historyCount: number | null = 3, lockoutEnabled = false, apiBasicAuthEnabled: boolean | null = false, localAuthEnabled = true) => {
   mockUseLazyLoadQuery.mockReturnValue({
     settings: {
+      api_basic_auth_enabled: apiBasicAuthEnabled,
       local_auth_lockout_enabled: lockoutEnabled,
       local_auth_lockout_max_attempts: 10,
       local_auth_lockout_admin_max_attempts: 3,
@@ -35,7 +36,7 @@ const renderForm = (historyCount: number | null = 3, lockoutEnabled = false) => 
       local_auth_lockout_window: 0,
       local_auth_lockout_duration: 15,
       id: 'settings-id',
-      local_auth: { enabled: true },
+      local_auth: { enabled: localAuthEnabled },
       password_policy_min_length: 8,
       password_policy_max_length: 0,
       password_policy_min_symbols: 0,
@@ -134,5 +135,47 @@ describe('LocalStrategyForm, account lockout policy', () => {
   it('shows no recommendation while the lockout is disabled', () => {
     renderForm(3, false);
     expect(screen.queryByText(ADMIN_HINT)).toBeNull();
+  });
+});
+
+const BASIC_AUTH_LABEL = 'Allow API Basic authentication';
+const LOCAL_AUTH_OFF_HINT = 'While local authentication is disabled, API Basic authentication is refused.';
+const basicAuthSwitch = () => screen.getByRole('switch', { name: BASIC_AUTH_LABEL });
+
+describe('LocalStrategyForm, API Basic authentication', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lockoutFlag = false;
+  });
+
+  it('shows the saved setting and recommends API tokens', () => {
+    renderForm(3, false, false);
+    expect(basicAuthSwitch()).not.toBeChecked();
+    expect(screen.getByText('Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.')).toBeInTheDocument();
+  });
+
+  it('shows the setting enabled when none is saved', () => {
+    renderForm(3, false, null);
+    expect(basicAuthSwitch()).toBeChecked();
+  });
+
+  it('says that Basic auth is refused while the local authentication is disabled', () => {
+    renderForm(3, false, true, false);
+    expect(screen.getByText(LOCAL_AUTH_OFF_HINT, { exact: false })).toBeInTheDocument();
+  });
+
+  it('gives no such warning while the local authentication is enabled', () => {
+    renderForm(3, false, true, true);
+    expect(screen.queryByText(LOCAL_AUTH_OFF_HINT, { exact: false })).toBeNull();
+  });
+
+  it('sends the new setting', async () => {
+    const { user } = renderForm(3, false, false);
+    await user.click(basicAuthSwitch());
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
+    const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
+    expect(input.api_basic_auth_enabled).toBe(true);
   });
 });
