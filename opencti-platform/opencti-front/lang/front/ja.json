@@ -6932,5 +6932,5 @@
   "Zoom in": "ズームイン",
   "Zoom out": "ズームアウト",
   "Pastel colours": "パステルカラー",
-  "Show severity, priority and marking chips in soft pastel fills instead of the standard colours.": "重大度、優先度、マーキングのチップを標準色ではなく柔らかいパステルカラーで表示します。"
+  "Show chips in soft pastel fills instead of the standard outlined colours.": "チップを標準の枠線付きの色ではなく柔らかいパステルカラーで表示します。"
 }
