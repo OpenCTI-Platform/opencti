@@ -50,8 +50,11 @@ vi.mock('./ProcedureComponentsField', async (importOriginal) => {
   return {
     ...actual,
     __esModule: true,
-    default: ({ onChange }: { onChange: (rows: unknown) => void }) => (
-      <button type="button" onClick={() => onChange(nextComponents)}>change components</button>
+    default: ({ rows, onChange }: { rows: unknown[]; onChange: (rows: unknown) => void }) => (
+      <>
+        <span>{`${rows.length} component(s)`}</span>
+        <button type="button" onClick={() => onChange(nextComponents)}>change components</button>
+      </>
     ),
   };
 });
@@ -190,6 +193,16 @@ describe('Component: ProcedureEditionOverview, components', () => {
   beforeEach(() => {
     mockFieldPatch.mockReset();
     mockSaveComponents.mockReset();
+    mockSaveComponents.mockResolvedValue(undefined);
+  });
+
+  it('puts back the sequence the platform holds when a save is refused', async () => {
+    mockSaveComponents.mockRejectedValue(new Error('refused'));
+    nextComponents.splice(0, nextComponents.length, component('wbadmin', 'primary'), component('quiet', 'secondary'));
+    renderForm();
+    fireEvent.click(screen.getByText('change components'));
+    await waitFor(() => expect(mockSaveComponents).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText('0 component(s)')).toBeDefined());
   });
 
   it('saves the sequence as soon as it changes', async () => {

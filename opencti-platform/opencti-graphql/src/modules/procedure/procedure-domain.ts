@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
-import { createEntity, createRelation, deleteElementById } from '../../database/middleware';
+import { createEntity, createRelation, deleteElementById, updateAttribute } from '../../database/middleware';
+import { lockResources } from '../../lock/master-lock';
+import { SYSTEM_USER } from '../../utils/access';
 import {
   type EntityOptions,
   fullEntitiesThroughRelationsToList,
@@ -23,7 +25,7 @@ import { FunctionalError, MissingReferenceError } from '../../config/errors';
 import type { BasicStoreEntityKillChainPhase } from '../killChainPhase/killChainPhase-types';
 import { computeProcedureFingerprint } from './procedure-fingerprint';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { checkComponentPosition, COMPONENT_TYPE_PRIMARY, FIRST_COMPONENT_PRIMARY_MESSAGE } from './procedure-components';
+import { ATTRIBUTE_COMPONENT_INDEX, ATTRIBUTE_COMPONENT_TYPE, checkComponentPosition, COMPONENT_TYPE_PRIMARY, FIRST_COMPONENT_PRIMARY_MESSAGE } from './procedure-components';
 import { type BasicStoreEntityProcedure, ENTITY_TYPE_PROCEDURE, RELATION_PROCEDURE_COMMAND, RELATION_PROCEDURE_SOURCE, STIX_TYPE_PROCEDURE } from './procedure-types';
 
 export const findProcedureById: DomainFindById<BasicStoreEntityProcedure> = (context: AuthContext, user: AuthUser, procedureId: string) => {
@@ -153,7 +155,8 @@ export const procedureComponents = async (context: AuthContext, user: AuthUser, 
 };
 
 // Replaces the whole sequence: the index of each component is its position in the list.
-// Everything is checked before the existing sequence is touched.
+// Everything is checked before the existing sequence is touched, and the existing relationships are updated
+// in place (keeping their markings and history): new components are created, then removed ones deleted last.
 export const setProcedureComponents = async (context: AuthContext, user: AuthUser, procedureId: string, components: { id: string; type: string }[]) => {
   const procedure = await storeLoadById<BasicStoreEntityProcedure>(context, user, procedureId, ENTITY_TYPE_PROCEDURE);
   if (!procedure) {
@@ -174,18 +177,47 @@ export const setProcedureComponents = async (context: AuthContext, user: AuthUse
     }
     observableIds.push(observable.internal_id);
   }
-  const existing = await listComponentRelationships(context, user, procedure.internal_id);
-  for (let i = 0; i < existing.length; i += 1) {
-    await deleteElementById(context, user, existing[i].id, RELATION_COMPONENT_OF);
-  }
-  for (let i = 0; i < observableIds.length; i += 1) {
-    await createRelation(context, user, {
-      fromId: observableIds[i],
-      toId: procedure.internal_id,
-      relationship_type: RELATION_COMPONENT_OF,
-      component_index: i,
-      component_type: components[i].type,
-    });
+  const lock = await lockResources([`procedure-components-${procedure.internal_id}`]);
+  try {
+    // A user may only rewrite a sequence they see whole: a component hidden by its relationship's or its observable's markings would be lost.
+    const allRelationships = await listComponentRelationships(context, SYSTEM_USER, procedure.internal_id);
+    const visibleRelationships = await listComponentRelationships(context, user, procedure.internal_id);
+    const seenRelationships: BasicStoreRelation[] = [];
+    for (let i = 0; i < visibleRelationships.length; i += 1) {
+      if (await storeLoadById(context, user, visibleRelationships[i].fromId, ABSTRACT_STIX_CYBER_OBSERVABLE)) {
+        seenRelationships.push(visibleRelationships[i]);
+      }
+    }
+    if (seenRelationships.length !== allRelationships.length) {
+      throw FunctionalError('This sequence holds components you cannot see.', { id: procedureId });
+    }
+    const existingByObservable = new Map(seenRelationships.map((relationship) => [relationship.fromId, relationship]));
+    for (let i = 0; i < observableIds.length; i += 1) {
+      const existing = existingByObservable.get(observableIds[i]);
+      if (existing && (existing.component_index !== i || existing.component_type !== components[i].type)) {
+        await updateAttribute(context, user, existing.id, RELATION_COMPONENT_OF, [
+          { key: ATTRIBUTE_COMPONENT_INDEX, value: [i] },
+          { key: ATTRIBUTE_COMPONENT_TYPE, value: [components[i].type] },
+        ]);
+      }
+    }
+    for (let i = 0; i < observableIds.length; i += 1) {
+      if (!existingByObservable.has(observableIds[i])) {
+        await createRelation(context, user, {
+          fromId: observableIds[i],
+          toId: procedure.internal_id,
+          relationship_type: RELATION_COMPONENT_OF,
+          component_index: i,
+          component_type: components[i].type,
+        });
+      }
+    }
+    const removed = seenRelationships.filter((relationship) => !observableIds.includes(relationship.fromId));
+    for (let i = 0; i < removed.length; i += 1) {
+      await deleteElementById(context, user, removed[i].id, RELATION_COMPONENT_OF);
+    }
+  } finally {
+    await lock.unlock();
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, procedure, user);
 };

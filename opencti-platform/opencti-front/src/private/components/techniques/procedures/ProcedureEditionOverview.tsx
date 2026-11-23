@@ -249,7 +249,8 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
   const handleComponentsChange = (rows: ComponentRow[]) => {
     setComponents(rows);
     if (!enableReferences && canSaveComponents(rows)) {
-      saveProcedureComponents(procedure.id, componentsInput(rows));
+      // A refused save shows its error and puts back the sequence the platform holds.
+      saveProcedureComponents(procedure.id, componentsInput(rows)).catch(() => setComponents(initialComponents));
     }
   };
 
@@ -335,7 +336,7 @@ const ProcedureEditionOverview: FunctionComponent<ProcedureEditionOverviewProps>
     ];
 
     if (canSaveComponents(components) && componentsChanged(components)) {
-      saveProcedureComponents(procedure.id, componentsInput(components));
+      saveProcedureComponents(procedure.id, componentsInput(components)).catch(() => setComponents(initialComponents));
     }
     // Observables are has-observable relationships: saved apart, they cannot carry the commit message.
     saveProcedureObservables(procedure.id, diffIds(initialValues.procedureObservables, procedureObservables));

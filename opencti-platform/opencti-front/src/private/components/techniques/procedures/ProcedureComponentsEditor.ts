@@ -1,5 +1,5 @@
-import { graphql } from 'react-relay';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { commitMutation as commitRelayMutation, graphql } from 'react-relay';
+import { commitMutation, environment, fetchQuery, relayErrorHandling } from '../../../../relay/environment';
 import type { ComponentObservable } from './ProcedureComponentsField';
 import type { ProcedureComponentsEditorSearchQuery$data } from './__generated__/ProcedureComponentsEditorSearchQuery.graphql';
 import type { ProcedureComponentsEditorTextAddMutation$data } from './__generated__/ProcedureComponentsEditorTextAddMutation.graphql';
@@ -42,12 +42,16 @@ const procedureComponentsEditorSearchQuery = graphql`
 let pendingSave: Promise<void> = Promise.resolve();
 
 export const saveProcedureComponents = (procedureId: string, components: { id: string; type: string }[]) => {
+  // Relay's own commit, so every failure settles the save (the shared wrapper only reports errors that carry a GraphQL body).
   const save = () => new Promise<void>((resolve, reject) => {
-    commitMutation({
+    commitRelayMutation(environment, {
       mutation: procedureComponentsEditorSetMutation,
       variables: { id: procedureId, components },
       onCompleted: () => resolve(),
-      onError: reject,
+      onError: (error) => {
+        relayErrorHandling(error);
+        reject(error);
+      },
     });
   });
   pendingSave = pendingSave.catch(() => undefined).then(save);

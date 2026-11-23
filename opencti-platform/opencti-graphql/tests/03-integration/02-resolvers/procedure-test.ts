@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUser } from '../../utils/testQueryHelper';
+import { USER_EDITOR } from '../../utils/testQuery';
+import { MARKING_TLP_AMBER_STRICT } from '../../../src/schema/identifier';
 import { computeProcedureFingerprint } from '../../../src/modules/procedure/procedure-fingerprint';
 
 const CREATE_QUERY = gql`
@@ -218,6 +220,14 @@ const componentOfRelationshipIds = async (procedureId: string) => {
   const result = await queryAsAdmin({ query: RELATIONSHIPS_QUERY, variables: { filters } });
   return result.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node.id);
 };
+
+const MARKED_TEXT_ADD = gql`
+  mutation procedureMarkedTextAdd($Text: TextAddInput, $objectMarking: [String]) {
+    stixCyberObservableAdd(type: "Text", Text: $Text, objectMarking: $objectMarking) {
+      id
+    }
+  }
+`;
 
 const COMPONENTS_SET = gql`
   mutation procedureComponentsSet($id: ID!, $components: [ProcedureComponentInput!]!) {
@@ -618,6 +628,28 @@ describe('Procedure component sequence', () => {
     const result = await queryAsAdmin({ query: COMPONENTS_SET, variables: { id: procedureId, components: [{ id: observableIds[0], type: 'primary' }, { id: malwareId, type: 'secondary' }] } });
     expect(result.errors?.length).toBeGreaterThan(0);
     expect(await readComponents(procedureId)).toHaveLength(5);
+  });
+
+  it('keeps the relationships of the components it reorders', async () => {
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([0, 1, 2, 3, 4], WBADMIN_TYPES) } });
+    const before = (await componentOfRelationshipIds(procedureId)).sort();
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: sequence([1, 0, 2, 4, 3], WBADMIN_TYPES) } });
+    expect((await componentOfRelationshipIds(procedureId)).sort()).toEqual(before);
+    const components = await readComponents(procedureId);
+    expect(components.map((c) => c.observable.id)).toEqual([1, 0, 2, 4, 3].map((i) => observableIds[i]));
+  });
+
+  it('refuses to change a sequence holding a component the user cannot see', async () => {
+    const hidden = await queryAsAdminWithSuccess({
+      query: MARKED_TEXT_ADD,
+      variables: { Text: { value: 'procedure component above the editor clearance' }, objectMarking: [MARKING_TLP_AMBER_STRICT] },
+    });
+    const hiddenId = hidden.data?.stixCyberObservableAdd.id;
+    await queryAsAdminWithSuccess({ query: COMPONENTS_SET, variables: { id: procedureId, components: [{ id: observableIds[0], type: 'primary' }, { id: hiddenId, type: 'secondary' }] } });
+    const result = await queryAsUser(USER_EDITOR, { query: COMPONENTS_SET, variables: { id: procedureId, components: [{ id: observableIds[0], type: 'primary' }] } });
+    expect(result.errors?.[0]?.message).toContain('This sequence holds components you cannot see.');
+    expect((await readComponents(procedureId)).map((c) => c.observable.id)).toEqual([observableIds[0], hiddenId]);
+    await queryAsAdmin({ query: OBSERVABLE_DELETE, variables: { id: hiddenId } });
   });
 
   it('keeps the other positions when a component observable is deleted', async () => {
