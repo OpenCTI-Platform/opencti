@@ -25,9 +25,10 @@ vi.mock('react-relay', async (importOriginal) => {
 
 const HISTORY_LABEL = 'Number of recent passwords that cannot be reused (0 equals disabled)';
 
-const renderForm = (historyCount: number | null = 3, lockoutEnabled = false) => {
+const renderForm = (historyCount: number | null = 3, lockoutEnabled = false, apiBasicAuthEnabled: boolean | null = false) => {
   mockUseLazyLoadQuery.mockReturnValue({
     settings: {
+      api_basic_auth_enabled: apiBasicAuthEnabled,
       local_auth_lockout_enabled: lockoutEnabled,
       local_auth_lockout_max_attempts: 10,
       local_auth_lockout_admin_max_attempts: 3,
@@ -134,5 +135,59 @@ describe('LocalStrategyForm, account lockout policy', () => {
   it('shows no recommendation while the lockout is disabled', () => {
     renderForm(3, false);
     expect(screen.queryByText(ADMIN_HINT)).toBeNull();
+  });
+});
+
+const BASIC_AUTH_LABEL = 'Allow API Basic authentication';
+const basicAuthSwitch = () => screen.getByRole('switch', { name: BASIC_AUTH_LABEL });
+
+describe('LocalStrategyForm, API Basic authentication', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    lockoutFlag = false;
+  });
+
+  it('shows the saved setting and recommends API tokens', () => {
+    renderForm(3, false, false);
+    expect(basicAuthSwitch()).not.toBeChecked();
+    expect(screen.getByText('Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.')).toBeInTheDocument();
+  });
+
+  it('shows the setting enabled when none is saved', () => {
+    renderForm(3, false, null);
+    expect(basicAuthSwitch()).toBeChecked();
+  });
+
+  it('sends the new setting', async () => {
+    const { user } = renderForm(3, false, false);
+    await user.click(basicAuthSwitch());
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
+    const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
+    expect(input.api_basic_auth_enabled).toBe(true);
+  });
+
+  // An upgraded platform has no saved value: saving another setting must not store the one shown
+  it('does not send the setting when only another one is changed', async () => {
+    const { user } = renderForm(3, false, null);
+    await user.clear(historyInput());
+    await user.type(historyInput(), '5');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
+    const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
+    expect(input.password_policy_history_count).toBe(5);
+    expect(input).not.toHaveProperty('api_basic_auth_enabled');
+  });
+
+  it('sends the setting when it is turned off', async () => {
+    const { user } = renderForm(3, false, null);
+    await user.click(basicAuthSwitch());
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    await waitFor(() => expect(commitFnMock).toHaveBeenCalled());
+    const { input } = (commitFnMock as Mock).mock.calls[0][0].variables;
+    expect(input.api_basic_auth_enabled).toBe(false);
   });
 });
