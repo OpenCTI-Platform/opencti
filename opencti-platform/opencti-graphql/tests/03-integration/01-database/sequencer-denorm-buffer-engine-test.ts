@@ -1,6 +1,14 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { createEntity, deleteElementById, deleteRelationsByFromAndTo, mergeEntities } from '../../../src/database/middleware';
-import { elFlushSequencerWrites, elRefreshIndices, elRemoveRelationConnection, engine, initDenormBuffer, resetDenormBuffer } from '../../../src/database/engine';
+import {
+  elFlushSequencerWrites,
+  elRefreshIndices,
+  elRemoveRelationConnection,
+  elUpdateEntityConnections,
+  engine,
+  initDenormBuffer,
+  resetDenormBuffer,
+} from '../../../src/database/engine';
 import { getClientBase, redisDenormBufferStore } from '../../../src/database/redis';
 import { ES_INDEX_PREFIX } from '../../../src/database/utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -333,6 +341,22 @@ describe('Sequencer append buffer, engine side (task 0040)', () => {
     expect(await getClientBase().smembers(ADD_KEY(reference.internal_id))).toEqual([malware.internal_id]);
     await buffer.flush([reference.internal_id]);
     expect(await reverseIdsOf(reference.internal_id)).toEqual([malware.internal_id]);
+  });
+
+  it('should not rename the live buffered appends for a merge run by a user in a draft (draft carried by the user only)', async () => {
+    const reference = await newReference('DRAFT_MERGE');
+    const malware = await cite('DRAFT_MERGE', reference.internal_id);
+    const draftUser = { ...ADMIN_USER, draft_context: 'denorm-buffer-test-draft' };
+    const rename = {
+      id: reference.internal_id,
+      _index: reference._index,
+      toReplace: malware.internal_id,
+      relationType: RELATION_EXTERNAL_REFERENCE,
+      entity_type: ENTITY_TYPE_EXTERNAL_REFERENCE,
+      data: { internal_id: 'merge-target-id' },
+    };
+    await elUpdateEntityConnections(testContext, [rename], draftUser);
+    expect(await getClientBase().smembers(ADD_KEY(reference.internal_id))).toEqual([malware.internal_id]);
   });
 
   it('should keep the pending append when the removal fails in its ES update (the relation stays)', async () => {

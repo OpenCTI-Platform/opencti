@@ -165,7 +165,7 @@ class SequencerMetrics {
     });
     this.denormBufferEvents = meter.createCounter('opencti_sequencer_denorm_buffer_total', {
       valueType: ValueType.INT,
-      description: 'Append buffer (task 0040): ids buffered, flushed, replayed, written directly over the cap, edited by removals, tombstones applied, failures, targets moved aside',
+      description: 'Append buffer (task 0040): ids buffered, flushed, replayed, written directly over the cap, removal and merge edits requested through this node\'s buffer (nodes without the buffer edit Redis uncounted), failed flushes, targets moved aside',
     });
     this.denormBufferLagGauge = meter.createGauge('opencti_sequencer_denorm_buffer_lag_seconds', {
       valueType: ValueType.DOUBLE,
