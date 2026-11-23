@@ -21,7 +21,7 @@ const investigationQuery = graphql`
     workspace(id: $id) {
       id
       currentUserAccessRight
-      enrichmentWorks(entityIds: $entityIds) {
+      enrichmentWorks(first: 5000, entityIds: $entityIds) {
         edges {
           node {
             id

@@ -4,7 +4,7 @@ import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateU
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityWorkspace } from './workspace-types';
 import { findWorkPaginated, loadWorkById } from '../../domain/work';
-import { elUpdate } from '../../database/engine';
+import { elUpdate, ES_MAX_PAGINATION } from '../../database/engine';
 import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { WorkInvestigationStatus, WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
@@ -78,6 +78,8 @@ export const findInvestigationEnrichmentWorks = async (
     {
       indices: [READ_INDEX_HISTORY],
       filters: investigationFilters,
+      orderBy: ['timestamp', 'internal_id'],
+      first: ES_MAX_PAGINATION,
       baseData: true,
       baseFields: ['event_source_id'],
     },
@@ -115,7 +117,8 @@ export const findInvestigationEnrichmentWorks = async (
 
   // 04. Paginate the works of the kept sources only
   const filters = addFilter(investigationFilters, 'event_source_id', allowedSourceIds);
-  return findWorkPaginated(context, user, { ...paginationArgs, filters });
+  const orderBy = [paginationArgs.orderBy ?? 'timestamp', 'internal_id'];
+  return findWorkPaginated(context, user, { ...paginationArgs, orderBy, filters });
 };
 
 type InvestigationWork = BasicStoreBase & { _index: string; investigation_id?: string; investigation_status?: string };
