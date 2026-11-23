@@ -3629,9 +3629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@langchain/core@npm:1.4.2"
+"@langchain/core@npm:1.5.0":
+  version: 1.5.0
+  resolution: "@langchain/core@npm:1.5.0"
   dependencies:
     "@cfworker/json-schema": "npm:^4.1.4"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -3640,7 +3640,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^4.6.6"
-  checksum: 10c0/bd9fbdf0e37cd8cfc67f3ce7f37c65bb54c9a55fc7f08e42d0627468de18c0b2b6ca9ab580e815aba8b3a6122ea1b1c2a3cc2145ae3eb49391b45dcced2a59ae
+  checksum: 10c0/2a8c48efb08279e102cfbb654354c352dbe1addec438dc7822676540ff1f9f898c07be9f0625999db3226ca44e52179ed45eab13900b2e4faf4e4b6c9fcfa29c
   languageName: node
   linkType: hard
 
@@ -18888,7 +18888,7 @@ __metadata:
     "@graphql-tools/schema": "npm:11.0.9"
     "@graphql-tools/utils": "npm:13.2.2"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.4.2"
+    "@langchain/core": "npm:1.5.0"
     "@langchain/mistralai": "npm:1.2.0"
     "@langchain/openai": "npm:1.8.4"
     "@lezer/javascript": "npm:1.5.6"
