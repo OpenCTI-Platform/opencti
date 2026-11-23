@@ -1176,6 +1176,7 @@
   "Support version": "サポート対象バージョン",
   "SWID": "SWID",
   "Sync workflow statuses by name": "ワークフローのステータスを名前で同期する",
+  "SYNC_INFLIGHT_CLEANUP_MANAGER": "同期中継ファイルのクリーンアップマネージャ",
   "Synchronized": "同期",
   "System category": "システムカテゴリ",
   "System subcategory": "システムサブカテゴリ",

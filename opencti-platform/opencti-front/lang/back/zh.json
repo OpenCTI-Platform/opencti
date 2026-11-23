@@ -1176,6 +1176,7 @@
   "Support version": "支持版本",
   "SWID": "SWID",
   "Sync workflow statuses by name": "按名称同步工作流状态",
+  "SYNC_INFLIGHT_CLEANUP_MANAGER": "同步中转文件清理管理器",
   "Synchronized": "同步",
   "System category": "系统类别",
   "System subcategory": "系统子类别",

@@ -1176,6 +1176,7 @@
   "Support version": "Unterstützte Version",
   "SWID": "SWID",
   "Sync workflow statuses by name": "Workflow-Status nach Namen synchronisieren",
+  "SYNC_INFLIGHT_CLEANUP_MANAGER": "Bereinigungsmanager für zwischengespeicherte Sync-Dateien",
   "Synchronized": "Synchronisiert",
   "System category": "Systemkategorie",
   "System subcategory": "System-Unterkategorie",
