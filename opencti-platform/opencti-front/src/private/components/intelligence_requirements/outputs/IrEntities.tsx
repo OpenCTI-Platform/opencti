@@ -312,7 +312,8 @@ const IrEntities = ({ irId }: { irId: string }) => {
       percentWidth: 16,
       isSortable: false,
       render: (line: Line) => {
-        // The first reason's name ellipsizes, its points and the "+N" count stay whole in non-shrinking chips;
+        // The first reason's name ellipsizes, its points stay whole in a non-shrinking chip; the other reasons are
+        // counted as caption text "(+N)", as in the column next to it, so the count never reads as points;
         // every reason is in the tooltip
         const reasons = line.match_score_breakdown
           .filter((o) => o.kind !== 'condition' && o.hit && o.points !== 0)
@@ -327,9 +328,9 @@ const IrEntities = ({ irId }: { irId: string }) => {
               <Chip label={reasons[0].points} size="sm" />
             </Box>
             {reasons.length > 1 && (
-              <Box sx={{ flexShrink: 0 }}>
-                <Chip label={`+${reasons.length - 1}`} size="sm" />
-              </Box>
+              <Text as="span" variant="content-caption" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                {`(+${reasons.length - 1})`}
+              </Text>
             )}
           </Box>
         );
