@@ -1,3 +1,7 @@
+import { IncomingMessage, ServerResponse } from 'node:http';
+import { Socket } from 'node:net';
+import { promisify } from 'node:util';
+import session from 'express-session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import * as MiddlewareLoader from '../../../../src/database/middleware-loader';
@@ -44,17 +48,17 @@ const lateStoredUser = { id: lateUser.id, internal_id: lateUser.internal_id, ent
 let cacheUsers: Map<string, AuthUser>;
 
 const buildSessionRequest = (sessionUserId: string) => {
-  const destroy = vi.fn((callback: (err?: unknown) => void) => callback());
+  const regenerate = vi.fn((callback: (err?: unknown) => void) => callback());
   const req = {
     headers: {},
     header: (_: string) => undefined,
     ip: '127.0.0.1',
     session: {
       user: { id: sessionUserId, session_creation: '2026-01-01T00:00:00.000Z', otp_validated: true, password_valid_until: null },
-      destroy,
+      regenerate,
     },
   };
-  return { req, destroy };
+  return { req, regenerate };
 };
 
 describe('authenticateUserFromRequest - session', () => {
@@ -80,7 +84,7 @@ describe('authenticateUserFromRequest - session', () => {
   });
 
   it('authenticates the cached user bound to the session', async () => {
-    const { req, destroy } = buildSessionRequest(cachedUser.id);
+    const { req, regenerate } = buildSessionRequest(cachedUser.id);
     const user = await authenticateUserFromRequest(context, req);
     expect(user?.id).toBe(cachedUser.id);
     expect(user?.name).toBe('Cached User');
@@ -88,56 +92,89 @@ describe('authenticateUserFromRequest - session', () => {
     // Session fields are still exposed to the request
     expect((user as unknown as { otp_validated: boolean }).otp_validated).toBe(true);
     expect(MiddlewareLoader.internalLoadById).not.toHaveBeenCalled();
-    expect(destroy).not.toHaveBeenCalled();
+    expect(regenerate).not.toHaveBeenCalled();
     expect(logApp.warn).not.toHaveBeenCalled();
   });
 
   it('adds to the cache a session user that exists but is missing from the cache, and authenticates it', async () => {
-    const { req, destroy } = buildSessionRequest(lateUser.id);
+    const { req, regenerate } = buildSessionRequest(lateUser.id);
     const user = await authenticateUserFromRequest(context, req);
     expect(Cache.addCacheForEntity).toHaveBeenCalledWith(lateStoredUser);
     expect(user?.id).toBe(lateUser.id);
     expect(user?.name).toBe('Late User');
     expect(user?.capabilities).toEqual([{ name: 'KNOWLEDGE' }]);
     expect((user as unknown as { otp_validated: boolean }).otp_validated).toBe(true);
-    expect(destroy).not.toHaveBeenCalled();
+    expect(regenerate).not.toHaveBeenCalled();
     expect(logApp.warn).toHaveBeenCalledWith('[AUTH] Session user missing from the users cache, adding it', { user_id: lateUser.id });
   });
 
   it('keeps the session of an existing user that cannot be added to the cache, without authenticating it', async () => {
     vi.mocked(Cache.addCacheForEntity).mockResolvedValue(undefined);
-    const { req, destroy } = buildSessionRequest(lateUser.id);
+    const { req, regenerate } = buildSessionRequest(lateUser.id);
     const user = await authenticateUserFromRequest(context, req);
     expect(user).toBeUndefined();
-    expect(destroy).not.toHaveBeenCalled();
+    expect(regenerate).not.toHaveBeenCalled();
     expect(logApp.warn).toHaveBeenCalledWith('[AUTH] Session user cannot be added to the users cache', { user_id: lateUser.id });
   });
 
-  it('destroys the session of a user that no longer exists and treats the request as unauthenticated', async () => {
-    const { req, destroy } = buildSessionRequest('unknown-user-id');
+  it('replaces the session of a user that no longer exists and treats the request as unauthenticated', async () => {
+    const { req, regenerate } = buildSessionRequest('unknown-user-id');
     const user = await authenticateUserFromRequest(context, req);
     expect(user).toBeUndefined();
     expect(MiddlewareLoader.internalLoadById).toHaveBeenCalledWith(context, SYSTEM_USER, 'unknown-user-id', { type: ENTITY_TYPE_USER });
     expect(Cache.addCacheForEntity).not.toHaveBeenCalled();
-    expect(destroy).toHaveBeenCalledTimes(1);
+    expect(regenerate).toHaveBeenCalledTimes(1);
     expect(logApp.warn).toHaveBeenCalledWith('[AUTH] Session user no longer exists, session destroyed', { user_id: 'unknown-user-id' });
   });
 
   it('keeps the session when the database cannot be read', async () => {
     const databaseError = new Error('database unavailable');
     vi.mocked(MiddlewareLoader.internalLoadById).mockRejectedValue(databaseError);
-    const { req, destroy } = buildSessionRequest('unknown-user-id');
+    const { req, regenerate } = buildSessionRequest('unknown-user-id');
     // The caller (createAuthenticatedContext) handles the failure as an unauthenticated request
     await expect(authenticateUserFromRequest(context, req)).rejects.toThrow(databaseError);
-    expect(destroy).not.toHaveBeenCalled();
+    expect(regenerate).not.toHaveBeenCalled();
   });
 
-  it('stays unauthenticated when the session cannot be destroyed', async () => {
-    const { req, destroy } = buildSessionRequest('unknown-user-id');
-    const destroyError = new Error('store unavailable');
-    destroy.mockImplementation((callback: (err?: unknown) => void) => callback(destroyError));
+  it('stays unauthenticated when the session cannot be regenerated', async () => {
+    const { req, regenerate } = buildSessionRequest('unknown-user-id');
+    const regenerateError = new Error('store unavailable');
+    regenerate.mockImplementation((callback: (err?: unknown) => void) => callback(regenerateError));
     const user = await authenticateUserFromRequest(context, req);
     expect(user).toBeUndefined();
-    expect(logApp.warn).toHaveBeenCalledWith('[AUTH] Fail to destroy the session', { cause: destroyError });
+    expect(logApp.warn).toHaveBeenCalledWith('[AUTH] Fail to regenerate the session', { cause: regenerateError });
+  });
+});
+
+describe('authenticateUserFromRequest - session, with the real session middleware', () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.spyOn(Cache, 'getEntitiesMapFromCache').mockResolvedValue(new Map() as any);
+    vi.spyOn(MiddlewareLoader, 'internalLoadById').mockResolvedValue(undefined as any);
+  });
+
+  it('gives the request a new empty session when the session user no longer exists', async () => {
+    const sessionStore = new session.MemoryStore();
+    const sessionMiddleware = session({ store: sessionStore, secret: 'test-secret', resave: false, saveUninitialized: false });
+    const req = new IncomingMessage(new Socket()) as any;
+    req.url = '/graphql';
+    req.originalUrl = '/graphql';
+    const res = new ServerResponse(req);
+    await promisify(sessionMiddleware)(req, res as any);
+    // A session saved for a user that has been deleted since
+    req.session.user = { id: 'deleted-user-id', session_creation: '2026-01-01T00:00:00.000Z', otp_validated: true };
+    await promisify(req.session.save.bind(req.session))();
+    const staleSessionId = req.sessionID;
+
+    const user = await authenticateUserFromRequest(context, req);
+
+    expect(user).toBeUndefined();
+    // The stale session is gone from the store
+    expect(await promisify(sessionStore.get.bind(sessionStore))(staleSessionId)).toBeFalsy();
+    // The request still has a session, so a login in the same request (token mutation) can bind its user to it
+    expect(req.sessionID).not.toBe(staleSessionId);
+    expect(req.session).toBeDefined();
+    expect(req.session.user).toBeUndefined();
+    expect(typeof req.session.regenerate).toBe('function');
   });
 });

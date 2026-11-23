@@ -124,8 +124,12 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
                 return resolve(source, args, context, info);
               }
 
-              // A malformed context user (no capabilities) must be refused, not crash the resolution
-              const userBaseCapabilities = (authenticatedUser.capabilities ?? []).map((c) => c.name);
+              // A malformed context user (no capabilities list) is refused before any grant (bypass, admin id, form,
+              // draft), instead of crashing the resolution. An empty list is a valid user without capabilities.
+              if (!Array.isArray(authenticatedUser.capabilities)) {
+                throw ForbiddenAccess();
+              }
+              const userBaseCapabilities = authenticatedUser.capabilities.map((c) => c.name);
               // The import of a verified Form Intake submission writes with Create / Update knowledge: this is the
               // only capability the form capability gives, every other check (markings, confidence, ...) still applies.
               if (context.form_submission === true) {

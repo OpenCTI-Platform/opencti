@@ -134,4 +134,21 @@ describe('authDirective - malformed context user', () => {
     expect(result.data?.restricted).toBeNull();
     expect(result.errors?.[0]?.message).toBe('You are not allowed to do this.');
   });
+
+  it('denies access to the platform admin id when the user has no capabilities list', async () => {
+    const user = buildUser({ id: OPENCTI_ADMIN_UUID, capabilities: undefined });
+    const result = await runRestrictedQuery(user);
+    expect(result.data?.restricted).toBeNull();
+    expect(result.errors?.[0]?.message).toBe('You are not allowed to do this.');
+  });
+
+  it('denies access during a verified form submission when the user has no capabilities list', async () => {
+    const result = await graphql({
+      schema: buildSchema(),
+      source: '{ knowledgeUpdate }',
+      contextValue: { user: buildUser({ capabilities: undefined }), otp_mandatory: false, user_otp_validated: true, form_submission: true },
+    });
+    expect(result.data?.knowledgeUpdate).toBeNull();
+    expect(result.errors?.[0]?.message).toBe('You are not allowed to do this.');
+  });
 });

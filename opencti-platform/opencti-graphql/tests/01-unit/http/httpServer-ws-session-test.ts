@@ -46,14 +46,16 @@ beforeEach(() => {
 });
 
 describe('extractWsSessionContext: user of the session', () => {
+  // A session logged in a minute ago, well under its maximum lifetime
+  const sessionCreation = () => new Date(Date.now() - 60 * 1000).toISOString();
   const buildWsContext = (sessionUser: unknown) => {
-    const session = { user: sessionUser, destroy: vi.fn() };
+    const session = { user: sessionUser, regenerate: vi.fn() };
     const context = { extra: { request: { session }, socket: { _socket: { remoteAddress: '::1' } } } };
     return { context, session };
   };
 
   it('builds the subscription context with the user resolved from the session', async () => {
-    const sessionUser = { id: 'user-id', otp_validated: true };
+    const sessionUser = { id: 'user-id', otp_validated: true, session_creation: sessionCreation() };
     const resolvedUser = { ...sessionUser, name: 'User', capabilities: [{ name: 'KNOWLEDGE' }] } as unknown as AuthUser;
     vi.mocked(resolveSessionUser).mockResolvedValue(resolvedUser);
     const { context, session } = buildWsContext(sessionUser);
@@ -66,8 +68,9 @@ describe('extractWsSessionContext: user of the session', () => {
 
   it('refuses a subscription whose session user cannot be resolved', async () => {
     vi.mocked(resolveSessionUser).mockResolvedValue(undefined);
-    const { context } = buildWsContext({ id: 'unknown-user-id' });
+    const { context } = buildWsContext({ id: 'unknown-user-id', session_creation: sessionCreation() });
     await expect(extractWsSessionContext(context)).rejects.toThrow('User must be authenticated');
+    expect(resolveSessionUser).toHaveBeenCalledTimes(1);
   });
 
   it('refuses a subscription without a session user', async () => {

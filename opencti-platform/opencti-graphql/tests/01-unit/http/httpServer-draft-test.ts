@@ -71,3 +71,12 @@ describe('checkDraftInContext service account hint', () => {
     }
   });
 });
+
+describe('checkDraftInContext without an authenticated user', () => {
+  it('should require authentication instead of failing on the missing user', async () => {
+    const executeContext = { user: undefined, draft_context: 'draft-under-test' } as unknown as AuthContext;
+
+    await expect(checkDraftInContext(executeContext)).rejects.toMatchObject({ extensions: { code: 'AUTH_REQUIRED' } });
+    expect(mockGetEntitiesMapFromCache).not.toHaveBeenCalled();
+  });
+});

@@ -1,5 +1,5 @@
 import type { AuthContext } from '../types/user';
-import { DraftLockedError, FunctionalError } from '../config/errors';
+import { AuthRequired, DraftLockedError, FunctionalError } from '../config/errors';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { userEditField } from '../modules/user/user-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
@@ -50,7 +50,9 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
         throw DraftLockedError('Cannot execute request in a draft that is not in an open state');
       }
     } else {
-      throw FunctionalError('User cannot be found');
+      // No authenticated user (no or expired session, invalid token): the same answer as the auth directive,
+      // which the client uses to go back to the login page
+      throw AuthRequired();
     }
   }
 };

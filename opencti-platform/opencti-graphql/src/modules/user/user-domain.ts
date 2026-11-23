@@ -2726,7 +2726,7 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 
 export const JWT_TOKEN_PREFIX = 'ey';
 type SessionEndRequest = { sessionID?: string; session?: { user?: unknown; regenerate?: (callback: (err?: unknown) => void) => void } };
-type RequestSession = { destroy: (callback: (err?: unknown) => void) => void };
+type RequestSession = { regenerate: (callback: (err?: unknown) => void) => void };
 type SessionAuthRequest = OriginRequest & { session?: RequestSession & { user?: { id: string; session_creation?: string } } };
 
 // The ended session must not stay on the request: the end of the request would save it again.
@@ -2794,11 +2794,13 @@ export const endStreamSessionOverMaxLifetime = async (context: AuthContext, req:
   return true;
 };
 
-const destroyRequestSession = async (session: RequestSession) => {
+// Destroys the session in the store and gives the request a new empty one (even when the destroy fails),
+// so that the rest of the request, a login for instance, still has a session to work with.
+const regenerateRequestSession = async (session: RequestSession) => {
   await new Promise<void>((resolve) => {
-    session.destroy((err) => {
+    session.regenerate((err) => {
       if (err) {
-        logApp.warn('[AUTH] Fail to destroy the session', { cause: err });
+        logApp.warn('[AUTH] Fail to regenerate the session', { cause: err });
       }
       resolve();
     });
@@ -2819,7 +2821,7 @@ export const resolveSessionUser = async <T extends { id: string }>(context: Auth
   const storedUser = await internalLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, sessionUser.id, { type: ENTITY_TYPE_USER });
   if (!storedUser) {
     logApp.warn('[AUTH] Session user no longer exists, session destroyed', { user_id: sessionUser.id });
-    await destroyRequestSession(session);
+    await regenerateRequestSession(session);
     return undefined;
   }
   logApp.warn('[AUTH] Session user missing from the users cache, adding it', { user_id: sessionUser.id });

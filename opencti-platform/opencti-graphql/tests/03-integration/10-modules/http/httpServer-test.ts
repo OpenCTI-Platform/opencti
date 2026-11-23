@@ -49,16 +49,16 @@ describe('httpServer', () => {
       await expect(extractWsSessionContext(brokenContext)).rejects.toThrow('User must be authenticated');
     });
 
-    it('should refuse a session whose user does not exist, and destroy the session', async () => {
-      const destroy = vi.fn((callback: (err?: unknown) => void) => callback());
+    it('should refuse a session whose user does not exist, and replace the session', async () => {
+      const regenerate = vi.fn((callback: (err?: unknown) => void) => callback());
       const unknownUserContext = {
         extra: {
-          request: { session: { user: { id: '5f0c4a3e-1b7d-4c2e-9a8f-6d3b2e1c0a99' }, destroy } },
+          request: { session: { user: { id: '5f0c4a3e-1b7d-4c2e-9a8f-6d3b2e1c0a99' }, regenerate } },
           socket: { _socket: { remoteAddress: '::1' } },
         },
       };
       await expect(extractWsSessionContext(unknownUserContext)).rejects.toThrow('User must be authenticated');
-      expect(destroy).toHaveBeenCalledTimes(1);
+      expect(regenerate).toHaveBeenCalledTimes(1);
     });
   });
 });
