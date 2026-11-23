@@ -6,6 +6,7 @@ import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { memoize } from '../utils/memoize';
+import { ConfigurationError } from '../config/errors';
 
 const sessionManager = nconf.get('app:session_manager');
 
@@ -58,14 +59,28 @@ const createApplicationSession = async () => {
   };
 };
 
-const getApplicationSession = memoize(createApplicationSession);
+// Highest value of a GraphQL Int, the type the maximum lifetime is exposed with in the platform settings
+const MAX_SESSION_MAX_LIFETIME = 2147483647;
 
 // Maximum lifetime of a session in ms, counted from the login and never extended by the user activity.
-// 0 (the default), or any value that is not a positive number, means no limit.
+// 0 (the default) means no limit. Any value that is not a whole number of ms in range makes the platform refuse
+// to start (see boot): falling back to no limit would silently disable a security setting.
 export const getSessionMaxLifetime = () => {
-  const maxLifetime = Number(conf.get('app:session_max_lifetime') ?? 0);
-  return Number.isFinite(maxLifetime) && maxLifetime > 0 ? maxLifetime : 0;
+  const configuredValue = conf.get('app:session_max_lifetime');
+  if (configuredValue === undefined || configuredValue === null || configuredValue === '') {
+    return 0;
+  }
+  const maxLifetime = Number(configuredValue);
+  if (!Number.isInteger(maxLifetime) || maxLifetime < 0 || maxLifetime > MAX_SESSION_MAX_LIFETIME) {
+    throw ConfigurationError(
+      `Invalid app:session_max_lifetime: expected a whole number of milliseconds between 0 (no limit) and ${MAX_SESSION_MAX_LIFETIME}`,
+      { value: configuredValue },
+    );
+  }
+  return maxLifetime;
 };
+
+const getApplicationSession = memoize(createApplicationSession);
 
 // A session over its maximum lifetime must be ended, whatever the activity of its user.
 // A session without a valid login time cannot prove its age: it is ended as well when a limit is set.

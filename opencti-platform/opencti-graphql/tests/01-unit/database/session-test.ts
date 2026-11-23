@@ -243,13 +243,18 @@ describe('session: maximum lifetime', () => {
     expect(getSessionMaxLifetime()).toEqual(TWELVE_HOURS);
   });
 
-  it('should ignore a maximum lifetime that is not a positive number', async () => {
-    process.env.APP__SESSION_MAX_LIFETIME = '-1';
-    let { getSessionMaxLifetime } = await loadSessionModule();
-    expect(getSessionMaxLifetime()).toEqual(0);
-    process.env.APP__SESSION_MAX_LIFETIME = 'twelve hours';
-    ({ getSessionMaxLifetime } = await loadSessionModule());
-    expect(getSessionMaxLifetime()).toEqual(0);
+  it('should refuse a maximum lifetime that is not a whole number of milliseconds in range', async () => {
+    for (const invalidValue of ['-1', '12h', 'twelve hours', '1.5', '2147483648']) {
+      process.env.APP__SESSION_MAX_LIFETIME = invalidValue;
+      const { getSessionMaxLifetime } = await loadSessionModule();
+      expect(() => getSessionMaxLifetime(), invalidValue).toThrowError(/Invalid app:session_max_lifetime/);
+    }
+  });
+
+  it('should accept the highest maximum lifetime the platform settings can expose', async () => {
+    process.env.APP__SESSION_MAX_LIFETIME = '2147483647';
+    const { getSessionMaxLifetime } = await loadSessionModule();
+    expect(getSessionMaxLifetime()).toEqual(2147483647);
   });
 
   it('should keep a session under its maximum lifetime', async () => {
