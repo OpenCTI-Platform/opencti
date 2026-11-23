@@ -26,6 +26,8 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
   const { t_i18n } = useFormatter();
   const [groupMenuFor, setGroupMenuFor] = useState<string | null>(null);
   const [autoOpenFor, setAutoOpenFor] = useState<string | null>(null); // a new group opens its menu once its card is there
+  // A requirement needs at least one rule: with none yet, the step opens on the list of rules
+  const [addMenuOpen, setAddMenuOpen] = useState(() => items.length === 0);
   const type = IR_PIR_TYPES.find((p) => p.key === pirType);
   const typeLabel = t_i18n(type?.label ?? pirType);
   const flagLabels = flags.map((f) => t_i18n(`entity_${f}`));
@@ -143,6 +145,8 @@ const IrRulesStep = ({ pirType, flags, items, onChange, renamed = new Set(), onR
             rules={rulesForType(pirType, flags)}
             onPick={addRule}
             onAdvanced={addCustom}
+            open={addMenuOpen}
+            onOpenChange={setAddMenuOpen}
             trigger={<FdsButton type="button" priority="secondary" size="sm" startIcon={<Icon name="plus" size={16} />}>{t_i18n('Add rule')}</FdsButton>}
           />
           <Button variant="tertiary" size="small" startIcon={<Icon name="plus" size={16} />} onClick={addGroup}>{t_i18n('Add group')}</Button>
