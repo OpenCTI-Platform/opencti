@@ -5967,7 +5967,7 @@
   "The variables and time range of the published dashboard start from this preset": "게시된 대시보드의 변수와 기간은 이 프리셋에서 시작합니다",
   "The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.": "정보 제공자, 피해자, 공격 주체, 심지어 플랫폼에서 사용자를 분리하는 방법 등 다양한 유형의 조직이 CTI에서 역할을 수행합니다.",
   "The widget is not called in the content": "콘텐츠에서 위젯이 호출되지 않음",
-  "The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.": "워크플로는 순서상 첫 번째 액세스 요청 상태에서 시작됩니다. 다른 액세스 요청 상태에 승인 및 거부 상태보다 낮은 순서를 지정하거나 새 상태를 추가한 다음 이 대화 상자를 다시 여세요.",
+  "The workflow starts on the first request access status by order, which cannot also be the approved or declined status, and no other request access status is left to pick. Add a request access status with a lower order (statusAdd mutation), or lower the order of another one (statusFieldPatch mutation), then open this dialog again.": "워크플로는 순서상 첫 번째 액세스 요청 상태에서 시작되며, 이 상태는 승인 또는 거부 상태를 겸할 수 없고 선택할 다른 액세스 요청 상태가 남아 있지 않습니다. 더 낮은 순서의 액세스 요청 상태를 추가하거나(statusAdd 뮤테이션) 다른 상태의 순서를 낮춘(statusFieldPatch 뮤테이션) 다음 이 대화 상자를 다시 여세요.",
   "Theme": "테마",
   "theme": "주제",
   "Theme already exists": "테마가 이미 존재합니다",

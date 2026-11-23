@@ -29,6 +29,8 @@ interface OutcomeRepairFormValues {
 interface RequestAccessOutcomeRepairProps {
   // The initial state of the migrated workflow: the first request access status by order
   initialState: string;
+  // The status templates of the migrated workflow states
+  statusIds: string[];
   onRepaired: () => void;
 }
 
@@ -40,7 +42,7 @@ const toFieldOption = (template: { id: string; name: string; color: string } | n
 
 // Corrects the legacy approved / declined outcome statuses, which the migration reads. The validator
 // group is sent back as is: the configure mutation replaces it with whatever it receives.
-const RequestAccessOutcomeRepair = ({ initialState, onRepaired }: RequestAccessOutcomeRepairProps) => {
+const RequestAccessOutcomeRepair = ({ initialState, statusIds, onRepaired }: RequestAccessOutcomeRepairProps) => {
   const { t_i18n } = useFormatter();
   const { subType } = useSubTypeOutletContext();
   const configuration = useFragment(
@@ -82,18 +84,20 @@ const RequestAccessOutcomeRepair = ({ initialState, onRepaired }: RequestAccessO
     });
   };
 
-  // An outcome on the initial state comes from the status order, which this form does not change
+  // An outcome on the initial state comes from the status order, which this form does not change: re-picking
+  // only helps while two statuses other than the initial one are left to pick from
   const approvedTemplateId = configuration?.approved_status?.template?.id;
   const declinedTemplateId = configuration?.declined_status?.template?.id;
   const outcomeIsInitialState = !!approvedTemplateId && !!declinedTemplateId && approvedTemplateId !== declinedTemplateId
     && (initialState === approvedTemplateId || initialState === declinedTemplateId);
-  if (outcomeIsInitialState) {
+  const pickableOutcomeCount = new Set(statusIds.filter((statusId) => statusId !== initialState)).size;
+  if (outcomeIsInitialState && pickableOutcomeCount < 2) {
     return (
       <Alert
         data-testid="request-access-outcome-initial-state"
         severity="info"
         title={t_i18n('Request access outcome statuses')}
-        description={t_i18n('The workflow starts on the first request access status by order. Give another request access status a lower order than the approved and declined ones, or add a new one, then open this dialog again.')}
+        description={t_i18n('The workflow starts on the first request access status by order, which cannot also be the approved or declined status, and no other request access status is left to pick. Add a request access status with a lower order (statusAdd mutation), or lower the order of another one (statusFieldPatch mutation), then open this dialog again.')}
         style={{ marginTop: 16 }}
       />
     );

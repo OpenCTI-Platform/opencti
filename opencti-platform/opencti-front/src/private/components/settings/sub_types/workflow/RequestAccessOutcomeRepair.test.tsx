@@ -55,9 +55,9 @@ vi.mock('./StatusTemplateFieldScoped', () => ({
 const onRepaired = vi.fn();
 const testTheme = createTheme(ThemeDark() as ThemeOptions);
 
-const renderRepair = (initialState = 'tpl-open') => render(
+const renderRepair = (initialState = 'tpl-open', statusIds = ['tpl-open', 'tpl-approved', 'tpl-declined']) => render(
   <ThemeProvider theme={testTheme}>
-    <RequestAccessOutcomeRepair initialState={initialState} onRepaired={onRepaired} />
+    <RequestAccessOutcomeRepair initialState={initialState} statusIds={statusIds} onRepaired={onRepaired} />
   </ThemeProvider>,
 );
 
@@ -73,16 +73,28 @@ describe('RequestAccessOutcomeRepair', () => {
     };
   });
 
-  it('explains how to fix an outcome on the initial state instead of offering the form, which cannot fix it', () => {
+  it('explains how to fix an outcome on the initial state when no other status is left to pick', () => {
     mockConfiguration = {
       approved_status: { template: { id: 'tpl-approved', name: 'Approved', color: '#0f0' } },
       declined_status: { template: { id: 'tpl-declined', name: 'Declined', color: '#f00' } },
       approval_admin: [],
     };
-    renderRepair('tpl-approved');
+    renderRepair('tpl-approved', ['tpl-approved', 'tpl-declined']);
 
     expect(screen.getByTestId('request-access-outcome-initial-state')).toBeInTheDocument();
     expect(screen.queryByTestId('request-access-outcome-repair')).not.toBeInTheDocument();
+  });
+
+  it('keeps the form for an outcome on the initial state while two other statuses are left to pick', () => {
+    mockConfiguration = {
+      approved_status: { template: { id: 'tpl-approved', name: 'Approved', color: '#0f0' } },
+      declined_status: { template: { id: 'tpl-declined', name: 'Declined', color: '#f00' } },
+      approval_admin: [],
+    };
+    renderRepair('tpl-approved', ['tpl-approved', 'tpl-declined', 'tpl-other']);
+
+    expect(screen.getByTestId('request-access-outcome-repair')).toBeInTheDocument();
+    expect(screen.queryByTestId('request-access-outcome-initial-state')).not.toBeInTheDocument();
   });
 
   it('offers both outcome statuses of the request access scope', () => {
