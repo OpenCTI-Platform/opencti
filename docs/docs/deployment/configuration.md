@@ -205,6 +205,7 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 | xtm:openaev_api_url                 | XTM__OPENAEV_API_URL             |                         | If sets, overrides the API base URL used for the OpenAEV integration                                         |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
 | xtm:opencrq_url                     | XTM__OPENCRQ_URL                 |                         | OpenCRQ URL. When set, the OpenCRQ entry of the product switcher opens this instance instead of filigran.io  |
+| xtm:opencrq_token                   | XTM__OPENCRQ_TOKEN               |                         | OpenCRQ service-account token for the counterpart lookups. Facts are read as the user only through XTM One |
 | xtm:opengrc_url                     | XTM__OPENGRC_URL                 |                         | Deprecated: former name of `XTM__OPENCRQ_URL`, read only when `XTM__OPENCRQ_URL` is not set                  |
 | xtm:opengrc_token                   | XTM__OPENGRC_TOKEN               |                         | Deprecated: OpenGRC is the former name of OpenCRQ                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |

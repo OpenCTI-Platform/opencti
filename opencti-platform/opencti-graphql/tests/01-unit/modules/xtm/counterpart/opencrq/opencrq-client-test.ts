@@ -44,6 +44,7 @@ const remote = (key: string, extra: Record<string, unknown> = {}) => ({
 
 const connect = () => {
   mocks.settings['xtm:opencrq_url'] = 'https://crq.example.com/';
+  mocks.settings['xtm:opencrq_token'] = 'crq-service-token';
 };
 
 const tRpc = (data: unknown) => ({ data: { result: { data } } });
@@ -60,13 +61,15 @@ describe('OpenCRQ client', () => {
     resetCounterpartCache();
   });
 
-  it('is connected by its URL alone and derives the tRPC base', () => {
+  it('is connected by its URL and service-account token and derives the tRPC base', () => {
     expect(getOpenCrqUrl()).toBeNull();
     expect(getOpenCrqApiUrl()).toBeNull();
     expect(isOpenCrqConnected()).toBe(false);
     mocks.settings['xtm:opencrq_url'] = 'https://crq.example.com//';
     expect(getOpenCrqUrl()).toBe('https://crq.example.com');
     expect(getOpenCrqApiUrl()).toBe('https://crq.example.com/trpc');
+    expect(isOpenCrqConnected()).toBe(false);
+    mocks.settings['xtm:opencrq_token'] = 'crq-service-token';
     expect(isOpenCrqConnected()).toBe(true);
     mocks.settings['xtm:opencrq_api_url'] = 'https://crq-api.internal/trpc/';
     expect(getOpenCrqApiUrl()).toBe('https://crq-api.internal/trpc');
@@ -79,7 +82,13 @@ describe('OpenCRQ client', () => {
     expect(mocks.get).not.toHaveBeenCalled();
   });
 
-  it('queries xtm.lookup with the kind and keys and a JWT of the calling user addressed to OpenCRQ', async () => {
+  it('never calls OpenCRQ without the service-account token', async () => {
+    mocks.settings['xtm:opencrq_url'] = 'https://crq.example.com/';
+    expect(await fetchOpenCrqObjects('THREAT', [STIX], ALICE)).toEqual([]);
+    expect(mocks.get).not.toHaveBeenCalled();
+  });
+
+  it('queries xtm.lookup with the kind and keys and the service-account bearer', async () => {
     connect();
     mocks.get.mockResolvedValue(tRpc([remote(STIX)]));
     const result = await fetchOpenCrqObjects('THREAT', [STIX], ALICE);
@@ -88,8 +97,9 @@ describe('OpenCRQ client', () => {
     expect(url.startsWith('/xtm.lookup?input=')).toBe(true);
     expect(JSON.parse(decodeURIComponent(url.slice('/xtm.lookup?input='.length)))).toEqual({ kind: 'THREAT', keys: [STIX] });
     expect(mocks.clientOptions[0].baseURL).toBe('https://crq.example.com/trpc');
-    expect(mocks.jwt).toHaveBeenCalledWith(ALICE, 'https://crq.example.com');
-    expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer jwt-alice@https://crq.example.com');
+    // OpenCRQ trusts an XTM One JWT or a service-account bearer, never OpenCTI's own JWT.
+    expect(mocks.jwt).not.toHaveBeenCalled();
+    expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer crq-service-token');
     expect(mocks.clientOptions[0].headers).not.toHaveProperty('X-XTM-User-Token');
   });
 
@@ -100,7 +110,7 @@ describe('OpenCRQ client', () => {
     await fetchOpenCrqObjects('THREAT', [STIX], ALICE);
     expect(mocks.exchange).toHaveBeenCalledWith(ALICE, 'https://crq.example.com');
     expect(mocks.clientOptions[0].headers['X-XTM-User-Token']).toBe('xtm-one-token-alice');
-    expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer jwt-alice@https://crq.example.com');
+    expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer crq-service-token');
   });
 
   it('keeps the lookup without the header when XTM One is absent or refuses the exchange', async () => {
@@ -121,7 +131,7 @@ describe('OpenCRQ client', () => {
     await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
     mocks.get.mockResolvedValueOnce({ data: { result: {} } });
     await expect(fetchOpenCrqObjects('THREAT', [STIX], ALICE)).rejects.toMatchObject({ reason: 'unavailable' });
-    expect(JSON.stringify(mocks.warn.mock.calls)).not.toContain('jwt-alice');
+    expect(JSON.stringify(mocks.warn.mock.calls)).not.toContain('crq-service-token');
   });
 
   it('resolves CVEs, threats and assets with the risk facts and ignores unsupported kinds', async () => {

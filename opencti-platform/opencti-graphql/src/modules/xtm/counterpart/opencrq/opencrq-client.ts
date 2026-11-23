@@ -1,7 +1,6 @@
 import conf, { logApp } from '../../../../config/conf';
 import { getHttpClient } from '../../../../utils/http-client';
 import { exchangeXtmOneUserToken } from '../../../../domain/xtm-auth';
-import { counterpartAuthorization } from '../core/counterpart-auth';
 import { type CounterpartCaller, lookupErrorOf } from '../core/counterpart-errors';
 
 const OPENCRQ_TIMEOUT_MS = 5000;
@@ -42,19 +41,28 @@ export const getOpenCrqApiUrl = (): string | null => {
   return url ? `${url}/trpc` : null;
 };
 
-// The lookups run as the calling user (a JWT this platform signs): the URL is the connection.
-export const isOpenCrqConnected = (): boolean => !!getOpenCrqUrl();
+// The OpenCRQ service-account token (xtm:opencrq_token): OpenCRQ's xtm.lookup trusts only an XTM One JWT
+// or a service-account bearer, which also binds the tenant (OpenCRQ #24, #26, #28, #29). Server side only.
+const getOpenCrqToken = (): string | null => {
+  const token = conf.get('xtm:opencrq_token');
+  return token ? String(token) : null;
+};
+
+// Connected when both the URL and the service-account token are set.
+export const isOpenCrqConnected = (): boolean => !!(getOpenCrqUrl() && getOpenCrqToken());
 
 /**
- * Asks OpenCRQ which of the given keys it holds (tRPC query GET {api}/xtm.lookup?input=...), as the
- * calling user: OpenCRQ applies that user's rights, the financial facts only for a user with them.
+ * Asks OpenCRQ which of the given keys it holds (tRPC query GET {api}/xtm.lookup?input=...) with the
+ * service-account bearer, forwarding the XTM One token of the calling user in X-XTM-User-Token: OpenCRQ
+ * reads the financial facts as that person; without XTM One (no token exchange) it answers the links only.
  * Throws CounterpartLookupError: not_supported on a 404 (an OpenCRQ without the procedure),
  * forbidden on a 403, unavailable on anything else.
  */
 export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[], caller: CounterpartCaller): Promise<OpenCrqLocalObject[]> => {
   const apiUrl = getOpenCrqApiUrl();
   const url = getOpenCrqUrl();
-  if (!apiUrl || !url || keys.length === 0) {
+  const token = getOpenCrqToken();
+  if (!apiUrl || !url || !token || keys.length === 0) {
     return [];
   }
   try {
@@ -67,7 +75,7 @@ export const fetchOpenCrqObjects = async (kind: OpenCrqLookupKind, keys: string[
       responseType: 'json',
       timeout: OPENCRQ_TIMEOUT_MS,
       headers: {
-        Authorization: await counterpartAuthorization(caller, url),
+        Authorization: `Bearer ${token}`,
         Accept: 'application/json',
         ...(userToken ? { [XTM_USER_TOKEN_HEADER]: userToken } : {}),
       },
