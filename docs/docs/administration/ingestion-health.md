@@ -2,7 +2,7 @@
 
 Ingestion health tells you, for each connector, feed and synchronization, whether it is ingesting data as expected. OpenCTI evaluates every ingestion every minute, gives it a status, explains what is wrong, and can notify you when the status changes.
 
-This page covers the statuses, the checks behind them, where to see them, how to configure the manager computing them, and how notifications work.
+This page covers the statuses, the checks behind them, how to fix a failing check, where to see them, how to configure the manager computing them, and how notifications work.
 
 ## What is ingestion health?
 
@@ -77,15 +77,15 @@ and a **severity**:
 
 | Check | Applies to | Kind | Severity | Fails when                                                                                                                                                                                   | What to do |
 |---|---|---|---|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---|
-| User is missing | Connectors, feeds, synchronizations | Configuration | Advisory | A connector has no user, or the user of an ingestion was deleted                                                                                                                             | Set an existing user on the ingestion |
-| User lacks required capability | Connectors | Configuration | Advisory | The user of the connector lacks the **Connectors API usage** capability (`CONNECTORAPI`): the connector cannot register nor ping                                                             | Give the capability to a role of the user |
-| User account is not active | Connectors, feeds, synchronizations | Configuration | Advisory | The account of the user is expired, locked or disabled: the platform refuses to authenticate it                                                                                          | Reactivate the account, or set another user |
-| User is not a service account | Connectors, feeds, synchronizations | Configuration | Advisory | The user of the ingestion is a regular user: the ingestion breaks when this person leaves or changes rights. This is not necessarily blocking, but using a service account is recommended | Use a service account |
-| No heartbeat received | Connectors pinging continuously | Runtime | Blocking | The connector sent no heartbeat for 5 minutes: its process is down                                                                                                                           | Check the process of the connector (container, logs) |
-| Feed or sync execution failed | Feeds (except TAXII push), synchronizations | Runtime | Blocking | The last execution failed: source unreachable, not found, invalid data... The message gives the HTTP status or the error code when known                                                     | Check the source and the configuration of the feed |
-| Feed or sync source denied access | Feeds (except TAXII push), synchronizations | Runtime | Blocking | The source refused the last execution with HTTP 401, 402 or 403                                                                                                                              | Renew or fix the credentials of the feed |
-| Connector reported an error | Connectors | Runtime | Advisory | The connector reported an error on ping, with a low criticity                                                                                                                                | Read the error code and message, see the documentation of the connector |
-| Connector reported a critical error | Connectors | Runtime | Blocking | The connector reported an error on ping, with a high criticity                                                                                                                               | Read the error code and message, see the documentation of the connector |
+| User is missing | Connectors, feeds, synchronizations | Configuration | Advisory | A connector has no user, or the user of an ingestion was deleted                                                                                                                             | Set an existing user on the ingestion ([details](#user-is-missing)) |
+| User lacks required capability | Connectors | Configuration | Advisory | The user of the connector lacks the **Connectors API usage** capability (`CONNECTORAPI`): the connector cannot register nor ping                                                             | Give the capability to a role of the user ([details](#user-lacks-required-capability)) |
+| User account is not active | Connectors, feeds, synchronizations | Configuration | Advisory | The account of the user is expired, locked or disabled: the platform refuses to authenticate it                                                                                          | Reactivate the account, or set another user ([details](#user-account-is-not-active)) |
+| User is not a service account | Connectors, feeds, synchronizations | Configuration | Advisory | The user of the ingestion is a regular user: the ingestion breaks when this person leaves or changes rights. This is not necessarily blocking, but using a service account is recommended | Use a service account ([details](#user-is-not-a-service-account)) |
+| No heartbeat received | Connectors pinging continuously | Runtime | Blocking | The connector sent no heartbeat for 5 minutes: its process is down                                                                                                                           | Check the process of the connector (container, logs) ([details](#no-heartbeat-received)) |
+| Feed or sync execution failed | Feeds (except TAXII push), synchronizations | Runtime | Blocking | The last execution failed: source unreachable, not found, invalid data... The message gives the HTTP status or the error code when known                                                     | Check the source and the configuration of the feed ([details](#feed-or-sync-execution-failed-or-source-denied-access)) |
+| Feed or sync source denied access | Feeds (except TAXII push), synchronizations | Runtime | Blocking | The source refused the last execution with HTTP 401, 402 or 403                                                                                                                              | Renew or fix the credentials of the feed ([details](#feed-or-sync-execution-failed-or-source-denied-access)) |
+| Connector reported an error | Connectors | Runtime | Advisory | The connector reported an error on ping, with a low criticity                                                                                                                                | Read the error code and message, see the documentation of the connector ([details](#connector-reported-an-error-or-a-critical-error)) |
+| Connector reported a critical error | Connectors | Runtime | Blocking | The connector reported an error on ping, with a high criticity                                                                                                                               | Read the error code and message, see the documentation of the connector ([details](#connector-reported-an-error-or-a-critical-error)) |
 
 ### How the checks work (details)
 
@@ -121,6 +121,121 @@ The following rules explain why a check fails, or does not for complex cases.
 - The ingestion health manager evaluates every ingestion every minute, on one platform node at a time.
 - When the data of a runtime check cannot be read (for instance, Redis is unreachable), the ingestions needing it keep their previous status until the next evaluation: a read failure is never reported as a failing ingestion.
 - For errors reported by a connector, OpenCTI replaces the URLs in these messages and keeps at most 200 characters before storing them. The error messages of feeds and synchronizations are stored as they are. Activity events and notifications never include the error text written by a connector or a source.
+
+## Fix a failing check
+
+Where you fix a check depends on where the ingestion is configured:
+
+- a **managed connector** (deployed by the [integration manager](../deployment/integration-manager.md)) is configured in OpenCTI: open it from **Integrations > Deployed** and edit it;
+- a **self-hosted connector** is configured where it runs: its `docker-compose.yml`, its `config.yml` or its Kubernetes manifest. Its user is the owner of the token set in `OPENCTI_TOKEN`, and you cannot change it from OpenCTI. To use another user, set a token of that user in `OPENCTI_TOKEN` and restart the connector: it registers again with its new user;
+- a **feed** or a **synchronization** is configured in OpenCTI: open it and edit it.
+
+A fixed check clears at the next evaluation, within a minute.
+
+### User is missing
+
+- **Managed connector**: edit the connector and choose a service account, or create one.
+- **Self-hosted connector**: the user owning its token was deleted, so the connector cannot authenticate anymore. Set a token of an existing user in `OPENCTI_TOKEN`, preferably a dedicated service account (see [User is not a service account](#user-is-not-a-service-account)), and restart the connector.
+- **Feed or synchronization**: edit it and choose an existing user, preferably a service account.
+
+### User lacks required capability
+
+This check is only for connectors. The fix is the same for a managed and a self-hosted connector: add the user to a group whose role has the **Connectors API usage** capability or give this capability to a role of one of its groups. See [Users and Role Based Access Control](users.md).
+
+If the connector stopped because it could not register, restart it.
+
+### User account is not active
+
+Open the user and reactivate its account (**Settings > Security > Users**): set its status back to **Active** when it is **Locked** or **Inactive**, or move its **Account Expiry Date** when it is **Expired**. See [Account status](users.md#account-status).
+
+You can also use another user instead:
+
+- **Managed connector**: edit the connector and choose another service account.
+- **Self-hosted connector**: set a token of the other user in `OPENCTI_TOKEN` and restart the connector.
+- **Feed or synchronization**: edit it and choose another user.
+
+### User is not a service account
+
+A service account is a technical user, without password, that authenticates with its token only (see [Service account](users.md#service-account)). Run each ingestion with its own service account: it no longer depends on a person, and the data it creates is attributed to it.
+
+!!! note "Connectors deployed from the OpenCTI docker template"
+
+    The [OpenCTI docker template](https://github.com/OpenCTI-Platform/docker) runs most of its connectors with the admin token (`OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN}`). Since the admin is a regular user, these connectors show as **degraded** with **User is not a service account**. Nothing is broken: the check is advisory. Follow the steps for self-hosted connectors below to fix it.
+
+**Managed connector, feed, synchronization**: edit the ingestion and choose a service account, or create one.
+
+**Self-hosted connector, except export connectors**: let the connector create its own service account. Add `CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true` to its environment:
+
+```yaml
+  connector-import-file-stix:
+    image: opencti/connector-import-file-stix:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${OPENCTI_ADMIN_TOKEN} # Used at start-up only, to create the service account
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT=true
+      - CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL=50 # Optional, 50 by default
+      - CONNECTOR_ID=${CONNECTOR_IMPORT_FILE_STIX_ID}
+      - CONNECTOR_TYPE=INTERNAL_IMPORT_FILE
+      - CONNECTOR_NAME=ImportFileStix
+      # ...
+```
+
+Then recreate the container, with `docker compose up -d` for instance. At each start, the connector:
+
+1. uses the token of `OPENCTI_TOKEN` to find, or create, the service account `[C] <CONNECTOR_NAME>` in the `Connectors` group, with the confidence level of `CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT_CONFIDENCE_LEVEL` (applied when the account is created);
+2. renews the token of this service account and runs with it.
+
+So:
+
+- the user of `OPENCTI_TOKEN` must be allowed to manage users, such as the admin;
+- the `Connectors` group must exist. When it does not, the connector silently keeps running with the user of `OPENCTI_TOKEN`, and the check keeps failing;
+- the service account is found by the name of the connector: renaming the connector (`CONNECTOR_NAME`) creates another service account;
+- this option is available to connectors built on the OpenCTI Python connector helper (`pycti`). For other connectors, create the service account yourself, as for export connectors below, in the `Connectors` group.
+
+**Self-hosted export connectors** (`CONNECTOR_TYPE=INTERNAL_EXPORT_FILE`, such as `ExportFileStix2`, `ExportFileCsv` and `ExportFileTxt`): do **not** use `CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT`. An export connector impersonates the user requesting the export, so that the file only contains what this user can see, and only a user with the **Bypass all capabilities** capability can impersonate another one. The `Connectors` group does not have it: OpenCTI would ignore the impersonation, and the export would run with the rights of the connector, which can differ from those of the requesting user. Create the service account yourself, in a group with bypass:
+
+1. Go to **Settings > Security > Users** and create a service account named after the connector, such as `[C] ExportFileStix2`.
+2. Add it to the `Administrators` group, or to another group whose role has **Bypass all capabilities**.
+3. Generate a token for it, set this token in `OPENCTI_TOKEN`, and restart the connector.
+
+```yaml
+  connector-export-file-stix:
+    image: opencti/connector-export-file-stix:latest
+    environment:
+      - OPENCTI_URL=http://opencti:8080
+      - OPENCTI_TOKEN=${CONNECTOR_EXPORT_FILE_STIX_TOKEN} # Token of the [C] ExportFileStix2 service account
+      - CONNECTOR_ID=${CONNECTOR_EXPORT_FILE_STIX_ID}
+      - CONNECTOR_TYPE=INTERNAL_EXPORT_FILE
+      - CONNECTOR_NAME=ExportFileStix2
+      - CONNECTOR_SCOPE=application/json
+```
+
+See [Connector users and tokens](../deployment/connectors.md#connector-users-and-tokens) for the role each type of connector needs.
+
+!!! warning "Do not turn the admin into a service account"
+
+    You can also turn a user into a service account from its overview: it keeps its ID and its token, so the connectors using it need no change. Only do it for a user dedicated to an ingestion. Turning the admin into a service account removes its password: nobody could sign in with it anymore.
+
+### No heartbeat received
+
+- **Managed connector**: open the connector in **Integrations > Deployed**, read its logs, and restart it.
+- **Self-hosted connector**: check that its process runs (`docker compose ps`), read its logs (`docker compose logs <service>`), and restart it. Check that it reaches OpenCTI (`OPENCTI_URL`) and that its token is still valid.
+
+### Feed or sync execution failed, or source denied access
+
+Open the feed or the synchronization and read the message of the check: it gives the HTTP status or the error code when known.
+
+- **Source denied access** (HTTP 401, 402 or 403): renew the credentials of the source (API key, token, password) and update the feed or the synchronization.
+- **Execution failed**: check that the source is reachable from OpenCTI, that its URL is right, and that it returns the expected format.
+
+### Connector reported an error or a critical error
+
+Read the error code and message in the alert of the connector page, and see the documentation of the connector.
+
+- **Managed connector**: fix its parameters by editing it in **Integrations > Deployed**.
+- **Self-hosted connector**: fix its parameters where it runs (environment variables, `config.yml`) and restart it.
+
+The error clears 10 minutes after the last ping that reported it.
 
 ## Where to see the health
 
