@@ -58,7 +58,9 @@ const IntelligenceRequirements = () => {
 
   const renderList = () => {
     const dataColumns: DataTableProps['dataColumns'] = {
-      name: { percentWidth: 26 },
+      // Widths sum to 100 and keep every header whole at a 1032 px table (1080 viewport): "Status" needs 10,
+      // "Platform creation date" 19 (UX round 11, B2).
+      name: { percentWidth: 22 },
       ir_priority: {
         id: 'ir_priority',
         label: 'Priority',
@@ -69,7 +71,7 @@ const IntelligenceRequirements = () => {
       ir_status: {
         id: 'ir_status',
         label: 'Status',
-        percentWidth: 8,
+        percentWidth: 10,
         isSortable: false,
         render: ({ ir_status }: IntelligenceRequirementsLine_node$data) => <Chip label={t_i18n(ir_status === 'active' ? 'Active' : 'Paused')} />,
       },
@@ -94,8 +96,8 @@ const IntelligenceRequirements = () => {
         isSortable: false,
         render: ({ ir_activity }: IntelligenceRequirementsLine_node$data) => <IrSparkline points={ir_activity} width={120} height={28} />,
       },
-      creator: { percentWidth: 12 },
-      created_at: { percentWidth: 15 },
+      creator: { percentWidth: 10 },
+      created_at: { percentWidth: 19 },
     };
     return queryRef && (
       <DataTable
