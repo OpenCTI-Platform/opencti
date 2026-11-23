@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import { Chip, Skeleton } from '@filigran/design-system';
 
 // The preview every cross-platform pivot of OpenCTI opens on hover and on keyboard focus: what the
-// click brings. The design system has no hover card yet, so it is the content of the FDS Tooltip,
+// click brings. The design system has no hover card yet (fds-migration/LIBRARY-FEEDBACK.md #86), so it is the content of the FDS Tooltip,
 // laid out as a card: the product mark and the object's type, its name, the key facts the other
 // product answered (under the caller's rights: a user without rights there sees none), and one line
 // saying what can be done there. Same contract as OpenAEV's and OpenCRQ's XtmPivotPreview.

@@ -80,7 +80,7 @@ describe('OpenAevRowMark', () => {
       setTimeout(resolve, 20);
     });
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
-    expect(container.querySelector('svg')).toBeNull();
+    expect(container.querySelector('[data-testid="openaev-row-mark"]')).toBeNull();
   });
 
   it('draws nothing and sends no lookup when OpenAEV is not connected', async () => {

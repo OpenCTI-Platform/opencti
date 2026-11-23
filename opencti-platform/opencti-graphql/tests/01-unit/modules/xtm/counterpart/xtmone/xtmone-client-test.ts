@@ -80,6 +80,7 @@ describe('XTM One counterpart client', () => {
     const result = await fetchXtmOneAssets(['web-01'], ALICE);
     expect(mocks.post).toHaveBeenCalledWith(XTM_ONE_LOOKUP_PATH, { keys: ['web-01'] }, { maxRedirects: 0 });
     expect(mocks.clientOptions[0].baseURL).toBe('https://one.example.com');
+    expect(mocks.clientOptions[0].trusted).toBe(true);
     expect(mocks.jwt).toHaveBeenCalledWith(ALICE, 'https://one.example.com');
     expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer jwt-alice@https://one.example.com');
     expect(JSON.stringify(mocks.clientOptions[0].headers)).not.toContain('platform-token');

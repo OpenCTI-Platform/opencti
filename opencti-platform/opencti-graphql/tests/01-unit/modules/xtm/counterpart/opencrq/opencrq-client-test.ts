@@ -98,6 +98,8 @@ describe('OpenCRQ client', () => {
     expect(url.startsWith('/xtm.lookup?input=')).toBe(true);
     expect(JSON.parse(decodeURIComponent(url.slice('/xtm.lookup?input='.length)))).toEqual({ kind: 'THREAT', keys: [STIX] });
     expect(mocks.clientOptions[0].baseURL).toBe('https://crq.example.com/trpc');
+    // The administrator configures the URL: the client may reach an internal address.
+    expect(mocks.clientOptions[0].trusted).toBe(true);
     // OpenCRQ trusts an XTM One JWT or a service-account bearer, never OpenCTI's own JWT.
     expect(mocks.jwt).not.toHaveBeenCalled();
     expect(mocks.clientOptions[0].headers.Authorization).toBe('Bearer crq-service-token');
