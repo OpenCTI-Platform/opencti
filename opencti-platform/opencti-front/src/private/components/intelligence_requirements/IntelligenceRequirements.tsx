@@ -59,8 +59,9 @@ const IntelligenceRequirements = () => {
   const renderList = () => {
     const dataColumns: DataTableProps['dataColumns'] = {
       // Widths sum to 100 and keep every header whole at a 1032 px table (1080 viewport): "Status" needs 10,
-      // "Platform creation date" 19 (UX round 11, B2).
-      name: { percentWidth: 22 },
+      // "Platform creation date" 21 so its label and the sort arrow of the default sort both fit (UX rounds 11 B2, 12 B3).
+      // Name cuts with an ellipsis and a tooltip, so it gives the room.
+      name: { percentWidth: 20 },
       ir_priority: {
         id: 'ir_priority',
         label: 'Priority',
@@ -97,7 +98,7 @@ const IntelligenceRequirements = () => {
         render: ({ ir_activity }: IntelligenceRequirementsLine_node$data) => <IrSparkline points={ir_activity} width={120} height={28} />,
       },
       creator: { percentWidth: 10 },
-      created_at: { percentWidth: 19 },
+      created_at: { percentWidth: 21 },
     };
     return queryRef && (
       <DataTable
