@@ -85,6 +85,34 @@ Procedures saved before this change hold an older observable ref the platform
 no longer reads: they cannot be exported or updated until that data is removed
 and the procedures are imported again.
 
+## Components
+
+A procedure's components are the ordered sequence of observables that make
+up the action, for example the executable, its subcommand and each parameter
+of a command line. Each one is a `component-of` relationship (observable →
+procedure) carrying its position, `x_component_index` (0, 1, 2…), and its
+type, `x_component_type`: `primary` for a component that defines the action,
+`secondary` for one that modifies or supplies a value to it. The component at
+index 0 must be primary. Tokens that are not an executable or a path are Text
+observables.
+
+A bundle may carry part of a sequence: the platform accepts the gaps and the
+procedure page shows the sequence as incomplete. The edition drawer saves the
+whole sequence at once, with the indexes taken from the row order.
+
+`data/example-procedure-components.json` holds three procedures with their
+components: a wbadmin credential store copy, a WMI event subscription
+persistence, and an LSASS dump with comsvcs.dll MiniDump.
+
+```bash
+python client-python/prototype/procedures/seed_procedures.py \
+    --url http://localhost:4000 --token <token> \
+    client-python/prototype/procedures/data/example-procedure-components.json
+```
+
+Seeding the file again updates the indexes and types instead of duplicating
+the relationships.
+
 ## Fingerprints
 
 An imported `x_fingerprint` is kept as is and not checked against the
