@@ -26,8 +26,12 @@ import type { XtmProduct } from './xtmProducts';
 // (Sam, 22 Nov 2026): found = the design system's highlight ink (--icon-highlight, the brand primary
 // of the theme, a custom primary included), not found, not connected and unavailable = its disabled
 // ink (--icon-disabled). Design system tokens, never the MUI palette, so the three products agree.
+// The one exception is XTM One, whose found emblem keeps the XTM One purple (product.foundColor).
 export const EMBLEM_FOUND = 'var(--icon-highlight)';
 export const EMBLEM_MUTED = 'var(--icon-disabled)';
+
+/** The ink of a product's emblem: its found ink when active, the disabled ink otherwise. */
+export const emblemInk = (product: XtmProduct, active: boolean): string => (active ? (product.foundColor ?? EMBLEM_FOUND) : EMBLEM_MUTED);
 
 interface XtmEmblemProps {
   product: XtmProduct;
@@ -40,7 +44,7 @@ export const XtmCounterpartPreview: React.FC<{ product: XtmProduct; counterpart:
   const { t_i18n, n, fd } = useFormatter();
   return (
     <XtmPivotPreview
-      mark={<XtmMark src={product.mark} size={16} color={EMBLEM_FOUND} />}
+      mark={<XtmMark src={product.mark} size={16} color={emblemInk(product, true)} />}
       productName={product.name}
       entityType={counterpart.object_type}
       name={counterpart.object_name}
@@ -114,7 +118,7 @@ export const XtmEmblem: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
           data-status={state.status}
           {...link}
         >
-          <XtmMark src={product.mark} color={active ? EMBLEM_FOUND : EMBLEM_MUTED} />
+          <XtmMark src={product.mark} color={emblemInk(product, active)} />
         </IconButton>
       </TooltipTrigger>
       <TooltipContent>{tooltip}</TooltipContent>
@@ -124,7 +128,7 @@ export const XtmEmblem: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
 
 /**
  * The emblems of the products an object can have a counterpart in, in the order of Contract v3
- * (OpenAEV, then OpenCRQ: OpenCTI is self).
+ * (XTM One leftmost, then OpenAEV, then OpenCRQ: OpenCTI is self).
  */
 export const XtmEmblems: React.FC<{ products: ReadonlyArray<XtmProduct>; objectId: string | null | undefined }> = ({ products, objectId }) => (
   <>
@@ -155,7 +159,7 @@ export const XtmRowMark: React.FC<XtmEmblemProps> = ({ product, objectId }) => {
           onClick={(event: React.MouseEvent) => event.stopPropagation()}
           sx={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0, ml: 0.5, verticalAlign: 'middle' }}
         >
-          <XtmMark src={product.mark} size={16} color={EMBLEM_FOUND} />
+          <XtmMark src={product.mark} size={16} color={emblemInk(product, true)} />
         </Box>
       </TooltipTrigger>
       <TooltipContent><XtmCounterpartPreview product={product} counterpart={state.counterpart} /></TooltipContent>

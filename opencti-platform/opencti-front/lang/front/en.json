@@ -6959,5 +6959,12 @@
   "zero": "zero",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out"
+  "Zoom out": "Zoom out",
+  "Not found in XTM One": "Not found in XTM One",
+  "XTM One is unavailable": "XTM One is unavailable",
+  "Connect XTM One": "Connect XTM One",
+  "XTM One is not connected": "XTM One is not connected",
+  "See this asset in the XTM One inventory: its criticality, owner and exposure.": "See this asset in the XTM One inventory: its criticality, owner and exposure.",
+  "It appears once the XTM One inventory holds an asset with this hostname or address.": "It appears once the XTM One inventory holds an asset with this hostname or address.",
+  "Connect XTM One to see this asset in your inventory.": "Connect XTM One to see this asset in your inventory."
 }

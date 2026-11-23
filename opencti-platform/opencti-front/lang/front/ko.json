@@ -6959,5 +6959,12 @@
   "zero": "제로",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소"
+  "Zoom out": "축소",
+  "Not found in XTM One": "XTM One에서 찾을 수 없음",
+  "XTM One is unavailable": "XTM One을 사용할 수 없습니다",
+  "Connect XTM One": "XTM One 연결",
+  "XTM One is not connected": "XTM One이 연결되지 않았습니다",
+  "See this asset in the XTM One inventory: its criticality, owner and exposure.": "XTM One 인벤토리에서 이 자산의 중요도, 소유자 및 노출을 확인합니다.",
+  "It appears once the XTM One inventory holds an asset with this hostname or address.": "XTM One 인벤토리에 이 호스트 이름 또는 주소의 자산이 있으면 표시됩니다.",
+  "Connect XTM One to see this asset in your inventory.": "XTM One을 연결하면 인벤토리에서 이 자산을 볼 수 있습니다."
 }

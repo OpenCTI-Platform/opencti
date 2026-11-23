@@ -17,6 +17,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { bodyItemStyle } from '../../../../components/list_lines/listLineStyles';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import XtmOneRowMark from '../../common/xtm/counterpart/xtmone/XtmOneRowMark';
 import OpenAevRowMark from '../../common/xtm/counterpart/openaev/OpenAevRowMark';
 import OpenCrqRowMark from '../../common/xtm/counterpart/opencrq/OpenCrqRowMark';
 
@@ -80,6 +81,7 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
             >
               {data.name}
               {data.draftVersion && (<DraftChip />)}
+              <XtmOneRowMark objectId={data.id} />
               <OpenAevRowMark objectId={data.id} />
               <OpenCrqRowMark objectId={data.id} />
             </BodyItem>

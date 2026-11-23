@@ -12,7 +12,7 @@ export interface FactFormatters {
   date: (value: string) => string;
 }
 
-type FactKind = 'count' | 'money' | 'date';
+type FactKind = 'count' | 'money' | 'date' | 'text';
 // [fact key the product answers, label, kind]
 export type FactDefinition = [string, string, FactKind];
 
@@ -31,6 +31,12 @@ export const OPENCRQ_FACTS: ReadonlyArray<FactDefinition> = [
   ['fix_value', 'Loss avoided by fixing', 'money'],
 ];
 
+// XTM One answers the inventory asset's criticality and category as words.
+export const XTMONE_FACTS: ReadonlyArray<FactDefinition> = [
+  ['criticality', 'Criticality', 'text'],
+  ['category', 'Category', 'text'],
+];
+
 /** The facts answered for these definitions, labelled and formatted, in display order. */
 export const previewFactsOf = (
   facts: ReadonlyArray<CounterpartFact> | null | undefined,
@@ -42,6 +48,10 @@ export const previewFactsOf = (
   definitions.forEach(([key, label, kind]) => {
     const raw = byKey.get(key);
     if (raw === undefined || raw === null) return;
+    if (kind === 'text') {
+      if (raw.trim() !== '') out.push({ label: format.t_i18n(label), value: raw });
+      return;
+    }
     if (kind === 'date') {
       if (!Number.isNaN(Date.parse(raw))) out.push({ label: format.t_i18n(label), value: format.date(raw) });
       return;

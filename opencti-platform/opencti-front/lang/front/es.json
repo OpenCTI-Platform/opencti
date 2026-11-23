@@ -6959,5 +6959,12 @@
   "zero": "cero",
   "Zoom": "Zoom",
   "Zoom in": "Ampliar",
-  "Zoom out": "Alejar"
+  "Zoom out": "Alejar",
+  "Not found in XTM One": "No encontrado en XTM One",
+  "XTM One is unavailable": "XTM One no está disponible",
+  "Connect XTM One": "Conectar XTM One",
+  "XTM One is not connected": "XTM One no está conectado",
+  "See this asset in the XTM One inventory: its criticality, owner and exposure.": "Ver este activo en el inventario de XTM One: su criticidad, propietario y exposición.",
+  "It appears once the XTM One inventory holds an asset with this hostname or address.": "Aparece cuando el inventario de XTM One contiene un activo con este nombre de host o dirección.",
+  "Connect XTM One to see this asset in your inventory.": "Conecte XTM One para ver este activo en su inventario."
 }

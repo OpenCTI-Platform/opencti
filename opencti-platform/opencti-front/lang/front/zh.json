@@ -6959,5 +6959,12 @@
   "zero": "零",
   "Zoom": "放大",
   "Zoom in": "放大",
-  "Zoom out": "缩小"
+  "Zoom out": "缩小",
+  "Not found in XTM One": "在 XTM One 中未找到",
+  "XTM One is unavailable": "XTM One 不可用",
+  "Connect XTM One": "连接 XTM One",
+  "XTM One is not connected": "XTM One 未连接",
+  "See this asset in the XTM One inventory: its criticality, owner and exposure.": "在 XTM One 资产清单中查看此资产：其重要性、所有者和暴露情况。",
+  "It appears once the XTM One inventory holds an asset with this hostname or address.": "当 XTM One 资产清单中存在具有此主机名或地址的资产时显示。",
+  "Connect XTM One to see this asset in your inventory.": "连接 XTM One 以在资产清单中查看此资产。"
 }
