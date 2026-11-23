@@ -3,6 +3,7 @@ import type { Theme } from './Theme';
 import Tag from './common/tag/Tag';
 import { EMPTY_VALUE } from '../utils/String';
 import { isEmptyField } from '../utils/utils';
+import { cvssTone } from '../utils/severityTone';
 
 type ItemCvssScoreProps = {
   score?: number | null;
@@ -11,24 +12,13 @@ type ItemCvssScoreProps = {
 const ItemCvssScore = ({ score }: ItemCvssScoreProps) => {
   const theme = useTheme<Theme>();
 
-  const getColorFromCVSS3Score = (cvssScore: number) => {
-    switch (true) {
-      case cvssScore === 0: return theme.palette.severity.default;
-      case cvssScore <= 3: return theme.palette.severity.low;
-      case cvssScore <= 5: return theme.palette.severity.info;
-      case cvssScore <= 7: return theme.palette.severity.high;
-      case cvssScore <= 9: return theme.palette.severity.critical;
-      case cvssScore <= 10: return theme.palette.common.black;
-      default: return theme.palette.severity.default;
-    }
-  };
-
   if (isEmptyField(score)) return EMPTY_VALUE;
 
+  const tone = cvssTone(score);
   return (
     <Tag
       label={`${score}`}
-      color={getColorFromCVSS3Score(score)}
+      {...(tone ? { severity: tone } : { color: theme.palette.common.black })}
     />
   );
 };

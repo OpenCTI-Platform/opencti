@@ -6930,5 +6930,7 @@
   "zero": "zéro",
   "Zoom": "Zoom",
   "Zoom in": "Zoomer",
-  "Zoom out": "Zoom arrière"
+  "Zoom out": "Zoom arrière",
+  "Pastel colours": "Couleurs pastel",
+  "Show severity, priority and marking chips in soft pastel fills instead of the standard colours.": "Afficher les puces de sévérité, de priorité et de marquage en teintes pastel douces au lieu des couleurs standard."
 }

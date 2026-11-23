@@ -220,6 +220,7 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'bootstrap_wizard_skipped',
   'submenu_auto_collapse',
   'monochrome_labels',
+  'pastel_colours',
   'unsubscribed_news_feed_types',
   'password',
   'draft_context',

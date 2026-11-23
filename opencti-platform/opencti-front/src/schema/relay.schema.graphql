@@ -9099,6 +9099,7 @@ type MeUser implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
+  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   representative: Representative!
@@ -17111,6 +17112,7 @@ type User implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
+  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime

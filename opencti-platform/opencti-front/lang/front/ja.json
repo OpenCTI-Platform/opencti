@@ -6930,5 +6930,7 @@
   "zero": "ゼロ",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",
-  "Zoom out": "ズームアウト"
+  "Zoom out": "ズームアウト",
+  "Pastel colours": "パステルカラー",
+  "Show severity, priority and marking chips in soft pastel fills instead of the standard colours.": "重大度、優先度、マーキングのチップを標準色ではなく柔らかいパステルカラーで表示します。"
 }

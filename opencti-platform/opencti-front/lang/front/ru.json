@@ -6930,5 +6930,7 @@
   "zero": "ноль",
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
-  "Zoom out": "Уменьшить масштаб"
+  "Zoom out": "Уменьшить масштаб",
+  "Pastel colours": "Пастельные цвета",
+  "Show severity, priority and marking chips in soft pastel fills instead of the standard colours.": "Показывать метки серьёзности, приоритета и маркировки в мягких пастельных тонах вместо стандартных цветов."
 }
