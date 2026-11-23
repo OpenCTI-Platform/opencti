@@ -130,7 +130,14 @@ Where you fix a check depends on where the ingestion is configured:
 - a **self-hosted connector** is configured where it runs: its `docker-compose.yml`, its `config.yml` or its Kubernetes manifest. Its user is the owner of the token set in `OPENCTI_TOKEN`, and you cannot change it from OpenCTI. To use another user, set a token of that user in `OPENCTI_TOKEN` and restart the connector: it registers again with its new user;
 - a **feed** or a **synchronization** is configured in OpenCTI: open it and edit it.
 
-A fixed check clears at the next evaluation, within a minute.
+When a check clears after the fix depends on its kind:
+
+- a **configuration** check clears at the next evaluation, within a minute by default;
+- **No heartbeat received** clears at the next evaluation after the connector pings again;
+- **Feed or sync execution failed** and **Feed or sync source denied access** clear only after the next successful execution, which can wait for the next scheduled run of the feed or the synchronization;
+- an error reported by a connector clears when the connector stops reporting it: it expires 10 minutes after the last ping that reported it.
+
+Until then, the ingestion keeps its status: it does not mean that the fix failed.
 
 ### User is missing
 
@@ -146,7 +153,7 @@ If the connector stopped because it could not register, restart it.
 
 ### User account is not active
 
-Open the user and reactivate its account (**Settings > Security > Users**): set its status back to **Active** when it is **Locked** or **Inactive**, or move its **Account Expiry Date** when it is **Expired**. See [Account status](users.md#account-status).
+Open the user and reactivate its account (**Settings > Security > Users**): set its status back to **Active**, whether it is **Locked**, **Inactive** or **Expired**. For an expired account, moving the **Account Expiry Date** alone is not enough: the status stays **Expired**. Setting the status back to **Active** also clears the past expiry date; set a new date in the future if the account must still expire. See [Account status](users.md#account-status).
 
 You can also use another user instead:
 
@@ -189,7 +196,7 @@ So:
 
 - the user of `OPENCTI_TOKEN` must be allowed to manage users, such as the admin;
 - the `Connectors` group must exist. When it does not, the connector silently keeps running with the user of `OPENCTI_TOKEN`, and the check keeps failing;
-- the service account is found by the name of the connector: renaming the connector (`CONNECTOR_NAME`) creates another service account;
+- the service account is found by the name of the connector (`CONNECTOR_NAME`), not by its ID: renaming the connector creates another service account. Give each connector a distinct name, ignoring case and special characters (`Import File` and `import-file` give the same account): two connectors sharing an account renew its token each time one of them starts, and the other one can no longer authenticate;
 - this option is available to connectors built on the OpenCTI Python connector helper (`pycti`). For other connectors, create the service account yourself, as for export connectors below, in the `Connectors` group.
 
 **Self-hosted export connectors** (`CONNECTOR_TYPE=INTERNAL_EXPORT_FILE`, such as `ExportFileStix2`, `ExportFileCsv` and `ExportFileTxt`): do **not** use `CONNECTOR_AUTO_CREATE_SERVICE_ACCOUNT`. An export connector impersonates the user requesting the export, so that the file only contains what this user can see, and only a user with the **Bypass all capabilities** capability can impersonate another one. The `Connectors` group does not have it: OpenCTI would ignore the impersonation, and the export would run with the rights of the connector, which can differ from those of the requesting user. Create the service account yourself, in a group with bypass:
