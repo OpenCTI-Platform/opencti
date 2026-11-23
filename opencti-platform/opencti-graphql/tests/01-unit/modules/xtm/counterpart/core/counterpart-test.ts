@@ -213,7 +213,7 @@ describe('XTM counterparts: id-based resolution', () => {
     expect((await resolveCounterpartsOfSources([CVE], ALICE, [aev]))[0].status).toBe('not_found');
   });
 
-  it('asks a 404 route again once the TTL has passed, warning once per process (R1)', async () => {
+  it('asks a 404 route again once the TTL has passed, warning once per process', async () => {
     const aev = provider(true, ['web-01'], 'openaev');
     let clock = 1_000;
     const now = () => clock;
@@ -232,7 +232,7 @@ describe('XTM counterparts: id-based resolution', () => {
     expect(mocks.warn).toHaveBeenCalledTimes(1);
   });
 
-  it('a 403 draws nothing for that user only, cached for the TTL, without a warning (R2)', async () => {
+  it('a 403 draws nothing for that user only, cached for the TTL, without a warning', async () => {
     const aev = provider(true, ['web-01'], 'openaev');
     let clock = 1_000;
     const now = () => clock;

@@ -79,7 +79,7 @@ export const counterpartKeyOf = (kind: Kind, object: any): string | null => {
 /**
  * The counterpart keys of the given OpenCTI objects, read on the server under the caller's rights:
  * an id the caller cannot read is absent from the answer, and so is an object with no valid key
- * (Q2.2: never sent, never answered not_found). Alerts are matched on their external reference URLs.
+ * (such an object is never sent to a product, never answered not_found). Alerts are matched on their external reference URLs.
  */
 export const counterpartKeysOf = async (
   context: AuthContext,

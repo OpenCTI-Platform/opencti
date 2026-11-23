@@ -10,7 +10,7 @@ export type { CounterpartCaller };
 // Same keys and normalisation as OpenAEV's CounterpartKind, so both sides cache the same entry.
 export type CounterpartKind = 'ASSET' | 'ATTACK_PATTERN' | 'VULNERABILITY' | 'THREAT' | 'ALERT';
 
-// Whether another XTM product is connected to this platform. Never carries a credential (C9: no URL either).
+// Whether another XTM product is connected to this platform. Never carries a credential.
 export interface XtmConnection {
   product: string;
   connected: boolean;
@@ -32,7 +32,7 @@ export interface XtmCounterpartFact {
 }
 
 /**
- * The answer for one OpenCTI object and one connected product (Q2.1):
+ * The answer for one OpenCTI object and one connected product:
  * found (with the counterpart), not_found, not_supported (the product has no such route: draw nothing),
  * unavailable (the product could not answer this time: never cached).
  */
@@ -93,7 +93,7 @@ export interface CounterpartProvider {
 export const MAX_COUNTERPART_KEYS = 200;
 export const MAX_COUNTERPART_IDS = 200;
 export const COUNTERPART_CACHE_TTL_MS = 2 * 60 * 1000;
-// Bound of the per-user answer cache (C4): the least recently used entries go first.
+// Bound of the per-user answer cache: the least recently used entries go first.
 export const COUNTERPART_CACHE_MAX_ENTRIES = 50_000;
 
 const CVE_PATTERN = /^CVE-\d{4}-\d{4,}$/;
@@ -184,7 +184,7 @@ export const registerCounterpartProvider = (provider: CounterpartProvider) => {
 
 // Short-TTL cache of found counterparts and known misses, per USER, product, kind and key: each
 // product answers under the caller's own rights, so one user's answer is never served to another.
-// An unavailable answer is never cached (C10). Bounded in size and evicted at the TTL (C4); the
+// An unavailable answer is never cached. Bounded in size and evicted at the TTL; the
 // TTL is also checked on read against the injected clock.
 interface CacheEntry { at: number; value: XtmCounterpart | null }
 const cache = new LRUCache<string, CacheEntry>({ max: COUNTERPART_CACHE_MAX_ENTRIES, ttl: COUNTERPART_CACHE_TTL_MS });
@@ -197,7 +197,7 @@ const unsupportedRoutes = new Map<string, number>();
 const warnedRoutes = new Set<string>();
 const routeKey = (product: string, kind: CounterpartKind) => `${product}|${kind}`;
 
-// A route that answered 403 to one user (R2): that user has no right to read that kind there.
+// A route that answered 403 to one user: that user has no right to read that kind there.
 // Draws nothing for that user only, for the TTL; never a warning, never another user's answer.
 const forbiddenRoutes = new LRUCache<string, number>({ max: COUNTERPART_CACHE_MAX_ENTRIES, ttl: COUNTERPART_CACHE_TTL_MS });
 const forbiddenKey = (userId: string, product: string, kind: CounterpartKind) => `${userId}|${product}|${kind}`;
@@ -272,7 +272,7 @@ const resolveKeys = async (
 };
 
 /**
- * The counterparts of OpenCTI objects given by id, in every connected product (Q2.1, Q2.2):
+ * The counterparts of OpenCTI objects given by id, in every connected product:
  * the keys are read on the server from the objects the caller can read; an id the caller cannot
  * read, or whose object carries no valid key, gets no entry at all. One entry per (id, product)
  * for each connected product; a product that is not connected gets none (xtmConnections says so).
@@ -289,18 +289,16 @@ export const resolveCounterpartsOfSources = async (
     source.keys.forEach((key) => set.add(key));
     byKind.set(source.kind, set);
   }
-  const results: XtmCounterpartResult[] = [];
-  for (const provider of providers) {
-    if (!provider.isConnected()) {
-      continue;
-    }
+  // The connected products are asked in parallel: one slow product never delays the others.
+  const connected = providers.filter((provider) => provider.isConnected());
+  const perProvider = await Promise.all(connected.map(async (provider) => {
     const answersByKind = new Map<CounterpartKind, Map<string, KeyAnswer>>();
     // One call per kind and product, whatever the number of objects: a failure on one kind
     // never hides the answers of the others.
     await Promise.all([...byKind.entries()].map(async ([kind, keys]) => {
       answersByKind.set(kind, await resolveKeys(provider, kind, [...keys].slice(0, MAX_COUNTERPART_KEYS), caller, now));
     }));
-    for (const source of sources) {
+    return sources.map((source): XtmCounterpartResult => {
       const answers = source.keys.map((key) => answersByKind.get(source.kind)?.get(key)).filter((a): a is KeyAnswer => !!a);
       const found = answers.find((a) => a.status === 'found');
       let status: XtmCounterpartStatus;
@@ -313,15 +311,16 @@ export const resolveCounterpartsOfSources = async (
       } else {
         status = 'not_found';
       }
-      results.push({
+      return {
         id: source.id,
         product: provider.product,
         status,
         counterpart: found && found.status === 'found' ? found.counterpart : null,
-      });
-    }
-  }
-  return results;
+      };
+    });
+  }));
+  // Results keep the providers' order, whatever order the products answered in.
+  return perProvider.flat();
 };
 
 export const xtmConnections = (providers: ReadonlyArray<CounterpartProvider> = PROVIDERS): XtmConnection[] => {
@@ -330,7 +329,7 @@ export const xtmConnections = (providers: ReadonlyArray<CounterpartProvider> = P
 
 const callerOf = (user: AuthUser): CounterpartCaller => ({ id: user.id, user_email: user.user_email });
 
-// Dedicated feature flag, off by default (Sam, 23 Nov 2026): while it is off the platform answers no
+// Dedicated feature flag, off by default: while it is off the platform answers no
 // connection and sends no counterpart call to another product. Same id as the front-end flag.
 export const XTM_COUNTERPARTS_FEATURE_FLAG = 'XTM_COUNTERPARTS';
 

@@ -4,17 +4,17 @@ import openCrqMark from '../../../../../../static/images/xtm/xtm-mark-opencrq.sv
 import xtmOneMark from '../../../../../../static/images/xtm/xtm-mark-xtmone.svg';
 import { OPENAEV_FACTS, OPENCRQ_FACTS, XTMONE_FACTS, type FactDefinition } from './counterpartFacts';
 
-// The XTM products an OpenCTI object can have a counterpart in, in the order the emblems are drawn
-// (Contract v3: XTM One leftmost, then OpenCTI, OpenAEV, OpenCRQ, skipping self; the emblems come
-// first in the header actions). Every string a product needs lives here,
-// so the header, the list rows and the alert card never name a product themselves.
+// The XTM products an OpenCTI object can have a counterpart in, in the order their sections are
+// drawn in the XTM surface (XTM One first, then OpenAEV, OpenCRQ). Every string a product needs
+// lives here, so the header, the list rows and the alert card never name a product themselves.
 
 export interface XtmProduct {
   product: string;
   name: string;
   mark: string;
   facts: ReadonlyArray<FactDefinition>;
-  // The accessible name and tooltip title of each state, i18n keys written out so the checker sees them.
+  // The accessible name and tooltip title of each state, as i18n keys. The i18n scanners read only
+  // .jsx/.tsx files, so they do not see this file: these keys are kept in the catalogs by hand.
   open: string;
   notFound: string;
   unavailable: string;

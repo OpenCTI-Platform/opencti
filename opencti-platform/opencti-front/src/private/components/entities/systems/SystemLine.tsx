@@ -79,11 +79,13 @@ export const SystemLine: FunctionComponent<SystemLineProps> = ({
             <BodyItem
               style={{ width: dataColumns.name.width }}
             >
-              {data.name}
-              {data.draftVersion && (<DraftChip />)}
-              <XtmOneRowMark objectId={data.id} />
-              <OpenAevRowMark objectId={data.id} />
-              <OpenCrqRowMark objectId={data.id} />
+              <span style={{ display: 'inline-flex', alignItems: 'center', maxWidth: '100%', overflow: 'hidden' }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{data.name}</span>
+                {data.draftVersion && (<DraftChip />)}
+                <XtmOneRowMark objectId={data.id} />
+                <OpenAevRowMark objectId={data.id} />
+                <OpenCrqRowMark objectId={data.id} />
+              </span>
             </BodyItem>
             <BodyItem
               style={{ width: dataColumns.x_opencti_criticality.width }}
