@@ -36,7 +36,9 @@ import {
   sanitizeReferer,
   setCookieError,
   decodeOidcState,
-  clientErrorResponse,
+  errorBody,
+  errorResponse,
+  getRequestId,
   isClientRequestError,
   logMalformedRequest,
   isResponseWorthCompressing,
@@ -129,8 +131,8 @@ export const handleStorageGet = async (req, res) => {
     stream.pipe(res);
   } catch (e) {
     setCookieError(res, e.message);
-    logApp.error('Error getting storage get file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting storage get file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -161,8 +163,8 @@ export const handleStorageView = async (req, res) => {
     stream.pipe(res);
   } catch (e) {
     setCookieError(res, e.message);
-    logApp.error('Error getting storage view file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -206,8 +208,8 @@ export const handleStorageViewEmbedded = async (req, res) => {
     stream.pipe(res);
   } catch (e) {
     setCookieError(res, e.message);
-    logApp.error('Error getting storage view file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -237,8 +239,8 @@ export const handleStorageHtml = async (req, res) => {
     }
   } catch (e) {
     setCookieError(res, e.message);
-    logApp.error('Error getting html file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting html file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -264,8 +266,8 @@ export const handleStorageEncrypted = async (req, res) => {
     archive.pipe(res);
   } catch (e) {
     setCookieError(res, e.message);
-    logApp.error('Error getting encrypted file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting encrypted file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -383,8 +385,8 @@ const createApp = async (app, schema) => {
       await CERT_PROVIDER.reqLoginHandler(req, res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth by cert', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error auth by cert', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -394,8 +396,8 @@ const createApp = async (app, schema) => {
       await HEADERS_PROVIDER.reqLoginHandler(req, res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth by headers', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error auth by headers', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -429,7 +431,8 @@ const createApp = async (app, schema) => {
                   // When logout is implemented for strategy
                   if (error) {
                     setCookieError(res, 'Error generating logout uri');
-                    res.status(503).send({ status: 'error', error: error.message });
+                    logApp.error('Error generating logout uri', { cause: error, request_id: getRequestId(res) });
+                    res.status(503).send(errorBody(res, error));
                   } else {
                     logApp.debug('[LOGOUT] Remote logout ok');
                     res.redirect(request);
@@ -454,8 +457,8 @@ const createApp = async (app, schema) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error logout', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error logout', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -497,8 +500,8 @@ const createApp = async (app, schema) => {
       )(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth provider', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error auth provider', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -573,7 +576,10 @@ const createApp = async (app, schema) => {
           if (!initialized) {
             res.status(503).send({ status: 'error', error: 'Health monitoring not initialized yet' });
           } else if (!isHealthy) {
-            res.status(503).send({ status: 'error', error: failures.join(', '), ...(withDetails ? { dependencies } : {}) });
+            // The failures carry the raw error of each dependency (hosts, ports): only the operator asking
+            // for the details with the access key gets them, the health monitor logs them anyway.
+            const error = withDetails ? failures.join(', ') : 'Some dependencies are unavailable';
+            res.status(503).send({ status: 'error', error, ...(withDetails ? { dependencies } : {}) });
           } else if (withDetails) {
             const { es_used_size, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
             res.status(200).send({ status: 'success', dependencies, es_used_size, s3_used_size, queue_consumers });
@@ -585,8 +591,8 @@ const createApp = async (app, schema) => {
         }
       }
     } catch (e) {
-      logApp.error('Error in health check', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error in health check', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -657,14 +663,15 @@ const createApp = async (app, schema) => {
     // graphql-upload patches res.send to wait for the request to close; no-op otherwise. Must
     // cover the 500 below too, or an unread multipart body holds that answer back the same way.
     req.resume();
+    const requestId = getRequestId(res);
+    const { status, body } = errorResponse(err, requestId);
     if (isClientRequestError(err)) {
       logMalformedRequest(req, err);
-      const { status, body } = clientErrorResponse(err);
-      res.status(status).send(body);
-      return;
+    } else {
+      logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer, request_id: requestId });
     }
-    logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
-    res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
+    // The stack only helps a developer running the platform locally.
+    res.status(status).send(DEV_MODE && status === 500 ? { ...body, error: err.stack } : body);
   });
 
   return { sseMiddleware };
