@@ -166,9 +166,18 @@ export const findStixCoreObjectPaginated = async (context, user, args) => {
   return pageEntitiesConnection(context, user, types, args);
 };
 
-export const globalSearchPaginated = async (context, user, args) => {
+const publishSearchAction = async (user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
+};
+
+export const globalSearchPaginated = async (context, user, args) => {
+  await publishSearchAction(user, args);
+  return findStixCoreObjectPaginated(context, user, args);
+};
+
+export const globalSearchWithRelationshipsPaginated = async (context, user, args) => {
+  await publishSearchAction(user, args);
   return pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP], args);
 };
 

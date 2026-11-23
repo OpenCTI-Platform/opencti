@@ -14499,6 +14499,15 @@ type Query {
     orderBy: StixCoreObjectsOrdering
     orderMode: OrderingMode
     filters: FilterGroup
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE]) @deprecated(reason: "Only returns STIX Core Objects. Use `globalSearchWithRelationships` to also search STIX Core Relationships (#12826).")
+  globalSearchWithRelationships(
+    first: Int
+    after: ID
+    search: String
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
   ): StixObjectOrStixRelationshipConnection @auth(for: [KNOWLEDGE])
   unknownStixCoreObjects(
     values: [String!]!

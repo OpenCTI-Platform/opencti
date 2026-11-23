@@ -6,7 +6,14 @@ import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefiniti
 import { deleteElementById, distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
-import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
+import {
+  ABSTRACT_INTERNAL_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_LOCATION,
+  ID_INTERNAL,
+} from '../../../src/schema/general';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
   BULK_SEARCH_KEYWORDS_FILTER,
@@ -80,6 +87,32 @@ const LIST_QUERY = gql`
                         main
                     }
                     entity_type
+                }
+            }
+        }
+    }
+`;
+
+const LIST_WITH_RELATIONSHIPS_QUERY = gql`
+    query globalSearchWithRelationships(
+        $filters: FilterGroup
+    ) {
+        globalSearchWithRelationships(
+            filters: $filters
+        ) {
+            edges {
+                node {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
                 }
             }
         }
@@ -1685,6 +1718,25 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     expect(queryResult.data?.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data?.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
+  });
+  it('should search relationships with globalSearchWithRelationships only, globalSearch being unchanged', async () => {
+    const relationshipsFilters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', operator: 'eq', values: [ABSTRACT_STIX_CORE_RELATIONSHIP], mode: 'or' }],
+      filterGroups: [],
+    };
+    // globalSearch still returns only stix core objects: nothing for relationships
+    const legacyResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: relationshipsFilters } });
+    expect(legacyResult.data?.globalSearch.edges.length).toEqual(0);
+    // globalSearchWithRelationships returns the 24 stix core relationships
+    const relationshipsResult = await queryAsAdmin({ query: LIST_WITH_RELATIONSHIPS_QUERY, variables: { filters: relationshipsFilters } });
+    const relationshipNodes = relationshipsResult.data?.globalSearchWithRelationships.edges.map((e: { node: { relationship_type: string } }) => e.node);
+    expect(relationshipNodes.length).toEqual(24);
+    expect(relationshipNodes.every((n: { relationship_type: string }) => !!n.relationship_type)).toEqual(true);
+    // without filter: the stix core objects of globalSearch + the stix core relationships
+    const objectsResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: undefined } });
+    const allResult = await queryAsAdmin({ query: LIST_WITH_RELATIONSHIPS_QUERY, variables: { filters: undefined } });
+    expect(allResult.data?.globalSearchWithRelationships.edges.length).toEqual(objectsResult.data?.globalSearch.edges.length + 24);
   });
   it(`should list relationships according to filters: combinations of operators and modes with the special filter keys ${INSTANCE_RELATION_TYPES_FILTER}, ${RELATION_FROM_TYPES_FILTER}, ${RELATION_TO_TYPES_FILTER}`, async () => {
     // all stix core relationships

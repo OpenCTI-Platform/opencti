@@ -166,7 +166,7 @@ export const searchStixCoreObjectsLinesFragment = graphql`
     filters: { type: "FilterGroup" }
   )
   @refetchable(queryName: "SearchStixCoreObjectsLinesRefetchQuery") {
-    globalSearch(
+    globalSearchWithRelationships(
       types: $types
       search: $search
       first: $count
@@ -174,7 +174,7 @@ export const searchStixCoreObjectsLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_globalSearch") {
+    ) @connection(key: "Pagination_globalSearchWithRelationships") {
       edges {
         node {
           ... on BasicObject {
@@ -325,7 +325,7 @@ const Search = () => {
     linesQuery: searchStixCoreObjectsLinesQuery,
     linesFragment: searchStixCoreObjectsLinesFragment,
     queryRef,
-    nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
+    nodePath: ['globalSearchWithRelationships', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SearchStixCoreObjectsLinesPaginationQuery>;
 
@@ -335,7 +335,7 @@ const Search = () => {
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: SearchStixCoreObjectsLines_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SearchStixCoreObjectsLines_data$data) => data.globalSearchWithRelationships?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={contextFilters}

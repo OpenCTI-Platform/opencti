@@ -100,7 +100,7 @@ export const searchBulkFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
   )
   @refetchable(queryName: "SearchBulkRefetchQuery") {
-    globalSearch(
+    globalSearchWithRelationships(
       first: $count
       after: $cursor
       types: $types,
@@ -109,7 +109,7 @@ export const searchBulkFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
     )
-    @connection(key: "Pagination_globalSearch") {
+    @connection(key: "Pagination_globalSearchWithRelationships") {
       edges {
         node {
           ... on BasicObject {
@@ -173,7 +173,7 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
     linesQuery: searchBulkQuery,
     linesFragment: searchBulkFragment,
     queryRef,
-    nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
+    nodePath: ['globalSearchWithRelationships', 'pageInfo', 'globalCount'],
     setNumberOfElements: completeSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SearchBulkQuery>;
 
@@ -182,7 +182,7 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearchWithRelationships?.edges?.map((n) => n?.node)}
           storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={queryFilters}

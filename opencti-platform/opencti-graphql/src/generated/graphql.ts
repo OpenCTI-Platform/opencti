@@ -25757,7 +25757,9 @@ export type Query = {
   fintelTemplate?: Maybe<FintelTemplate>;
   form?: Maybe<Form>;
   forms?: Maybe<FormConnection>;
-  globalSearch?: Maybe<StixObjectOrStixRelationshipConnection>;
+  /** @deprecated Only returns STIX Core Objects. Use `globalSearchWithRelationships` to also search STIX Core Relationships (#12826). */
+  globalSearch?: Maybe<StixCoreObjectConnection>;
+  globalSearchWithRelationships?: Maybe<StixObjectOrStixRelationshipConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
   groupingContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']['output']>;
@@ -27021,6 +27023,17 @@ export type QueryFormsArgs = {
 
 
 export type QueryGlobalSearchArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type QueryGlobalSearchWithRelationshipsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -52690,7 +52703,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   fintelTemplate?: Resolver<Maybe<ResolversTypes['FintelTemplate']>, ParentType, ContextType, RequireFields<QueryFintelTemplateArgs, 'id'>>;
   form?: Resolver<Maybe<ResolversTypes['Form']>, ParentType, ContextType, RequireFields<QueryFormArgs, 'id'>>;
   forms?: Resolver<Maybe<ResolversTypes['FormConnection']>, ParentType, ContextType, Partial<QueryFormsArgs>>;
-  globalSearch?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
+  globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
+  globalSearchWithRelationships?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchWithRelationshipsArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
   groupingContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryGroupingContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;
