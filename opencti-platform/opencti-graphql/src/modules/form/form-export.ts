@@ -48,6 +48,9 @@ const convertDefault = (value: unknown, kind: FormReferenceKind, resolve: FormRe
   return value === undefined || value === null ? undefined : convertOption(value, kind, resolve) ?? undefined;
 };
 
+// A field whose default is an identity or a user: its default is never exported
+const isIdentityField = (field: FormFieldDefinition) => field.type === FormFieldType.CreatedBy || IDENTITY_ATTRIBUTES.includes(field.attributeMapping?.attributeName);
+
 const rewriteField = (field: FormFieldDefinition, resolve: FormReferenceResolver) => {
   const attributeName = field.attributeMapping?.attributeName;
   if (field.type === FormFieldType.ObjectMarking || attributeName === 'objectMarking') {
@@ -64,7 +67,7 @@ const rewriteField = (field: FormFieldDefinition, resolve: FormReferenceResolver
     } else {
       field.defaultValue = labels;
     }
-  } else if (field.type === FormFieldType.CreatedBy || IDENTITY_ATTRIBUTES.includes(attributeName)) {
+  } else if (isIdentityField(field)) {
     delete field.defaultValue;
   }
 };
@@ -151,16 +154,8 @@ const KIND_ENTITY_TYPES: Record<FormReferenceKind, string[]> = {
   member: [ENTITY_TYPE_GROUP],
 };
 
-// The references of a schema through the remap the other exports share: the internal ids become standard ids on export ('internal'),
-// the standard ids become the internal ids of the platform on import ('stix'). A reference that is not exported, or that the platform
-// does not know, is left out and counted.
-export const convertFormSchemaIds = async (
-  context: AuthContext,
-  user: AuthUser,
-  formSchema: FormSchemaDefinition,
-  from: 'internal' | 'stix',
-): Promise<{ schema: FormSchemaDefinition; unresolved: number }> => {
-  // First pass: the ids to resolve, all in one lookup
+// The entities a schema refers to, found in one lookup
+const loadReferencedEntities = async (context: AuthContext, user: AuthUser, formSchema: FormSchemaDefinition) => {
   const ids = new Set<string>();
   rewriteFormSchemaReferences(formSchema, (kind, id) => {
     if (!isLabelValue(kind, id)) {
@@ -169,21 +164,40 @@ export const convertFormSchemaIds = async (
     return id;
   });
   const resolved = ids.size > 0 ? await internalFindByIds(context, user, [...ids], { baseData: true, toMap: true, mapWithAllIds: true }) : {};
-  const entities = resolved as unknown as { [id: string]: BasicStoreObject };
-  // Second pass: the ids of the entities that are kept
-  let unresolved = 0;
-  const schema = rewriteFormSchemaReferences(formSchema, (kind, id) => {
+  return resolved as unknown as { [id: string]: BasicStoreObject };
+};
+
+// The resolver of the references through the remap the other exports share: the internal ids become standard ids on export ('internal'),
+// the standard ids become the internal ids of the platform on import ('stix'). A reference that is not exported, or that the platform
+// does not know, gives null (`onUnresolved` is told).
+const buildReferenceResolver = (entities: { [id: string]: BasicStoreObject }, from: 'internal' | 'stix', onUnresolved?: () => void): FormReferenceResolver => {
+  return (kind, id) => {
     if (isLabelValue(kind, id)) {
       return id;
     }
     const entity = entities[id];
     const converted = entity && KIND_ENTITY_TYPES[kind].includes(entity.entity_type) ? idsValuesRemap([id], entities, from, true)[0] : undefined;
     if (!converted) {
-      unresolved += 1;
+      onUnresolved?.();
       return null;
     }
     return converted;
-  });
+  };
+};
+
+// The references of a schema converted: what is not exported, or that the platform does not know, is left out and counted.
+export const convertFormSchemaIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  formSchema: FormSchemaDefinition,
+  from: 'internal' | 'stix',
+): Promise<{ schema: FormSchemaDefinition; unresolved: number }> => {
+  const entities = await loadReferencedEntities(context, user, formSchema);
+  let unresolved = 0;
+  const onUnresolved = () => {
+    unresolved += 1;
+  };
+  const schema = rewriteFormSchemaReferences(formSchema, buildReferenceResolver(entities, from, onUnresolved));
   return { schema, unresolved };
 };
 
@@ -206,4 +220,73 @@ export const exportFormIntake = async (context: AuthContext, user: AuthUser, for
     form_schema: await exportFormSchema(context, user, formSchema),
     active: form.active,
   };
+};
+
+// The identity fields of a schema by id, the ones of the relationships under the id of their relationship
+const identityFieldsOf = (schema: FormSchemaDefinition) => {
+  const fields = new Map<string, FormFieldDefinition>();
+  const isObject = (field: unknown): field is FormFieldDefinition => typeof field === 'object' && field !== null;
+  (schema.fields ?? []).filter(isObject).filter(isIdentityField).forEach((field) => fields.set(`field:${field.id}`, field));
+  (schema.relationships ?? []).forEach((relationship) => {
+    (relationship.fields ?? []).filter(isObject).filter(isIdentityField).forEach((field) => fields.set(`${relationship.id}:${field.id}`, field));
+  });
+  return fields;
+};
+
+// The list of defaults of a setting the bundle holds empty: the one of the stored form, or none when it had none
+const keepDefaults = (imported: { defaults?: unknown[] } | undefined, stored: { defaults?: unknown[] } | undefined) => {
+  if (!imported || !stored) {
+    return;
+  }
+  if (stored.defaults === undefined) {
+    delete imported.defaults;
+  } else {
+    imported.defaults = stored.defaults;
+  }
+};
+
+// The schema an overwrite writes: the schema of the bundle (as the ids of this platform), and what the bundle never carries, kept from the form
+// that is overwritten: the users and the organizations it names (assignee and participant defaults, static author, `createdByRef`, the default of an
+// identity field, the authorized members that are a user or an organization). So an export imported back on its own platform changes nothing, and
+// on another platform the form keeps its own assignees and members. What the bundle carries (groups, markings, labels, flags) is the bundle's.
+export const keepUserBoundSettings = async (
+  context: AuthContext,
+  user: AuthUser,
+  stored: FormSchemaDefinition,
+  imported: FormSchemaDefinition,
+): Promise<FormSchemaDefinition> => {
+  const schema = structuredClone(imported);
+  if (stored.createdByRef !== undefined) {
+    schema.createdByRef = stored.createdByRef;
+  }
+  const storedFields = identityFieldsOf(stored);
+  identityFieldsOf(schema).forEach((field, key) => {
+    const storedField = storedFields.get(key);
+    if (storedField && storedField.defaultValue !== undefined) {
+      field.defaultValue = storedField.defaultValue;
+    }
+  });
+  const storedDefaults = stored.draftDefaults;
+  const { draftDefaults } = schema;
+  if (!storedDefaults || !draftDefaults) {
+    return schema;
+  }
+  keepDefaults(draftDefaults.objectAssignee, storedDefaults.objectAssignee);
+  keepDefaults(draftDefaults.objectParticipant, storedDefaults.objectParticipant);
+  if (draftDefaults.author?.type === 'none' && storedDefaults.author?.type === 'static') {
+    // The bundle cannot tell a form with no author from a form whose static author was not exported: the author of the form stays, under the flags of the bundle
+    const { isEditable, isRequired } = draftDefaults.author;
+    draftDefaults.author = { ...storedDefaults.author, isEditable, isRequired };
+  }
+  const storedRules = storedDefaults.authorizedMembers?.defaults ?? [];
+  if (draftDefaults.authorizedMembers && storedRules.length > 0) {
+    // The rules of the stored form that the export leaves out are kept where they are; the others are the ones of the bundle, in the order of the form
+    const resolve = buildReferenceResolver(await loadReferencedEntities(context, user, stored), 'internal');
+    const bundleRules = [...(draftDefaults.authorizedMembers.defaults ?? [])];
+    const rules = storedRules.flatMap((rule) => (rewriteMemberRule(rule, resolve) === null ? [rule] : bundleRules.splice(0, 1)));
+    draftDefaults.authorizedMembers.defaults = [...rules, ...bundleRules];
+  } else if (draftDefaults.authorizedMembers && storedDefaults.authorizedMembers?.defaults === undefined && draftDefaults.authorizedMembers.defaults?.length === 0) {
+    delete (draftDefaults.authorizedMembers as { defaults?: unknown[] }).defaults;
+  }
+  return schema;
 };

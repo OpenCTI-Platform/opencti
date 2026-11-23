@@ -25,6 +25,7 @@ import {
   formOrganization,
   formUser,
   incidentForm,
+  incidentFormSchema,
   phishingFormLabel,
   reportForm,
   reviewersFormGroup,
@@ -196,6 +197,82 @@ describe('Form intake import', () => {
       expect(real).toMatchObject({ status: 'overwritten', reason: 'Groups, markings or labels not found are left out of the form' });
       expect(dryRun).toEqual(real);
       expect(formEditField).toHaveBeenCalledTimes(1);
+    });
+
+    describe('the users and the organizations of the form', () => {
+      // A form of the source platform whose references all exist there: nothing of it is lost by the export but the users and the organizations
+      const cleanSchema = () => {
+        const schema = structuredClone(incidentFormSchema);
+        schema.fields = schema.fields.map((item) => (item.name === 'objectMarking' ? { ...item, defaultValue: [amberFormMarking.id] } : item));
+        return schema;
+      };
+      const writtenSchema = () => JSON.parse(vi.mocked(formEditField).mock.calls[0][3].find(({ key }) => key === 'form_schema')?.value?.[0] ?? '') as FormSchemaDefinition;
+
+      it('skips the export of a form imported back on its own platform, whatever users and organizations it names', async () => {
+        const form = existingForm({ form_schema: JSON.stringify(cleanSchema()), active: true });
+        vi.mocked(internalFindByIds).mockImplementation(lookup(FORM_REFERENCED_ENTITIES));
+        const configuration = await exportFormIntake(context, user, form);
+        vi.mocked(findAllForms).mockResolvedValue([form]);
+        const result = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+        expect(result).toMatchObject({ status: 'skipped', code: 'unchanged', reason: 'Already up to date' });
+        expect(formEditField).not.toHaveBeenCalled();
+      });
+
+      it('keeps the assignees, the author, the identity defaults and the user and organization members of the form that is overwritten', async () => {
+        const configuration = await exportedConfiguration();
+        const schema = cleanSchema();
+        schema.draftDefaults.objectAssignee.defaults = [{ value: 'target-user-id', label: 'Target user' }];
+        schema.draftDefaults.objectParticipant.defaults = [];
+        schema.draftDefaults.author = { type: 'static', isEditable: false, isRequired: true, defaultValue: 'target-org-id', defaultValueLabel: 'Target org', defaultValueType: 'Organization' };
+        const userRule = { value: 'target-user-id', label: 'Target user', type: 'User', accessRight: 'admin', groupsRestriction: [] };
+        const organizationRule = { value: 'target-org-id', label: 'Target org', type: 'Organization', accessRight: 'view', groupsRestriction: [] };
+        const staleGroupRule = { value: targetGroup.id, label: 'Analysts', type: 'Group', accessRight: 'view', groupsRestriction: [] };
+        schema.draftDefaults.authorizedMembers.defaults = [userRule, staleGroupRule, organizationRule];
+        schema.fields = schema.fields.map((item) => (item.name === 'createdBy' ? { ...item, defaultValue: 'target-org-id' } : item));
+        (schema as { createdByRef?: string }).createdByRef = 'target-org-id';
+        vi.mocked(findAllForms).mockResolvedValue([existingForm({ form_schema: JSON.stringify(schema), active: true })]);
+        const dryRun = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+        const result = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+        // The form changes (its groups are the ones of the bundle): it is set inactive
+        expect(result).toMatchObject({ status: 'overwritten', exists: true });
+        expect(dryRun).toEqual(result);
+        expect(vi.mocked(formEditField).mock.calls[0][3]).toContainEqual({ key: 'active', value: ['false'] });
+        const imported = writtenSchema();
+        expect(imported.draftDefaults?.objectAssignee?.defaults).toEqual([{ value: 'target-user-id', label: 'Target user' }]);
+        expect(imported.draftDefaults?.objectParticipant?.defaults).toEqual([]);
+        // The identity is the one of the form, the flags are the ones of the bundle
+        expect(imported.draftDefaults?.author).toEqual({ type: 'static', isEditable: true, isRequired: false, defaultValue: 'target-org-id', defaultValueLabel: 'Target org', defaultValueType: 'Organization' });
+        expect(imported.fields.find(({ name }) => name === 'createdBy')?.defaultValue).toBe('target-org-id');
+        expect(imported.createdByRef).toBe('target-org-id');
+        const members = imported.draftDefaults?.authorizedMembers?.defaults ?? [];
+        expect(members).toContainEqual(userRule);
+        expect(members).toContainEqual(organizationRule);
+        // The groups are the ones of the bundle, as the groups of the platform: the stale rule of the form is gone
+        expect(members).not.toContainEqual(staleGroupRule);
+        expect(members).toContainEqual({ value: targetGroup.internal_id, label: 'Analysts', type: 'Group', accessRight: 'edit', groupsRestriction: [] });
+        expect(members).toContainEqual({ type: 'AUTHOR_ORG', intersectionGroup: targetGroup.internal_id });
+        expect(members).toHaveLength(2 + 5);
+        // What the bundle holds is the bundle's
+        expect(imported.fields.find(({ name }) => name === 'objectMarking')?.defaultValue).toEqual([targetMarking.internal_id]);
+      });
+
+      it('does not give a list of defaults to a form that had none', async () => {
+        const schema = { version: '2.0', mainEntityType: 'Incident', fields: [], draftDefaults: { objectAssignee: { isEditable: true, isRequired: false }, authorizedMembers: { enabled: true, isRequired: false } } };
+        const form = existingForm({ form_schema: JSON.stringify(schema), active: true });
+        vi.mocked(internalFindByIds).mockImplementation(lookup(FORM_REFERENCED_ENTITIES));
+        const configuration = await exportFormIntake(context, user, form);
+        vi.mocked(findAllForms).mockResolvedValue([form]);
+        const result = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+        expect(result).toMatchObject({ status: 'skipped', code: 'unchanged' });
+      });
+
+      it('writes a form without the users and the organizations of the bundle when the schema of the form cannot be read', async () => {
+        const configuration = await exportedConfiguration();
+        vi.mocked(findAllForms).mockResolvedValue([existingForm({ form_schema: 'not a json', active: true })]);
+        const result = await importFormIntake(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+        expect(result).toMatchObject({ status: 'overwritten' });
+        expect(writtenSchema().draftDefaults?.objectAssignee?.defaults).toEqual([]);
+      });
     });
 
     it('refuses to guess between several forms of the same name and type, and finds them by name and type', async () => {

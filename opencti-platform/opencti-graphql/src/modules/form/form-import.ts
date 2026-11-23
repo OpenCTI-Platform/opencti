@@ -12,7 +12,7 @@ import {
   joinConfigImportReasons,
 } from '../configImport/configImport-utils';
 import { addForm, findAllForms, formEditField, formSchemaErrors } from './form-domain';
-import { convertFormSchemaIds } from './form-export';
+import { convertFormSchemaIds, keepUserBoundSettings } from './form-export';
 import { type FormIntakeImportConfiguration, formIntakeImportSchema } from './form-import-schema';
 import type { BasicStoreEntityForm, FormSchemaDefinition } from './form-types';
 
@@ -51,11 +51,13 @@ const findFormsByNameAndType = async (context: AuthContext, user: AuthUser, name
   });
 };
 
-const hasSameSchema = (stored: string, schema: FormSchemaDefinition) => {
+// The stored schema of a form, or undefined when it is not a JSON object
+const parseStoredSchema = (stored: string): FormSchemaDefinition | undefined => {
   try {
-    return isDeepStrictEqual(JSON.parse(stored), schema);
+    const parsed = JSON.parse(stored);
+    return typeof parsed === 'object' && parsed !== null ? parsed : undefined;
   } catch {
-    return false;
+    return undefined;
   }
 };
 
@@ -64,8 +66,9 @@ const hasSameSchema = (stored: string, schema: FormSchemaDefinition) => {
 // The standard id of a form is random: the form is found by its name and its main entity type, and several forms with them are refused, not guessed.
 // The groups and the markings of the schema are the ones of the platform, found by standard id: what it does not know is left out of the form.
 // A form is created inactive, whatever it was: it has to be checked, and what named a user or an organization is empty.
-// overwrite: a form that exists is given the description and the schema of the configuration, and is set inactive (when it changes) like a new
-// one: it has to be checked again. A form that is already as the bundle has it is left as it is.
+// overwrite: a form that exists is given the description and the schema of the configuration, except for the users and the organizations it names
+// (assignees, author, members...), which it keeps: the bundle never carries them. It is set inactive (when it changes) like a new one: it has to be
+// checked again. A form that is already as the bundle has it is left as it is.
 // copy: a form is its name, so the copy of one that exists is another form under the first free `name (n)`.
 export const importFormIntake = async (
   context: AuthContext,
@@ -127,8 +130,11 @@ export const importFormIntake = async (
   if (description !== null && description !== undefined && description !== (existing.description ?? '')) {
     patch.push({ key: 'description', value: [description] });
   }
-  if (!hasSameSchema(existing.form_schema, schema)) {
-    patch.push({ key: 'form_schema', value: [JSON.stringify(schema)] });
+  // The bundle never carries the users and the organizations of a form: the form keeps the ones it has, and is compared to the bundle after that
+  const stored = parseStoredSchema(existing.form_schema);
+  const overwritten = stored ? await keepUserBoundSettings(context, user, stored, schema) : schema;
+  if (!stored || !isDeepStrictEqual(stored, overwritten)) {
+    patch.push({ key: 'form_schema', value: [JSON.stringify(overwritten)] });
   }
   if (patch.length === 0) {
     return configImportRefusal('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, parsed.data);
