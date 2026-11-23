@@ -11,13 +11,14 @@ import type { BasicStoreEntityCustomView } from './customView-types';
 // Saved filters that exist are inlined, as the file export and the export of the dashboards do: an overwrite on the platform the bundle comes from
 // therefore replaces a saved filter reference by its filters, as it does for a dashboard.
 // A manifest the platform cannot read (a widget without data selection, a value that is not base64 json) is exported as stored, with a warning:
-// it must not fail the export of every other item of the bundle. The import refuses it with a reason. A failure of the platform itself is not
-// swallowed.
+// it must not fail the export of every other item of the bundle. The import refuses it with a reason. Only what a broken manifest throws is
+// swallowed (a TypeError, a SyntaxError, a functional error): any other error is a failure of the platform itself, and fails the export.
 const toBundleManifest = async (context: AuthContext, user: AuthUser, customView: BasicStoreEntityCustomView, encoded: string) => {
   try {
     return await convertDashboardManifestIds(context, user, stripServerOwnedManifestKeys(encoded), 'internal', { keepMissingSavedFilters: true });
   } catch (cause) {
-    if (cause instanceof GraphQLError && cause.extensions.code !== FUNCTIONAL_ERROR) {
+    const isBrokenManifest = cause instanceof TypeError || cause instanceof SyntaxError || (cause instanceof GraphQLError && cause.extensions.code === FUNCTIONAL_ERROR);
+    if (!isBrokenManifest) {
       throw cause;
     }
     logApp.warn('[CONFIG PRESET] The manifest of a custom view cannot be converted for the export, it is exported as stored', { cause, custom_view_id: customView.id });

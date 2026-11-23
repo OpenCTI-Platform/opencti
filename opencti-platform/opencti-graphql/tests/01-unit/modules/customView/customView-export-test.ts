@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GraphQLError } from 'graphql';
 
 vi.mock('../../../../src/modules/dashboard/dashboard-utils', () => ({ convertDashboardManifestIds: vi.fn() }));
 vi.mock('../../../../src/config/conf', async (importOriginal) => ({
@@ -65,9 +64,12 @@ describe('Custom view export to a bundle', () => {
       expect(logApp.warn).toHaveBeenCalledWith(expect.stringContaining('exported as stored'), expect.objectContaining({ custom_view_id: 'view-id' }));
     });
 
-    it('does not hide a failure of the platform itself', async () => {
-      vi.mocked(convertDashboardManifestIds).mockRejectedValue(DatabaseError('Search timeout'));
-      await expect(exportCustomViewToBundle(context, user, view())).rejects.toBeInstanceOf(GraphQLError);
+    it.each([
+      ['a platform error', DatabaseError('Search timeout')],
+      ['an error that is not a GraphQL error', new Error('The operation was aborted')],
+    ])('does not hide a failure of the platform itself: %s', async (_label, error) => {
+      vi.mocked(convertDashboardManifestIds).mockRejectedValue(error);
+      await expect(exportCustomViewToBundle(context, user, view())).rejects.toBe(error);
       expect(logApp.warn).not.toHaveBeenCalled();
     });
   });
