@@ -1,6 +1,6 @@
 import { LRUCache } from 'lru-cache';
 import type { AuthContext, AuthUser } from '../../../../types/user';
-import { isFeatureEnabled, logApp } from '../../../../config/conf';
+import { isFeatureEnabled, logApp, XTM_COUNTERPARTS_FEATURE_FLAG } from '../../../../config/conf';
 import { CounterpartLookupError, type CounterpartCaller } from './counterpart-errors';
 import { counterpartKeysOf, type CounterpartSource } from './counterpart-keys';
 
@@ -329,10 +329,8 @@ export const xtmConnections = (providers: ReadonlyArray<CounterpartProvider> = P
 
 const callerOf = (user: AuthUser): CounterpartCaller => ({ id: user.id, user_email: user.user_email });
 
-// Dedicated feature flag, off by default: while it is off the platform answers no
-// connection and sends no counterpart call to another product. Same id as the front-end flag.
-export const XTM_COUNTERPARTS_FEATURE_FLAG = 'XTM_COUNTERPARTS';
-
+// Domain gate of the dedicated feature flag XTM_COUNTERPARTS (declared in config/conf, off by default):
+// while it is off the platform answers no connection and sends no counterpart call to another product.
 export const findXtmConnections = async (_context: AuthContext, _user: AuthUser) => (
   isFeatureEnabled(XTM_COUNTERPARTS_FEATURE_FLAG) ? xtmConnections() : []
 );

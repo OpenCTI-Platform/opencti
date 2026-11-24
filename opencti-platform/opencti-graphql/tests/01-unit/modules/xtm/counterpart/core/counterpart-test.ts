@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({ warn: vi.fn(), flagOn: true }));
 
 vi.mock('../../../../../../src/config/conf', () => ({
   isFeatureEnabled: (flag: string) => flag === 'XTM_COUNTERPARTS' && mocks.flagOn !== false,
+  XTM_COUNTERPARTS_FEATURE_FLAG: 'XTM_COUNTERPARTS',
   default: { get: () => undefined },
   logApp: { info: vi.fn(), error: vi.fn(), warn: mocks.warn, debug: vi.fn() },
 }));
