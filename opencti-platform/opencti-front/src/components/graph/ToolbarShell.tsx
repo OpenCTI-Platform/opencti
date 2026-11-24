@@ -32,9 +32,12 @@ export interface ToolbarAction<G extends string = string> extends ToolbarOverflo
     multiple?: boolean;
     onSelect: (key: string) => void;
   };
-  /** A wide control (a select, a combobox) drawn instead of an icon button. Measured once drawn; `width` is the estimate until then. */
+  /**
+   * A wide control (a select, a combobox) drawn instead of an icon button. Measured once drawn; `width` is the estimate until then.
+   * The control unmounts when it moves to "More actions": keep its value in the caller's state, not in the control.
+   */
   render?: () => ReactNode;
-  /** What "More actions" shows for this control when the row has no room for it. */
+  /** What "More actions" shows for this control when the row has no room for it. Default: `render`. */
   submenu?: () => ReactNode;
 }
 

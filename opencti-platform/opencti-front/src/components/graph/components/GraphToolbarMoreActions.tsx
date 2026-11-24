@@ -31,7 +31,7 @@ const MenuGlyph = ({ children }: { children: React.ReactNode }) => (
 );
 
 /** What a menu of the graph lists: a toolbar action, or an action of the context menu. */
-export type GraphMenuAction = Pick<GraphToolbarAction, 'id' | 'label' | 'icon' | 'shortcut' | 'pressed' | 'disabledReason' | 'badge' | 'onSelect' | 'options' | 'submenu'>;
+export type GraphMenuAction = Pick<GraphToolbarAction, 'id' | 'label' | 'icon' | 'shortcut' | 'pressed' | 'disabledReason' | 'badge' | 'onSelect' | 'options' | 'render' | 'submenu'>;
 
 const ActionLabel = ({ action }: { action: GraphMenuAction }) => {
   const theme = useTheme<Theme>();
@@ -47,9 +47,11 @@ const ActionLabel = ({ action }: { action: GraphMenuAction }) => {
 
 const FOCUSABLE = 'input, select, textarea, button, a[href], [tabindex]:not([tabindex="-1"])';
 
+const focusableFields = (container: HTMLElement) => Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE))
+  .filter((field) => !(field as HTMLButtonElement).disabled && !field.closest('[hidden], [aria-hidden="true"]'));
+
 const moveFocusWithin = (container: HTMLElement, step: 1 | -1, event: { preventDefault: () => void }) => {
-  const fields = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE))
-    .filter((field) => !(field as HTMLButtonElement).disabled && !field.closest('[hidden], [aria-hidden="true"]'));
+  const fields = focusableFields(container);
   event.preventDefault();
   if (fields.length === 0) return;
   const index = fields.indexOf(document.activeElement as HTMLElement);
@@ -59,14 +61,22 @@ const moveFocusWithin = (container: HTMLElement, step: 1 | -1, event: { preventD
 };
 
 export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => {
-  const { options, submenu } = action;
+  const { options } = action;
+  // A wide control without a submenu of its own shows the control itself in the submenu.
+  const submenu = action.submenu ?? action.render;
   if (submenu && !action.disabledReason) {
     return (
       <MenuSub>
         <MenuSubTrigger startIcon={<MenuGlyph>{action.icon}</MenuGlyph>}>
           <ActionLabel action={action} />
         </MenuSubTrigger>
-        <MenuSubContent>
+        <MenuSubContent
+          // Opened by keyboard, the submenu focuses its panel, which has no menu item to move to:
+          // the focus goes on to the first field of the control.
+          onFocus={(event) => {
+            if (event.target === event.currentTarget) focusableFields(event.currentTarget)[0]?.focus();
+          }}
+        >
           {/* FDS-WORKAROUND #86: a submenu takes the arrow and letter keys of a field inside it — see fds-migration/LIBRARY-FEEDBACK.md #86 */}
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div

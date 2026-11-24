@@ -150,26 +150,60 @@ describe('ToolbarShell', () => {
     expect(input).toHaveFocus();
   });
 
-  it('lets a wide control keep its own state and hooks when it moves to "More actions" and back', async () => {
-    const Counter = () => {
+  it('keeps the hooks of a wide control working, and the value its caller holds, when it moves to "More actions" and back', async () => {
+    // The caller holds the value: the control itself unmounts while it is in "More actions".
+    const Caller = () => {
       const [count, setCount] = React.useState(0);
-      return <button type="button" onClick={() => setCount(count + 1)}>{`Clicked ${count}`}</button>;
+      const action: ToolbarAction<Group> = {
+        ...posture(),
+        // A hook written in the render function itself, as a caller may do.
+        render: () => {
+          const [label] = React.useState('Kill chain');
+          return <><span>{label}</span><button type="button" onClick={() => setCount(count + 1)}>{`Clicked ${count}`}</button></>;
+        },
+      };
+      return (
+        <ToolbarShell<Group>
+          label="Test toolbar"
+          layout={[{ kind: 'group', group: 'a' }, { kind: 'group', group: 'posture' }]}
+          actions={[icon('one', 'a'), action]}
+          groups={GROUPS}
+          groupLabels={LABELS}
+          height={54}
+        />
+      );
     };
-    const action: ToolbarAction<Group> = {
-      ...posture(),
-      // A hook written in the render function itself, as a caller may do.
-      render: () => {
-        const [label] = React.useState('Kill chain');
-        return <><span>{label}</span><Counter /></>;
-      },
-    };
-    const { rerender, element } = renderShell([icon('one', 'a'), action]);
-    expect(screen.getByText('Kill chain')).toBeInTheDocument();
+    const { user, rerender } = testRender(<Caller />);
+    await user.click(screen.getByRole('button', { name: 'Clicked 0' }));
+    expect(screen.getByRole('button', { name: 'Clicked 1' })).toBeInTheDocument();
     row.width = 200;
-    rerender(element);
+    rerender(<Caller />);
+    expect(screen.queryByText('Kill chain')).toBeNull();
     row.width = 2000;
-    rerender(element);
+    rerender(<Caller />);
     expect(screen.getByText('Kill chain')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Clicked 1' })).toBeInTheDocument();
+  });
+
+  it('shows the control itself in "More actions" when it has no submenu of its own', async () => {
+    row.width = 200;
+    const { user } = renderShell([{ ...posture(), submenu: undefined }]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Compare with my security posture' }));
+    expect(await screen.findByRole('button', { name: 'Kill chain' })).toBeInTheDocument();
+  });
+
+  it('focuses the first field of a submenu opened by keyboard', async () => {
+    row.width = 200;
+    const { user } = renderShell([posture()]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    const trigger = await screen.findByRole('menuitem', { name: 'Compare with my security posture' });
+    act(() => trigger.focus());
+    await user.keyboard('{ArrowRight}');
+    const input = await screen.findByRole('textbox', { name: 'Platform' });
+    await vi.waitFor(() => expect(input).toHaveFocus());
+    await user.keyboard('ab');
+    expect(input).toHaveValue('ab');
   });
 
   it('reaches a wide control with the arrow keys', async () => {
