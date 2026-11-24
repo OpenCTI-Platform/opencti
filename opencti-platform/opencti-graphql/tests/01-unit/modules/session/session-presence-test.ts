@@ -675,6 +675,13 @@ describe('session presence', () => {
       expect(store.removeSessionLease).toHaveBeenCalledOnce();
     });
 
+    it('should reject the socket of a session being logged out', async () => {
+      mockSessionMiddleware(nextSessionId(), { user: USER });
+      vi.mocked(store.saveSessionLeases).mockResolvedValueOnce(undefined);
+
+      await expect(onSessionPresenceConnect(buildContext())).resolves.toBe(false);
+    });
+
     it('should accept the socket even if the presence fails', async () => {
       vi.mocked(session.getSessionMiddleware).mockRejectedValue(new Error('store unavailable'));
 

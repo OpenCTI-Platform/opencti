@@ -9,7 +9,7 @@ import type { PresenceConnection, SessionRequest } from './session-presence-type
 
 const socketConnections = new WeakMap<object, PresenceConnection>();
 
-// graphql-ws hooks, the presence must never prevent the socket from being used.
+// graphql-ws hooks, the presence must never prevent the socket from being used, except while its session is being logged out.
 // Nothing is tracked without the SESSION_PRESENCE feature flag. With it, every node tracks its sockets in memory,
 // and writes their leases to Redis only while the platform setting is on (see session-presence-domain).
 export const onSessionPresenceConnect = async (ctx: Context<Record<string, unknown> | undefined, Extra>) => {
@@ -31,9 +31,10 @@ export const onSessionPresenceConnect = async (ctx: Context<Record<string, unkno
     // Same origin as an explicit logout, so both logout events are consistent in the audit
     const { origin } = userWithOrigin(request, user);
     const connectionId = await registerSessionPresence(request.sessionID, origin);
-    // Refused while the session is being logged out
+    // Refused while the session is being logged out: the socket is rejected (4403), otherwise its subscriptions
+    // would keep using the session parsed above once it is destroyed
     if (!connectionId) {
-      return;
+      return false;
     }
     const connection = { sessionId: request.sessionID, connectionId };
     // The socket may have been closed while it was registered: its close hook found nothing to unregister
