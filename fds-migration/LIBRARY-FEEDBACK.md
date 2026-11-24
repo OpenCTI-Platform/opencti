@@ -3255,12 +3255,14 @@ the submenu closes under the user. The library documents no way to host a field
 in a menu.
 
 **Workaround.** The submenu content wraps the control in an element that stops
-the propagation of every key but Escape and Tab, so the field keeps its keys,
-Escape still closes the menu, and Tab stays in the menu as in any menu (the
-library prevents it; let through, it would leave the portalled menu and drop
-the focus on the page). Marked `FDS-WORKAROUND #87`. Pinned by
+the propagation of every key but Escape, so the field keeps its keys and
+Escape still closes the menu. Tab and Shift+Tab move between the fields of the
+control, wrapping around: the focus stays in the menu as in any menu (the
+library prevents Tab; let through, it would leave the portalled menu and drop
+the focus on the page), and no field traps it. Marked `FDS-WORKAROUND #87`. Pinned by
 `ToolbarShell.test.tsx` (`lets a field inside a submenu take the keys typed in it`,
-`keeps the focus in a submenu field on Tab, as in any menu`).
+`keeps the focus in a submenu field on Tab, as in any menu`,
+`moves Tab and Shift+Tab between the fields of a submenu, wrapping around`).
 
 **Ask.** A supported way to put a form control in a `MenuSubContent` (or a
 `MenuItem` variant holding one): the menu leaves the keys of a focused field to
@@ -3268,5 +3270,5 @@ it, and keeps Escape to close.
 
 **Removal test.** Remove the wrapper: in the "More actions" submenu of the
 matrix toolbar, typing a platform name and moving the caret with ArrowLeft
-must work, Tab must keep the focus in the menu, and Escape must still close
-the menu.
+must work, Tab and Shift+Tab must move between the control's fields without
+leaving the menu, and Escape must still close the menu.

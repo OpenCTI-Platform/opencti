@@ -89,6 +89,14 @@ describe('toolbar roving focus', () => {
     expect(toolbarControls(root).map((control) => control.textContent || control.getAttribute('aria-label'))).toEqual(['A', 'D', 'E']);
   });
 
+  it('leaves Home and End to a native select, the arrow keys moving on', () => {
+    const select = document.createElement('select');
+    expect(keepsKeyInField(select, 'Home')).toBe(true);
+    expect(keepsKeyInField(select, 'End')).toBe(true);
+    expect(keepsKeyInField(select, 'ArrowRight')).toBe(false);
+    expect(keepsKeyInField(select, 'ArrowLeft')).toBe(false);
+  });
+
   it('keeps the arrows in the search field until its selection is collapsed and its caret at the end', () => {
     const field = document.createElement('input');
     field.value = 'emotet';

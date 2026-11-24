@@ -44,6 +44,19 @@ const ActionLabel = ({ action }: { action: GraphMenuAction }) => {
   );
 };
 
+const FOCUSABLE = 'input, select, textarea, button, a[href], [tabindex]:not([tabindex="-1"])';
+
+const moveFocusWithin = (container: HTMLElement, step: 1 | -1, event: { preventDefault: () => void }) => {
+  const fields = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE))
+    .filter((field) => !(field as HTMLButtonElement).disabled && !field.closest('[hidden], [aria-hidden="true"]'));
+  event.preventDefault();
+  if (fields.length === 0) return;
+  const index = fields.indexOf(document.activeElement as HTMLElement);
+  let next = step === 1 ? 0 : fields.length - 1;
+  if (index >= 0) next = (index + step + fields.length) % fields.length;
+  fields[next].focus();
+};
+
 export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => {
   const { options, submenu } = action;
   if (submenu && !action.disabledReason) {
@@ -57,8 +70,12 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             onKeyDown={(event) => {
-              // Escape closes the menu; Tab stays in it, as in any menu.
-              if (event.key !== 'Escape' && event.key !== 'Tab') event.stopPropagation();
+              // Escape closes the menu.
+              if (event.key === 'Escape') return;
+              event.stopPropagation();
+              // Tab and Shift+Tab move between the fields of the control, wrapping around: the menu keeps the focus,
+              // as any menu does, without trapping it on one field.
+              if (event.key === 'Tab') moveFocusWithin(event.currentTarget, event.shiftKey ? -1 : 1, event);
             }}
           >
             <RenderFunction render={submenu} />

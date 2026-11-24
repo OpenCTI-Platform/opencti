@@ -59,6 +59,7 @@ describe('ToolbarShell', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
     row.width = 2000;
     widths.posture = 300;
   });
@@ -178,5 +179,79 @@ describe('ToolbarShell', () => {
     screen.getByRole('button', { name: 'one' }).focus();
     await user.keyboard('{ArrowRight}');
     expect(screen.getByRole('button', { name: 'Kill chain' })).toHaveFocus();
+  });
+
+  it('reaches a select and a combobox trigger with the arrow keys, the row keeping one tab stop', async () => {
+    const selects = posture(vi.fn(() => (
+      <>
+        <select aria-label="Kill chain"><option>mitre-attack</option></select>
+        <button type="button" role="combobox" aria-expanded={false} aria-controls="none" aria-label="Platforms" />
+      </>
+    )));
+    const { user } = renderShell([icon('one', 'a'), selects]);
+    const toolbar = screen.getByRole('toolbar', { name: 'Test toolbar' });
+    screen.getByRole('button', { name: 'one' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('combobox', { name: 'Kill chain' })).toHaveFocus();
+    await user.keyboard('{ArrowRight}');
+    expect(screen.getByRole('combobox', { name: 'Platforms' })).toHaveFocus();
+    expect(toolbar.querySelectorAll('[tabindex="0"]')).toHaveLength(1);
+  });
+
+  it('plans the row again when a wide control grows by itself', () => {
+    const observers: { callback: ResizeObserverCallback; targets: Element[] }[] = [];
+    vi.stubGlobal('ResizeObserver', class {
+      targets: Element[] = [];
+
+      constructor(public callback: ResizeObserverCallback) {
+        observers.push(this);
+      }
+
+      observe(target: Element) {
+        this.targets.push(target);
+      }
+
+      unobserve() {}
+
+      disconnect() {}
+    });
+    // 400 px less the padding holds the 300 px control and its divider, not 380 px.
+    row.width = 400;
+    renderShell([posture()]);
+    expect(screen.getByRole('button', { name: 'Kill chain' })).toBeInTheDocument();
+    // The control grows through its own state (a chip added): the toolbar is not rendered again by its parent.
+    widths.posture = 380;
+    const wrapper = document.querySelector('[data-toolbar-action="posture"]');
+    act(() => {
+      observers.filter(({ targets }) => wrapper && targets.includes(wrapper)).forEach((observer) => observer.callback([], observer as unknown as ResizeObserver));
+    });
+    expect(screen.queryByRole('button', { name: 'Kill chain' })).toBeNull();
+  });
+
+  it('moves Tab and Shift+Tab between the fields of a submenu, wrapping around', async () => {
+    row.width = 200;
+    const action: ToolbarAction<Group> = {
+      ...posture(),
+      submenu: () => (
+        <>
+          <input aria-label="Platform" />
+          <button type="button">Clear the platforms</button>
+        </>
+      ),
+    };
+    const { user } = renderShell([action]);
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    const trigger = await screen.findByRole('menuitem', { name: 'Compare with my security posture' });
+    act(() => trigger.focus());
+    await user.keyboard('{ArrowRight}');
+    const input = await screen.findByRole('textbox', { name: 'Platform' });
+    const clear = screen.getByRole('button', { name: 'Clear the platforms' });
+    act(() => input.focus());
+    await user.keyboard('{Tab}');
+    expect(clear).toHaveFocus();
+    await user.keyboard('{Tab}');
+    expect(input).toHaveFocus();
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(clear).toHaveFocus();
   });
 });

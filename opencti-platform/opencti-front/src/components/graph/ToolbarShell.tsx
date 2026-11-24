@@ -1,4 +1,4 @@
-import React, { CSSProperties, Fragment, ReactNode, Ref, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { CSSProperties, Fragment, ReactNode, Ref, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Paper } from '@filigran/design-system';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
@@ -161,6 +161,19 @@ const ToolbarShell = <G extends string>({
   const [folded, setFolded] = useState(false);
   // Width of each wide control, measured while in the row; kept while it waits in "More actions".
   const [wideWidths, setWideWidths] = useState<Record<string, number>>({});
+  // A wide control can grow through its own state (a chip added) without the toolbar rendering again:
+  // each one is observed, and a change of size renders the toolbar, whose layout effect measures it.
+  const [, setResized] = useState(0);
+  const wideObserver = useMemo(
+    () => (typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => setResized((count) => count + 1))),
+    [],
+  );
+  useEffect(() => () => wideObserver?.disconnect(), [wideObserver]);
+  const observeWide = useCallback((element: HTMLDivElement | null) => {
+    if (!element || !wideObserver) return undefined;
+    wideObserver.observe(element);
+    return () => wideObserver.unobserve(element);
+  }, [wideObserver]);
   const hasFoldable = layout.some((slot) => slot.kind === 'pinned' && slot.foldable);
   const padding = parseFloat(theme.spacing(1.5)) * 2;
   const available = rowWidth > 0 ? rowWidth - padding - fixedWidth : Infinity;
@@ -205,7 +218,7 @@ const ToolbarShell = <G extends string>({
   const renderAction = (action: ToolbarAction<G>) => {
     if (action.render) {
       return (
-        <div key={action.id} data-toolbar-action={action.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+        <div key={action.id} ref={observeWide} data-toolbar-action={action.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
           <RenderFunction render={action.render} />
         </div>
       );
