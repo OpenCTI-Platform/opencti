@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
-import { Alert, Checkbox, Input, Paper, Switch, Text, Textarea } from '@filigran/design-system';
+import { Alert, Checkbox, Icon, Input, Paper, Switch, Text, Textarea } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -30,9 +30,13 @@ import { IR_PRIORITIES, priorityLabel } from '../IntelligenceRequirementsCards';
 import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import IrDryRunPanel from './IrDryRunPanel';
+import { isWeightRule, weightRule } from './irPresetDraft';
+import { adjustmentToRule, directionResolver, emptyAdjustment, ruleToAdjustment, withAdjustmentGroups, type IrAdjustment } from './irAdjustment';
+import IrWeightAdjustmentEditor, { adjustmentWords, useFiltersSummary } from './IrWeightAdjustmentEditor';
+import useSchema from '../../../../utils/hooks/useSchema';
 import IrCriterionSentence from './IrCriterionSentence';
 import IrConditionSentence from './IrConditionSentence';
-import type { IrConfigView } from './irSentence';
+import { type IrConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationFormAddMutation } from './__generated__/IntelligenceRequirementConfigurationFormAddMutation.graphql';
 import type { IntelligenceRequirementConfigurationFormUpdateMutation } from './__generated__/IntelligenceRequirementConfigurationFormUpdateMutation.graphql';
 
@@ -151,9 +155,14 @@ interface IntelligenceRequirementConfigurationFormProps {
   irId?: string;
   view?: IrConfigView; // how the scope criteria are written: fields (default) or sentences
   onCreated?: (id: string) => void;
+  // A requirement built from preset rules: its rules, read-only, take the place of the question, subjects and scope blocks
+  rulesReview?: ReactNode;
+  // In the create panel: the dry run goes under the form, and Cancel closes the panel
+  stacked?: boolean;
+  onCancel?: () => void;
 }
 
-const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = 'fields', onCreated }: IntelligenceRequirementConfigurationFormProps) => {
+const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = 'fields', onCreated, rulesReview, stacked = false, onCancel }: IntelligenceRequirementConfigurationFormProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [draft, setDraft] = useState<IrDraft>(initialDraft);
@@ -165,6 +174,32 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
   const setGroup = (id: string, patch: Partial<IrGroupDraft>) => set({ groups: draft.groups.map((g) => (g.id === id ? { ...g, ...patch } : g)) });
   const setCriterion = (id: string, patch: Partial<IrCriterionDraft>) => set({ criteria: draft.criteria.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
   const setRule = (id: string, patch: Partial<IrRuleDraft>) => set({ rules: draft.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)) });
+  // Weighting adjustments of the preset scoring are written in a draft of their own and only reach the requirement
+  // when saved: a direct link brings a hidden subject group of the chosen entities along
+  const [adjustmentEdits, setAdjustmentEdits] = useState<Record<string, IrAdjustment>>({});
+  const without = <T,>(record: Record<string, T>, id: string) => Object.fromEntries(Object.entries(record).filter(([key]) => key !== id));
+  const editAdjustment = (adjustment: IrAdjustment) => setAdjustmentEdits((edits) => ({ ...edits, [adjustment.id]: adjustment }));
+  const closeAdjustment = (id: string) => setAdjustmentEdits((edits) => without(edits, id));
+  const describeFilters = useFiltersSummary();
+  const { schema } = useSchema();
+  const allTypes = [...schema.sdos, ...schema.scos].map((type) => type.id);
+  const relationMapping = (from: string, to: string) => schema.schemaRelationsTypesMapping.get(`${from}_${to}`) ?? [];
+  // a saved adjustment, read back with the reading of its direct link the schema gives
+  const adjustmentOf = (rule: IrRuleDraft, flaggedTypes: string[]) => ruleToAdjustment(
+    rule,
+    draft.groups,
+    directionResolver(rule.applies_to_types.length > 0 ? rule.applies_to_types : flaggedTypes, allTypes, relationMapping),
+  );
+  const saveAdjustment = (adjustment: IrAdjustment, flaggedTypes: string[], weighting: number) => {
+    const { rule, group } = adjustmentToRule(adjustment, adjustmentWords(adjustment, flaggedTypes, weighting, t_i18n, describeFilters).name);
+    const rules = draft.rules.some((r) => r.id === rule.id) ? draft.rules.map((r) => (r.id === rule.id ? rule : r)) : [...draft.rules, rule];
+    set({ rules, groups: withAdjustmentGroups(draft.groups, rules, group) });
+    closeAdjustment(adjustment.id);
+  };
+  const removeAdjustment = (id: string) => {
+    const rules = draft.rules.filter((r) => r.id !== id);
+    set({ rules, groups: withAdjustmentGroups(draft.groups, rules, null) });
+  };
   const setCondition = (criterion: IrCriterionDraft, id: string, patch: Partial<IrConditionDraft>) => setCriterion(criterion.id, {
     conditions: criterion.conditions.map((k) => (k.id === id ? { ...k, ...patch } : k)),
   });
@@ -275,7 +310,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
   };
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1100px) minmax(320px, 400px)', gap: 2, alignItems: 'start' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: stacked ? 'minmax(0, 1fr)' : 'minmax(0, 1100px) minmax(320px, 400px)', gap: 2, alignItems: 'start' }}>
       <Box sx={{ minWidth: 0 }}>
         {/* Identity */}
         <Paper padding={24} style={{ marginBottom: 16 }}>
@@ -294,206 +329,284 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
               onChange={(v) => set({ status: v as IrDraft['status'] })}
             />
           </Row>
+          {/* built from preset rules, the requirement has no question block: its question is edited here */}
+          {rulesReview && (
+            <Row columns="1fr">
+              <Textarea label={t_i18n('Intelligence question')} required value={draft.question} onChange={(e) => set({ question: e.target.value })} />
+            </Row>
+          )}
           <Row columns="1fr">
             <Textarea label={t_i18n('Description')} value={draft.description} onChange={(e) => set({ description: e.target.value })} />
           </Row>
         </Paper>
 
-        {/* 1. Question */}
-        <Block step={1} title={t_i18n('Question')} subtitle={IR_KIQS_ENABLED ? t_i18n('why this requirement exists, and its key intelligence questions') : t_i18n('why this requirement exists')}>
-          <Row columns="1fr">
-            <Textarea label={t_i18n('Intelligence question')} required value={draft.question} onChange={(e) => set({ question: e.target.value })} />
-          </Row>
-          {IR_KIQS_ENABLED && draft.kiqs.map((kiq) => (
-            <SubCard key={kiq.id} onDelete={() => set({ kiqs: draft.kiqs.filter((k) => k.id !== kiq.id) })}>
-              <Row columns="2fr 1fr">
-                <Input label={t_i18n('Key intelligence question')} value={kiq.text} onChange={(e) => set({ kiqs: draft.kiqs.map((k) => (k.id === kiq.id ? { ...k, text: e.target.value } : k)) })} />
-                <IrMultiSelect
-                  label={t_i18n('Answered by criteria')}
-                  values={kiq.criteria_ids}
-                  options={criterionOptions}
-                  onChange={(v) => set({ kiqs: draft.kiqs.map((k) => (k.id === kiq.id ? { ...k, criteria_ids: v } : k)) })}
-                />
+        {rulesReview ? (
+          <Block step={1} title={t_i18n('Rules')} subtitle={t_i18n('what flags entities in this requirement: edit a rule to change it on the criteria step')}>
+            {rulesReview}
+          </Block>
+        ) : (
+          <>
+            {/* 1. Question */}
+            <Block step={1} title={t_i18n('Question')} subtitle={IR_KIQS_ENABLED ? t_i18n('why this requirement exists, and its key intelligence questions') : t_i18n('why this requirement exists')}>
+              <Row columns="1fr">
+                <Textarea label={t_i18n('Intelligence question')} required value={draft.question} onChange={(e) => set({ question: e.target.value })} />
               </Row>
-            </SubCard>
-          ))}
-          {IR_KIQS_ENABLED && <Button variant="tertiary" size="small" onClick={() => set({ kiqs: [...draft.kiqs, { id: newId('kiq'), text: '', criteria_ids: [] }] })}>{t_i18n('Add a key intelligence question')}</Button>}
-        </Block>
-
-        {/* 2. Subjects */}
-        <Block
-          step={2}
-          title={t_i18n('Subjects')}
-          subtitle={t_i18n('named groups of anchors: a list of entities, a dynamic filter or keywords')}
-          action={<Button variant="secondary" size="small" onClick={() => set({ groups: [...draft.groups, emptyGroup()] })}>{t_i18n('Add a group')}</Button>}
-        >
-          {draft.groups.map((group) => (
-            <SubCard key={group.id} onDelete={() => set({ groups: draft.groups.filter((g) => g.id !== group.id) })}>
-              <Row columns="2fr 1fr 1fr">
-                <Input label={t_i18n('Group name')} value={group.name} onChange={(e) => setGroup(group.id, { name: e.target.value })} />
-                <IrSelect
-                  label={t_i18n('Kind')}
-                  value={group.kind}
-                  options={[{ value: 'list', label: t_i18n('List of entities') }, { value: 'filter', label: t_i18n('Dynamic filter') }, { value: 'keywords', label: t_i18n('Keywords') }]}
-                  onChange={(v) => setGroup(group.id, { kind: v as IrGroupDraft['kind'] })}
-                />
-                <IrSelect
-                  label={t_i18n('Role')}
-                  value={group.role}
-                  options={[{ value: 'entry', label: t_i18n('Entry') }, { value: 'context', label: t_i18n('Context') }, { value: 'both', label: t_i18n('Entry and context') }]}
-                  onChange={(v) => setGroup(group.id, { role: v as IrGroupDraft['role'] })}
-                />
-              </Row>
-              {group.kind === 'list' && <IrEntityPicker label={t_i18n('Entities')} value={group.entities} onChange={(entities) => setGroup(group.id, { entities })} />}
-              {group.kind === 'filter' && <IrFilterBuilder value={group.filters} onChange={(filters) => setGroup(group.id, { filters })} />}
-              {group.kind === 'keywords' && (
-                <Row columns="1fr 1fr">
-                  <IrMultiSelect
-                    label={t_i18n('Keywords')}
-                    values={group.keywords}
-                    options={group.keywords.map((k) => ({ value: k, label: k }))}
-                    allowCustom
-                    placeholder={t_i18n('Type a keyword and press Enter')}
-                    onChange={(keywords) => setGroup(group.id, { keywords })}
-                  />
-                  <IrMultiSelect
-                    label={t_i18n('Exclusions (phrases ignored before the search, e.g. "targets russia")')}
-                    values={group.exclude_keywords}
-                    options={group.exclude_keywords.map((k) => ({ value: k, label: k }))}
-                    allowCustom
-                    placeholder={t_i18n('Type a phrase and press Enter')}
-                    onChange={(exclude_keywords) => setGroup(group.id, { exclude_keywords })}
-                  />
-                </Row>
-              )}
-            </SubCard>
-          ))}
-        </Block>
-
-        {/* 3. Scope */}
-        <Block
-          step={3}
-          title={t_i18n('Scope')}
-          subtitle={t_i18n('what may enter the requirement: a path in the knowledge, and the conditions an entity must meet (all of them)')}
-          action={<Button variant="secondary" size="small" onClick={() => set({ criteria: [...draft.criteria, emptyCriterion(draft.groups)] })}>{t_i18n('Add a criterion')}</Button>}
-        >
-          {view === 'sentence' ? draft.criteria.map((criterion) => (
-            <IrCriterionSentence
-              key={criterion.id}
-              criterion={criterion}
-              groups={draft.groups}
-              typeOptions={typeOptions}
-              onChange={(patch) => setCriterion(criterion.id, patch)}
-              onDelete={() => set({ criteria: draft.criteria.filter((c) => c.id !== criterion.id) })}
-              conditions={renderConditionSentences(criterion)}
-            />
-          )) : draft.criteria.map((criterion) => (
-            <SubCard key={criterion.id} onDelete={() => set({ criteria: draft.criteria.filter((c) => c.id !== criterion.id) })}>
-              <Row columns="2fr 1fr 1fr">
-                <Input label={t_i18n('Criterion name')} value={criterion.name} onChange={(e) => setCriterion(criterion.id, { name: e.target.value })} />
-                <IrSelect
-                  label={t_i18n('Kind')}
-                  value={criterion.kind}
-                  options={[{ value: 'graph', label: t_i18n('Path in the graph') }, { value: 'attribute', label: t_i18n('Members or attributes (zero hop)') }, { value: 'keywords', label: t_i18n('Keywords') }]}
-                  onChange={(v) => setCriterion(criterion.id, { kind: v as IrCriterionDraft['kind'] })}
-                />
-                <IrSelect
-                  label={t_i18n('Mode')}
-                  value={criterion.mode}
-                  options={[{ value: 'auto', label: t_i18n('Auto-include') }, { value: 'propose', label: t_i18n('Propose') }, { value: 'off', label: t_i18n('Off') }]}
-                  onChange={(v) => setCriterion(criterion.id, { mode: v as IrCriterionDraft['mode'] })}
-                />
-              </Row>
-              {criterion.kind === 'graph' && (
-                <>
-                  <Row columns="1fr 1fr 1fr">
-                    <IrMultiSelect label={t_i18n('From subject groups')} values={criterion.from_group_ids} options={groupOptions} onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })} />
-                    <IrMultiSelect label={t_i18n('From entity types (optional)')} values={criterion.from_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { from_types: v })} />
-                    <Checkbox
-                      label={t_i18n('Also from the entities already in the requirement (second hop)')}
-                      checked={criterion.from_in_requirement}
-                      onCheckedChange={(checked) => setCriterion(criterion.id, { from_in_requirement: checked === true })}
+              {IR_KIQS_ENABLED && draft.kiqs.map((kiq) => (
+                <SubCard key={kiq.id} onDelete={() => set({ kiqs: draft.kiqs.filter((k) => k.id !== kiq.id) })}>
+                  <Row columns="2fr 1fr">
+                    <Input label={t_i18n('Key intelligence question')} value={kiq.text} onChange={(e) => set({ kiqs: draft.kiqs.map((k) => (k.id === kiq.id ? { ...k, text: e.target.value } : k)) })} />
+                    <IrMultiSelect
+                      label={t_i18n('Answered by criteria')}
+                      values={kiq.criteria_ids}
+                      options={criterionOptions}
+                      onChange={(v) => set({ kiqs: draft.kiqs.map((k) => (k.id === kiq.id ? { ...k, criteria_ids: v } : k)) })}
                     />
                   </Row>
-                  <Row columns="1fr 1fr 1fr">
-                    <IrMultiSelect label={t_i18n('Relationship types')} values={criterion.relationship_types} options={relationshipOptions} onChange={(v) => setCriterion(criterion.id, { relationship_types: v })} />
-                    <IrSelect label={t_i18n('Direction')} value={criterion.direction} options={directionOptions} onChange={(v) => setCriterion(criterion.id, { direction: v as IrCriterionDraft['direction'] })} />
-                    <IrMultiSelect label={t_i18n('Target types')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
-                  </Row>
-                </>
-              )}
-              {criterion.kind === 'attribute' && (
-                <Row columns="1fr 1fr">
-                  <IrMultiSelect
-                    label={t_i18n('Members of subject groups (optional)')}
-                    values={criterion.from_group_ids}
-                    options={entityGroupOptions}
-                    onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })}
-                  />
-                  <IrMultiSelect label={t_i18n('Entity types')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
-                </Row>
-              )}
-              {criterion.kind === 'keywords' && (
-                <Row columns="1fr 1fr 1fr">
-                  <IrMultiSelect
-                    label={t_i18n('Keyword groups')}
-                    values={criterion.from_group_ids}
-                    options={groupSelectOptions(t_i18n, draft.groups, (g) => g.kind === 'keywords')}
-                    onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })}
-                  />
-                  <IrMultiSelect label={t_i18n('Search in')} values={criterion.keyword_fields} options={IR_KEYWORD_FIELDS.map((f) => ({ value: f, label: t_i18n(f) }))} onChange={(v) => setCriterion(criterion.id, { keyword_fields: v })} />
-                  <IrMultiSelect label={t_i18n('Entity types to propose')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
-                </Row>
-              )}
-              <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('Target filters (optional)')}</Text>
-              <IrFilterBuilder value={criterion.target_filters} onChange={(filters) => setCriterion(criterion.id, { target_filters: filters })} />
-              {renderConditions(criterion)}
-            </SubCard>
-          ))}
-        </Block>
+                </SubCard>
+              ))}
+              {IR_KIQS_ENABLED && <Button variant="tertiary" size="small" onClick={() => set({ kiqs: [...draft.kiqs, { id: newId('kiq'), text: '', criteria_ids: [] }] })}>{t_i18n('Add a key intelligence question')}</Button>}
+            </Block>
 
-        {/* 4. Relevance */}
-        <Block
-          step={4}
-          title={t_i18n('Relevance')}
-          subtitle={t_i18n('scoring rules: rank the entities of the requirement (applies to · if · then ± points)')}
-          action={<Button variant="secondary" size="small" onClick={() => set({ rules: [...draft.rules, emptyRule()] })}>{t_i18n('Add a rule')}</Button>}
-        >
-          {draft.rules.map((rule) => (
-            <SubCard key={rule.id} onDelete={() => set({ rules: draft.rules.filter((r) => r.id !== rule.id) })}>
-              <Row columns="2fr 0.6fr 1fr">
-                <Input label={t_i18n('Rule name')} value={rule.name} onChange={(e) => setRule(rule.id, { name: e.target.value })} />
-                <Input label={t_i18n('Points')} type="number" value={String(rule.points)} onChange={(e) => setRule(rule.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
-                <Switch label={t_i18n('Enabled')} checked={rule.enabled} onCheckedChange={(checked) => setRule(rule.id, { enabled: checked })} />
-              </Row>
-              <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Applies to')}</Text>
-              <Row columns="1fr 1fr">
-                <IrMultiSelect label={t_i18n('Entity types (empty = any)')} values={rule.applies_to_types} options={typeOptions} onChange={(v) => setRule(rule.id, { applies_to_types: v })} />
-                <IrSelect
-                  label={t_i18n('Entered by')}
-                  value={rule.applies_to_criterion_id ?? 'any'}
-                  options={[{ value: 'any', label: t_i18n('Any criterion') }, ...criterionOptions]}
-                  onChange={(v) => setRule(rule.id, { applies_to_criterion_id: v === 'any' ? null : v })}
+            {/* 2. Subjects */}
+            <Block
+              step={2}
+              title={t_i18n('Subjects')}
+              subtitle={t_i18n('named groups of anchors: a list of entities, a dynamic filter or keywords')}
+              action={<Button variant="secondary" size="small" onClick={() => set({ groups: [...draft.groups, emptyGroup()] })}>{t_i18n('Add a group')}</Button>}
+            >
+              {draft.groups.map((group) => (
+                <SubCard key={group.id} onDelete={() => set({ groups: draft.groups.filter((g) => g.id !== group.id) })}>
+                  <Row columns="2fr 1fr 1fr">
+                    <Input label={t_i18n('Group name')} value={group.name} onChange={(e) => setGroup(group.id, { name: e.target.value })} />
+                    <IrSelect
+                      label={t_i18n('Kind')}
+                      value={group.kind}
+                      options={[{ value: 'list', label: t_i18n('List of entities') }, { value: 'filter', label: t_i18n('Dynamic filter') }, { value: 'keywords', label: t_i18n('Keywords') }]}
+                      onChange={(v) => setGroup(group.id, { kind: v as IrGroupDraft['kind'] })}
+                    />
+                    <IrSelect
+                      label={t_i18n('Role')}
+                      value={group.role}
+                      options={[{ value: 'entry', label: t_i18n('Entry') }, { value: 'context', label: t_i18n('Context') }, { value: 'both', label: t_i18n('Entry and context') }]}
+                      onChange={(v) => setGroup(group.id, { role: v as IrGroupDraft['role'] })}
+                    />
+                  </Row>
+                  {group.kind === 'list' && <IrEntityPicker label={t_i18n('Entities')} value={group.entities} onChange={(entities) => setGroup(group.id, { entities })} />}
+                  {group.kind === 'filter' && <IrFilterBuilder value={group.filters} onChange={(filters) => setGroup(group.id, { filters })} />}
+                  {group.kind === 'keywords' && (
+                    <Row columns="1fr 1fr">
+                      <IrMultiSelect
+                        label={t_i18n('Keywords')}
+                        values={group.keywords}
+                        options={group.keywords.map((k) => ({ value: k, label: k }))}
+                        allowCustom
+                        placeholder={t_i18n('Type a keyword and press Enter')}
+                        onChange={(keywords) => setGroup(group.id, { keywords })}
+                      />
+                      <IrMultiSelect
+                        label={t_i18n('Exclusions (phrases ignored before the search, e.g. "targets russia")')}
+                        values={group.exclude_keywords}
+                        options={group.exclude_keywords.map((k) => ({ value: k, label: k }))}
+                        allowCustom
+                        placeholder={t_i18n('Type a phrase and press Enter')}
+                        onChange={(exclude_keywords) => setGroup(group.id, { exclude_keywords })}
+                      />
+                    </Row>
+                  )}
+                </SubCard>
+              ))}
+            </Block>
+
+            {/* 3. Scope */}
+            <Block
+              step={3}
+              title={t_i18n('Scope')}
+              subtitle={t_i18n('what may enter the requirement: a path in the knowledge, and the conditions an entity must meet (all of them)')}
+              action={<Button variant="secondary" size="small" onClick={() => set({ criteria: [...draft.criteria, emptyCriterion(draft.groups)] })}>{t_i18n('Add a criterion')}</Button>}
+            >
+              {view === 'sentence' ? draft.criteria.map((criterion) => (
+                <IrCriterionSentence
+                  key={criterion.id}
+                  criterion={criterion}
+                  groups={draft.groups}
+                  typeOptions={typeOptions}
+                  onChange={(patch) => setCriterion(criterion.id, patch)}
+                  onDelete={() => set({ criteria: draft.criteria.filter((c) => c.id !== criterion.id) })}
+                  conditions={renderConditionSentences(criterion)}
                 />
-              </Row>
-              <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('If')}</Text>
-              <GroupLinkFields
-                value={rule.link}
-                onChange={(link) => setRule(rule.id, { link })}
-                relationshipOptions={relationshipOptions}
-                groupOptions={entityGroupOptions}
-              />
-              <IrFilterBuilder value={rule.filters} onChange={(filters) => setRule(rule.id, { filters })} />
-              <PathConditionFields
-                value={rule.path_condition}
-                onChange={(path_condition) => setRule(rule.id, { path_condition })}
-                relationshipOptions={relationshipOptions}
-                directionOptions={directionOptions}
-                groupOptions={entityGroupOptions}
-              />
-            </SubCard>
-          ))}
-        </Block>
+              )) : draft.criteria.map((criterion) => (
+                <SubCard key={criterion.id} onDelete={() => set({ criteria: draft.criteria.filter((c) => c.id !== criterion.id) })}>
+                  <Row columns="2fr 1fr 1fr">
+                    <Input label={t_i18n('Criterion name')} value={criterion.name} onChange={(e) => setCriterion(criterion.id, { name: e.target.value })} />
+                    <IrSelect
+                      label={t_i18n('Kind')}
+                      value={criterion.kind}
+                      options={[{ value: 'graph', label: t_i18n('Path in the graph') }, { value: 'attribute', label: t_i18n('Members or attributes (zero hop)') }, { value: 'keywords', label: t_i18n('Keywords') }]}
+                      onChange={(v) => setCriterion(criterion.id, { kind: v as IrCriterionDraft['kind'] })}
+                    />
+                    <IrSelect
+                      label={t_i18n('Mode')}
+                      value={criterion.mode}
+                      options={[{ value: 'auto', label: t_i18n('Auto-include') }, { value: 'propose', label: t_i18n('Propose') }, { value: 'off', label: t_i18n('Off') }]}
+                      onChange={(v) => setCriterion(criterion.id, { mode: v as IrCriterionDraft['mode'] })}
+                    />
+                  </Row>
+                  {criterion.kind === 'graph' && (
+                    <>
+                      <Row columns="1fr 1fr 1fr">
+                        <IrMultiSelect label={t_i18n('From subject groups')} values={criterion.from_group_ids} options={groupOptions} onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })} />
+                        <IrMultiSelect label={t_i18n('From entity types (optional)')} values={criterion.from_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { from_types: v })} />
+                        <Checkbox
+                          label={t_i18n('Also from the entities already in the requirement (second hop)')}
+                          checked={criterion.from_in_requirement}
+                          onCheckedChange={(checked) => setCriterion(criterion.id, { from_in_requirement: checked === true })}
+                        />
+                      </Row>
+                      <Row columns="1fr 1fr 1fr">
+                        <IrMultiSelect label={t_i18n('Relationship types')} values={criterion.relationship_types} options={relationshipOptions} onChange={(v) => setCriterion(criterion.id, { relationship_types: v })} />
+                        <IrSelect label={t_i18n('Direction')} value={criterion.direction} options={directionOptions} onChange={(v) => setCriterion(criterion.id, { direction: v as IrCriterionDraft['direction'] })} />
+                        <IrMultiSelect label={t_i18n('Target types')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
+                      </Row>
+                    </>
+                  )}
+                  {criterion.kind === 'attribute' && (
+                    <Row columns="1fr 1fr">
+                      <IrMultiSelect
+                        label={t_i18n('Members of subject groups (optional)')}
+                        values={criterion.from_group_ids}
+                        options={entityGroupOptions}
+                        onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })}
+                      />
+                      <IrMultiSelect label={t_i18n('Entity types')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
+                    </Row>
+                  )}
+                  {criterion.kind === 'keywords' && (
+                    <Row columns="1fr 1fr 1fr">
+                      <IrMultiSelect
+                        label={t_i18n('Keyword groups')}
+                        values={criterion.from_group_ids}
+                        options={groupSelectOptions(t_i18n, draft.groups, (g) => g.kind === 'keywords')}
+                        onChange={(v) => setCriterion(criterion.id, { from_group_ids: v })}
+                      />
+                      <IrMultiSelect label={t_i18n('Search in')} values={criterion.keyword_fields} options={IR_KEYWORD_FIELDS.map((f) => ({ value: f, label: t_i18n(f) }))} onChange={(v) => setCriterion(criterion.id, { keyword_fields: v })} />
+                      <IrMultiSelect label={t_i18n('Entity types to propose')} values={criterion.target_types} options={typeOptions} onChange={(v) => setCriterion(criterion.id, { target_types: v })} />
+                    </Row>
+                  )}
+                  <Text as="div" variant="content-caption" style={{ marginBottom: 8, opacity: 0.8 }}>{t_i18n('Target filters (optional)')}</Text>
+                  <IrFilterBuilder value={criterion.target_filters} onChange={(filters) => setCriterion(criterion.id, { target_filters: filters })} />
+                  {renderConditions(criterion)}
+                </SubCard>
+              ))}
+            </Block>
+          </>
+        )}
+
+        {rulesReview ? (
+          // A requirement built from preset rules: a weighting per rule, adjusted under conditions
+          <Block
+            step={2}
+            title={t_i18n('Scoring')}
+            subtitle={t_i18n('Each rule adds its weighting to the score of the entities it brings in. Adjust it for entities that also meet a condition.')}
+          >
+            {draft.criteria.map((criterion) => {
+              const weight = draft.rules.find((r) => isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
+              const weightPoints = weight?.points ?? 0;
+              const saved = draft.rules.filter((r) => !isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
+              // adjustments being written, not saved yet: the dry run and the score ignore them until the user saves
+              const unsaved = Object.values(adjustmentEdits).filter((a) => a.criterionId === criterion.id && !saved.some((r) => r.id === a.id));
+              const setWeight = (points: number) => (weight
+                ? setRule(weight.id, { points })
+                : set({ rules: [...draft.rules, weightRule(criterion, points)] }));
+              const renderEditor = (adjustment: IrAdjustment) => (
+                <IrWeightAdjustmentEditor
+                  key={adjustment.id}
+                  adjustment={adjustment}
+                  flaggedTypes={criterion.target_types}
+                  weighting={weightPoints}
+                  onChange={editAdjustment}
+                  onSave={() => saveAdjustment(adjustment, criterion.target_types, weightPoints)}
+                  onCancel={() => closeAdjustment(adjustment.id)}
+                />
+              );
+              return (
+                <Box key={criterion.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2, mb: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                    <Box sx={{ flex: 1, pb: 1 }}><Text as="span" variant="content-compact-bold">{criterion.name}</Text></Box>
+                    <Box sx={{ width: 140 }}>
+                      <Input label={t_i18n('Weighting')} type="number" value={String(weightPoints)} onChange={(e) => setWeight(Number.parseInt(e.target.value || '0', 10))} />
+                    </Box>
+                  </Box>
+                  {saved.map((rule) => {
+                    if (adjustmentEdits[rule.id]) return renderEditor(adjustmentEdits[rule.id]);
+                    // a saved adjustment reads back as a sentence, and the weighting it gives
+                    const words = adjustmentWords(adjustmentOf(rule, criterion.target_types), criterion.target_types, weightPoints, t_i18n, describeFilters);
+                    return (
+                      <Box key={rule.id} sx={{ mt: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1, px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Text as="div" variant="content-compact-bold">{words.sentence}</Text>
+                          <Text as="div" variant="content-caption"><Box component="span" sx={{ color: 'text.secondary' }}>{words.weighting}</Box></Text>
+                        </Box>
+                        <Button variant="tertiary" size="small" onClick={() => editAdjustment(adjustmentOf(rule, criterion.target_types))}>{t_i18n('Edit')}</Button>
+                        <IconButton aria-label={t_i18n('Remove adjustment')} onClick={() => removeAdjustment(rule.id)}><DeleteOutlined fontSize="small" /></IconButton>
+                      </Box>
+                    );
+                  })}
+                  {unsaved.map(renderEditor)}
+                  <Box sx={{ mt: 1.5 }}>
+                    <Button variant="tertiary" size="small" startIcon={<Icon name="plus" size={16} />} onClick={() => editAdjustment(emptyAdjustment(criterion.id))}>
+                      {t_i18n('Adjust score weighting')}
+                    </Button>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Block>
+        ) : (
+          <>
+            {/* 4. Relevance */}
+            <Block
+              step={4}
+              title={t_i18n('Relevance')}
+              subtitle={t_i18n('scoring rules: rank the entities of the requirement (applies to · if · then ± points)')}
+              action={<Button variant="secondary" size="small" onClick={() => set({ rules: [...draft.rules, emptyRule()] })}>{t_i18n('Add a rule')}</Button>}
+            >
+              {draft.rules.map((rule) => (
+                <SubCard key={rule.id} onDelete={() => set({ rules: draft.rules.filter((r) => r.id !== rule.id) })}>
+                  <Row columns="2fr 0.6fr 1fr">
+                    <Input label={t_i18n('Rule name')} value={rule.name} onChange={(e) => setRule(rule.id, { name: e.target.value })} />
+                    <Input label={t_i18n('Points')} type="number" value={String(rule.points)} onChange={(e) => setRule(rule.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
+                    <Switch label={t_i18n('Enabled')} checked={rule.enabled} onCheckedChange={(checked) => setRule(rule.id, { enabled: checked })} />
+                  </Row>
+                  <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Applies to')}</Text>
+                  <Row columns="1fr 1fr">
+                    <IrMultiSelect label={t_i18n('Entity types (empty = any)')} values={rule.applies_to_types} options={typeOptions} onChange={(v) => setRule(rule.id, { applies_to_types: v })} />
+                    <IrSelect
+                      label={t_i18n('Entered by')}
+                      value={rule.applies_to_criterion_id ?? 'any'}
+                      options={[{ value: 'any', label: t_i18n('Any criterion') }, ...criterionOptions]}
+                      onChange={(v) => setRule(rule.id, { applies_to_criterion_id: v === 'any' ? null : v })}
+                    />
+                  </Row>
+                  <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('If')}</Text>
+                  <GroupLinkFields
+                    value={rule.link}
+                    onChange={(link) => setRule(rule.id, { link })}
+                    relationshipOptions={relationshipOptions}
+                    groupOptions={entityGroupOptions}
+                  />
+                  <IrFilterBuilder value={rule.filters} onChange={(filters) => setRule(rule.id, { filters })} />
+                  <PathConditionFields
+                    value={rule.path_condition}
+                    onChange={(path_condition) => setRule(rule.id, { path_condition })}
+                    relationshipOptions={relationshipOptions}
+                    directionOptions={directionOptions}
+                    groupOptions={entityGroupOptions}
+                  />
+                </SubCard>
+              ))}
+            </Block>
+          </>
+        )}
 
         {/* 5. Follow-up */}
         <Paper padding={24} style={{ marginBottom: 16 }}>
@@ -510,14 +623,16 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
           </Row>
         </Paper>
 
+        {stacked && <Box sx={{ mb: 2 }}><IrDryRunPanel draft={draft} irId={irId} /></Box>}
         {error && <Box sx={{ mb: 2 }}><Alert severity="error" title={error} /></Box>}
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mb: 4 }}>
-          <Button variant="secondary" onClick={() => navigate(irId ? `/dashboard/intelligence_requirements/${irId}` : '/dashboard/intelligence_requirements')}>{t_i18n('Cancel')}</Button>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mb: stacked ? 0 : 4 }}>
+          <Button variant="secondary" onClick={() => (onCancel ? onCancel() : navigate(irId ? `/dashboard/intelligence_requirements/${irId}` : '/dashboard/intelligence_requirements'))}>{t_i18n('Cancel')}</Button>
           <Button onClick={save} disabled={adding || updating}>{irId ? t_i18n('Save configuration') : t_i18n('Create')}</Button>
         </Box>
       </Box>
-      {/* Dry run of the configuration being written: what it represents today, and its verdict on a chosen entity */}
-      <IrDryRunPanel draft={draft} irId={irId} />
+      {/* Dry run of the configuration being written: what it represents today, and its verdict on a chosen entity.
+          In the create panel it goes above the actions, the panel being too narrow for a side column */}
+      {!stacked && <IrDryRunPanel draft={draft} irId={irId} />}
     </Box>
   );
 };

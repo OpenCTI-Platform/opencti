@@ -1,24 +1,11 @@
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useLocation, useSearchParams } from 'react-router';
-import { Alert, Paper, Text } from '@filigran/design-system';
+import { Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
-import {
-  emptyDraft,
-  type IrCriterionKind,
-  type IrCriterionMode,
-  type IrDirection,
-  type IrDraft,
-  type IrGroupKind,
-  type IrGroupRole,
-  type IrPriority,
-  type IrStatus,
-} from './irConfigTypes';
+import { type IrCriterionKind, type IrCriterionMode, type IrDirection, type IrDraft, type IrGroupKind, type IrGroupRole, type IrPriority, type IrStatus } from './irConfigTypes';
 import { type IrConfigView, readConfigView, writeConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationQuery, IntelligenceRequirementConfigurationQuery$data } from './__generated__/IntelligenceRequirementConfigurationQuery.graphql';
 
@@ -67,6 +54,7 @@ const configurationQuery = graphql`
           path_condition {
             relationship_types
             direction
+            intermediate_types
             target_relationship_type
             target_group_ids
             targets { id entity_type representative { main } }
@@ -85,6 +73,7 @@ const configurationQuery = graphql`
         path_condition {
           relationship_types
           direction
+          intermediate_types
           target_relationship_type
           target_group_ids
           targets { id entity_type representative { main } }
@@ -103,6 +92,7 @@ type IrPathCondition = NonNullable<Ir['ir_relevance_rules'][number]['path_condit
 const pathToDraft = (path: IrPathCondition | null | undefined) => (path ? {
   relationship_types: [...path.relationship_types],
   direction: path.direction as IrDirection,
+  intermediate_types: [...(path.intermediate_types ?? [])],
   target_relationship_type: path.target_relationship_type,
   targets: path.targets.map(toOption),
   target_group_ids: [...path.target_group_ids],
@@ -168,44 +158,13 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
 });
 
 // How the scope criteria are written: the form fields, or sentences (the same configuration either way)
-const IrViewToggle = ({ view, onChange }: { view: IrConfigView; onChange: (view: IrConfigView) => void }) => {
+export const IrViewToggle = ({ view, onChange }: { view: IrConfigView; onChange: (view: IrConfigView) => void }) => {
   const { t_i18n } = useFormatter();
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
       <Text as="span" variant="content-caption" style={{ opacity: 0.8 }}>{t_i18n('Write the scope criteria as')}</Text>
       <Button variant={view === 'fields' ? 'secondary' : 'tertiary'} size="small" selected={view === 'fields'} onClick={() => onChange('fields')}>{t_i18n('Form fields')}</Button>
       <Button variant={view === 'sentence' ? 'secondary' : 'tertiary'} size="small" selected={view === 'sentence'} onClick={() => onChange('sentence')}>{t_i18n('Sentences')}</Button>
-    </Box>
-  );
-};
-
-// Creation: the user picks how to write the criteria before the form opens
-const IrViewChooser = ({ onPick }: { onPick: (view: IrConfigView) => void }) => {
-  const { t_i18n } = useFormatter();
-  const choices: { view: IrConfigView; title: string; text: string; example: string }[] = [
-    {
-      view: 'fields',
-      title: t_i18n('Form fields'),
-      text: t_i18n('Every option of a criterion is a field: relationship types, direction, starting groups, target types.'),
-      example: t_i18n('Relationship types: uses · Direction: outgoing (anchor → target) · Target types: Malware'),
-    },
-    {
-      view: 'sentence',
-      title: t_i18n('Sentences (beta)'),
-      text: t_i18n('Every criterion reads as a sentence; click a part of the sentence to change it. Same configuration, same engine.'),
-      example: t_i18n('Bring in automatically the Malware used by North Korean actors'),
-    },
-  ];
-  return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 420px))', gap: 2 }}>
-      {choices.map((c) => (
-        <Paper key={c.view} padding={24}>
-          <Text as="div" variant="title-sm" style={{ marginBottom: 8 }}>{c.title}</Text>
-          <Text as="p" variant="content-compact" style={{ marginBottom: 12 }}>{c.text}</Text>
-          <Text as="p" variant="content-caption" style={{ marginBottom: 16, opacity: 0.8, fontStyle: 'italic' }}>{c.example}</Text>
-          <Button variant={c.view === 'sentence' ? 'primary' : 'secondary'} onClick={() => onPick(c.view)}>{t_i18n('Start')}</Button>
-        </Paper>
-      ))}
     </Box>
   );
 };
@@ -228,57 +187,3 @@ export const IntelligenceRequirementConfigurationTab = ({ irId }: { irId: string
     </>
   );
 };
-
-const IntelligenceRequirementConfiguration = () => {
-  const { t_i18n } = useFormatter();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Intelligence requirements'));
-  // Proposal of the AI assisted creation: opened unsaved, with the notes of the agent
-  const { state } = useLocation() as { state?: { aiDraft?: IrDraft; aiNotes?: { summary: string; explanations: { criterion_id: string; text: string }[] } } };
-  const [searchParams, setSearchParams] = useSearchParams();
-  const aiNotes = state?.aiNotes;
-  const picked = searchParams.get('view');
-  // A proposal of the AI opens in the form fields, as before; a new requirement asks first
-  const view: IrConfigView | null = picked === 'fields' || picked === 'sentence' ? picked : (state?.aiDraft ? 'fields' : null);
-  const changeView = (next: IrConfigView) => setSearchParams({ view: next }, { replace: true, state });
-  return (
-    <>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' },
-        { label: t_i18n('New requirement'), current: true },
-      ]}
-      />
-      {state?.aiDraft && (
-        <Box sx={{ mb: 2 }}>
-          <Alert
-            severity="ia"
-            title={t_i18n('Proposed by the AI: review it, then create the requirement (it is created paused).')}
-            description={aiNotes ? (
-              <Box>
-                {aiNotes.summary && <Text as="p" variant="content-compact" style={{ marginBottom: 8 }}>{aiNotes.summary}</Text>}
-                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
-                  {aiNotes.explanations.map((e) => (
-                    <li key={e.criterion_id}>
-                      <Text as="span" variant="content-compact">
-                        <strong>{state.aiDraft?.criteria.find((c) => c.id === e.criterion_id)?.name ?? e.criterion_id}</strong>
-                        {` · ${e.text}`}
-                      </Text>
-                    </li>
-                  ))}
-                </Box>
-              </Box>
-            ) : undefined}
-          />
-        </Box>
-      )}
-      {view ? (
-        <>
-          <IrViewToggle view={view} onChange={changeView} />
-          <IntelligenceRequirementConfigurationForm initialDraft={state?.aiDraft ?? emptyDraft()} view={view} onCreated={(id) => writeConfigView(id, view)} />
-        </>
-      ) : <IrViewChooser onPick={changeView} />}
-    </>
-  );
-};
-
-export default IntelligenceRequirementConfiguration;

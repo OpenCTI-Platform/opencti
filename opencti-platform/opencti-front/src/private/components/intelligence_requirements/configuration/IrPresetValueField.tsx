@@ -1,0 +1,265 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { fetchQuery } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
+import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import { vocabularySearchQuery } from '../../settings/VocabularyQuery';
+import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import type { VocabularyQuery$data } from '../../settings/__generated__/VocabularyQuery.graphql';
+import type { LabelsQuerySearchQuery$data } from '../../settings/__generated__/LabelsQuerySearchQuery.graphql';
+import { IrEntityPicker, IrMultiSelect } from './IrFields';
+import type { IrPresetValue } from './irPresetDraft';
+import type { IrPresetRule } from './irPresetRules';
+
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface FieldProps {
+  rule: IrPresetRule;
+  flags?: string[]; // the flagged types: what "Is one of" searches, as it has no types of its own
+  value: IrPresetValue;
+  onChange: (v: IrPresetValue) => void;
+}
+
+const FIELD_STYLE: React.CSSProperties = { minWidth: 240, flex: '1 1 240px' };
+
+const numberBounds = (key: string): { min: number; max?: number; step: number } => {
+  if (key === 'cvss') return { min: 0, max: 10, step: 0.1 };
+  if (key === 'epss') return { min: 0, max: 1, step: 0.01 };
+  return { min: 0, step: 1 };
+};
+
+// Vocabulary values of the category the rule's field belongs to. Its own component so that
+// only vocabulary rules wait for the vocabulary categories to load.
+const VocabularyValueField = ({ rule, value, onChange }: FieldProps) => {
+  const { t_i18n } = useFormatter();
+  const { fieldToCategory } = useVocabularyCategory();
+  // The field may be declared on a different entity type than the first one the rule applies to
+  // (e.g. a Campaign's primary_motivation is a category of Threat-Actor-Group and Intrusion-Set),
+  // so try each type in order, then look the field up without an entity type.
+  const category = useMemo(() => {
+    const field = rule.vocabularyField;
+    if (!field) return undefined;
+    for (const type of rule.appliesTo === 'any' ? [] : rule.appliesTo) {
+      const found = fieldToCategory(type, field);
+      if (found) return found;
+    }
+    return fieldToCategory(undefined, field);
+  }, [rule.vocabularyField, rule.appliesTo === 'any' ? 'any' : rule.appliesTo.join(',')]);
+  const [options, setOptions] = useState<Option[]>([]);
+  useEffect(() => {
+    if (!category) {
+      setOptions([]);
+      return undefined;
+    }
+    let active = true;
+    fetchQuery(vocabularySearchQuery, { category })
+      .toPromise()
+      .then((data) => {
+        if (!active) return;
+        setOptions(((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map((e) => ({ value: e.node.name, label: e.node.name })));
+      });
+    return () => {
+      active = false;
+    };
+  }, [category]);
+  return (
+    <IrMultiSelect
+      values={value.terms}
+      options={options}
+      allowCustom={!category}
+      onChange={(terms) => onChange({ ...value, terms })}
+      placeholder={t_i18n('Add…')}
+    />
+  );
+};
+
+const LabelsValueField = ({ value, onChange }: Omit<FieldProps, 'rule'>) => {
+  const { t_i18n } = useFormatter();
+  const [fetched, setFetched] = useState<Option[]>([]);
+  useEffect(() => {
+    let active = true;
+    fetchQuery(labelsSearchQuery, { search: '', orderBy: 'value', orderMode: 'asc' })
+      .toPromise()
+      .then((data) => {
+        if (!active) return;
+        setFetched(((data as LabelsQuerySearchQuery$data)?.labels?.edges ?? []).map((e) => ({ value: e.node.id, label: e.node.value ?? e.node.id })));
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+  // Already selected labels stay listed even if the fetched page does not contain them.
+  const options = useMemo(() => [
+    ...fetched,
+    ...value.entities.filter((e) => !fetched.some((o) => o.value === e.value)).map((e) => ({ value: e.value, label: e.label })),
+  ], [fetched, value.entities]);
+  return (
+    <IrMultiSelect
+      values={value.entities.map((e) => e.value)}
+      options={options}
+      onChange={(ids) => onChange({
+        ...value,
+        entities: ids.map((id) => ({ value: id, label: options.find((o) => o.value === id)?.label ?? id, type: 'Label' })),
+      })}
+      placeholder={t_i18n('Add a label…')}
+    />
+  );
+};
+
+type Choice = 'entities' | 'types';
+
+// "When it is targeted by": specific entities OR any entity of a type, never both. The choice comes first,
+// then only its field shows; changing it clears the other's values (and the filters narrowing the types).
+const EntitiesOrTypeField = ({ searchTypes, typeOptions, value, onChange, plainEntities }: {
+  searchTypes?: string[];
+  typeOptions: Option[];
+  value: IrPresetValue;
+  onChange: (v: IrPresetValue) => void;
+  plainEntities: (entities: IrPresetValue['entities']) => IrPresetValue['entities'];
+}) => {
+  const { t_i18n } = useFormatter();
+  const fromValue = (): Choice | null => {
+    if (value.entities.length > 0) return 'entities';
+    return value.types.length > 0 ? 'types' : null;
+  };
+  const [choice, setChoice] = useState<Choice | null>(fromValue);
+  const pick = (next: Choice) => {
+    if (next === choice) return;
+    setChoice(next);
+    onChange({ ...value, entities: [], types: [], filters: null });
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: '1 1 480px' }}>
+      <div style={{ width: 190, flex: 'none' }}>
+        <Select value={choice ?? ''} onValueChange={(v) => pick(v as Choice)}>
+          <SelectTrigger className="w-full" aria-label={t_i18n('Specific entities or any of a type')}>
+            <SelectValue placeholder={t_i18n('Choose…')} />
+          </SelectTrigger>
+          <SelectContent position="popper" side="bottom" align="start" sideOffset={4}>
+            <SelectItem value="entities">{t_i18n('specific entities')}</SelectItem>
+            <SelectItem value="types">{t_i18n('any of a type')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {choice === 'entities' && (
+        <div style={FIELD_STYLE}>
+          <IrEntityPicker
+            types={searchTypes}
+            value={value.entities}
+            onChange={(entities) => onChange({ ...value, entities: plainEntities(entities) })}
+            placeholder={t_i18n('Search entities…')}
+          />
+        </div>
+      )}
+      {choice === 'types' && (
+        <div style={FIELD_STYLE}>
+          <IrMultiSelect
+            values={value.types}
+            options={typeOptions.map((o) => ({ value: o.value, label: `${t_i18n('Any')} ${o.label}` }))}
+            onChange={(types) => onChange({ ...value, types })}
+            placeholder={t_i18n('Add a type…')}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * The one editable value of a preset rule, shown inline after the rule's sentence.
+ * value.entities: picked entities or labels; value.types: "any <Type>" choices or container types;
+ * value.terms: vocabulary values, keywords and text; value.number: the number.
+ */
+export const IrPresetValueField = ({ rule, flags, value, onChange }: FieldProps) => {
+  const { t_i18n } = useFormatter();
+  const searchTypes = rule.valueTypes ?? flags;
+  // The picker labels an entity "<name> (<type>)"; the value keeps the plain name, used in names and queries
+  const plainEntities = (entities: IrPresetValue['entities']) => entities.map((e) => {
+    const suffix = ` (${t_i18n(`entity_${e.type}`)})`;
+    return e.label.endsWith(suffix) ? { ...e, label: e.label.slice(0, -suffix.length) } : e;
+  });
+  const typeOptions: Option[] = (rule.valueTypes ?? []).map((type) => ({ value: type, label: t_i18n(`entity_${type}`) }));
+  switch (rule.value) {
+    case 'entities':
+      return (
+        <div style={FIELD_STYLE}>
+          <IrEntityPicker
+            types={searchTypes}
+            value={value.entities}
+            onChange={(entities) => onChange({ ...value, entities: plainEntities(entities) })}
+            placeholder={t_i18n('Search…')}
+          />
+        </div>
+      );
+    case 'entitiesOrType':
+      return <EntitiesOrTypeField searchTypes={searchTypes} typeOptions={typeOptions} value={value} onChange={onChange} plainEntities={plainEntities} />;
+    case 'vocabulary':
+      return (
+        <div style={FIELD_STYLE}>
+          <VocabularyValueField rule={rule} value={value} onChange={onChange} />
+        </div>
+      );
+    case 'labels':
+      return (
+        <div style={FIELD_STYLE}>
+          <LabelsValueField value={value} onChange={onChange} />
+        </div>
+      );
+    case 'keywords':
+    case 'text':
+      return (
+        <div style={FIELD_STYLE}>
+          <IrMultiSelect
+            values={value.terms}
+            options={[]}
+            allowCustom
+            onChange={(terms) => onChange({ ...value, terms })}
+            placeholder={t_i18n('Type and press Enter…')}
+          />
+        </div>
+      );
+    case 'number': {
+      const { min, max, step } = numberBounds(rule.key);
+      return (
+        <div style={{ width: 120 }}>
+          <Input
+            type="number"
+            aria-label={t_i18n(rule.sentence)}
+            min={min}
+            max={max}
+            step={step}
+            value={value.number === null ? '' : String(value.number)}
+            onChange={(e) => {
+              if (e.target.value === '') {
+                onChange({ ...value, number: null });
+                return;
+              }
+              const parsed = Number(e.target.value);
+              if (Number.isNaN(parsed)) return;
+              const bounded = Math.max(min, max === undefined ? parsed : Math.min(max, parsed));
+              onChange({ ...value, number: bounded });
+            }}
+          />
+        </div>
+      );
+    }
+    case 'containerTypes':
+      return (
+        <div style={FIELD_STYLE}>
+          <IrMultiSelect
+            values={value.types}
+            options={typeOptions}
+            onChange={(types) => onChange({ ...value, types })}
+            placeholder={t_i18n('Add…')}
+          />
+        </div>
+      );
+    default:
+      return null;
+  }
+};
+
+export default IrPresetValueField;

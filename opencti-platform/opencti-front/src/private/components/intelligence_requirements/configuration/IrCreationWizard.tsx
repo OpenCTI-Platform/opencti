@@ -1,0 +1,160 @@
+import React, { useState } from 'react';
+import { Paper } from '@filigran/design-system';
+import Box from '@mui/material/Box';
+// FDS gap: the design system has no stepper yet
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Button from '@common/button/Button';
+import { useFormatter } from '../../../../components/i18n';
+import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
+import IrTypeStep from './IrTypeStep';
+import IrRulesStep from './IrRulesStep';
+import IrPresetRulesReview from './IrPresetRulesReview';
+import { ADVANCED_RULE_KEY, IR_PIR_TYPES, rulesForType, type IrPirType } from './irPresetRules';
+import { defaultItemName, presetItemsToDraft, validatePresetItems, type IrPresetGeneral, type IrPresetItem } from './irPresetDraft';
+import { presetText } from './IrPresetItemCard';
+import { writeConfigView } from './irSentence';
+
+// The items still possible with other flagged types (Threat custom): a rule that no longer fits goes,
+// so does a group left without rules; advanced search criteria go only when nothing is flagged anymore.
+const itemsForFlags = (items: IrPresetItem[], flags: string[]): IrPresetItem[] => {
+  // advanced search criteria fit any flagged type
+  const offered = new Set([...rulesForType('threat_custom', flags).map((rule) => rule.key), ...(flags.length > 0 ? [ADVANCED_RULE_KEY] : [])]);
+  return items.flatMap((item): IrPresetItem[] => {
+    if (item.kind === 'rule') return offered.has(item.rule.ruleKey) ? [item] : [];
+    if (item.kind === 'custom') return flags.length > 0 ? [item] : [];
+    const rules = item.rules.filter((rule) => offered.has(rule.ruleKey));
+    if (rules.length === 0 && item.rules.length > 0) return [];
+    return [{ ...item, rules }];
+  });
+};
+
+const emptyGeneral = (): IrPresetGeneral => ({ name: '', question: '', description: '', priority: 'medium' });
+
+interface IrCreationWizardProps {
+  onCancel: () => void; // closes the create panel
+}
+
+/**
+ * Creation of a requirement, in the create panel: pick a PIR type (step 1), build its criteria from the type's
+ * preset rules (step 2), then review the requirement in the configuration form, scoring included (step 3).
+ */
+const IrCreationWizard = ({ onCancel }: IrCreationWizardProps) => {
+  const { t_i18n } = useFormatter();
+  const [step, setStep] = useState(0);
+  const [general, setGeneral] = useState<IrPresetGeneral>(emptyGeneral);
+  const [pirType, setPirType] = useState<IrPirType | null>(null);
+  const [customFlags, setCustomFlags] = useState<string[]>([]); // the flagged types of a "Threat custom" requirement
+  const [items, setItems] = useState<IrPresetItem[]>([]);
+  const [renamed, setRenamed] = useState<Set<string>>(() => new Set());
+  const [triedNext, setTriedNext] = useState<boolean[]>([false, false]);
+  const [reviewKey, setReviewKey] = useState(0); // remounts the form each time the review step opens
+  const [focusItemId, setFocusItemId] = useState<string | null>(null); // the item to edit, coming back from the review
+  const steps = [t_i18n('General settings'), t_i18n('Criteria'), t_i18n('Scoring and review')];
+
+  const flags = pirType === 'threat_custom' ? customFlags : (IR_PIR_TYPES.find((p) => p.key === pirType)?.flags ?? []);
+  const canLeave = (index: number) => {
+    if (index === 0) return !!general.name.trim() && !!general.question.trim() && !!pirType && flags.length > 0;
+    if (index === 1) return validatePresetItems(items).length === 0;
+    return true;
+  };
+  // a rule without its value keeps the user on the criteria step
+  const missingValue = step === 1 && validatePresetItems(items).some((e) => e.ruleId);
+  const next = () => {
+    if (!canLeave(step)) {
+      setTriedNext((tried) => tried.map((v, i) => (i === step ? true : v)));
+      return;
+    }
+    if (step === 1) {
+      setReviewKey((k) => k + 1);
+      setFocusItemId(null);
+    }
+    setStep(step + 1);
+  };
+
+  return (
+    // Escape closes a select or picker of the steps, never the create panel with the steps done: their popups are
+    // portals, whose key events still bubble here through React
+    <Box onKeyDown={(e) => {
+      if (e.key === 'Escape') e.stopPropagation();
+    }}
+    >
+      <Stepper activeStep={step} sx={{ mb: 3 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
+      {step === 0 && (
+        <Paper padding={24}>
+          <IrTypeStep
+            general={general}
+            pirType={pirType}
+            flags={customFlags}
+            showErrors={triedNext[0]}
+            onChange={(p) => {
+              if (p.general) setGeneral(p.general);
+              if (p.flags) {
+                setCustomFlags(p.flags);
+                // a group that lost its first rule takes the name of its new first one, unless renamed
+                setItems(itemsForFlags(items, p.flags).map((item) => (renamed.has(item.id)
+                  ? item
+                  : { ...item, name: defaultItemName('threat_custom', item, (text) => presetText(text, t_i18n)) })));
+              }
+              if (p.pirType && p.pirType !== pirType) {
+                // the rules of a type do not carry over to another one
+                setPirType(p.pirType);
+                setItems([]);
+                setRenamed(new Set());
+                setTriedNext((tried) => [tried[0], false]);
+              }
+            }}
+          />
+        </Paper>
+      )}
+      {step === 1 && pirType && (
+        <Paper padding={24}>
+          <IrRulesStep
+            pirType={pirType}
+            flags={flags}
+            items={items}
+            onChange={setItems}
+            renamed={renamed}
+            onRenamedChange={setRenamed}
+            showErrors={triedNext[1]}
+            focusItemId={focusItemId}
+          />
+        </Paper>
+      )}
+      {step === 2 && pirType && (
+        <IntelligenceRequirementConfigurationForm
+          key={reviewKey}
+          initialDraft={presetItemsToDraft(general, pirType, flags, items)}
+          view="fields"
+          stacked
+          onCancel={onCancel}
+          onCreated={(id) => writeConfigView(id, 'fields')}
+          rulesReview={(
+            <IrPresetRulesReview
+              items={items}
+              flags={flags}
+              onEdit={(itemId) => {
+                setFocusItemId(itemId);
+                setStep(1);
+              }}
+            />
+          )}
+        />
+      )}
+      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+        {step > 0 && <Button variant="secondary" onClick={() => setStep(step - 1)}>{t_i18n('Back')}</Button>}
+        <Box sx={{ flex: 1 }} />
+        {step < steps.length - 1 && <Button disabled={missingValue} onClick={next}>{t_i18n('Next')}</Button>}
+      </Box>
+    </Box>
+  );
+};
+
+export default IrCreationWizard;

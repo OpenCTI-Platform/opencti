@@ -90,6 +90,8 @@ type IrGroupLink {
 type IrPathCondition {
   relationship_types: [String!]!
   direction: IrDirection!
+  "Types of the entity in between (any type when empty)"
+  intermediate_types: [String!]
   target_relationship_type: String!
   target_ids: [String!]!
   target_group_ids: [String!]!
@@ -338,6 +340,7 @@ input IrGroupLinkInput {
 input IrPathConditionInput {
   relationship_types: [String!]!
   direction: IrDirection!
+  intermediate_types: [String!]
   target_relationship_type: String!
   target_ids: [String!]!
   target_group_ids: [String!]
