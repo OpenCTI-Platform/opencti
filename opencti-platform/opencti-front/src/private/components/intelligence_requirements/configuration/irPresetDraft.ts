@@ -52,43 +52,56 @@ export const emptyValue = (): IrPresetValue => ({ entities: [], types: [], terms
 
 // region names and values
 const MAX_NAMED_VALUES = 3;
+// A default name longer than this names fewer values, then is cut with an ellipsis
+export const IR_MAX_NAME_LENGTH = 80;
 
 // "any <Type>" is the entitiesOrType choice; container types are plain type names
 export const valueLabels = (def: IrPresetRule, value: IrPresetValue, t: Translate): string[] => [
   ...value.entities.map((e) => e.label),
-  ...value.types.map((type) => (def.value === 'entitiesOrType'
-    ? `${t('any')} ${t(type)}${value.filters ? ` ${t('matching filters')}` : ''}`
-    : t(type))),
+  ...value.types.map((type) => (def.value === 'entitiesOrType' ? `${t('any')} ${t(`entity_${type}`)}` : t(`entity_${type}`))),
   ...value.terms,
   ...(value.number !== null ? [String(value.number)] : []),
 ];
 
+// The narrowing filters apply to every type chosen, so they are said once, after the list
+const filtersSuffix = (def: IrPresetRule, value: IrPresetValue, t: Translate) => (
+  def.value === 'entitiesOrType' && value.types.length > 0 && value.filters ? ` ${t('matching filters')}` : ''
+);
+
+const capName = (name: string) => (name.length > IR_MAX_NAME_LENGTH ? `${name.slice(0, IR_MAX_NAME_LENGTH - 1).trimEnd()}…` : name);
+
 const hasValue = (value: IrPresetValue) => value.entities.length + value.types.length + value.terms.length > 0 || value.number !== null || !!value.filters;
 
-const namedValues = (def: IrPresetRule, value: IrPresetValue, t: Translate): string => {
+const namedValues = (def: IrPresetRule, value: IrPresetValue, t: Translate, max = MAX_NAMED_VALUES): string => {
   const labels = valueLabels(def, value, t);
-  const shown = labels.slice(0, MAX_NAMED_VALUES).join(', ');
-  return labels.length > MAX_NAMED_VALUES ? `${shown} +${labels.length - MAX_NAMED_VALUES} more` : shown;
+  const shown = labels.slice(0, max).join(', ');
+  return `${labels.length > max ? `${shown} +${labels.length - max} more` : shown}${filtersSuffix(def, value, t)}`;
 };
 
 const subjectOf = (pirType: IrPirType, t: Translate) => t(IR_PIR_TYPES.find((p) => p.key === pirType)?.subject ?? 'Entities');
 
 // What a rule says of the flagged entities, without them: "targeting Financial services"
-const rulePredicate = (rule: IrRuleInstance, t: Translate): string => {
+const rulePredicate = (rule: IrRuleInstance, t: Translate, max = MAX_NAMED_VALUES): string => {
   const def = getRule(rule.ruleKey);
   const verb = t(def.verb);
   if (def.value === 'none' || def.value === 'filters') return verb;
-  const values = namedValues(def, rule.value, t);
+  const values = namedValues(def, rule.value, t, max);
   if (verb === ':') return `${t('one of')} ${values}`;
   if (verb.includes('{v}')) return verb.replace('{v}', values);
   return `${verb} ${values}`;
 };
 
-export const defaultRuleName = (pirType: IrPirType, rule: IrRuleInstance, t: Translate): string => {
+const ruleName = (pirType: IrPirType, rule: IrRuleInstance, t: Translate, max: number): string => {
   const def = getRule(rule.ruleKey);
   const subject = subjectOf(pirType, t);
-  if (t(def.verb) === ':' && def.value !== 'none') return `${subject}: ${namedValues(def, rule.value, t)}`;
-  return `${subject} ${rulePredicate(rule, t)}`;
+  if (t(def.verb) === ':' && def.value !== 'none') return `${subject}: ${namedValues(def, rule.value, t, max)}`;
+  return `${subject} ${rulePredicate(rule, t, max)}`;
+};
+
+// Too long with three values, a name keeps the first one and counts the others
+export const defaultRuleName = (pirType: IrPirType, rule: IrRuleInstance, t: Translate): string => {
+  const name = ruleName(pirType, rule, t, MAX_NAMED_VALUES);
+  return capName(name.length > IR_MAX_NAME_LENGTH ? ruleName(pirType, rule, t, 1) : name);
 };
 
 // A group reads as its first rule AND its second one; from three rules on, its first rule AND the count of the others
@@ -96,8 +109,11 @@ const defaultGroupName = (pirType: IrPirType, rules: IrRuleInstance[], t: Transl
   if (rules.length === 0) return subjectOf(pirType, t);
   const first = defaultRuleName(pirType, rules[0], t);
   if (rules.length === 1) return first;
-  if (rules.length === 2) return `${first} ${t('AND')} ${rulePredicate(rules[1], t)}`;
-  return `${first} ${t('AND')} ${rules.length - 1} ${t('more rules')}`;
+  if (rules.length === 2) {
+    const both = `${first} ${t('AND')} ${rulePredicate(rules[1], t)}`;
+    return capName(both.length > IR_MAX_NAME_LENGTH ? `${first} ${t('AND')} ${rulePredicate(rules[1], t, 1)}` : both);
+  }
+  return capName(`${first} ${t('AND')} ${rules.length - 1} ${t('more rules')}`);
 };
 
 export const defaultItemName = (pirType: IrPirType, item: IrPresetItem, t: Translate): string => {

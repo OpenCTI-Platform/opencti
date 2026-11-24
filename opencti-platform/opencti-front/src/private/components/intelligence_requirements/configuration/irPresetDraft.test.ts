@@ -5,6 +5,7 @@ import {
   defaultItemName,
   defaultRuleName,
   emptyValue,
+  IR_MAX_NAME_LENGTH,
   isWeightRule,
   presetItemsToDraft,
   presetQueryChips,
@@ -13,7 +14,7 @@ import {
   type IrPresetValue,
 } from './irPresetDraft';
 
-const t = (s: string) => s;
+const t = (s: string) => s.replace(/^entity_/, '');
 const fs = { value: 'id-fs', label: 'Financial services', type: 'Sector' };
 const ap = (id: string) => ({ value: id, label: id, type: 'Attack-Pattern' });
 const v = (patch: Partial<IrPresetValue>) => ({ ...emptyValue(), ...patch });
@@ -368,6 +369,21 @@ describe('narrowing "any <type>" with filters', () => {
       filters: [{ key: ['entity_type'], values: ['Intrusion-Set'], operator: 'eq', mode: 'or' }],
       filterGroups: [JSON.parse(ransomware)],
     });
+  });
+  it('says "matching filters" once, after every type', () => {
+    const three = { ...targetedBy, value: v({ types: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'], filters: ransomware }) };
+    const name = defaultRuleName('vulnerability', three, t);
+    expect(name.match(/matching filters/g)).toHaveLength(1);
+    expect(name.length).toBeLessThanOrEqual(IR_MAX_NAME_LENGTH);
+  });
+  it('caps a long name: one value and a count, then an ellipsis', () => {
+    const long = (n: number) => ({ value: `id${n}`, label: `A very long entity name number ${n}`, type: 'Sector' });
+    expect(defaultRuleName('malware', { id: 'x', ruleKey: 'targets', value: v({ entities: [long(1), long(2), long(3)] }) }, t))
+      .toBe('Malware targeting A very long entity name number 1 +2 more');
+    const huge = { value: 'h', label: 'x'.repeat(120), type: 'Sector' };
+    const name = defaultRuleName('malware', { id: 'x', ruleKey: 'targets', value: v({ entities: [huge] }) }, t);
+    expect(name).toHaveLength(IR_MAX_NAME_LENGTH);
+    expect(name.endsWith('…')).toBe(true);
   });
   it('says so in the name and the query', () => {
     expect(defaultRuleName('vulnerability', targetedBy, t)).toBe('Vulnerabilities targeted by any Intrusion-Set matching filters');

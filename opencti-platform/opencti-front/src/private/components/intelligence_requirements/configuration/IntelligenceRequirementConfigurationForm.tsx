@@ -329,6 +329,12 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
               onChange={(v) => set({ status: v as IrDraft['status'] })}
             />
           </Row>
+          {/* built from preset rules, the requirement has no question block: its question is edited here */}
+          {rulesReview && (
+            <Row columns="1fr">
+              <Textarea label={t_i18n('Intelligence question')} required value={draft.question} onChange={(e) => set({ question: e.target.value })} />
+            </Row>
+          )}
           <Row columns="1fr">
             <Textarea label={t_i18n('Description')} value={draft.description} onChange={(e) => set({ description: e.target.value })} />
           </Row>

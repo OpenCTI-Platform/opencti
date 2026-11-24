@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import IrPresetValueField from './IrPresetValueField';
 import IrFilterBuilder from './IrFilterBuilder';
 import { ADVANCED_RULE_KEY, getRule, type IrPresetRule } from './irPresetRules';
-import { presetQueryChips, type IrPresetItem, type IrQueryChip, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
+import { IR_MAX_NAME_LENGTH, presetQueryChips, type IrPresetItem, type IrQueryChip, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
 
 // The cards of the criteria step: one rule, a group of rules (AND) or advanced search criteria.
 
@@ -252,6 +252,7 @@ const IrItemName = ({ name, onRename }: { name: string; onRename: (name: string)
         <Input
           aria-label={t_i18n('Name')}
           ref={field}
+          maxLength={IR_MAX_NAME_LENGTH}
           value={editing}
           onChange={(e) => setEditing(e.target.value)}
           onBlur={save}
@@ -267,8 +268,8 @@ const IrItemName = ({ name, onRename }: { name: string; onRename: (name: string)
     );
   }
   return (
-    <Button variant="tertiary" size="small" title={t_i18n('Rename')} endIcon={<Icon name="pencil" size={16} />} onClick={() => setEditing(name)}>
-      {name}
+    <Button variant="tertiary" size="small" title={t_i18n('Rename')} endIcon={<Icon name="pencil" size={16} />} onClick={() => setEditing(name)} sx={{ minWidth: 0, maxWidth: '100%' }}>
+      <Box component="span" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</Box>
     </Button>
   );
 };
@@ -374,7 +375,7 @@ export const IrPresetItemCard = ({
         p: 2,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, minWidth: 0 }}>
         <IrItemName name={item.name} onRename={onRename} />
         {isGroup && (
           <Text as="span" variant="content-caption">
