@@ -51,6 +51,7 @@ export interface IrCriterionDraft {
 export interface IrPathConditionDraft {
   relationship_types: string[];
   direction: IrDirection;
+  intermediate_types: string[]; // the types of the entity in between: any type when empty
   target_relationship_type: string;
   targets: IrEntityOption[];
   target_group_ids: string[]; // the members of these subject groups are targets too
@@ -151,7 +152,7 @@ export const emptyRule = (): IrRuleDraft => ({
   enabled: true,
 });
 
-export const emptyPathCondition = (): IrPathConditionDraft => ({ relationship_types: [], direction: 'incoming', target_relationship_type: 'targets', targets: [], target_group_ids: [] });
+export const emptyPathCondition = (): IrPathConditionDraft => ({ relationship_types: [], direction: 'incoming', intermediate_types: [], target_relationship_type: 'targets', targets: [], target_group_ids: [] });
 
 const parseFilters = (filters: string | null) => {
   if (!filters) return null;
@@ -165,6 +166,7 @@ const parseFilters = (filters: string | null) => {
 const pathConditionToInput = (path: IrPathConditionDraft | null) => (path && path.relationship_types.length > 0 ? {
   relationship_types: path.relationship_types,
   direction: path.direction,
+  intermediate_types: path.intermediate_types,
   target_relationship_type: path.target_relationship_type,
   target_ids: path.targets.map((t) => t.value),
   target_group_ids: path.target_group_ids,
@@ -257,6 +259,7 @@ export const inputToDraft = (input: JsonInput, entities: Map<string, IrEntityOpt
   const pathOf = (path: JsonInput | null | undefined): IrPathConditionDraft | null => (path && list(path.relationship_types).length > 0 ? {
     relationship_types: list(path.relationship_types),
     direction: directionOf(path.direction, 'incoming'),
+    intermediate_types: list(path.intermediate_types),
     target_relationship_type: str(path.target_relationship_type, 'targets'),
     targets: list(path.target_ids).map(option),
     target_group_ids: list(path.target_group_ids),

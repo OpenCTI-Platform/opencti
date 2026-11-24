@@ -28,11 +28,18 @@ const parseJsonArray = <T>(value: string | null | undefined): T[] => {
 const serializeFilters = (filters: FilterGroup | null | undefined) => (filters ? JSON.stringify(filters) : null);
 
 type LinkInput = { relationship_types?: string[] | null; group_ids?: string[] | null } | null | undefined;
-type PathInput = { relationship_types: string[]; direction: string; target_relationship_type: string; target_ids: string[]; target_group_ids?: string[] | null } | null | undefined;
+type PathInput = {
+  relationship_types: string[];
+  direction: string;
+  intermediate_types?: string[] | null;
+  target_relationship_type: string;
+  target_ids: string[];
+  target_group_ids?: string[] | null;
+} | null | undefined;
 const normalizeLink = (link: LinkInput) => (link && (link.group_ids ?? []).length > 0
   ? { relationship_types: link.relationship_types ?? [], group_ids: link.group_ids ?? [] }
   : null);
-const normalizePath = (path: PathInput) => (path ? { ...path, target_group_ids: path.target_group_ids ?? [] } : null);
+const normalizePath = (path: PathInput) => (path ? { ...path, intermediate_types: path.intermediate_types ?? [], target_group_ids: path.target_group_ids ?? [] } : null);
 
 export const parseIrFilters = (filters: string | null | undefined): FilterGroup | null => {
   if (!filters) return null;

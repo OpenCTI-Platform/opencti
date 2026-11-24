@@ -15759,6 +15759,8 @@ export enum IrMatchStatus {
 export type IrPathCondition = {
   __typename?: 'IrPathCondition';
   direction: IrDirection;
+  /** Types of the entity in between (any type when empty) */
+  intermediate_types?: Maybe<Array<Scalars['String']['output']>>;
   relationship_types: Array<Scalars['String']['output']>;
   target_group_ids: Array<Scalars['String']['output']>;
   target_ids: Array<Scalars['String']['output']>;
@@ -15768,6 +15770,7 @@ export type IrPathCondition = {
 
 export type IrPathConditionInput = {
   direction: IrDirection;
+  intermediate_types?: InputMaybe<Array<Scalars['String']['input']>>;
   relationship_types: Array<Scalars['String']['input']>;
   target_group_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   target_ids: Array<Scalars['String']['input']>;
@@ -50646,6 +50649,7 @@ export type IrMatchHistoryPointResolvers<ContextType = any, ParentType extends R
 
 export type IrPathConditionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IrPathCondition'] = ResolversParentTypes['IrPathCondition']> = ResolversObject<{
   direction?: Resolver<ResolversTypes['IrDirection'], ParentType, ContextType>;
+  intermediate_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   relationship_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_group_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   target_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

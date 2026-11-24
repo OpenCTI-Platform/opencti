@@ -50,7 +50,7 @@ describe('inputToDraft', () => {
     expect(draft.criteria[1].conditions).toEqual([]);
     expect(draft.rules.map((r) => r.id)).toEqual(['r-kev']);
     const input = draftToInput(draft);
-    expect(input.ir_scope_criteria[0].conditions[0].path_condition).toEqual({ relationship_types: ['targets'], direction: 'outgoing', target_relationship_type: 'located-at', target_ids: ['europe'], target_group_ids: [] });
+    expect(input.ir_scope_criteria[0].conditions[0].path_condition).toEqual({ relationship_types: ['targets'], direction: 'outgoing', intermediate_types: [], target_relationship_type: 'located-at', target_ids: ['europe'], target_group_ids: [] });
   });
 
   it('names unknown entities by their id and defaults invalid values', () => {

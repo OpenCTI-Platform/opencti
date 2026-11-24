@@ -39,19 +39,20 @@ const resolveInternalIds = async (context: AuthContext, user: AuthUser, ids: str
 };
 
 /**
- * Path condition: the entity is linked by one of relationship_types to an entity
- * that has a target_relationship_type relationship toward one of target_ids.
+ * Path condition: the entity is linked by one of relationship_types to an entity (of one of intermediate_types,
+ * any type when none) that has a target_relationship_type relationship toward one of target_ids.
  * Example: Vulnerability ←exploits— (threat) —targets→ Europe
  */
 export const isPathConditionMet = async (context: AuthContext, user: AuthUser, entityId: string, condition: StoreIrPathCondition, groupTargetIds: string[] = []) => {
   const linked = new Set<string>();
+  const intermediateTypes = condition.intermediate_types ?? [];
   if (condition.direction === 'incoming' || condition.direction === 'both') {
     const relations = await fullRelationsList<BasicStoreRelation>(context, user, condition.relationship_types, { toId: entityId });
-    relations.forEach((r) => linked.add(r.fromId));
+    relations.filter((r) => isTypeMatching(r.fromType, intermediateTypes)).forEach((r) => linked.add(r.fromId));
   }
   if (condition.direction === 'outgoing' || condition.direction === 'both') {
     const relations = await fullRelationsList<BasicStoreRelation>(context, user, condition.relationship_types, { fromId: entityId });
-    relations.forEach((r) => linked.add(r.toId));
+    relations.filter((r) => isTypeMatching(r.toType, intermediateTypes)).forEach((r) => linked.add(r.toId));
   }
   if (linked.size === 0 || condition.target_ids.length + groupTargetIds.length === 0) return false;
   const targetIds = [...await resolveInternalIds(context, user, condition.target_ids), ...groupTargetIds];

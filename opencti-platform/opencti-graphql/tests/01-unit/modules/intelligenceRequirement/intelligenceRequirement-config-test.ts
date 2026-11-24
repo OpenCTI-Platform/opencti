@@ -58,9 +58,16 @@ describe('Intelligence requirement configuration', () => {
       applies_to_types: ['Vulnerability'],
       filters: null,
       link: null,
-      path_condition: { relationship_types: ['exploits'], direction: 'incoming', target_relationship_type: 'targets', target_ids: ['europe-id'], target_group_ids: [] },
+      path_condition: { relationship_types: ['exploits'], direction: 'incoming', intermediate_types: [], target_relationship_type: 'targets', target_ids: ['europe-id'], target_group_ids: [] },
     }]);
     expect(criteria[1].conditions).toEqual([]);
+  });
+
+  it('should keep the types of the entity in between of a path condition', () => {
+    const input = validInput();
+    input.ir_relevance_rules![0].path_condition = { relationship_types: ['uses'], direction: 'incoming' as never, intermediate_types: ['Intrusion-Set'], target_relationship_type: 'targets', target_ids: ['europe-id'] };
+    const rules = JSON.parse(serializeIntelligenceRequirementInput(input).ir_relevance_rules);
+    expect(rules[0].path_condition.intermediate_types).toEqual(['Intrusion-Set']);
   });
 
   it('should convert a required rule into a condition of every criterion bringing its types, keeping its points', () => {

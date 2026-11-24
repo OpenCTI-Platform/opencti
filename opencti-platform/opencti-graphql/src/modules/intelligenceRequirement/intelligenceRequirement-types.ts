@@ -85,11 +85,13 @@ export interface StoreIrCriterion {
 }
 
 // A path condition makes one hop in the graph: the entity is linked by one of relationship_types
-// to an entity that has a target_relationship_type relationship toward one of target_ids.
+// to an entity (of one of intermediate_types, any type when empty) that has a target_relationship_type relationship
+// toward one of target_ids.
 // Example: Vulnerability ←exploits— (threat) —targets→ Europe
 export interface StoreIrPathCondition {
   relationship_types: string[];
   direction: string;
+  intermediate_types?: string[];
   target_relationship_type: string;
   target_ids: string[];
   target_group_ids?: string[]; // the members of these subject groups are targets too

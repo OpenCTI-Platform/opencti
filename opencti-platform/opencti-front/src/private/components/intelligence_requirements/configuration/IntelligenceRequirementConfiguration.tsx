@@ -54,6 +54,7 @@ const configurationQuery = graphql`
           path_condition {
             relationship_types
             direction
+            intermediate_types
             target_relationship_type
             target_group_ids
             targets { id entity_type representative { main } }
@@ -72,6 +73,7 @@ const configurationQuery = graphql`
         path_condition {
           relationship_types
           direction
+          intermediate_types
           target_relationship_type
           target_group_ids
           targets { id entity_type representative { main } }
@@ -90,6 +92,7 @@ type IrPathCondition = NonNullable<Ir['ir_relevance_rules'][number]['path_condit
 const pathToDraft = (path: IrPathCondition | null | undefined) => (path ? {
   relationship_types: [...path.relationship_types],
   direction: path.direction as IrDirection,
+  intermediate_types: [...(path.intermediate_types ?? [])],
   target_relationship_type: path.target_relationship_type,
   targets: path.targets.map(toOption),
   target_group_ids: [...path.target_group_ids],
