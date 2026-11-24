@@ -41,8 +41,9 @@ const SWEEP_BATCH_SIZE = 100;
 // Sessions held in the memory of each node can only be logged out by that node
 export const IS_SHARED_SESSION_STORE = conf.get('app:session_manager') === 'shared';
 
-// The sockets of this node, by connection id
-const nodeConnections = new Map<string, { sessionId: string; origin: PresenceOrigin }>();
+// The sockets of this node, by connection id. The origin of a session is written with the lease of a new connection,
+// then only kept by the renewal: with tabs on several nodes, the audit gets the origin of the latest tab opened.
+const nodeConnections = new Map<string, { sessionId: string; origin: PresenceOrigin; isOriginSaved: boolean }>();
 let renewTimer: NodeJS.Timeout | undefined;
 let isMultiNodeWarned = false;
 
@@ -82,19 +83,33 @@ const isLogoutSupported = async () => {
 };
 
 // region leases of the sockets of this node
+const markOriginSaved = (connectionIds: string[], isOriginSaved: boolean) => {
+  connectionIds.forEach((connectionId) => {
+    const connection = nodeConnections.get(connectionId);
+    if (connection) {
+      nodeConnections.set(connectionId, { ...connection, isOriginSaved });
+    }
+  });
+};
+
 const renewNodeLeases = async () => {
   if (!(await isSessionPresenceEnabled())) {
+    // Nothing is written while the setting is off, and the origins may expire: they are written again once it is enabled
+    markOriginSaved([...nodeConnections.keys()], false);
     return;
   }
-  const sessionConnections = new Map<string, { connectionIds: string[]; origin: PresenceOrigin }>();
-  nodeConnections.forEach(({ sessionId, origin }, connectionId) => {
-    const connections = sessionConnections.get(sessionId) ?? { connectionIds: [], origin };
+  const sessionConnections = new Map<string, { connectionIds: string[]; origin?: PresenceOrigin }>();
+  nodeConnections.forEach(({ sessionId, origin, isOriginSaved }, connectionId) => {
+    const connections = sessionConnections.get(sessionId) ?? { connectionIds: [] };
     connections.connectionIds.push(connectionId);
+    // The origin is only written for the tabs it was not written for: opened while the setting was off, or a failed write
+    if (!isOriginSaved) {
+      connections.origin = origin;
+    }
     sessionConnections.set(sessionId, connections);
   });
   await Promise.all([...sessionConnections.entries()].map(async ([sessionId, { connectionIds, origin }]) => {
     try {
-      // The origin is written again, for the tabs opened while the setting was off
       const checkAt = await saveSessionLeases(sessionId, connectionIds, SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, SESSION_PRESENCE_GRACE_PERIOD, origin);
       if (checkAt === undefined) {
         // The session has been logged out: its sockets are no longer tracked
@@ -102,6 +117,7 @@ const renewNodeLeases = async () => {
         meterManager.sessionPresenceConnections(nodeConnections.size);
         return;
       }
+      markOriginSaved(connectionIds, true);
       await scheduleSessionCheck(sessionId, checkAt, 'GT');
     } catch (cause) {
       logApp.error('[SESSION PRESENCE] Error renewing the leases of a session', { cause });
@@ -125,7 +141,7 @@ const startLeasesRenewal = () => {
 // and schedules its session. If this node crashes meanwhile, the socket is closed, so the tab reconnects to another node.
 export const registerSessionPresence = async (sessionId: string, origin: PresenceOrigin) => {
   const connectionId = uuidv4();
-  nodeConnections.set(connectionId, { sessionId, origin });
+  nodeConnections.set(connectionId, { sessionId, origin, isOriginSaved: false });
   meterManager.sessionPresenceConnections(nodeConnections.size);
   startLeasesRenewal();
   try {
@@ -136,6 +152,7 @@ export const registerSessionPresence = async (sessionId: string, origin: Presenc
         meterManager.sessionPresenceConnections(nodeConnections.size);
         return undefined;
       }
+      markOriginSaved([connectionId], true);
       // A session is always scheduled while it has leases: if this node crashes, the check still happens
       await scheduleSessionCheck(sessionId, checkAt, 'GT');
     }

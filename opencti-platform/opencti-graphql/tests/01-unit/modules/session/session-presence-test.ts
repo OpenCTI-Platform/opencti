@@ -296,6 +296,7 @@ describe('session presence', () => {
 
     await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
     expect(store.hasLiveLease(sessionId, connectionId)).toBe(true);
+    expect(await store.findSessionOrigin(sessionId)).toEqual(ORIGIN);
     await sweepAfter(3 * LEASE_TTL);
     expect(session.killSessionByRawId).not.toHaveBeenCalled();
 
@@ -478,6 +479,31 @@ describe('session presence', () => {
     await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
     expect(store.hasLiveLease(sessionId, connectionId as string)).toBe(true);
     expect(store.isDue(sessionId)).toBe(true);
+    expect(await store.findSessionOrigin(sessionId)).toEqual(ORIGIN);
+  });
+
+  it('should keep the origin of the latest tab opened, whichever node renews the leases', async () => {
+    const sessionId = nextSessionId();
+    await registerSessionPresence(sessionId, ORIGIN);
+    // A tab opened later on another node
+    const otherOrigin = { socket: 'query', ip: '10.0.0.2', user_id: USER.id };
+    await store.saveSessionLeases(sessionId, ['other-node-connection'], LEASE_TTL, 0, GRACE_PERIOD, otherOrigin);
+
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    expect(await store.findSessionOrigin(sessionId)).toEqual(otherOrigin);
+  });
+
+  it('should write the origins again once the setting is enabled again', async () => {
+    const sessionId = nextSessionId();
+    await registerSessionPresence(sessionId, ORIGIN);
+    enablePresence(false);
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    // The origin expired while the setting was off
+    await store.releaseSessionPresence(sessionId);
+
+    enablePresence(true);
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    expect(await store.findSessionOrigin(sessionId)).toEqual(ORIGIN);
   });
 
   it('should schedule at the next renewal a session whose check failed to be scheduled', async () => {
