@@ -41,6 +41,7 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     ...actual,
     logApp: {
       info: vi.fn(),
+      warn: vi.fn(),
       error: vi.fn(),
     } };
 });
@@ -761,6 +762,6 @@ describe('httpPlatform: /auth/:provider', () => {
     handler?.(buildRequest(provider), res, vi.fn());
 
     expect(passport.authenticate).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.status).toHaveBeenCalledWith(404);
   });
 });
