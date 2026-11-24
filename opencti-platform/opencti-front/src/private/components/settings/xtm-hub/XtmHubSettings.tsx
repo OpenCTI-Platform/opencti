@@ -4,7 +4,6 @@ import { HubOutlined, MapOutlined, RocketLaunchOutlined, VideoLibraryOutlined, W
 import Typography from '@mui/material/Typography';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Button from '@common/button/Button';
-import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
@@ -82,16 +81,6 @@ const XtmHubSettingsComponent = () => {
     && xtmHubSettings.xtm_hub_backend_is_reachable;
   const hubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
 
-  const statusChip = (() => {
-    if (registrationStatus === 'registered') {
-      return <Tag label={t_i18n('Connected')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
-    }
-    if (registrationStatus === 'lost_connectivity') {
-      return <Tag label={t_i18n('Connectivity lost')} color={theme.palette.error.main} labelTextTransform="none" disableTooltip />;
-    }
-    return <Tag label={t_i18n('Not connected')} labelTextTransform="none" disableTooltip />;
-  })();
-
   const footer = isRegistered
     ? (
         <>
@@ -168,7 +157,6 @@ const XtmHubSettingsComponent = () => {
       overline={t_i18n('Filigran Experience')}
       title={t_i18n('XTM Hub')}
       accent={accent}
-      statusChip={statusChip}
       footer={footer}
       testId="experience-xtm-hub-card"
     >
