@@ -1963,22 +1963,27 @@ def _flatten_exception(exc: BaseException) -> List[BaseException]:
 
 
 def _exception_to_connector_error(exc: BaseException) -> Dict:
-    # A third-party code (urllib HTTPError.code is an int...) or a broken attribute must not hide the error
+    # pylint: disable=broad-except
+    # This path must never raise: a property raising anything (not only AttributeError) must not hide the error
     try:
         code = getattr(exc, "code", None)
-        # strip() also turns a str subclass (a str enum) into a plain str
-        code = code.strip() if isinstance(code, str) else ""
-    except Exception:  # pylint: disable=broad-except
-        code = ""
+    except Exception:
+        code = None
+    # A third-party code (urllib HTTPError.code is an int...) is ignored
+    # strip() also turns a str subclass (a str enum) into a plain str
+    code = code.strip() if isinstance(code, str) else ""
     try:
-        criticity = _parse_criticity(getattr(exc, "criticity", None))
+        criticity = getattr(exc, "criticity", None)
+    except Exception:
+        criticity = None
+    try:
         # An IntEnum (Criticity of the connectors SDK) is sent as a plain int
-        criticity = int(criticity)
-    except Exception:  # pylint: disable=broad-except
+        criticity = int(_parse_criticity(criticity))
+    except (TypeError, ValueError):
         criticity = CONNECTOR_UNKNOWN_ERROR_CRITICITY
     try:
         text = str(exc)
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         text = ""
     name = type(exc).__name__
     return {
@@ -3393,8 +3398,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 result, (str, bytes, Mapping)
             ):
                 # A generator callback runs while it is consumed: consume it here so its exceptions are caught
-                for error in result:
-                    consumed_errors.append(error)
+                consumed_errors.extend(result)
                 error_list = consumed_errors
             else:
                 error_list = result

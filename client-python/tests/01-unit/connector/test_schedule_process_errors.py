@@ -424,6 +424,10 @@ def test_exception_failing_to_render_is_still_reported():
         def code(self):
             raise RuntimeError("broken attribute")
 
+        @property
+        def criticity(self):
+            raise RuntimeError("broken attribute")
+
         def __str__(self):
             raise RuntimeError("broken __str__")
 
