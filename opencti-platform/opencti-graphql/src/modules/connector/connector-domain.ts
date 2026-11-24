@@ -548,6 +548,12 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     const connectorTokens = (storedUser.api_tokens ?? []).filter((token) => isConnectorToken(token) || isLegacyComposerToken(token));
     for (const token of connectorTokens) {
       await revokeUserTokenByAdmin(context, SYSTEM_USER, userId, token.id);
+      logApp.info('[OPENCTI-MODULE] Composer token revoked before issuing a new one', {
+        connectorId,
+        userId,
+        tokenId: token.id,
+        legacy: isLegacyComposerToken(token),
+      });
     }
     const { token_id, plaintext_token } = await addUserTokenByAdmin(
       context,
