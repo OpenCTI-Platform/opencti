@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router';
-import { Alert, Checkbox, Input, Paper, Switch, Text, Textarea } from '@filigran/design-system';
+import { Alert, Checkbox, Icon, Input, Paper, Switch, Text, Textarea } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
@@ -30,6 +30,7 @@ import { IR_PRIORITIES, priorityLabel } from '../IntelligenceRequirementsCards';
 import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import IrDryRunPanel from './IrDryRunPanel';
+import { boostRule, isWeightRule, weightRule } from './irPresetDraft';
 import IrCriterionSentence from './IrCriterionSentence';
 import IrConditionSentence from './IrConditionSentence';
 import type { IrConfigView } from './irSentence';
@@ -462,48 +463,112 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
           </>
         )}
 
-        {/* 4. Relevance */}
-        <Block
-          step={rulesReview ? 2 : 4}
-          title={t_i18n('Relevance')}
-          subtitle={t_i18n('scoring rules: rank the entities of the requirement (applies to · if · then ± points)')}
-          action={<Button variant="secondary" size="small" onClick={() => set({ rules: [...draft.rules, emptyRule()] })}>{t_i18n('Add a rule')}</Button>}
-        >
-          {draft.rules.map((rule) => (
-            <SubCard key={rule.id} onDelete={() => set({ rules: draft.rules.filter((r) => r.id !== rule.id) })}>
-              <Row columns="2fr 0.6fr 1fr">
-                <Input label={t_i18n('Rule name')} value={rule.name} onChange={(e) => setRule(rule.id, { name: e.target.value })} />
-                <Input label={t_i18n('Points')} type="number" value={String(rule.points)} onChange={(e) => setRule(rule.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
-                <Switch label={t_i18n('Enabled')} checked={rule.enabled} onCheckedChange={(checked) => setRule(rule.id, { enabled: checked })} />
-              </Row>
-              <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Applies to')}</Text>
-              <Row columns="1fr 1fr">
-                <IrMultiSelect label={t_i18n('Entity types (empty = any)')} values={rule.applies_to_types} options={typeOptions} onChange={(v) => setRule(rule.id, { applies_to_types: v })} />
-                <IrSelect
-                  label={t_i18n('Entered by')}
-                  value={rule.applies_to_criterion_id ?? 'any'}
-                  options={[{ value: 'any', label: t_i18n('Any criterion') }, ...criterionOptions]}
-                  onChange={(v) => setRule(rule.id, { applies_to_criterion_id: v === 'any' ? null : v })}
-                />
-              </Row>
-              <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('If')}</Text>
-              <GroupLinkFields
-                value={rule.link}
-                onChange={(link) => setRule(rule.id, { link })}
-                relationshipOptions={relationshipOptions}
-                groupOptions={entityGroupOptions}
-              />
-              <IrFilterBuilder value={rule.filters} onChange={(filters) => setRule(rule.id, { filters })} />
-              <PathConditionFields
-                value={rule.path_condition}
-                onChange={(path_condition) => setRule(rule.id, { path_condition })}
-                relationshipOptions={relationshipOptions}
-                directionOptions={directionOptions}
-                groupOptions={entityGroupOptions}
-              />
-            </SubCard>
-          ))}
-        </Block>
+        {rulesReview ? (
+          // A requirement built from preset rules: a weight per rule, boosted under conditions
+          <Block
+            step={2}
+            title={t_i18n('Scoring')}
+            subtitle={t_i18n('each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition')}
+          >
+            {draft.criteria.map((criterion) => {
+              const weight = draft.rules.find((r) => isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
+              const boosts = draft.rules.filter((r) => !isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
+              const setWeight = (points: number) => (weight
+                ? setRule(weight.id, { points })
+                : set({ rules: [...draft.rules, weightRule(criterion, points)] }));
+              return (
+                <Box key={criterion.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2, mb: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                    <Box sx={{ flex: 1, pb: 1 }}><Text as="span" variant="content-compact-bold">{criterion.name}</Text></Box>
+                    <Box sx={{ width: 140 }}>
+                      <Input label={t_i18n('Weight')} type="number" value={String(weight?.points ?? 0)} onChange={(e) => setWeight(Number.parseInt(e.target.value || '0', 10))} />
+                    </Box>
+                  </Box>
+                  {boosts.map((boost) => (
+                    <Box key={boost.id} sx={{ mt: 2, pl: 2, borderLeft: '2px solid', borderColor: 'primary.main' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                        <Box sx={{ width: 140 }}>
+                          <Input label={t_i18n('Boost (points)')} type="number" value={String(boost.points)} onChange={(e) => setRule(boost.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
+                        </Box>
+                        <Box sx={{ flex: 1, pb: 1 }}>
+                          <Text as="span" variant="content-caption">{t_i18n('when the entity also meets these conditions')}</Text>
+                        </Box>
+                        <IconButton aria-label={t_i18n('Remove boost')} onClick={() => set({ rules: draft.rules.filter((r) => r.id !== boost.id) })}><DeleteOutlined fontSize="small" /></IconButton>
+                      </Box>
+                      {/* the conditions of the boost, lower in the form */}
+                      <Box sx={{ mt: 2 }}>
+                        <IrFilterBuilder value={boost.filters} onChange={(filters) => setRule(boost.id, { filters })} />
+                        <GroupLinkFields
+                          value={boost.link}
+                          onChange={(link) => setRule(boost.id, { link })}
+                          relationshipOptions={relationshipOptions}
+                          groupOptions={entityGroupOptions}
+                        />
+                        <PathConditionFields
+                          value={boost.path_condition}
+                          onChange={(path_condition) => setRule(boost.id, { path_condition })}
+                          relationshipOptions={relationshipOptions}
+                          directionOptions={directionOptions}
+                          groupOptions={entityGroupOptions}
+                        />
+                      </Box>
+                    </Box>
+                  ))}
+                  <Box sx={{ mt: 1.5 }}>
+                    <Button variant="tertiary" size="small" startIcon={<Icon name="plus" size={16} />} onClick={() => set({ rules: [...draft.rules, boostRule(criterion)] })}>
+                      {t_i18n('Boost score weighting')}
+                    </Button>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Block>
+        ) : (
+          <>
+            {/* 4. Relevance */}
+            <Block
+              step={4}
+              title={t_i18n('Relevance')}
+              subtitle={t_i18n('scoring rules: rank the entities of the requirement (applies to · if · then ± points)')}
+              action={<Button variant="secondary" size="small" onClick={() => set({ rules: [...draft.rules, emptyRule()] })}>{t_i18n('Add a rule')}</Button>}
+            >
+              {draft.rules.map((rule) => (
+                <SubCard key={rule.id} onDelete={() => set({ rules: draft.rules.filter((r) => r.id !== rule.id) })}>
+                  <Row columns="2fr 0.6fr 1fr">
+                    <Input label={t_i18n('Rule name')} value={rule.name} onChange={(e) => setRule(rule.id, { name: e.target.value })} />
+                    <Input label={t_i18n('Points')} type="number" value={String(rule.points)} onChange={(e) => setRule(rule.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
+                    <Switch label={t_i18n('Enabled')} checked={rule.enabled} onCheckedChange={(checked) => setRule(rule.id, { enabled: checked })} />
+                  </Row>
+                  <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('Applies to')}</Text>
+                  <Row columns="1fr 1fr">
+                    <IrMultiSelect label={t_i18n('Entity types (empty = any)')} values={rule.applies_to_types} options={typeOptions} onChange={(v) => setRule(rule.id, { applies_to_types: v })} />
+                    <IrSelect
+                      label={t_i18n('Entered by')}
+                      value={rule.applies_to_criterion_id ?? 'any'}
+                      options={[{ value: 'any', label: t_i18n('Any criterion') }, ...criterionOptions]}
+                      onChange={(v) => setRule(rule.id, { applies_to_criterion_id: v === 'any' ? null : v })}
+                    />
+                  </Row>
+                  <Text as="div" variant="content-compact-bold" style={{ marginBottom: 8 }}>{t_i18n('If')}</Text>
+                  <GroupLinkFields
+                    value={rule.link}
+                    onChange={(link) => setRule(rule.id, { link })}
+                    relationshipOptions={relationshipOptions}
+                    groupOptions={entityGroupOptions}
+                  />
+                  <IrFilterBuilder value={rule.filters} onChange={(filters) => setRule(rule.id, { filters })} />
+                  <PathConditionFields
+                    value={rule.path_condition}
+                    onChange={(path_condition) => setRule(rule.id, { path_condition })}
+                    relationshipOptions={relationshipOptions}
+                    directionOptions={directionOptions}
+                    groupOptions={entityGroupOptions}
+                  />
+                </SubCard>
+              ))}
+            </Block>
+          </>
+        )}
 
         {/* 5. Follow-up */}
         <Paper padding={24} style={{ marginBottom: 16 }}>

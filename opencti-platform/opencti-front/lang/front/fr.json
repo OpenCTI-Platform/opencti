@@ -7407,5 +7407,11 @@
   "Or any type…": "Ou tout type…",
   "{count} filters": "{count} filtres",
   "what flags entities in this requirement: edit a rule to change it on the criteria step": "ce qui signale des entités dans ce besoin : modifiez une règle pour la changer à l'étape des critères",
-  "Select rule": "Sélectionner une règle"
+  "Select rule": "Sélectionner une règle",
+  "Boost (points)": "Bonus (points)",
+  "Boost score weighting": "Augmenter la pondération",
+  "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "chaque règle ajoute son poids au score des entités qu'elle apporte ; augmentez-le pour ajouter des points quand une entité remplit aussi une condition",
+  "Remove boost": "Supprimer le bonus",
+  "Scoring": "Score",
+  "when the entity also meets these conditions": "quand l'entité remplit aussi ces conditions"
 }

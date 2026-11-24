@@ -7407,5 +7407,11 @@
   "Or any type…": "또는 모든 유형…",
   "{count} filters": "필터 {count}개",
   "what flags entities in this requirement: edit a rule to change it on the criteria step": "이 요구 사항에서 엔터티를 표시하는 항목: 규칙을 편집하면 기준 단계에서 변경할 수 있습니다",
-  "Select rule": "규칙 선택"
+  "Select rule": "규칙 선택",
+  "Boost (points)": "부스트(점수)",
+  "Boost score weighting": "점수 가중치 높이기",
+  "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "각 규칙은 가져오는 엔터티의 점수에 가중치를 더합니다. 엔터티가 조건도 충족할 때 점수를 더하려면 부스트하세요",
+  "Remove boost": "부스트 제거",
+  "Scoring": "점수",
+  "when the entity also meets these conditions": "엔터티가 이 조건도 충족할 때"
 }

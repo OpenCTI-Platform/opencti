@@ -7407,5 +7407,11 @@
   "Or any type…": "或任意类型…",
   "{count} filters": "{count} 个筛选条件",
   "what flags entities in this requirement: edit a rule to change it on the criteria step": "此需求中标记实体的内容：编辑规则可在条件步骤中修改",
-  "Select rule": "选择规则"
+  "Select rule": "选择规则",
+  "Boost (points)": "加分（分数）",
+  "Boost score weighting": "提高评分权重",
+  "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "每条规则将其权重加到其引入实体的分数上；提高权重可在实体还满足某条件时加分",
+  "Remove boost": "删除加分",
+  "Scoring": "评分",
+  "when the entity also meets these conditions": "当实体还满足这些条件时"
 }

@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { draftToInput } from './irConfigTypes';
 import type { IrPirType } from './irPresetRules';
-import { defaultItemName, defaultRuleName, emptyValue, presetItemsToDraft, presetQueryChips, validatePresetItems, type IrPresetItem, type IrPresetValue } from './irPresetDraft';
+import {
+  defaultItemName,
+  defaultRuleName,
+  emptyValue,
+  isWeightRule,
+  presetItemsToDraft,
+  presetQueryChips,
+  validatePresetItems,
+  type IrPresetItem,
+  type IrPresetValue,
+} from './irPresetDraft';
 
 const t = (s: string) => s;
 const fs = { value: 'id-fs', label: 'Financial services', type: 'Sector' };
@@ -279,5 +289,27 @@ describe('subject groups of the whole draft', () => {
       expect(g.role).toBe(entry.has(g.id) ? 'entry' : 'context');
     });
     expect(context.size).toBe(2);
+  });
+});
+
+describe('default scoring weights', () => {
+  const ruleItem = (id: string, rule: { id: string; ruleKey: string; value: IrPresetValue }): IrPresetItem => ({ id, kind: 'rule', name: id, rule });
+  const weights = (count: number) => {
+    const items = [typeRule, targetsRule, usesRule].slice(0, count).map((rule, i) => ruleItem(`i${i}`, rule));
+    return presetItemsToDraft(general, 'malware', ['Malware'], items);
+  };
+
+  it('gives each rule an equal share of 100, as a weight on its criterion', () => {
+    const d = weights(2);
+    expect(d.rules.map((r) => [r.applies_to_criterion_id, r.points])).toEqual(d.criteria.map((c) => [c.id, 50]));
+    expect(d.rules.every((r) => isWeightRule(r) && !r.filters && !r.link && !r.path_condition && r.enabled)).toBe(true);
+  });
+
+  it('puts the rounding remainder on the last rule', () => {
+    expect(weights(3).rules.map((r) => r.points)).toEqual([33, 33, 34]);
+  });
+
+  it('has no weight without a rule', () => {
+    expect(presetItemsToDraft(general, 'malware', ['Malware'], []).rules).toEqual([]);
   });
 });

@@ -7407,5 +7407,11 @@
   "Or any type…": "または任意のタイプ…",
   "{count} filters": "{count} 件のフィルター",
   "what flags entities in this requirement: edit a rule to change it on the criteria step": "この要件でエンティティにフラグを付けるもの：ルールを編集すると基準ステップで変更できます",
-  "Select rule": "ルールを選択"
+  "Select rule": "ルールを選択",
+  "Boost (points)": "ブースト（ポイント）",
+  "Boost score weighting": "スコアの重みを増やす",
+  "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "各ルールは取り込むエンティティのスコアに重みを加えます。エンティティが条件も満たす場合にポイントを加えるにはブーストします",
+  "Remove boost": "ブーストを削除",
+  "Scoring": "スコアリング",
+  "when the entity also meets these conditions": "エンティティがこれらの条件も満たす場合"
 }

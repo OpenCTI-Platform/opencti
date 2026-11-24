@@ -7407,5 +7407,11 @@
   "Or any type…": "Или любой тип…",
   "{count} filters": "Фильтров: {count}",
   "what flags entities in this requirement: edit a rule to change it on the criteria step": "что отмечает сущности в этом требовании: измените правило на шаге критериев",
-  "Select rule": "Выберите правило"
+  "Select rule": "Выберите правило",
+  "Boost (points)": "Бонус (баллы)",
+  "Boost score weighting": "Увеличить вес",
+  "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "каждое правило добавляет свой вес к оценке сущностей, которые оно приносит; увеличьте его, чтобы добавлять баллы, когда сущность также соответствует условию",
+  "Remove boost": "Удалить бонус",
+  "Scoring": "Оценка",
+  "when the entity also meets these conditions": "когда сущность также соответствует этим условиям"
 }

@@ -5,6 +5,7 @@ import {
   emptyCriterion,
   emptyDraft,
   emptyGroup,
+  emptyRule,
   newId,
   type IrConditionDraft,
   type IrCriterionDraft,
@@ -13,6 +14,7 @@ import {
   type IrEntityOption,
   type IrGroupDraft,
   type IrPriority,
+  type IrRuleDraft,
 } from './irConfigTypes';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { getRule, IR_PIR_TYPES, type IrPirType, type IrPresetRule } from './irPresetRules';
@@ -292,6 +294,34 @@ const containerFirst = (rules: IrRuleInstance[]): IrRuleInstance[] => [
   ...rules.filter((rule) => !isContainerRule(rule.ruleKey)),
 ];
 
+// region scoring: each rule weighs on the score of the entities it brings in; a boost adds points under a condition
+const WEIGHT_RULE_PREFIX = 'w-';
+export const isWeightRule = (rule: Pick<IrRuleDraft, 'id'>) => rule.id.startsWith(WEIGHT_RULE_PREFIX);
+
+// A weight: a scoring rule on one criterion with no condition (the way the PR converts the weights of an old PIR)
+export const weightRule = (criterion: Pick<IrCriterionDraft, 'id' | 'name'>, points: number): IrRuleDraft => ({
+  ...emptyRule(),
+  id: `${WEIGHT_RULE_PREFIX}${criterion.id}`,
+  name: `Weight · ${criterion.name}`,
+  applies_to_criterion_id: criterion.id,
+  points,
+});
+
+// A boost: more points on one criterion when an entity also meets the condition set lower in its card
+export const boostRule = (criterion: Pick<IrCriterionDraft, 'id' | 'name'>): IrRuleDraft => ({
+  ...emptyRule(),
+  id: newId('b'),
+  name: `Boost · ${criterion.name}`,
+  applies_to_criterion_id: criterion.id,
+  points: 10,
+});
+
+// 100 points split between the rules; the rounding remainder goes to the last one (33, 33, 34)
+const equalShares = (count: number): number[] => Array.from({ length: count }, (_, i) => (
+  i === count - 1 ? 100 - Math.floor(100 / count) * (count - 1) : Math.floor(100 / count)
+));
+// endregion
+
 export const presetItemsToDraft = (
   general: IrPresetGeneral,
   pirType: IrPirType,
@@ -328,6 +358,7 @@ export const presetItemsToDraft = (
     });
     criteria.push(criterion);
   });
+  const shares = equalShares(criteria.length);
   return {
     ...emptyDraft(),
     name: general.name,
@@ -336,6 +367,7 @@ export const presetItemsToDraft = (
     priority: general.priority,
     groups,
     criteria,
+    rules: criteria.map((criterion, i) => weightRule(criterion, shares[i])),
   };
 };
 // endregion
