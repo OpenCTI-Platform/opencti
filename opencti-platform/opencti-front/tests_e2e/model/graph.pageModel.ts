@@ -317,6 +317,10 @@ export default class GraphPage {
       await expect(card).toBeHidden();
     }
     const { x, y } = await this.pagePoint(id);
+    // The canvas picks the node under the pointer on a later frame, and a click sent before it did
+    // lands on nothing and selects nothing: the node's hover card shows the pick has happened.
+    await this.page.mouse.move(x, y, { steps: 6 });
+    await expect(card).toBeVisible();
     for (const key of modifiers) await this.page.keyboard.down(key);
     await this.page.mouse.click(x, y);
     for (const key of modifiers) await this.page.keyboard.up(key);
