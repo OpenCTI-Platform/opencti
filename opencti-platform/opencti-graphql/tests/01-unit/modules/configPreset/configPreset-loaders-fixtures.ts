@@ -1,5 +1,12 @@
 import { vi } from 'vitest';
-import { fullEntitiesList, fullEntitiesThroughRelationsToList, fullRelationsList, pageEntitiesConnection, storeLoadById } from '../../../../src/database/middleware-loader';
+import {
+  fullEntitiesList,
+  fullEntitiesThroughRelationsToList,
+  fullRelationsList,
+  internalFindByIds,
+  pageEntitiesConnection,
+  storeLoadById,
+} from '../../../../src/database/middleware-loader';
 import { buildPagination } from '../../../../src/database/utils';
 import { ALL_THEMES } from './configPreset-themes-fixtures';
 import { ALL_ROLES } from './configPreset-roles-fixtures';
@@ -16,6 +23,7 @@ import { ALL_RSS_FEEDS, ALL_TAXII_FEEDS } from './configPreset-feeds-fixtures';
 import { ALL_EMAIL_TEMPLATES } from './configPreset-emailTemplates-fixtures';
 import { ALL_FINTEL_DESIGNS } from './configPreset-fintelDesigns-fixtures';
 import { ALL_DASHBOARDS } from './configPreset-dashboards-fixtures';
+import { ALL_FORM_INTAKES, FORM_REFERENCED_ENTITIES } from './configPreset-formIntakes-fixtures';
 
 interface ListingArgs {
   search?: string | null;
@@ -43,6 +51,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   EmailTemplate: ALL_EMAIL_TEMPLATES,
   FintelDesign: ALL_FINTEL_DESIGNS,
   Workspace: ALL_DASHBOARDS,
+  Form: ALL_FORM_INTAKES,
 };
 const labelOf = (entity: { name?: string; definition?: string; value?: string }) => entity.name ?? entity.definition ?? entity.value ?? '';
 
@@ -101,6 +110,13 @@ export const mockConfigPresetLoaders = (otherEntities: unknown[] = []) => {
     vi.mocked(fullRelationsList).mockImplementation(async (_ctx, _user, _type, args) => {
       const fromIds = [args?.fromId ?? []].flat();
       return GROUP_ROLE_RELATIONS.filter(({ fromId }) => fromIds.includes(fromId)) as never;
+    });
+  }
+  // What the forms refer to, found by any of their ids like the engine does
+  if (vi.isMockFunction(internalFindByIds)) {
+    vi.mocked(internalFindByIds).mockImplementation(async (_ctx, _user, ids) => {
+      const found = FORM_REFERENCED_ENTITIES.flatMap((entity) => [[entity.id, entity], [entity.standard_id, entity]] as const).filter(([id]) => ids.includes(id));
+      return Object.fromEntries(found) as never;
     });
   }
   if (vi.isMockFunction(fullEntitiesThroughRelationsToList)) {
