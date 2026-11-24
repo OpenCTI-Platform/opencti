@@ -2501,7 +2501,7 @@ export const triggerWorkflowEvent = async (
 
     // 5. Reject a transition whose required inputs are missing, before any action runs
     const transition = definition.getTransitions(currentStateId).find((t) => t.event === eventName);
-    const missingInput = transition && getMissingTransitionInput(user, transition, comment, runtimeParams);
+    const missingInput = transition && getMissingTransitionInput(executionUser, transition, comment, runtimeParams);
     if (missingInput) {
       return { success: false, reason: missingInput, entity };
     }

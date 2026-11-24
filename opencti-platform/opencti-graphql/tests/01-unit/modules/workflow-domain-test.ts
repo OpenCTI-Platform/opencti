@@ -3441,6 +3441,15 @@ describe('Transition comments – Domain', () => {
         expect(await triggerWorkflowEvent(mockContext, bypassFieldsUser, 'entity-id', 'review')).toMatchObject({ success: true });
       });
 
+      it('should not let a draft-only bypass-fields capability skip a required comment', async () => {
+        setupMocks();
+        mockTransition({ comment: 'required' });
+        const draftOnlyUser = { id: 'user-id', draft_context: 'draft-1', capabilities: [], capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' }] } as any;
+
+        expect(await triggerWorkflowEvent(mockContext, draftOnlyUser, 'entity-id', 'review'))
+          .toMatchObject({ success: false, reason: 'A comment is required for this transition' });
+      });
+
       it.each([
         ['requiresShareOrganizationInput', 'shareOrganizationIds'],
         ['requiresUnshareOrganizationInput', 'unshareOrganizationIds'],
