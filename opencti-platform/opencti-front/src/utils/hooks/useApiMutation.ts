@@ -1,9 +1,10 @@
 import { Disposable, getRequest, GraphQLTaggedNode, IEnvironment, MutationConfig, MutationParameters, PayloadError } from 'relay-runtime';
 import { useMutation, UseMutationConfig } from 'react-relay';
-import { ReactNode, useCallback } from 'react';
+import { ReactNode, useCallback, useContext } from 'react';
 import { MESSAGING$, relayErrorHandling } from '../../relay/environment';
 import { RelayError } from '../../relay/relayTypes';
 import { useDeferredCreation } from './useDeferredCreation';
+import { CreationFeedbackContext } from './useCreationFeedback';
 
 // A creation mutation has a `<type>Add` root field. The other mutations a creation dialog can send (e.g. Ask AI) are not deferred.
 const isCreationMutation = (query: GraphQLTaggedNode) => {
@@ -31,6 +32,7 @@ const useApiMutation = <T extends MutationParameters>(
   options?: UsiApiMutationOptions,
 ): [(args: UseMutationConfig<T>) => void, boolean] => {
   const { isDeferredMode, captureInput } = useDeferredCreation();
+  const { silenceCreationSuccess } = useContext(CreationFeedbackContext);
   const [commit, inFlight] = useMutation(query, fn);
   const commitWithError = useCallback((args: UseMutationConfig<T>) => {
     if (isDeferredMode && isCreationMutation(query)) {
@@ -64,10 +66,11 @@ const useApiMutation = <T extends MutationParameters>(
       },
       onCompleted: (response: T['response'], errors: PayloadError[] | null) => {
         if (args.onCompleted) args.onCompleted(response, errors);
-        if (options?.successMessage) MESSAGING$.notifySuccess(options.successMessage);
+        const silenced = silenceCreationSuccess && isCreationMutation(query);
+        if (options?.successMessage && !silenced) MESSAGING$.notifySuccess(options.successMessage);
       },
     });
-  }, [commit, query, isDeferredMode, captureInput]);
+  }, [commit, query, isDeferredMode, captureInput, silenceCreationSuccess]);
   return [commitWithError, inFlight];
 };
 
