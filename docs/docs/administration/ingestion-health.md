@@ -227,6 +227,10 @@ So:
       - CONNECTOR_SCOPE=application/json
 ```
 
+!!! warning "The token of an export connector has full administrator rights"
+
+    **Bypass all capabilities** grants every capability and bypasses the markings and the restrictions of organizations: the **Administrator** role created with the platform only has this capability. A dedicated group or role with **Bypass all capabilities** does not reduce the rights of the connector, it only keeps it apart from the people of the `Administrators` group. Keep its token as secret as an administrator password, give a distinct service account to each export connector, and revoke the token of one of them when it may have leaked.
+
 See [Connector users and tokens](../deployment/connectors.md#connector-users-and-tokens) for the role each type of connector needs.
 
 !!! warning "Do not turn the admin into a service account"
