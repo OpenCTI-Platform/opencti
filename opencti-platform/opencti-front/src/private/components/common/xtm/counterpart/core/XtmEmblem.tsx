@@ -25,6 +25,10 @@ import { XTMONE_PRODUCT, type XtmProduct } from './xtmProducts';
 // Design system inks, the same in the three products.
 export const EMBLEM_FOUND = 'var(--color-filigran-ia-primary)';
 export const EMBLEM_MUTED = 'var(--icon-disabled)';
+// The outline of the emblem button: the XTM One purple in every state, found or not, hover and focus
+// included (Sam, 24 Nov 2026), the same token in OpenCTI, OpenAEV and OpenCRQ. The design system's
+// hover fill and focus ring are kept.
+export const EMBLEM_OUTLINE = 'var(--color-filigran-ia-primary)';
 // Secondary ink of labels and explanations, a token the design system defines.
 export const SECONDARY_INK = 'var(--text-default-secondary)';
 
@@ -170,6 +174,7 @@ export const XtmEmblem: React.FC<XtmEmblemProps> = ({ products, objectId }) => {
             aria-expanded={open}
             data-testid="xtm-emblem"
             data-found={found}
+            style={{ borderColor: EMBLEM_OUTLINE }}
             onClick={(event: React.MouseEvent<HTMLElement>) => setAnchor(event.currentTarget)}
           >
             <XtmMark src={XTMONE_PRODUCT.mark} color={found > 0 ? EMBLEM_FOUND : EMBLEM_MUTED} />

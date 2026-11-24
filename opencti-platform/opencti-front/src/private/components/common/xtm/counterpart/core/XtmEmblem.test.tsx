@@ -83,6 +83,8 @@ describe('XtmEmblem (single XTM emblem, Sam 23 Nov 2026)', () => {
     const emblem = await screen.findByRole('button', { name: 'Across the XTM Platform' });
     expect(screen.getAllByTestId('xtm-emblem')).toHaveLength(1);
     expect(emblem).toHaveAttribute('data-found', '1');
+    // The outline is the XTM One purple (Sam, 24 Nov 2026).
+    expect(emblem.style.borderColor).toBe('var(--color-filigran-ia-primary)');
     expect(mocks.calls.filter((c) => c.isLookup)).toHaveLength(1);
   });
 
@@ -91,6 +93,8 @@ describe('XtmEmblem (single XTM emblem, Sam 23 Nov 2026)', () => {
     testRender(<XtmEmblem products={xtmProductsFor('System')} objectId="sys-1" />);
     const emblem = await screen.findByRole('button', { name: 'Not found across the XTM Platform' });
     expect(emblem).toHaveAttribute('data-found', '0');
+    // Greyed glyph, the outline stays the XTM One purple.
+    expect(emblem.style.borderColor).toBe('var(--color-filigran-ia-primary)');
   });
 
   it('the click opens a surface with one section per product and a button to open the match', async () => {
