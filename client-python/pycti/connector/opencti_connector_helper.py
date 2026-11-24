@@ -19,6 +19,7 @@ Example:
 
 import asyncio
 import base64
+import builtins
 import concurrent.futures
 import copy
 import datetime
@@ -1947,6 +1948,46 @@ def _sanitize_connector_errors(errors) -> List[Dict]:
     return deduplicated[:CONNECTOR_ERRORS_MAX_COUNT]
 
 
+# Reported for an exception that carries no valid code or criticity, as UnknownError in the connectors SDK
+CONNECTOR_UNKNOWN_ERROR_CODE = "other.unknown"
+CONNECTOR_UNKNOWN_ERROR_CRITICITY = 50
+
+# Built in since Python 3.11 only
+_BASE_EXCEPTION_GROUP = getattr(builtins, "BaseExceptionGroup", None)
+
+
+def _flatten_exception(exc: BaseException) -> List[BaseException]:
+    if _BASE_EXCEPTION_GROUP is not None and isinstance(exc, _BASE_EXCEPTION_GROUP):
+        return [leaf for inner in exc.exceptions for leaf in _flatten_exception(inner)]
+    return [exc]
+
+
+def _exception_to_connector_error(exc: BaseException) -> Dict:
+    # A third-party code (urllib HTTPError.code is an int...) or a broken attribute must not hide the error
+    try:
+        code = getattr(exc, "code", None)
+        # strip() also turns a str subclass (a str enum) into a plain str
+        code = code.strip() if isinstance(code, str) else ""
+    except Exception:  # pylint: disable=broad-except
+        code = ""
+    try:
+        criticity = _parse_criticity(getattr(exc, "criticity", None))
+        # An IntEnum (Criticity of the connectors SDK) is sent as a plain int
+        criticity = int(criticity)
+    except Exception:  # pylint: disable=broad-except
+        criticity = CONNECTOR_UNKNOWN_ERROR_CRITICITY
+    try:
+        text = str(exc)
+    except Exception:  # pylint: disable=broad-except
+        text = ""
+    name = type(exc).__name__
+    return {
+        "code": code or CONNECTOR_UNKNOWN_ERROR_CODE,
+        "message": f"{name}: {text}" if text else name,
+        "criticity": criticity,
+    }
+
+
 class ConnectorInfo:
     """Container for connector runtime information and status.
 
@@ -3342,7 +3383,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     ) -> None:
         # Errors belong to a run: cleared before it so those added with add_error during it are kept
         self.connector_info.clear_errors()
-        error_list = message_callback()
+        try:
+            error_list = message_callback()
+        # A raised exception is reported like a returned error, and the next run is still scheduled
+        except Exception as err:  # pylint: disable=broad-except
+            for exc in _flatten_exception(err):
+                self.connector_info.add_error(**_exception_to_connector_error(exc))
+            self.metric.inc("error_count")
+            self.connector_logger.error(
+                "Connector run raised an exception",
+                {"reason": _exception_to_connector_error(err)["message"]},
+            )
+            error_list = None
         # Other non-list returns (True, a status string...) predate errors reporting and stay silent
         if isinstance(error_list, Mapping):
             self.connector_logger.warning(
@@ -3428,6 +3480,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         If duration_period is zero or connect_run_and_terminate is True,
         the process will run once and terminate. Otherwise, it schedules
         the next run based on the interval.
+
+        Errors returned by the callback, or added with ``connector_info.add_error``,
+        are reported to the platform with the ping. So is an exception the callback
+        raises: each one (each exception of an ``ExceptionGroup``) with its ``code``
+        and ``criticity`` attributes, or ``other.unknown`` and 50 when it has none.
 
         :param message_callback: The connector process callback function
         :type message_callback: Callable[[], Optional[List[Dict]]]

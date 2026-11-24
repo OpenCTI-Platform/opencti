@@ -1,3 +1,5 @@
+import sys
+from enum import Enum, IntEnum
 from unittest.mock import MagicMock
 
 import pytest
@@ -316,3 +318,199 @@ def test_run_and_terminate_buffering_skips_the_run():
         helper.schedule_process(process, duration_period=60)
     process.assert_not_called()
     assert helper.connector_info.errors == [PREVIOUS_RUN_ERROR]
+
+
+class _DataConversionError(Exception):
+    code = "data.conversion"
+    criticity = 30
+
+
+class _Criticity(IntEnum):
+    CRITICAL = 50
+
+
+class _StrCode(str, Enum):
+    AUTH = "api.authentication"
+
+
+def _raise(exc: BaseException):
+    def process():
+        raise exc
+
+    return process
+
+
+def _run_raising(process, helper=None) -> OpenCTIConnectorHelper:
+    helper = helper or _build_helper()
+    helper.schedule_process(process, duration_period=60)
+    return helper
+
+
+def test_unexpected_exception_is_reported_as_unknown_error():
+    helper = _run_raising(_raise(ValueError("invalid literal for int(): 'twenty'")))
+    assert helper.connector_info.errors == [
+        {
+            "code": "other.unknown",
+            "message": "ValueError: invalid literal for int(): 'twenty'",
+            "criticity": 50,
+        }
+    ]
+
+
+def test_exception_code_and_criticity_are_used():
+    helper = _run_raising(_raise(_DataConversionError("unable to convert IOC")))
+    assert helper.connector_info.errors == [
+        {
+            "code": "data.conversion",
+            "message": "_DataConversionError: unable to convert IOC",
+            "criticity": 30,
+        }
+    ]
+
+
+def test_enum_code_and_criticity_are_sent_as_plain_values():
+    exc = Exception("rejected")
+    exc.code = _StrCode.AUTH
+    exc.criticity = _Criticity.CRITICAL
+    helper = _run_raising(_raise(exc))
+    [error] = helper.connector_info.errors
+    assert error == {
+        "code": "api.authentication",
+        "message": "Exception: rejected",
+        "criticity": 50,
+    }
+    assert type(error["code"]) is str
+    assert type(error["criticity"]) is int
+
+
+@pytest.mark.parametrize(
+    "code, criticity, expected",
+    [
+        (404, 30, ("other.unknown", 30)),
+        ("  ", 30, ("other.unknown", 30)),
+        (None, 30, ("other.unknown", 30)),
+        ("api.timeout", "HIGH", ("api.timeout", 50)),
+        ("api.timeout", True, ("api.timeout", 50)),
+        ("api.timeout", 2**31, ("api.timeout", 50)),
+        ("api.timeout", 30.0, ("api.timeout", 50)),
+    ],
+    ids=[
+        "code-as-int",
+        "blank-code",
+        "code-as-none",
+        "criticity-as-str",
+        "criticity-as-bool",
+        "criticity-above-graphql-int",
+        "criticity-as-float",
+    ],
+)
+def test_invalid_code_or_criticity_falls_back_to_defaults(code, criticity, expected):
+    exc = Exception("boom")
+    exc.code = code
+    exc.criticity = criticity
+    helper = _run_raising(_raise(exc))
+    [error] = helper.connector_info.errors
+    assert (error["code"], error["criticity"]) == expected
+
+
+def test_exception_without_message_is_reported_with_its_type():
+    helper = _run_raising(_raise(KeyError()))
+    assert helper.connector_info.errors[0]["message"] == "KeyError"
+
+
+def test_exception_failing_to_render_is_still_reported():
+    class _Unprintable(Exception):
+        @property
+        def code(self):
+            raise RuntimeError("broken attribute")
+
+        def __str__(self):
+            raise RuntimeError("broken __str__")
+
+    helper = _run_raising(_raise(_Unprintable()))
+    assert helper.connector_info.errors == [
+        {"code": "other.unknown", "message": "_Unprintable", "criticity": 50}
+    ]
+
+
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="ExceptionGroup is 3.11+")
+def test_exception_group_reports_each_exception_flattened():
+    group = ExceptionGroup(  # noqa: F821
+        "run failed",
+        [
+            _DataConversionError("bad IOC"),
+            ExceptionGroup("nested", [ValueError("bad value")]),  # noqa: F821
+        ],
+    )
+    helper = _run_raising(_raise(group))
+    assert helper.connector_info.errors == [
+        {
+            "code": "data.conversion",
+            "message": "_DataConversionError: bad IOC",
+            "criticity": 30,
+        },
+        {"code": "other.unknown", "message": "ValueError: bad value", "criticity": 50},
+    ]
+
+
+def test_exception_is_logged_and_counted():
+    helper = _run_raising(_raise(ValueError("bad value")))
+    helper.metric.inc.assert_called_once_with("error_count")
+    helper.connector_logger.error.assert_called_once_with(
+        "Connector run raised an exception", {"reason": "ValueError: bad value"}
+    )
+    assert _run_errors_logs(helper) == [
+        (
+            "Errors reported by the connector run",
+            {"errors": helper.connector_info.errors},
+        )
+    ]
+
+
+def test_exception_is_sent_on_ping():
+    helper = _run_raising(_raise(ValueError("bad value")))
+    assert helper.connector_info.all_details["errors"] == [
+        {"code": "other.unknown", "message": "ValueError: bad value", "criticity": 50}
+    ]
+
+
+def test_exception_keeps_errors_added_before_it_and_drops_previous_run_ones():
+    helper = _build_helper()
+
+    def process():
+        helper.connector_info.add_error(**API_ERROR)
+        raise ValueError("bad value")
+
+    _run_raising(process, helper)
+    assert helper.connector_info.errors == [
+        API_ERROR,
+        {"code": "other.unknown", "message": "ValueError: bad value", "criticity": 50},
+    ]
+
+
+def test_exception_on_first_run_still_schedules_the_next_one():
+    helper = _run_raising(_raise(ValueError("bad value")))
+    helper.scheduler.enter.assert_called_once()
+    helper.scheduler.run.assert_called_once()
+
+
+def test_exception_on_later_run_is_reported_and_next_run_scheduled():
+    helper = _build_helper()
+    scheduler = MagicMock()
+    helper._schedule_process(scheduler, _raise(ValueError("bad value")), 60)
+    assert helper.connector_info.errors == [
+        {"code": "other.unknown", "message": "ValueError: bad value", "criticity": 50}
+    ]
+    scheduler.enter.assert_called_once()
+
+
+def test_run_and_terminate_sends_exception_on_final_ping():
+    helper, sent_on_force_ping = _run_and_terminate(_raise(ValueError("bad value")))
+    assert sent_on_force_ping[0] == [
+        {"code": "other.unknown", "message": "ValueError: bad value", "criticity": 50}
+    ]
+
+
+def test_base_exceptions_are_not_caught():
+    with pytest.raises(KeyboardInterrupt):
+        _build_helper()._run_and_collect_errors(_raise(KeyboardInterrupt()))
