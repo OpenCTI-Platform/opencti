@@ -57,6 +57,8 @@ describe('Message', () => {
     expect(screen.queryByText('Observable created and added to the Report')).not.toBeNull();
     act(() => undo.blur());
     await act(async () => { await vi.advanceTimersByTimeAsync(9000); });
+    // The exit transition starts once the message is closed
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
     expect(screen.queryByText('Observable created and added to the Report')).toBeNull();
   });
 });

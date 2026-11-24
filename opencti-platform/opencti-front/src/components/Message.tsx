@@ -35,8 +35,6 @@ const Message = () => {
   const [_, setError] = useState(false);
   const [fullError, setFullError] = useState<FullError | null>(null);
   const [action, setAction] = useState<MessageAction | null>(null);
-  // While hovered or focused, a message stays, so that its action can be reached
-  const [paused, setPaused] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   let isEnterpriseEdition = false;
   let isRequestAccessFeatureEnabled = false;
@@ -69,7 +67,6 @@ const Message = () => {
           setText(translatedText);
           setType(firstMessage.type);
           setAction(firstMessage.action ?? null);
-          setPaused(false);
         }
       },
     });
@@ -110,10 +107,6 @@ const Message = () => {
     return (
       <Alert
         severity="success"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
         action={(
           <>
             <Button
@@ -142,8 +135,8 @@ const Message = () => {
     );
   };
 
+  // MUI pauses the auto-hide while the message is hovered or focused, so that its action can be reached
   const autoHideDuration = () => {
-    if (paused) return null;
     if (action) return 8000;
     return type === 'message' ? 4000 : 8000;
   };

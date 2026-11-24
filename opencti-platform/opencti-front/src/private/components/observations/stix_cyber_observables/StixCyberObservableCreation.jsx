@@ -252,7 +252,7 @@ const StixCyberObservableCreation = ({
   defaultMarkingDefinitions = [],
   isFromBulkRelation = false,
   onCompleted = () => {},
-  onCreated = undefined,
+  onCreated,
   stixCyberObservableTypes = undefined,
 }) => {
   const theme = useTheme();
