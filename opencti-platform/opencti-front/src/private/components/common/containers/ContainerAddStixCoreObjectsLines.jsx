@@ -69,6 +69,15 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    // The panel also adds objects (the ones created from it): follow its list
+    if (prevProps.containerStixCoreObjects !== this.props.containerStixCoreObjects) {
+      this.setState({
+        addedStixCoreObjects: R.indexBy(
+          R.prop('id'),
+          (this.props.containerStixCoreObjects || []).map((n) => n.node),
+        ),
+      });
+    }
     setNumberOfElements(
       prevProps,
       this.props,

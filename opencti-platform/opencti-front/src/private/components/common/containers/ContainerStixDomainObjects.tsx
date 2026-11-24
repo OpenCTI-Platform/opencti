@@ -24,6 +24,7 @@ import ContainerAddStixCoreObjectsInLine from './ContainerAddStixCoreObjectsInLi
 const ContainerStixDomainObjectsFragment = graphql`
     fragment ContainerStixDomainObjects_container on Container {
         id
+        entity_type
         objectMarking {
           id
           definition
@@ -211,6 +212,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjectsInLine
             containerId={containerData.id}
+            containerType={containerData.entity_type}
             targetStixCoreObjectTypes={['Stix-Domain-Object']}
             paginationOptions={queryPaginationOptions}
             containerStixCoreObjects={selectWithoutInferred}

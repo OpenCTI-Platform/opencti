@@ -21,6 +21,8 @@ import { getRelationshipMainRepresentative } from '../../../utils/defaultReprese
 import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { fetchQuery } from '../../../relay/environment';
+import { CreatedObject } from '../../../private/components/common/containers/containerObjects';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -147,6 +149,13 @@ const GraphToolbarContentTools = ({
         <ContainerAddStixCoreObjectsInLine
           knowledgeGraph={context !== 'correlation'}
           containerId={entity.id}
+          containerType={entity.entity_type}
+          // A created object is added to the graph with the same data as the other nodes
+          resolveObject={stixCoreObjectRefetchQuery
+            ? (id) => fetchQuery(stixCoreObjectRefetchQuery, { id })
+              .toPromise()
+              .then((data) => (data as { stixCoreObject: ObjectToParse }).stixCoreObject as unknown as CreatedObject)
+            : undefined}
           containerStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
           defaultCreatedBy={entity.createdBy ?? null}
           defaultMarkingDefinitions={entity.objectMarking ?? []}

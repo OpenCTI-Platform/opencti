@@ -2,7 +2,7 @@ import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
-import { FunctionComponent, Suspense, useState } from 'react';
+import { FunctionComponent, Suspense, useRef, useState } from 'react';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
@@ -20,6 +20,9 @@ import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
+import { CreationFeedbackContext } from '../../../../utils/hooks/useCreationFeedback';
+import { useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
+import { CreatedObject } from './containerObjects';
 
 interface ControlledDialProps {
   onOpen: () => void;
@@ -109,6 +112,10 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
 
 interface ContainerAddStixCoreObjectsInLineProps {
   containerId: string;
+  // Entity type of the container, named in the confirmation message
+  containerType?: string;
+  // The full object for the parent view (e.g. a graph node) when an object created from the panel is added
+  resolveObject?: (id: string) => Promise<CreatedObject>;
   targetStixCoreObjectTypes: string[];
   paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
   containerStixCoreObjects: unknown[];
@@ -124,6 +131,8 @@ interface ContainerAddStixCoreObjectsInLineProps {
 
 const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({
   containerId,
+  containerType,
+  resolveObject,
   targetStixCoreObjectTypes,
   paginationOptions: linesPaginationOptions,
   containerStixCoreObjects,
@@ -166,17 +175,32 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   } = viewStorage;
   const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
+  // Read when the objects created from the panel are added, after a delay
+  const selectedElementsRef = useRef(selectedElements);
+  selectedElementsRef.current = selectedElements;
+  // Functional updates: several objects can be added at once
   const handleSelect = (node: { id: string }) => {
-    setSelectedElements([
-      ...selectedElements,
+    setSelectedElements((current) => [
+      ...current,
       { node, types: ['manual'] },
     ]);
     if (typeof onAdd === 'function') onAdd(node);
   };
   const handleDeselect = (node: { id: string }) => {
-    setSelectedElements(selectedElements.filter((e) => e.node.id !== node.id));
+    setSelectedElements((current) => current.filter((e) => e.node.id !== node.id));
     if (typeof onDelete === 'function') onDelete(node);
   };
+  const { onCreated, referencesDialog } = useAddCreatedObjectsToContainer({
+    containerId,
+    containerType,
+    knowledgeGraph,
+    paginationOptions: linesPaginationOptions,
+    enableReferences,
+    isInContainer: (id) => selectedElementsRef.current.some((e) => e.node.id === id),
+    onAdded: handleSelect,
+    onRemoved: handleDeselect,
+    resolveObject,
+  });
   const keyword = (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
   const buildColumns = () => {
     return {
@@ -217,41 +241,42 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
   const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
 
-  const Header = () => {
-    return (
-      <>
-        <StixDomainObjectCreation
-          display={false}
-          inputValue=""
-          speeddial={true}
-          open={openCreateEntity}
-          handleClose={() => setOpenCreateEntity(false)}
-          creationCallback={undefined}
-          onCompleted={undefined}
-          isFromBulkRelation={undefined}
-          confidence={confidence}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions}
-          stixDomainObjectTypes={targetStixCoreObjectTypes}
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-        />
-        <StixCyberObservableCreation
-          display={false}
-          contextual={true}
-          inputValue=""
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-          speeddial={true}
-          open={openCreateObservable}
-          handleClose={() => setOpenCreateObservable(false)}
-          type={undefined}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
-        />
-      </>
-    );
-  };
+  // An element, not a component: a component declared here would be remounted, with the open creation form, at each render
+  const header = (
+    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: true }}>
+      <StixDomainObjectCreation
+        display={false}
+        inputValue=""
+        speeddial={true}
+        open={openCreateEntity}
+        handleClose={() => setOpenCreateEntity(false)}
+        creationCallback={undefined}
+        onCompleted={undefined}
+        onCreated={onCreated}
+        isFromBulkRelation={undefined}
+        confidence={confidence}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
+        stixDomainObjectTypes={targetStixCoreObjectTypes}
+        paginationKey="Pagination_stixCoreObjects"
+        paginationOptions={searchPaginationOptions}
+      />
+      <StixCyberObservableCreation
+        display={false}
+        contextual={true}
+        inputValue=""
+        paginationKey="Pagination_stixCoreObjects"
+        paginationOptions={searchPaginationOptions}
+        speeddial={true}
+        open={openCreateObservable}
+        handleClose={() => setOpenCreateObservable(false)}
+        type={undefined}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
+        onCreated={onCreated}
+      />
+    </CreationFeedbackContext.Provider>
+  );
 
   const Dial = showSDOCreation
     ? ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add entity')} onOpen={onOpen} />
@@ -286,53 +311,56 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   );
 
   return (
-    <Drawer
-      controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
-      header={<Header />}
-      title={showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-      ref={setRef}
-    >
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={buildColumns()}
-        handleSearch={helpers.handleSearch}
-        keyword={keyword}
-        handleSort={helpers.handleSort}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        disableCards={true}
-        filters={filters}
-        paginationOptions={searchPaginationOptions}
-        iconExtension={true}
-        parametersWithPadding={true}
-        disableExport={true}
-        availableEntityTypes={targetStixCoreObjectTypes}
-        entityTypes={targetStixCoreObjectTypes}
-        createButton={buttons}
+    <>
+      <Drawer
+        controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
+        header={header}
+        title={showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
+        ref={setRef}
       >
-        {(containerRef && queryRef) && (
-          <Suspense>
-            <ContainerAddStixCreObjectsInLineLoader
-              queryRef={queryRef}
-              containerId={containerId}
-              buildColumns={buildColumns}
-              linesPaginationOptions={linesPaginationOptions}
-              knowledgeGraph={knowledgeGraph}
-              selectedElements={selectedElements}
-              handleSelect={handleSelect}
-              handleDeselect={handleDeselect}
-              helpers={helpers}
-              containerRef={containerRef}
-              enableReferences={enableReferences}
-            />
-          </Suspense>
-        )}
-      </ListLines>
-    </Drawer>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={buildColumns()}
+          handleSearch={helpers.handleSearch}
+          keyword={keyword}
+          handleSort={helpers.handleSort}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          disableCards={true}
+          filters={filters}
+          paginationOptions={searchPaginationOptions}
+          iconExtension={true}
+          parametersWithPadding={true}
+          disableExport={true}
+          availableEntityTypes={targetStixCoreObjectTypes}
+          entityTypes={targetStixCoreObjectTypes}
+          createButton={buttons}
+        >
+          {(containerRef && queryRef) && (
+            <Suspense>
+              <ContainerAddStixCreObjectsInLineLoader
+                queryRef={queryRef}
+                containerId={containerId}
+                buildColumns={buildColumns}
+                linesPaginationOptions={linesPaginationOptions}
+                knowledgeGraph={knowledgeGraph}
+                selectedElements={selectedElements}
+                handleSelect={handleSelect}
+                handleDeselect={handleDeselect}
+                helpers={helpers}
+                containerRef={containerRef}
+                enableReferences={enableReferences}
+              />
+            </Suspense>
+          )}
+        </ListLines>
+      </Drawer>
+      {referencesDialog}
+    </>
   );
 };
 
