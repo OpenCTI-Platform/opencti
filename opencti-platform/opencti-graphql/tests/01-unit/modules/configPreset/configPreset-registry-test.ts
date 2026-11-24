@@ -230,14 +230,6 @@ describe('Config preset registry', () => {
       // The dashboards by name, never an investigation
       { id: 'dashboards', label: 'Custom dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
-      // The playbooks by name; the next playbooks of the same name by creation date
-      {
-        id: 'playbooks',
-        label: 'Playbooks',
-        description: 'Playbook definitions, created stopped',
-        group: 'automationRules',
-        itemIds: ['Enrich reports', 'Enrich reports (1)', 'Triage/Phishing'],
-      },
       // The feeds by name; the next feeds of the same name by creation date
       { id: 'rssFeeds', label: 'RSS feeds', description: 'RSS feeds and their parameters, without their state', group: 'integrations', itemIds: ['Security news', 'Security news (1)'] },
       { id: 'csvFeeds', label: 'CSV feeds', description: 'CSV feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
@@ -250,6 +242,14 @@ describe('Config preset registry', () => {
         description: 'Form intakes and their schema',
         group: 'integrations',
         itemIds: [incidentForm.standard_id, reportForm.standard_id],
+      },
+      // The playbooks by name; the next playbooks of the same name by creation date
+      {
+        id: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, created stopped',
+        group: 'automationRules',
+        itemIds: ['Enrich reports', 'Enrich reports (1)', 'Triage/Phishing'],
       },
       // Every rule the platform declares, by its id
       {
@@ -271,7 +271,7 @@ describe('Config preset registry', () => {
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'fintelDesigns', 'playbooks']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'playbooks', 'fintelDesigns']);
   });
 
   it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template, a case template or a fintel design name', async () => {
@@ -314,12 +314,12 @@ describe('Config preset registry', () => {
       ['Executive summary', false],
       ['SOC overview', false],
       ['MITRE', false],
-      ['Enrich reports', false],
-      ['Triage/Phishing', false],
       ['Security news', false],
       ['Partner/TAXII', false],
       ['Incident intake', false],
       ['Report intake', false],
+      ['Enrich reports', false],
+      ['Triage/Phishing', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
       ['Night briefing', false],
@@ -369,14 +369,14 @@ describe('Config preset registry', () => {
       `dashboards/${executiveDashboard.standard_id}.json`,
       `dashboards/${socDashboard.standard_id}.json`,
       'integrations/connectors/mitre.json',
-      'automation_rules/playbooks/Enrich reports.json',
-      'automation_rules/playbooks/Enrich reports (1).json',
-      'automation_rules/playbooks/Triage_Phishing.json',
       'integrations/rss_feeds/Security news.json',
       'integrations/rss_feeds/Security news (1).json',
       'integrations/taxii_feeds/Partner_TAXII.json',
       `integrations/form_intakes/${incidentForm.standard_id}.json`,
       `integrations/form_intakes/${reportForm.standard_id}.json`,
+      'automation_rules/playbooks/Enrich reports.json',
+      'automation_rules/playbooks/Enrich reports (1).json',
+      'automation_rules/playbooks/Triage_Phishing.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
       `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
