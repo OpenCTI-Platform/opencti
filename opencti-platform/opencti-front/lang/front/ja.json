@@ -7508,5 +7508,12 @@
   "ir_verb_receives beacons from": "からビーコンを受信する",
   "ir_verb_remediates": "修正する",
   "ir_verb_targets": "標的にする",
-  "ir_verb_uses": "使用する"
+  "ir_verb_uses": "使用する",
+  "matching filters": "フィルターに一致する",
+  "Narrow with filters": "フィルターで絞り込む",
+  "Only those matching these filters": "これらのフィルターに一致するもののみ",
+  "Target filters": "ターゲットのフィルター",
+  "Source filters": "ソースのフィルター",
+  "that has {properties}": "{properties}を持つ",
+  "{count} values": "{count} 個の値"
 }

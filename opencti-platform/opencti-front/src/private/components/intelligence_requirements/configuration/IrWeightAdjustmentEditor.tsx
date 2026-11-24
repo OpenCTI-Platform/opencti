@@ -26,8 +26,47 @@ type Translate = (text: string, values?: { values: Record<string, unknown> }) =>
 
 const startsWithVowel = (text: string) => /^[aeiou]/i.test(text);
 
+const OPERATORS: Record<string, string> = {
+  eq: '=', not_eq: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤', search: 'contains', contains: 'contains', not_contains: 'does not contain',
+  starts_with: 'starts with', ends_with: 'ends with', nil: 'is empty', not_nil: 'is not empty',
+};
+type SummaryFilterGroup = { mode?: string; filters?: { key: string | string[]; operator?: string; values?: unknown[] }[]; filterGroups?: SummaryFilterGroup[] };
+
+// "CISA KEV = true": a filter group as it reads, with the platform's labels for its keys
+export const useFiltersSummary = () => {
+  const { t_i18n } = useFormatter();
+  const { schema } = useSchema();
+  const labelOf = (key: string) => {
+    for (const definitions of schema.filterKeysSchema.values()) {
+      const definition = definitions.get(key);
+      if (definition) return t_i18n(definition.label);
+    }
+    return key;
+  };
+  const read = (group: SummaryFilterGroup): string => {
+    const parts = [
+      ...(group.filters ?? []).map((f) => {
+        const key = Array.isArray(f.key) ? f.key[0] : f.key;
+        const values = (f.values ?? []).map((v) => (typeof v === 'string' && /^[0-9a-f-]{36}$/.test(v) ? null : String(v)));
+        const shown = values.includes(null) ? t_i18n('{count} values', { values: { count: values.length } }) : values.join(', ');
+        return `${labelOf(key)} ${t_i18n(OPERATORS[f.operator ?? 'eq'] ?? f.operator ?? '=')}${shown ? ` ${shown}` : ''}`;
+      }),
+      ...(group.filterGroups ?? []).map((g) => `(${read(g)})`),
+    ];
+    return parts.join(` ${t_i18n(group.mode === 'or' ? 'or' : 'and')} `);
+  };
+  return (filters: string | null) => {
+    if (!filters) return '';
+    try {
+      return read(JSON.parse(filters) as SummaryFilterGroup);
+    } catch {
+      return '';
+    }
+  };
+};
+
 // The words of an adjustment: its subject, its condition and the sentence it reads back as
-export const adjustmentWords = (a: IrAdjustment, flaggedTypes: string[], weighting: number, t: Translate) => {
+export const adjustmentWords = (a: IrAdjustment, flaggedTypes: string[], weighting: number, t: Translate, describeFilters?: (filters: string | null) => string) => {
   const typeLabel = (type: string) => t(`entity_${type}`).toLowerCase();
   const subject = (() => {
     if (a.appliesTo) return typeLabel(a.appliesTo);
@@ -37,11 +76,14 @@ export const adjustmentWords = (a: IrAdjustment, flaggedTypes: string[], weighti
   const names = a.ends.map((e) => e.label);
   const targets = names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} ${t('or')} ${names[names.length - 1]}`;
   const first = a.rel1 && a.dir1 ? t(verbKey(a.rel1, a.dir1)) : '';
-  const firstText = a.rel1 && a.dir1 && firstHopBothWays(a) && !isSymmetric(a.rel1)
+  // a direct link always counts both directions, so it reads as the relationship chosen; through an entity,
+  // "either direction" reads as both: "uses or is used by"
+  const firstText = a.rel1 && a.dir1 && a.hops === 'two' && firstHopBothWays(a) && !isSymmetric(a.rel1)
     ? t('{relationship} or {inverse}', { values: { relationship: first, inverse: t(inverseKey(a.rel1, a.dir1)) } })
     : first;
   let condition = '';
-  if (a.kind === 'property') condition = t('that has these properties');
+  const properties = a.kind === 'property' && describeFilters ? describeFilters(a.filters) : '';
+  if (a.kind === 'property') condition = properties ? t('that has {properties}', { values: { properties } }) : t('that has these properties');
   else if (a.hops === 'direct') condition = t('that {relationship} {targets}', { values: { relationship: firstText, targets } });
   else if (a.hops === 'two' && a.inter && a.rel2) {
     const inter = typeLabel(a.inter);
@@ -144,7 +186,8 @@ const IrWeightAdjustmentEditor = ({ adjustment: a, flaggedTypes, weighting, erro
   const allTypes = [...schema.sdos, ...schema.scos].map((type) => type.id);
   const mapping: IrRelationMapping = (from, to) => schema.schemaRelationsTypesMapping.get(`${from}_${to}`) ?? [];
   const typeLabel = (type: string) => t_i18n(`entity_${type}`);
-  const words = adjustmentWords(a, flaggedTypes, weighting, t_i18n);
+  const describeFilters = useFiltersSummary();
+  const words = adjustmentWords(a, flaggedTypes, weighting, t_i18n, describeFilters);
   const severalTypes = flaggedTypes.length > 1;
   const sources = a.appliesTo ? [a.appliesTo] : flaggedTypes;
   const two = a.hops === 'two';

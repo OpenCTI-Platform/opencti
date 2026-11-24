@@ -182,8 +182,16 @@ export const adjustmentToRule = (a: IrAdjustment, name: string): { rule: IrRuleD
   };
 };
 
+// The engine does not keep which way a direct link was read ("is present in" or "has"): the platform's relationship
+// schema says which reading leads to the chosen entities
+export type IrDirectionResolver = (rel: string, endTypes: string[]) => IrHopDirection;
+export const directionResolver = (sources: string[], allTypes: string[], mapping: IrRelationMapping): IrDirectionResolver => (rel, endTypes) => {
+  const options = hopOptions(sources, allTypes, mapping).filter((o) => o.rel === rel);
+  return (options.find((o) => endTypes.some((type) => o.endTypes.includes(type))) ?? options[0])?.dir ?? 'outgoing';
+};
+
 // Back from a saved rule, to edit it
-export const ruleToAdjustment = (rule: IrRuleDraft, groups: IrGroupDraft[]): IrAdjustment => {
+export const ruleToAdjustment = (rule: IrRuleDraft, groups: IrGroupDraft[], resolveDirection?: IrDirectionResolver): IrAdjustment => {
   const base: IrAdjustment = { ...emptyAdjustment(rule.applies_to_criterion_id ?? ''), id: rule.id, points: rule.points, appliesTo: rule.applies_to_types[0] ?? null };
   if (rule.path_condition) {
     const path = rule.path_condition;
@@ -202,7 +210,10 @@ export const ruleToAdjustment = (rule: IrRuleDraft, groups: IrGroupDraft[]): IrA
   }
   if (rule.link) {
     const group = groups.find((g) => g.id === rule.link?.group_ids[0]);
-    return { ...base, kind: 'linked', hops: 'direct', rel1: rule.link.relationship_types[0] ?? null, dir1: 'outgoing', bi1: true, ends: group?.entities ?? [] };
+    const rel1 = rule.link.relationship_types[0] ?? null;
+    const ends = group?.entities ?? [];
+    const dir1 = rel1 && resolveDirection ? resolveDirection(rel1, ends.map((e) => e.type)) : 'outgoing';
+    return { ...base, kind: 'linked', hops: 'direct', rel1, dir1, bi1: true, ends };
   }
   return { ...base, kind: 'property', filters: rule.filters };
 };

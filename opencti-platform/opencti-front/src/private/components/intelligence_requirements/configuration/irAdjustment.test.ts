@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   adjustmentToRule,
   choose,
+  directionResolver,
   emptyAdjustment,
   hopOptions,
   intermediateTypes,
@@ -90,5 +91,15 @@ describe('saving as a rule', () => {
     const other = { ...emptyGroup(), id: 'g-entry' };
     expect(withAdjustmentGroups([other], [direct.rule], direct.group).map((g) => g.id)).toEqual(['g-entry', 'ga-b1']);
     expect(withAdjustmentGroups([other, direct.group!], [], null).map((g) => g.id)).toEqual(['g-entry']);
+  });
+});
+
+describe('reading a direct link back', () => {
+  it('takes the reading of the relationship that leads to the chosen entities', () => {
+    const resolve = directionResolver(['Malware'], TYPES, mapping);
+    expect(resolve('uses', ['Intrusion-Set'])).toBe('incoming'); // the malware "is used by" an intrusion set
+    expect(resolve('uses', ['Attack-Pattern'])).toBe('outgoing'); // the malware "uses" an attack pattern
+    const direct = adjustmentToRule(linked({ hops: 'direct', rel1: 'uses', dir1: 'incoming', ends: [{ value: 'apt', label: 'APT28', type: 'Intrusion-Set' }] }), 'n');
+    expect(ruleToAdjustment(direct.rule, [direct.group!], resolve).dir1).toBe('incoming');
   });
 });

@@ -31,8 +31,9 @@ import { IrEntityPicker, IrMultiSelect, IrSelect } from './IrFields';
 import IrFilterBuilder from './IrFilterBuilder';
 import IrDryRunPanel from './IrDryRunPanel';
 import { isWeightRule, weightRule } from './irPresetDraft';
-import { adjustmentToRule, emptyAdjustment, ruleToAdjustment, withAdjustmentGroups, type IrAdjustment } from './irAdjustment';
-import IrWeightAdjustmentEditor, { adjustmentWords } from './IrWeightAdjustmentEditor';
+import { adjustmentToRule, directionResolver, emptyAdjustment, ruleToAdjustment, withAdjustmentGroups, type IrAdjustment } from './irAdjustment';
+import IrWeightAdjustmentEditor, { adjustmentWords, useFiltersSummary } from './IrWeightAdjustmentEditor';
+import useSchema from '../../../../utils/hooks/useSchema';
 import IrCriterionSentence from './IrCriterionSentence';
 import IrConditionSentence from './IrConditionSentence';
 import { type IrConfigView } from './irSentence';
@@ -179,8 +180,18 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
   const without = <T,>(record: Record<string, T>, id: string) => Object.fromEntries(Object.entries(record).filter(([key]) => key !== id));
   const editAdjustment = (adjustment: IrAdjustment) => setAdjustmentEdits((edits) => ({ ...edits, [adjustment.id]: adjustment }));
   const closeAdjustment = (id: string) => setAdjustmentEdits((edits) => without(edits, id));
+  const describeFilters = useFiltersSummary();
+  const { schema } = useSchema();
+  const allTypes = [...schema.sdos, ...schema.scos].map((type) => type.id);
+  const relationMapping = (from: string, to: string) => schema.schemaRelationsTypesMapping.get(`${from}_${to}`) ?? [];
+  // a saved adjustment, read back with the reading of its direct link the schema gives
+  const adjustmentOf = (rule: IrRuleDraft, flaggedTypes: string[]) => ruleToAdjustment(
+    rule,
+    draft.groups,
+    directionResolver(rule.applies_to_types.length > 0 ? rule.applies_to_types : flaggedTypes, allTypes, relationMapping),
+  );
   const saveAdjustment = (adjustment: IrAdjustment, flaggedTypes: string[], weighting: number) => {
-    const { rule, group } = adjustmentToRule(adjustment, adjustmentWords(adjustment, flaggedTypes, weighting, t_i18n).name);
+    const { rule, group } = adjustmentToRule(adjustment, adjustmentWords(adjustment, flaggedTypes, weighting, t_i18n, describeFilters).name);
     const rules = draft.rules.some((r) => r.id === rule.id) ? draft.rules.map((r) => (r.id === rule.id ? rule : r)) : [...draft.rules, rule];
     set({ rules, groups: withAdjustmentGroups(draft.groups, rules, group) });
     closeAdjustment(adjustment.id);
@@ -522,14 +533,14 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
                   {saved.map((rule) => {
                     if (adjustmentEdits[rule.id]) return renderEditor(adjustmentEdits[rule.id]);
                     // a saved adjustment reads back as a sentence, and the weighting it gives
-                    const words = adjustmentWords(ruleToAdjustment(rule, draft.groups), criterion.target_types, weightPoints, t_i18n);
+                    const words = adjustmentWords(adjustmentOf(rule, criterion.target_types), criterion.target_types, weightPoints, t_i18n, describeFilters);
                     return (
                       <Box key={rule.id} sx={{ mt: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1, px: 2, py: 1.5, display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Box sx={{ flex: 1 }}>
                           <Text as="div" variant="content-compact-bold">{words.sentence}</Text>
                           <Text as="div" variant="content-caption"><Box component="span" sx={{ color: 'text.secondary' }}>{words.weighting}</Box></Text>
                         </Box>
-                        <Button variant="tertiary" size="small" onClick={() => editAdjustment(ruleToAdjustment(rule, draft.groups))}>{t_i18n('Edit')}</Button>
+                        <Button variant="tertiary" size="small" onClick={() => editAdjustment(adjustmentOf(rule, criterion.target_types))}>{t_i18n('Edit')}</Button>
                         <IconButton aria-label={t_i18n('Remove adjustment')} onClick={() => removeAdjustment(rule.id)}><DeleteOutlined fontSize="small" /></IconButton>
                       </Box>
                     );

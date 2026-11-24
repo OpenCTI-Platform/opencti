@@ -351,3 +351,30 @@ describe('default scoring weights', () => {
     expect(presetItemsToDraft(general, 'malware', ['Malware'], []).rules).toEqual([]);
   });
 });
+
+describe('narrowing "any <type>" with filters', () => {
+  const ransomware = JSON.stringify({ mode: 'or', filters: [
+    { key: ['primary_motivation'], values: ['personal-gain'], operator: 'eq', mode: 'or' },
+    { key: ['description'], values: ['ransomware'], operator: 'search', mode: 'or' },
+  ], filterGroups: [] });
+  const targetedBy = { id: 'tb', ruleKey: 'targeted-by', value: v({ types: ['Intrusion-Set'], filters: ransomware }) };
+
+  it('starts from the entities of the type that match the filters', () => {
+    const draft = presetItemsToDraft(general, 'vulnerability', ['Vulnerability'], [{ id: 'i', kind: 'rule', name: 'n', rule: targetedBy }]);
+    const anchor = draft.groups.find((g) => draft.criteria[0].from_group_ids.includes(g.id));
+    expect(anchor?.kind).toBe('filter');
+    expect(JSON.parse(anchor?.filters ?? '{}')).toEqual({
+      mode: 'and',
+      filters: [{ key: ['entity_type'], values: ['Intrusion-Set'], operator: 'eq', mode: 'or' }],
+      filterGroups: [JSON.parse(ransomware)],
+    });
+  });
+  it('says so in the name and the query', () => {
+    expect(defaultRuleName('vulnerability', targetedBy, t)).toBe('Vulnerabilities targeted by any Intrusion-Set matching filters');
+    expect(presetQueryChips(targetedBy, ['Vulnerability'], t)).toContainEqual({ key: 'Source filters', operator: '=', values: '', fromUser: true, filterCount: 2 });
+  });
+  it('keeps any entity of the type without filters', () => {
+    const draft = presetItemsToDraft(general, 'vulnerability', ['Vulnerability'], [{ id: 'i', kind: 'rule', name: 'n', rule: { ...targetedBy, value: v({ types: ['Intrusion-Set'] }) } }]);
+    expect(JSON.parse(draft.groups[0].filters ?? '{}').filterGroups).toEqual([]);
+  });
+});

@@ -7508,5 +7508,12 @@
   "ir_verb_receives beacons from": "接收其信标",
   "ir_verb_remediates": "修复",
   "ir_verb_targets": "攻击",
-  "ir_verb_uses": "使用"
+  "ir_verb_uses": "使用",
+  "matching filters": "符合筛选条件的",
+  "Narrow with filters": "用筛选条件缩小范围",
+  "Only those matching these filters": "仅限符合这些筛选条件的",
+  "Target filters": "目标筛选条件",
+  "Source filters": "来源筛选条件",
+  "that has {properties}": "具有 {properties} 的",
+  "{count} values": "{count} 个值"
 }

@@ -25,7 +25,7 @@ export interface IrPresetValue {
   types: string[]; // the "any ..." choices and container types
   terms: string[]; // vocabulary keys, keywords and text values
   number: number | null;
-  filters: string | null; // advanced search criteria, serialized for the backend
+  filters: string | null; // advanced search criteria, or what narrows the "any <type>" choices; serialized for the backend
 }
 
 export interface IrRuleInstance {
@@ -56,7 +56,9 @@ const MAX_NAMED_VALUES = 3;
 // "any <Type>" is the entitiesOrType choice; container types are plain type names
 export const valueLabels = (def: IrPresetRule, value: IrPresetValue, t: Translate): string[] => [
   ...value.entities.map((e) => e.label),
-  ...value.types.map((type) => (def.value === 'entitiesOrType' ? `${t('any')} ${t(type)}` : t(type))),
+  ...value.types.map((type) => (def.value === 'entitiesOrType'
+    ? `${t('any')} ${t(type)}${value.filters ? ` ${t('matching filters')}` : ''}`
+    : t(type))),
   ...value.terms,
   ...(value.number !== null ? [String(value.number)] : []),
 ];
@@ -205,6 +207,10 @@ export const presetQueryChips = (rule: IrRuleInstance, flags: string[], t: Trans
       { key: t('Relationship type'), operator: '=', values: relation.label, fromUser: false },
       // a fixed container query is described by its own constraints
       ...(build.kind === 'containerFixed' ? fixedSource : [...fixedSource, flaggedChip, ...userChips(flaggedIsSource ? 'Target' : 'Source')]),
+      // the filters narrowing the "any <type>" choices
+      ...(def.value === 'entitiesOrType' && rule.value.filters && rule.value.types.length > 0
+        ? [{ key: t(flaggedIsSource ? 'Target filters' : 'Source filters'), operator: '=' as const, values: '', fromUser: true, filterCount: countFilters(rule.value.filters) }]
+        : []),
     ];
   }
   const entityType: IrQueryChip = { key: t('Entity type'), operator: '=', values: flagged, fromUser: false };
@@ -282,7 +288,11 @@ const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], gr
     case 'linked': {
       const groupIds: string[] = [];
       if (value.entities.length > 0) groupIds.push(addGroup({ kind: 'list', role: anchorRole, entities: value.entities }));
-      if (value.types.length > 0) groupIds.push(entityTypeGroup(value.types, groupIds.length > 0 ? ' (types)' : ''));
+      if (value.types.length > 0) {
+        // "any <type>", narrowed by the filters the user added (e.g. intrusion sets motivated by personal gain)
+        const narrowing = value.filters ? [JSON.parse(value.filters) as BackendFilterGroup] : [];
+        groupIds.push(typeGroup(JSON.stringify(filterGroup([filter('entity_type', value.types)], 'and', narrowing)), groupIds.length > 0 ? ' (types)' : ''));
+      }
       return graph(groupIds, build.relationships, build.direction);
     }
     case 'linkedViaFilter':

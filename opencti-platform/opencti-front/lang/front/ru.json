@@ -7508,5 +7508,12 @@
   "ir_verb_receives beacons from": "получает маяки от",
   "ir_verb_remediates": "устраняет",
   "ir_verb_targets": "атакует",
-  "ir_verb_uses": "использует"
+  "ir_verb_uses": "использует",
+  "matching filters": "соответствующие фильтрам",
+  "Narrow with filters": "Сузить фильтрами",
+  "Only those matching these filters": "Только соответствующие этим фильтрам",
+  "Target filters": "Фильтры цели",
+  "Source filters": "Фильтры источника",
+  "that has {properties}": "с {properties}",
+  "{count} values": "Значений: {count}"
 }

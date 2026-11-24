@@ -7508,5 +7508,12 @@
   "ir_verb_receives beacons from": "empfängt Beacons von",
   "ir_verb_remediates": "behebt",
   "ir_verb_targets": "greift an",
-  "ir_verb_uses": "verwendet"
+  "ir_verb_uses": "verwendet",
+  "matching filters": "die Filtern entsprechen",
+  "Narrow with filters": "Mit Filtern eingrenzen",
+  "Only those matching these filters": "Nur diejenigen, die diesen Filtern entsprechen",
+  "Target filters": "Zielfilter",
+  "Source filters": "Quellfilter",
+  "that has {properties}": "die {properties} hat",
+  "{count} values": "{count} Werte"
 }

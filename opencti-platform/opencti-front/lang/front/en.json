@@ -7509,5 +7509,12 @@
   "ir_verb_receives beacons from": "receives beacons from",
   "ir_verb_remediates": "remediates",
   "ir_verb_targets": "targets",
-  "ir_verb_uses": "uses"
+  "ir_verb_uses": "uses",
+  "matching filters": "matching filters",
+  "Narrow with filters": "Narrow with filters",
+  "Only those matching these filters": "Only those matching these filters",
+  "Target filters": "Target filters",
+  "Source filters": "Source filters",
+  "that has {properties}": "that has {properties}",
+  "{count} values": "{count} values"
 }

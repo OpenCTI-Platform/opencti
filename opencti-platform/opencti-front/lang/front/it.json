@@ -7508,5 +7508,12 @@
   "ir_verb_receives beacons from": "riceve beacon da",
   "ir_verb_remediates": "risolve",
   "ir_verb_targets": "prende di mira",
-  "ir_verb_uses": "usa"
+  "ir_verb_uses": "usa",
+  "matching filters": "che corrispondono ai filtri",
+  "Narrow with filters": "Restringi con filtri",
+  "Only those matching these filters": "Solo quelli che corrispondono a questi filtri",
+  "Target filters": "Filtri della destinazione",
+  "Source filters": "Filtri della sorgente",
+  "that has {properties}": "che ha {properties}",
+  "{count} values": "{count} valori"
 }

@@ -32,6 +32,9 @@ export const presetText = (text: string, t_i18n: Translate): string => {
     case 'matching custom filters': return t_i18n('matching custom filters');
     case 'any': return t_i18n('any');
     case 'more rules': return t_i18n('more rules');
+    case 'matching filters': return t_i18n('matching filters');
+    case 'Target filters': return t_i18n('Target filters');
+    case 'Source filters': return t_i18n('Source filters');
     default: return t_i18n(text);
   }
 };
@@ -143,6 +146,7 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }:
   showQuery?: boolean; // a rule of a group shows its query in the group's tooltip
 }) => {
   const { t_i18n } = useFormatter();
+  const [narrowing, setNarrowing] = useState(false);
   const def = getRule(rule.ruleKey);
   if (def.value === 'filters') {
     return (
@@ -170,6 +174,9 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }:
       </Box>
     );
   }
+  // "any <type>" can be narrowed with filters: only the intrusion sets motivated by personal gain, say
+  const canNarrow = def.value === 'entitiesOrType' && rule.value.types.length > 0;
+  const showNarrowing = canNarrow && (narrowing || !!rule.value.filters);
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -178,7 +185,13 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }:
         </Text>
         <Box sx={{ flex: 1, minWidth: 0, display: 'flex' }}>
           <Suspense fallback={<Spinner size="sm" />}>
-            <IrPresetValueField rule={def} flags={flags} value={rule.value} onChange={onChange} />
+            {/* without an "any <type>" choice, its narrowing filters go too */}
+            <IrPresetValueField
+              rule={def}
+              flags={flags}
+              value={rule.value}
+              onChange={(value) => onChange(value.types.length === 0 && value.filters ? { ...value, filters: null } : value)}
+            />
           </Suspense>
         </Box>
         {showQuery && (
@@ -192,6 +205,23 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }:
           </IconButton>
         )}
       </Box>
+      {canNarrow && !showNarrowing && (
+        <Box sx={{ mt: 0.5 }}>
+          <FdsButton type="button" priority="tertiary" size="sm" startIcon={<Icon name="plus" size={16} />} onClick={() => setNarrowing(true)}>
+            {t_i18n('Narrow with filters')}
+          </FdsButton>
+        </Box>
+      )}
+      {showNarrowing && (
+        <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+          <Text as="span" variant="content-caption">
+            <Box component="span" sx={{ color: 'text.secondary' }}>{t_i18n('Only those matching these filters')}</Box>
+          </Text>
+          <Suspense fallback={<Spinner size="sm" />}>
+            <IrFilterBuilder value={rule.value.filters} onChange={(filters) => onChange({ ...rule.value, filters })} />
+          </Suspense>
+        </Box>
+      )}
       {error && <ErrorText>{presetText(error, t_i18n)}</ErrorText>}
     </Box>
   );
