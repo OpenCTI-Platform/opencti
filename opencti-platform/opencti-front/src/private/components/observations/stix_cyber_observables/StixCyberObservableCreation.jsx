@@ -252,6 +252,7 @@ const StixCyberObservableCreation = ({
   defaultMarkingDefinitions = [],
   isFromBulkRelation = false,
   onCompleted = () => {},
+  onCreated = undefined,
   stixCyberObservableTypes = undefined,
 }) => {
   const theme = useTheme();
@@ -409,6 +410,11 @@ const StixCyberObservableCreation = ({
 
     bulkCommit({
       variables: finalValues,
+      onStepCompleted: (_, response) => {
+        if (onCreated && response?.stixCyberObservableAdd) {
+          onCreated(response.stixCyberObservableAdd, { withIndicator: !!values.createIndicator });
+        }
+      },
       onStepError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -1155,6 +1161,7 @@ StixCyberObservableCreation.propTypes = {
   ),
   isFromBulkRelation: PropTypes.bool,
   onCompleted: PropTypes.func,
+  onCreated: PropTypes.func,
   stixCyberObservableTypes: PropTypes.arrayOf(PropTypes.string),
 };
 

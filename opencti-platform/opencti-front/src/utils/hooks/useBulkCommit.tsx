@@ -15,7 +15,7 @@ interface UseBulkCommitArgs<M extends MutationParameters> {
 interface UseBulkCommit_commits<M extends MutationParameters> {
   variables: VariablesOf<M>[];
   onStepError?: (err: Error, v: VariablesOf<M>) => void;
-  onStepCompleted?: (v: VariablesOf<M>) => void;
+  onStepCompleted?: (v: VariablesOf<M>, response: M['response']) => void;
   onCompleted?: (total: number) => void;
   commit?: (args: UseMutationConfig<M>) => void;
 }
@@ -75,9 +75,9 @@ function useBulkCommit<M extends MutationParameters>({
           setInError((err) => [...err, [variable as VariablesOf<M>, error]]);
           onStepError?.(error, variable);
         },
-        onCompleted: () => {
+        onCompleted: (response) => {
           setCurrentCount((c) => c + 1);
-          onStepCompleted?.(variable);
+          onStepCompleted?.(variable, response);
         },
       });
     });

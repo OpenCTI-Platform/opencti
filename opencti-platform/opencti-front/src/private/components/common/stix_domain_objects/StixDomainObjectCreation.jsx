@@ -851,6 +851,7 @@ const StixDomainObjectCreation = ({
   paginationKey,
   paginationOptions,
   onCompleted,
+  onCreated,
   isFromBulkRelation,
 }) => {
   const [status, setStatus] = useState({ open: false, type: null });
@@ -870,6 +871,8 @@ const StixDomainObjectCreation = ({
   const stateHandleClose = () => setStatus({ open: false, type: null });
 
   const creationUpdater = (store, rootField, element) => {
+    // Deferred: no mutation may be committed from inside a Relay updater
+    if (onCreated && element) setTimeout(() => onCreated(element), 0);
     const payload = store.getRootField(rootField);
     if (creationCallback) {
       creationCallback(element);
