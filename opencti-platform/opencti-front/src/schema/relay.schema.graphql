@@ -8315,6 +8315,7 @@ type LocalAuthConfig {
 }
 
 input LocalAuthConfigInput {
+  api_basic_auth_enabled: Boolean
   enabled: Boolean!
   local_auth_lockout_admin_max_attempts: Int
   local_auth_lockout_duration: Int
@@ -9099,7 +9100,6 @@ type MeUser implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
-  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   representative: Representative!
@@ -9633,13 +9633,21 @@ type Mutation {
   playbookAddNode(id: ID!, input: PlaybookAddNodeInput!): String!
   playbookDelete(id: ID!): ID
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
-  playbookDeleteNode(id: ID!, nodeId: ID!, keepChildren: Boolean): Playbook
+  playbookDeleteNode(id: ID!, keepChildren: Boolean, nodeId: ID!): Playbook
   playbookDuplicate(id: ID!): String!
   playbookExecute(entityId: String!, id: ID!): Boolean
   playbookFieldPatch(commitMessage: String, id: ID!, input: [EditInput!]!, references: [String]): Playbook
   playbookImport(file: Upload!): String!
   playbookInsertNode(childNodeId: ID!, id: ID!, input: PlaybookAddNodeInput!, parentNodeId: ID!, parentPortId: ID!): PlaybookInsertResult!
+
+  """
+  Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId.
+  """
   playbookMoveNode(id: ID!, nodeId: ID!, parentNodeId: ID!, parentPortId: ID!): String!
+
+  """
+  Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent.
+  """
   playbookRelink(fromNodeId: ID, fromPortId: ID, id: ID!, linkId: ID!, toNodeId: ID!): String!
   playbookReplaceNode(id: ID!, input: PlaybookAddNodeInput!, nodeId: ID!): String!
   playbookStepExecution(bundle: String!, data_instance_id: ID!, event_id: ID!, execution_id: ID!, execution_start: DateTime!, playbook_id: ID!, previous_bundle: String!, previous_step_id: ID!, step_id: ID!): Boolean
@@ -11515,10 +11523,12 @@ input PlaybookAddNodeInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
 
-  "Node this node is linked from: required for every node but the entry point, given with parentPortId."
+  """
+  Node this node is linked from: required for every node but the entry point, given with parentPortId.
+  """
   parentNodeId: ID
 
-  "Out port of parentNodeId the link leaves from."
+  """Out port of parentNodeId the link leaves from."""
   parentPortId: ID
   position: PositionInput!
 }
@@ -12481,8 +12491,6 @@ type Query {
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
-  xtmConnections: [XtmConnection!]!
-  xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]!
 }
 
 input QueryAttribute {
@@ -13898,6 +13906,7 @@ type SessionDetail {
 type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSettings {
   activity_listeners: [Member!]
   analytics_google_analytics_v4: String
+  api_basic_auth_enabled: Boolean!
   caller_ip: String
   cert_auth: CertAuthConfig
   created_at: DateTime!
@@ -17114,7 +17123,6 @@ type User implements BasicObject & InternalObject {
   otp_mandatory: Boolean
   otp_qr: String
   parent_types: [String!]!
-  pastel_colours: Boolean
   password_valid_until: DateTime
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime
@@ -18552,38 +18560,4 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
   registered
   unregistered
-}
-
-type XtmConnection {
-  connected: Boolean!
-  product: String!
-}
-
-type XtmCounterpart {
-  facts: [XtmCounterpartFact!]!
-  key: String!
-  object_id: String!
-  object_name: String
-  object_type: String!
-  object_url: String!
-  product: String!
-}
-
-type XtmCounterpartFact {
-  key: String!
-  value: String!
-}
-
-type XtmCounterpartResult {
-  counterpart: XtmCounterpart
-  id: String!
-  product: String!
-  status: XtmCounterpartStatus!
-}
-
-enum XtmCounterpartStatus {
-  found
-  not_found
-  not_supported
-  unavailable
 }
