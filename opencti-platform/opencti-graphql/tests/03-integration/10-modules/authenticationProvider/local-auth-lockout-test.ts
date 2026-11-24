@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import bcrypt from 'bcryptjs';
 import passport from 'passport';
 import { v4 as uuid } from 'uuid';
@@ -15,6 +15,9 @@ import {
 } from '../../../utils/testQuery';
 import * as conf from '../../../../src/config/conf';
 import * as cache from '../../../../src/database/cache';
+import * as smtp from '../../../../src/database/smtp';
+import * as lockNotification from '../../../../src/domain/local-auth-lockout-notification';
+import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../../src/database/locked-user-email-template-input';
 import * as userActionListener from '../../../../src/listener/UserActionListener';
 import { getClientBase, localAuthLockoutKeys, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt, redisSetForgotPasswordOtp } from '../../../../src/database/redis';
 import { patchAttribute } from '../../../../src/database/middleware';
@@ -96,11 +99,15 @@ const ALL_EMAILS = [
 const keysOf = (email: string) => localAuthLockoutKeys(hashSHA256(normalizeEmail(email)));
 const resetLockout = (email: string) => {
   const keys = keysOf(email);
-  return getClientBase().del(keys.failures, keys.lock);
+  return getClientBase().del(keys.failures, keys.lock, keys.emailed);
 };
 // Redis TTLs cannot be faked, so expirations are simulated by deleting the keys.
-// The failures expire with the temporary lock, with or without a window, so that the count starts over once the lock is lifted
-const expireLock = resetLockout;
+// The failures expire with the temporary lock, with or without a window, so that the count starts over once the lock is lifted.
+// The cooldown of the lock email outlives the lock
+const expireLock = (email: string) => {
+  const keys = keysOf(email);
+  return getClientBase().del(keys.failures, keys.lock);
+};
 const expireWindow = (email: string) => getClientBase().del(keysOf(email).failures);
 const lockRemainingMs = (email: string) => getClientBase().pttl(keysOf(email).lock);
 const failuresOf = async (email: string) => Number(await getClientBase().hget(keysOf(email).failures, 'count') ?? 0);
@@ -192,6 +199,7 @@ describe('Local authentication lockout', () => {
   let mfaSecret: string;
   let apiUserId: string;
   let apiUserToken: string;
+  let sendEmails: MockInstance<typeof lockNotification.sendLocalAuthLockEmails>;
 
   beforeAll(async () => {
     for (const { email, password } of [LOCKOUT_USER, INACTIVE_USER, EXPIRED_USER, MFA_USER]) {
@@ -224,9 +232,15 @@ describe('Local authentication lockout', () => {
 
   beforeEach(async () => {
     await setLockoutPolicy(LOCKOUT_POLICY);
+    // Each lock of an existing account emails the administrators: recorded instead of being sent
+    vi.spyOn(smtp, 'sendMail').mockResolvedValue(undefined);
+    sendEmails = vi.spyOn(lockNotification, 'sendLocalAuthLockEmails');
   });
 
   afterEach(async () => {
+    // The emails of a lock are sent in the background: waits for them before restoring the mocks,
+    // so that none reaches the real SMTP sender nor the SMTP spy of the next test
+    await Promise.allSettled(sendEmails.mock.results.map(({ value }) => value));
     vi.restoreAllMocks();
     await Promise.all(ALL_EMAILS.map(resetLockout));
   });
@@ -562,7 +576,7 @@ describe('Local authentication lockout', () => {
       const isFeatureEnabled = conf.isFeatureEnabled;
       vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((flag: string) => (flag === conf.LOCAL_AUTH_LOCKOUT_FEATURE_FLAG ? false : isFeatureEnabled(flag)));
       await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
-      vi.restoreAllMocks();
+      vi.mocked(conf.isFeatureEnabled).mockRestore();
       // Enabling the flag again does not bring back the previous failures
       expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
     });
@@ -1069,6 +1083,140 @@ describe('Local authentication lockout', () => {
       // The third attempt reaches the max attempts, but its password is right: no lock
       await sessionLoginAs(MFA_USER.email, MFA_USER.password);
       expect(lockActions).toHaveLength(0);
+    });
+  });
+  describe('Email to the administrators', () => {
+    // The emails are sent in the background: waits for the sends started by the locks, then returns the sent emails
+    const sentEmails = async () => {
+      await Promise.all(sendEmails.mock.results.map(({ value }) => value));
+      return vi.mocked(smtp.sendMail).mock.calls.map(([args]) => args as { to: string; subject: string; html: string });
+    };
+
+    it('should email the administrators when the max attempts lock an account', async () => {
+      await failLogin(LOCKOUT_USER.email, 2);
+      expect(sendEmails).not.toHaveBeenCalled();
+      const beforeLock = new Date();
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      const afterLock = new Date();
+      expect(sendEmails).toHaveBeenCalledOnce();
+      expect(sendEmails.mock.calls[0][1].id).toEqual(lockoutUserId);
+      const lock = sendEmails.mock.calls[0][2];
+      expect(lock).toEqual({ lockType: 'temporary', maxAttempts: 3, date: expect.any(Date), remainingMs: LOCK_SECONDS * 1000 });
+      // The date of the lock, not of the email: the end of the lock in the email is the one of Redis
+      expect(lock.date.getTime()).toBeGreaterThanOrEqual(beforeLock.getTime());
+      expect(lock.date.getTime()).toBeLessThanOrEqual(afterLock.getTime());
+      const emails = await sentEmails();
+      const recipients = emails.map(({ to }) => to);
+      expect(recipients).toEqual(expect.arrayContaining([ADMIN_USER.user_email, ADMIN_ACCOUNT.email]));
+      expect(recipients).not.toContain(LOCKOUT_USER.email);
+      expect(recipients).not.toContain(SERVICE_ACCOUNT_EMAIL);
+      expect(recipients).not.toContain(LABEL_MANAGER.email);
+      expect(new Set(recipients).size).toEqual(recipients.length);
+      const email = emails.find(({ to }) => to === ADMIN_ACCOUNT.email);
+      expect(email?.subject).toEqual(LOCKED_USER_EMAIL_TEMPLATE_INPUT.email_object);
+      expect(email?.html).toContain(`(${LOCKOUT_USER.email}) has been locked on`);
+      expect(email?.html).toContain('after 3 failed authentication attempts.');
+      expect(email?.html).toMatch(/The account is locked until \d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC\./);
+    });
+
+    it('should send the emails once per lock, not for the attempts rejected during the lock', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      await expectLocked(login(LOCKOUT_USER.email, LOCKOUT_USER.password));
+      expect(sendEmails).toHaveBeenCalledOnce();
+    });
+
+    it('should send nothing for the lock of an unknown email', async () => {
+      await reachMaxAttempts(UNKNOWN_EMAIL);
+      expect(sendEmails).not.toHaveBeenCalled();
+      expect(smtp.sendMail).not.toHaveBeenCalled();
+    });
+
+    it('should not email again for a new lock of the same account within the hour', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      const firstLockEmails = (await sentEmails()).length;
+      expect(firstLockEmails).toBeGreaterThan(0);
+      const cooldownMs = await getClientBase().pttl(keysOf(LOCKOUT_USER.email).emailed);
+      expect(cooldownMs).toBeGreaterThan(59 * 60 * 1000);
+      expect(cooldownMs).toBeLessThanOrEqual(60 * 60 * 1000);
+      await expireLock(LOCKOUT_USER.email);
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      expect(sendEmails).toHaveBeenCalledTimes(2);
+      expect(await sentEmails()).toHaveLength(firstLockEmails);
+    });
+
+    it('should email again for a new lock once the account logged in', async () => {
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      const firstLockEmails = (await sentEmails()).length;
+      await expireLock(LOCKOUT_USER.email);
+      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
+      expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).emailed)).toEqual(0);
+      await reachMaxAttempts(LOCKOUT_USER.email);
+      expect(await sentEmails()).toHaveLength(2 * firstLockEmails);
+    });
+
+    it('should tell the administrators that they must unlock a permanent lock', async () => {
+      await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+      try {
+        await failLogin(LOCKOUT_USER.email, 2);
+        await expectPermanentlyLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+        expect(sendEmails.mock.calls[0][2]).toEqual({ lockType: 'permanent', maxAttempts: 3, date: expect.any(Date), remainingMs: 0 });
+        const email = (await sentEmails()).find(({ to }) => to === ADMIN_ACCOUNT.email);
+        expect(email?.html).toContain('The account is locked until an administrator unlocks it.');
+      } finally {
+        await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]);
+      }
+    });
+
+    it('should email the administrators when the MFA code locks an account', async () => {
+      const wrongCode = async () => {
+        const code = await totp.generate({ secret: mfaSecret });
+        return `${code.slice(0, 5)}${(Number(code[5]) + 1) % 10}`;
+      };
+      const mfaUser = { id: mfaUserId, user_email: MFA_USER.email, otp_activated: true, otp_secret: mfaSecret } as AuthUser;
+      const otpLogin = async () => otpUserLogin({ session: { user: {}, save: () => {}, session_provider: 'local' } }, mfaUser, { code: await wrongCode() });
+      await expectBadCredentials(otpLogin());
+      await expectBadCredentials(otpLogin());
+      await expectLocked(otpLogin());
+      expect(sendEmails).toHaveBeenCalledOnce();
+      expect(sendEmails.mock.calls[0][1].id).toEqual(mfaUserId);
+    });
+
+    it('should return the lock error without waiting for the emails', async () => {
+      // Sends that end only once the lock error is returned
+      let endSends = () => {};
+      sendEmails.mockReturnValue(new Promise((resolve) => {
+        endSends = resolve;
+      }));
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      expect(sendEmails).toHaveBeenCalledOnce();
+      endSends();
+    });
+
+    it('should still return the lock error, and log a warning, when the emails cannot be sent', async () => {
+      const logWarn = vi.spyOn(conf.logApp, 'warn');
+      const logError = vi.spyOn(conf.logApp, 'error');
+      vi.mocked(smtp.sendMail).mockRejectedValue(new Error('SMTP unavailable'));
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      const emails = await sentEmails();
+      expect(logWarn).toHaveBeenCalledWith('Local authentication lockout: the email of a lock cannot be sent to some administrators', expect.objectContaining({
+        locked_user_id: lockoutUserId,
+        errors_count: emails.length,
+        total_count: emails.length,
+      }));
+      expect(logError).not.toHaveBeenCalledWith(expect.stringContaining('Local authentication lockout: the email'), expect.anything());
+    });
+
+    it('should still return the lock error, and log it, when the emails cannot be prepared', async () => {
+      const logError = vi.spyOn(conf.logApp, 'error');
+      sendEmails.mockRejectedValue(new Error('Cache unavailable'));
+      await failLogin(LOCKOUT_USER.email, 2);
+      await expectLocked(login(LOCKOUT_USER.email, WRONG_PASSWORD));
+      await vi.waitFor(() => {
+        expect(logError).toHaveBeenCalledWith('Local authentication lockout: the emails of a lock cannot be sent', expect.objectContaining({ locked_user_id: lockoutUserId }));
+      });
     });
   });
 });

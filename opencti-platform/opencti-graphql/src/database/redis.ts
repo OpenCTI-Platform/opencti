@@ -912,6 +912,8 @@ export const redisConsumePasswordChangeAttempt = async (targetUserId: string, su
 export const localAuthLockoutKeys = (emailHash: string) => ({
   failures: `local_auth_lockout:{${emailHash}}:attempts`,
   lock: `local_auth_lockout:{${emailHash}}:lock`,
+  // Set when the administrators get the email of a lock: no other email for this account until it expires
+  emailed: `local_auth_lockout:{${emailHash}}:emailed`,
 });
 
 export type LocalAuthLockType = 'temporary' | 'permanent';
@@ -994,7 +996,14 @@ export const redisReleaseLocalAuthAttempt = async (emailHash: string, attempt: {
 
 export const redisClearLocalAuthLockout = async (emailHash: string) => {
   const keys = localAuthLockoutKeys(emailHash);
-  await getClientBase().del(keys.failures, keys.lock);
+  await getClientBase().del(keys.failures, keys.lock, keys.emailed);
+};
+
+// Claims the email of a lock for this account, once for all the nodes: false while an email of a previous lock
+// is more recent than the cooldown. A login accepted or an account set back to Active ends the cooldown (redisClearLocalAuthLockout)
+export const redisClaimLocalAuthLockEmail = async (emailHash: string, cooldownMs: number) => {
+  const result = await getClientBase().set(localAuthLockoutKeys(emailHash).emailed, '1', 'PX', cooldownMs, 'NX');
+  return result === 'OK';
 };
 // endregion - local authentication lockout
 
