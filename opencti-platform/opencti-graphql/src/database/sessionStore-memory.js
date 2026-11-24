@@ -84,12 +84,19 @@ class SessionStoreMemory extends Store {
     return fn && fn(err);
   }
 
+  // Gives the same result as the Redis store: `deleted` is true only for the call that removed the session
   destroy(sid, fn) {
     const { store } = this;
-    store.get(sid, (error, data) => {
-      store.delete(sid);
-      return fn && fn(error, data);
-    });
+    const data = store.get(sid);
+    const deleted = store.delete(sid);
+    let err = null;
+    let session;
+    try {
+      session = data ? this.serializer.parse(data) : undefined;
+    } catch (er) {
+      err = er;
+    }
+    return fn && fn(err, { sessionId: sid, session, deleted });
   }
 
   ids(fn) {
