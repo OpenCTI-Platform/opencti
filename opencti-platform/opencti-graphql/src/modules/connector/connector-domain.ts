@@ -460,6 +460,11 @@ const COMPOSER_TOKEN_REDIS_EXPIRATION = conf.get('app:composer_token_expiration'
 // The name is for display only: the token is identified by its managed_by fields, which no user can set
 const composerTokenName = (connectorId: string) => `Composer managed token (connector: ${connectorId})`;
 const isComposerToken = (connectorId: string) => (token: UserApiToken) => token.managed_by_type === ENTITY_TYPE_CONNECTOR && token.managed_by_id === connectorId;
+// Issued before tokens were per connector (one per user, never expiring), found by this exact name as the platform did then.
+// Unused once the connectors of the user have their own: after the upgrade every connector misses the cache, gets its token
+// in the same Composer read, and is redeployed with it (the token is part of its contract hash)
+const LEGACY_COMPOSER_TOKEN_NAME = 'Composer managed token';
+const isLegacyComposerToken = (token: UserApiToken) => token.name === LEGACY_COMPOSER_TOKEN_NAME && !token.managed_by_type && !token.managed_by_id;
 const composerTokenKey = (connectorId: string, userId: string) => `composer:connector:${connectorId}:token:${userId}`;
 // Held to issue, rotate and revoke the Composer tokens of a user. Per user, not per connector: updateAttribute loads the
 // user before taking its entity lock, so two token writes on the same user would each rewrite api_tokens from a stale copy
@@ -537,10 +542,18 @@ const computeConnectorTokenConfiguration = async (context: AuthContext, connecto
     if (liveConnector.connector_user_id !== userId) {
       throw FunctionalError('Managed connector user changed', { connectorId, userId, currentUserId: liveConnector.connector_user_id });
     }
-    // Revoke every token of this connector, and only of this connector: no other connector of the user serves them
-    const connectorTokens = (storedUser.api_tokens ?? []).filter(isComposerToken(connectorId));
+    // Revoke every token of this connector, and only of this connector: no other connector of the user serves them.
+    // And the legacy token of the user, left valid otherwise: no connector serves it once they get their own
+    const isConnectorToken = isComposerToken(connectorId);
+    const connectorTokens = (storedUser.api_tokens ?? []).filter((token) => isConnectorToken(token) || isLegacyComposerToken(token));
     for (const token of connectorTokens) {
       await revokeUserTokenByAdmin(context, SYSTEM_USER, userId, token.id);
+      logApp.info('[OPENCTI-MODULE] Composer token revoked before issuing a new one', {
+        connectorId,
+        userId,
+        tokenId: token.id,
+        legacy: isLegacyComposerToken(token),
+      });
     }
     const { token_id, plaintext_token } = await addUserTokenByAdmin(
       context,
