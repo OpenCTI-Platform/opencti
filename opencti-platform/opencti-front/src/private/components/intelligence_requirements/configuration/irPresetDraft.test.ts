@@ -30,8 +30,18 @@ describe('default names', () => {
     const four = { ...usesRule, value: v({ entities: [...usesRule.value.entities, ap('T1059')] }) };
     expect(defaultRuleName('malware', four, t)).toBe('Malware using T1185, T1056.003, T1557 +1 more');
   });
-  it('names a group after its first rule', () => {
-    expect(defaultItemName('malware', { id: 'g', kind: 'group', name: '', rules: [targetsRule, usesRule] }, t)).toBe('Malware targeting Financial services');
+  it('names a group of one rule after it', () => {
+    expect(defaultItemName('malware', { id: 'g', kind: 'group', name: '', rules: [targetsRule] }, t)).toBe('Malware targeting Financial services');
+  });
+  it('names a group of two rules after both', () => {
+    expect(defaultItemName('malware', { id: 'g', kind: 'group', name: '', rules: [targetsRule, usesRule] }, t))
+      .toBe('Malware targeting Financial services AND using T1185, T1056.003, T1557');
+    expect(defaultItemName('malware', { id: 'g', kind: 'group', name: '', rules: [targetsRule, { id: 'o', ruleKey: 'one-of', value: v({ entities: [fs] }) }] }, t))
+      .toBe('Malware targeting Financial services AND one of Financial services');
+  });
+  it('names a group of three rules or more after its first one and the count of the others', () => {
+    expect(defaultItemName('malware', { id: 'g', kind: 'group', name: '', rules: [targetsRule, usesRule, typeRule] }, t))
+      .toBe('Malware targeting Financial services AND 2 more rules');
   });
   it('places a {v} verb correctly', () => {
     expect(defaultRuleName('vulnerability', { id: 'x', ruleKey: 'cvss', value: v({ number: 9 }) }, t)).toBe('Vulnerabilities with CVSS 9 or higher');

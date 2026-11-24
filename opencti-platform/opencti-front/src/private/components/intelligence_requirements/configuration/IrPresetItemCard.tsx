@@ -8,7 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import IrPresetValueField from './IrPresetValueField';
 import IrFilterBuilder from './IrFilterBuilder';
 import { getRule, type IrPresetRule } from './irPresetRules';
-import { presetQueryChips, type IrPresetItem, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
+import { presetQueryChips, type IrPresetItem, type IrQueryChip, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
 
 // The cards of the criteria step: one rule, a group of rules (AND) or advanced search criteria.
 
@@ -31,6 +31,7 @@ export const presetText = (text: string, t_i18n: Translate): string => {
     case 'Add at least one rule': return t_i18n('Add at least one rule');
     case 'matching custom filters': return t_i18n('matching custom filters');
     case 'any': return t_i18n('any');
+    case 'more rules': return t_i18n('more rules');
     default: return t_i18n(text);
   }
 };
@@ -68,41 +69,76 @@ const flaggedSide = (rule: IrPresetRule): 'source' | 'target' | null => {
   }
 };
 
-export const QueryTooltip = ({ rule, flags }: { rule: IrRuleInstance; flags: string[] }) => {
+// The query of one rule as chips joined by AND
+const QueryChips = ({ chips }: { chips: IrQueryChip[] }) => {
   const { t_i18n } = useFormatter();
-  const chips = presetQueryChips(rule, flags, (text) => presetText(text, t_i18n));
-  const side = flaggedSide(getRule(rule.ruleKey));
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 360 }}>
-      <Text as="div" variant="content-compact-bold">{t_i18n('Query this rule runs')}</Text>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.75 }}>
-        {chips.map((chip, index) => (
-          <React.Fragment key={`${chip.key}-${index}`}>
-            {index > 0 && <Text as="span" variant="content-caption">{t_i18n('AND')}</Text>}
-            {/* a read-only chip: the FDS Chip takes a plain label, and the value the user gave is coloured on its own */}
-            <Box component="span" sx={{ display: 'inline-block', bgcolor: 'action.selected', borderRadius: 0.5, px: 0.75, py: 0.25 }}>
-              <Text as="span" variant="content-caption">
-                {`${chip.key} ${chip.operator ?? '='} `}
-                <Box component="span" sx={chip.fromUser ? { color: 'primary.main', fontWeight: 600 } : undefined}>{chip.values || '…'}</Box>
-              </Text>
-            </Box>
-          </React.Fragment>
-        ))}
-      </Box>
-      {chips.some((chip) => chip.fromUser) && <Text as="div" variant="content-caption">{t_i18n('Blue is your value.')}</Text>}
-      {side === 'source' && <Text as="div" variant="content-caption">{t_i18n('Flags the source of each matching relationship.')}</Text>}
-      {side === 'target' && <Text as="div" variant="content-caption">{t_i18n('Flags the target of each matching relationship.')}</Text>}
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 0.75 }}>
+      {chips.map((chip, index) => (
+        <React.Fragment key={`${chip.key}-${index}`}>
+          {index > 0 && <Text as="span" variant="content-caption">{t_i18n('AND')}</Text>}
+          {/* a read-only chip: the FDS Chip takes a plain label, and the value the user gave is coloured on its own */}
+          <Box component="span" sx={{ display: 'inline-block', bgcolor: 'action.selected', borderRadius: 0.5, px: 0.75, py: 0.25 }}>
+            <Text as="span" variant="content-caption">
+              {`${chip.key} ${chip.operator ?? '='} `}
+              <Box component="span" sx={chip.fromUser ? { color: 'primary.main', fontWeight: 600 } : undefined}>{chip.values || '…'}</Box>
+            </Text>
+          </Box>
+        </React.Fragment>
+      ))}
     </Box>
   );
 };
 
+// The query of a rule, or of a group: the query of each of its rules, all of which must match
+const RulesQuery = ({ title, rules, flags }: { title: string; rules: IrRuleInstance[]; flags: string[] }) => {
+  const { t_i18n } = useFormatter();
+  const queries = rules.map((rule) => presetQueryChips(rule, flags, (text) => presetText(text, t_i18n)));
+  const sides = new Set(rules.map((rule) => flaggedSide(getRule(rule.ruleKey))));
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: 420 }}>
+      <Text as="div" variant="content-compact-bold">{title}</Text>
+      {queries.map((chips, index) => (
+        <React.Fragment key={rules[index].id}>
+          {index > 0 && (
+            <Text as="div" variant="content-caption">
+              <Box component="span" sx={{ fontWeight: 600 }}>{t_i18n('AND')}</Box>
+            </Text>
+          )}
+          <QueryChips chips={chips} />
+        </React.Fragment>
+      ))}
+      {queries.some((chips) => chips.some((chip) => chip.fromUser)) && <Text as="div" variant="content-caption">{t_i18n('Blue is your value.')}</Text>}
+      {sides.has('source') && <Text as="div" variant="content-caption">{t_i18n('Flags the source of each matching relationship.')}</Text>}
+      {sides.has('target') && <Text as="div" variant="content-caption">{t_i18n('Flags the target of each matching relationship.')}</Text>}
+    </Box>
+  );
+};
+
+export const QueryTooltip = ({ rule, flags }: { rule: IrRuleInstance; flags: string[] }) => {
+  const { t_i18n } = useFormatter();
+  return <RulesQuery title={t_i18n('Query this rule runs')} rules={[rule]} flags={flags} />;
+};
+
+// One tooltip for a whole group, on its header: the rules inside it have none of their own
+export const GroupQueryButton = ({ rules, flags }: { rules: IrRuleInstance[]; flags: string[] }) => {
+  const { t_i18n } = useFormatter();
+  if (rules.length === 0) return null;
+  return (
+    <IconButton aria-label={t_i18n('Query this group runs')} tooltip={<RulesQuery title={t_i18n('Query this group runs')} rules={rules} flags={flags} />}>
+      <Icon name="info" size={16} />
+    </IconButton>
+  );
+};
+
 // One rule: its fixed sentence, the value to fill, the query it runs and, inside a group, its own remove button
-const IrRuleRow = ({ rule, flags, onChange, onRemove, error }: {
+const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }: {
   rule: IrRuleInstance;
   flags: string[];
   onChange: (value: IrPresetValue) => void;
   onRemove?: () => void;
   error?: string;
+  showQuery?: boolean; // a rule of a group shows its query in the group's tooltip
 }) => {
   const { t_i18n } = useFormatter();
   const def = getRule(rule.ruleKey);
@@ -117,9 +153,11 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error }: {
             <IrPresetValueField rule={def} flags={flags} value={rule.value} onChange={onChange} />
           </Suspense>
         </Box>
-        <IconButton aria-label={t_i18n('Query this rule runs')} tooltip={<QueryTooltip rule={rule} flags={flags} />}>
-          <Icon name="info" size={16} />
-        </IconButton>
+        {showQuery && (
+          <IconButton aria-label={t_i18n('Query this rule runs')} tooltip={<QueryTooltip rule={rule} flags={flags} />}>
+            <Icon name="info" size={16} />
+          </IconButton>
+        )}
         {onRemove && (
           <IconButton aria-label={t_i18n('Remove rule')} onClick={onRemove}>
             <Icon name="x" size={16} />
@@ -285,6 +323,7 @@ export const IrPresetItemCard = ({
             <Box component="span" sx={{ color: 'text.secondary' }}>{`· ${t_i18n('Group: every rule in it must match')}`}</Box>
           </Text>
         )}
+        {item.kind === 'group' && <GroupQueryButton rules={item.rules} flags={flags} />}
         <Box sx={{ flex: 1 }} />
         <IconButton aria-label={isGroup ? t_i18n('Remove group') : t_i18n('Remove rule')} onClick={onRemove}>
           <Icon name="x" size={16} />
@@ -305,6 +344,7 @@ export const IrPresetItemCard = ({
                   onChange={(value) => onRuleValue(rule.id, value)}
                   onRemove={() => onRemoveGroupRule(rule.id)}
                   error={ruleError(rule.id)}
+                  showQuery={false}
                 />
               </Box>
             </React.Fragment>

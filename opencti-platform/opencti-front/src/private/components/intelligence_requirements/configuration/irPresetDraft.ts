@@ -69,20 +69,36 @@ const namedValues = (def: IrPresetRule, value: IrPresetValue, t: Translate): str
 
 const subjectOf = (pirType: IrPirType, t: Translate) => t(IR_PIR_TYPES.find((p) => p.key === pirType)?.subject ?? 'Entities');
 
+// What a rule says of the flagged entities, without them: "targeting Financial services"
+const rulePredicate = (rule: IrRuleInstance, t: Translate): string => {
+  const def = getRule(rule.ruleKey);
+  const verb = t(def.verb);
+  if (def.value === 'none') return verb;
+  const values = namedValues(def, rule.value, t);
+  if (verb === ':') return `${t('one of')} ${values}`;
+  if (verb.includes('{v}')) return verb.replace('{v}', values);
+  return `${verb} ${values}`;
+};
+
 export const defaultRuleName = (pirType: IrPirType, rule: IrRuleInstance, t: Translate): string => {
   const def = getRule(rule.ruleKey);
   const subject = subjectOf(pirType, t);
-  const verb = t(def.verb);
-  if (def.value === 'none') return `${subject} ${verb}`;
-  const values = namedValues(def, rule.value, t);
-  if (verb === ':') return `${subject}: ${values}`;
-  if (verb.includes('{v}')) return `${subject} ${verb.replace('{v}', values)}`;
-  return `${subject} ${verb} ${values}`;
+  if (t(def.verb) === ':' && def.value !== 'none') return `${subject}: ${namedValues(def, rule.value, t)}`;
+  return `${subject} ${rulePredicate(rule, t)}`;
+};
+
+// A group reads as its first rule AND its second one; from three rules on, its first rule AND the count of the others
+const defaultGroupName = (pirType: IrPirType, rules: IrRuleInstance[], t: Translate): string => {
+  if (rules.length === 0) return subjectOf(pirType, t);
+  const first = defaultRuleName(pirType, rules[0], t);
+  if (rules.length === 1) return first;
+  if (rules.length === 2) return `${first} ${t('AND')} ${rulePredicate(rules[1], t)}`;
+  return `${first} ${t('AND')} ${rules.length - 1} ${t('more rules')}`;
 };
 
 export const defaultItemName = (pirType: IrPirType, item: IrPresetItem, t: Translate): string => {
   if (item.kind === 'rule') return defaultRuleName(pirType, item.rule, t);
-  if (item.kind === 'group') return item.rules.length > 0 ? defaultRuleName(pirType, item.rules[0], t) : subjectOf(pirType, t);
+  if (item.kind === 'group') return defaultGroupName(pirType, item.rules, t);
   return `${subjectOf(pirType, t)} ${t('matching custom filters')}`;
 };
 // endregion
