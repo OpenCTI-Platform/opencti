@@ -169,7 +169,7 @@
     "slug": "12.0.1",
     "source-map": "0.8.0",
     "turndown": "7.2.5",
-    "undici": "8.13.0",
+    "undici": "8.13.1",
     "unzipper": "0.12.5",
     "uuid": "14.0.3",
     "uuid-time": "1.0.0",
