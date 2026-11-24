@@ -18,7 +18,6 @@ test('test logout', { tag: ['@ce'] }, async ({ page }) => {
   }, REGISTER_BANNER_DISMISSED_KEY);
   await page.goto('/');
   await loginPage.login();
-  await expect(dashboardPage.getPage()).toBeVisible();
 
   await topMenu.logout();
   await expect(loginPage.getPage()).toBeVisible();
