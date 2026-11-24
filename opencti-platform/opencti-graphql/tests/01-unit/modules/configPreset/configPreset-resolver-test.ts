@@ -318,18 +318,6 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
-        key: 'playbooks',
-        label: 'Playbooks',
-        description: 'Playbook definitions, created stopped',
-        group: { key: 'automationRules', label: 'Automation & Rules' },
-        items: [
-          { key: 'Enrich reports', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
-          { key: 'Enrich reports (1)', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
-          { key: 'Triage/Phishing', label: 'Triage/Phishing', translatable: false, dependsOn: [], isDefault: false },
-        ],
-        itemsPageInfo: onePage(3),
-      },
-      {
         key: 'rssFeeds',
         label: 'RSS feeds',
         description: 'RSS feeds and their parameters, without their state',
@@ -372,6 +360,18 @@ describe('Config preset exportable types query', () => {
         // By name
         items: [formIntakeItem(incidentForm), formIntakeItem(reportForm)],
         itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, created stopped',
+        group: { key: 'automationRules', label: 'Automation & Rules' },
+        items: [
+          { key: 'Enrich reports', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Enrich reports (1)', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Triage/Phishing', label: 'Triage/Phishing', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'ruleEngine',
@@ -495,12 +495,12 @@ describe('Config preset exportable types query', () => {
       ['caseTemplates', 'taxonomy'],
       ['dashboards', 'dashboards'],
       ['connectors', 'integrations'],
-      ['playbooks', 'automationRules'],
       ['rssFeeds', 'integrations'],
       ['csvFeeds', 'integrations'],
       ['jsonFeeds', 'integrations'],
       ['taxiiFeeds', 'integrations'],
       ['formIntakes', 'integrations'],
+      ['playbooks', 'automationRules'],
       ['ruleEngine', 'automationRules'],
       ['fintelDesigns', 'customization'],
     ]);
