@@ -42,12 +42,12 @@ const VocabularyValueField = ({ rule, value, onChange }: FieldProps) => {
   const category = useMemo(() => {
     const field = rule.vocabularyField;
     if (!field) return undefined;
-    for (const type of rule.appliesTo) {
+    for (const type of rule.appliesTo === 'any' ? [] : rule.appliesTo) {
       const found = fieldToCategory(type, field);
       if (found) return found;
     }
     return fieldToCategory(undefined, field);
-  }, [rule.vocabularyField, rule.appliesTo.join(',')]);
+  }, [rule.vocabularyField, rule.appliesTo === 'any' ? 'any' : rule.appliesTo.join(',')]);
   const [options, setOptions] = useState<Option[]>([]);
   useEffect(() => {
     if (!category) {

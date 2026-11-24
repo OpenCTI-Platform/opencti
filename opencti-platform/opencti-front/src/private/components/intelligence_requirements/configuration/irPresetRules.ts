@@ -39,7 +39,7 @@ export interface IrPresetRule {
   valueTypes?: string[]; // for 'one-of' the flagged types are used instead
   vocabularyField?: string;
   build: IrRuleBuild;
-  appliesTo: string[];
+  appliesTo: string[] | 'any'; // 'any': whatever type the requirement flags
   pirTypes: IrPirType[] | 'all';
 }
 
@@ -103,23 +103,20 @@ export const IR_PIR_TYPES: IrPirTypeDefinition[] = [
     label: 'Threat custom',
     description: 'Choose what to flag, then use any rule.',
     subject: 'Entities',
-    flags: [], // chosen on step 1 from the union of the flags above
+    flags: [], // chosen on step 1 among every entity type of the platform
     enabled: true,
   },
 ];
 
 // Every flag a "Threat custom" requirement can choose from (the union of the typed flags).
-export const IR_ALL_FLAGS: string[] = Array.from(new Set(IR_PIR_TYPES.flatMap((t) => t.flags)));
-
-const ALL = IR_ALL_FLAGS;
 
 const entityFilter = (key: string, operator: 'eq' | 'gte' = 'eq'): IrRuleBuild => ({ kind: 'entityFilter', key, operator });
 
 export const IR_PRESET_RULES: IrPresetRule[] = [
   // shared rules
-  { key: 'one-of', sentence: 'Is one of', verb: ':', value: 'entities', build: { kind: 'oneOf' }, appliesTo: ALL, pirTypes: 'all' },
-  { key: 'has-label', sentence: 'Has the label', verb: 'labelled', value: 'labels', build: entityFilter('objectLabel'), appliesTo: ALL, pirTypes: 'all' },
-  { key: 'mentions', sentence: 'Its description mentions', verb: 'mentioning', value: 'keywords', build: { kind: 'keywords' }, appliesTo: ALL, pirTypes: 'all' },
+  { key: 'one-of', sentence: 'Is one of', verb: ':', value: 'entities', build: { kind: 'oneOf' }, appliesTo: 'any', pirTypes: 'all' },
+  { key: 'has-label', sentence: 'Has the label', verb: 'labelled', value: 'labels', build: entityFilter('objectLabel'), appliesTo: 'any', pirTypes: 'all' },
+  { key: 'mentions', sentence: 'Its description mentions', verb: 'mentioning', value: 'keywords', build: { kind: 'keywords' }, appliesTo: 'any', pirTypes: 'all' },
   {
     key: 'in-container',
     sentence: 'Is mentioned in',
@@ -127,7 +124,7 @@ export const IR_PRESET_RULES: IrPresetRule[] = [
     value: 'containerTypes',
     valueTypes: ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'],
     build: { kind: 'container' },
-    appliesTo: ALL,
+    appliesTo: 'any',
     pirTypes: 'all',
   },
   // threat landscape and adversary
@@ -414,12 +411,14 @@ export const IR_PRESET_RULES: IrPresetRule[] = [
   },
 ];
 
-const overlaps = (a: string[], b: string[]) => a.some((x) => b.includes(x));
+const appliesToFlags = (rule: IrPresetRule, flags: string[]) => rule.appliesTo === 'any'
+  ? flags.length > 0
+  : rule.appliesTo.some((type) => flags.includes(type));
 
 // Rules offered for a PIR type: its own and the shared ones, narrowed to the flagged types.
 // Threat custom offers every rule that fits the chosen flags, whatever the type of the rule.
 export const rulesForType = (pirType: IrPirType, flags: string[]): IrPresetRule[] => IR_PRESET_RULES.filter((rule) => {
-  if (!overlaps(rule.appliesTo, flags)) return false;
+  if (!appliesToFlags(rule, flags)) return false;
   if (pirType === 'threat_custom') return true;
   return rule.pirTypes === 'all' || rule.pirTypes.includes(pirType);
 });

@@ -4,7 +4,8 @@ import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import { IR_PRIORITIES, priorityLabel } from '../IntelligenceRequirementsCards';
 import { IrMultiSelect, IrSelect } from './IrFields';
-import { IR_ALL_FLAGS, IR_PIR_TYPES, type IrPirType } from './irPresetRules';
+import { IR_PIR_TYPES, type IrPirType } from './irPresetRules';
+import useSchema from '../../../../utils/hooks/useSchema';
 import type { IrPresetGeneral } from './irPresetDraft';
 import type { IrPriority } from './irConfigTypes';
 
@@ -19,6 +20,12 @@ interface IrTypeStepProps {
 // Step 1 of the creation wizard: what the requirement is, and which type of PIR it is
 const IrTypeStep = ({ general, pirType, flags, onChange, showErrors = false }: IrTypeStepProps) => {
   const { t_i18n } = useFormatter();
+  const { schema } = useSchema();
+  // A threat custom requirement can flag any entity of the platform: domain objects (containers included) and
+  // observables. Relationships, sightings, meta objects (labels, markings...) and internal objects are not entities to flag.
+  const flagOptions = [...schema.sdos, ...schema.scos]
+    .map((type) => ({ value: type.id, label: t_i18n(`entity_${type.id}`) }))
+    .sort((a, b) => a.label.localeCompare(b.label));
   const setGeneral = (patch: Partial<IrPresetGeneral>) => onChange({ general: { ...general, ...patch } });
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -82,7 +89,7 @@ const IrTypeStep = ({ general, pirType, flags, onChange, showErrors = false }: I
           <IrMultiSelect
             label={t_i18n('Flagged types')}
             values={flags}
-            options={IR_ALL_FLAGS.map((type) => ({ value: type, label: t_i18n(`entity_${type}`) }))}
+            options={flagOptions}
             onChange={(next) => onChange({ flags: next })}
             placeholder={t_i18n('Add…')}
           />

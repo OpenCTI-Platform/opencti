@@ -13,6 +13,13 @@ describe('rulesForType', () => {
     expect(keys).toEqual(expect.arrayContaining(['malware-type', 'kev', 'affects']));
     expect(keys).not.toContain('impersonates');
   });
+  it('gives a type without its own rules the shared ones, containers included', () => {
+    expect(rulesForType('threat_custom', ['Report']).map((r) => r.key)).toEqual(['one-of', 'has-label', 'mentions', 'in-container']);
+    expect(rulesForType('threat_custom', ['IPv4-Addr', 'Sector']).map((r) => r.key)).toEqual(['one-of', 'has-label', 'mentions', 'in-container']);
+  });
+  it('offers no rule while nothing is flagged', () => {
+    expect(rulesForType('threat_custom', [])).toEqual([]);
+  });
   it('lists nothing for fraud', () => {
     expect(IR_PIR_TYPES.find((t) => t.key === 'fraud')?.enabled).toBe(false);
   });
