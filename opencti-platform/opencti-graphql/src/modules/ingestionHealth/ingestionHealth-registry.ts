@@ -41,7 +41,8 @@ export const HEALTH_CHECK_LAST_RUN_FAILED = 'LAST_RUN_FAILED';
 export const HEALTH_CHECK_CONNECTOR_ERROR_REPORTED = 'CONNECTOR_ERROR_REPORTED';
 export const HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED = 'CONNECTOR_CRITICAL_ERROR_REPORTED';
 
-// Every check of the registry: adding a check adds its code here
+// Every check of the registry: adding a check adds its code here, and documents it in docs/docs/administration/ingestion-health.md:
+// a row in the Health checks table, and how to fix it in Fix a failing check, for managed and self-hosted connectors and for feeds
 export type HealthCheckCode = typeof HEALTH_CHECK_USER_MISSING
   | typeof HEALTH_CHECK_CONNECTOR_ERROR_REPORTED
   | typeof HEALTH_CHECK_CONNECTOR_CRITICAL_ERROR_REPORTED
