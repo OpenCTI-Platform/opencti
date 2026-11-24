@@ -68,7 +68,7 @@ At minimum adapt the admin part for the password and token.
     "admin": {
       "email": "admin@opencti.io",
       "password": "MyNewPassord",
-      "token": "UUID generated with https://www.uuidgenerator.net"
+      "token": "UUID generated with https://www.uuidgenerator.net or an OpenCTI formatted token"
     }
 ```
 

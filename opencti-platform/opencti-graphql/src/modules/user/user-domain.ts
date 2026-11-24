@@ -2891,8 +2891,8 @@ export const initializeAdminUser = async (context: AuthContext) => {
     if (!validator.isEmail(adminEmail)) {
       throw ConfigurationError('Email must be a valid email address');
     }
-    if (!validator.isUUID(adminToken)) {
-      throw ConfigurationError('Token must be a valid UUID');
+    if (!validator.isUUID(adminToken) && !validateOpenCtiToken(adminToken)) {
+      throw ConfigurationError('Token must be a valid UUID or OpenCTI token');
     }
     // Initialize the admin account
     await initAdmin(context, adminEmail, adminPassword, adminToken);
@@ -3139,6 +3139,12 @@ export const revokeUserTokenByAdmin = async (context: AuthContext, user: AuthUse
     throw FunctionalError('User not found', { targetUserId });
   }
   return await revokeToken(context, user, userToEdit, tokenId, (token) => `revoked API token '${token.name}' for user '${userToEdit.user_email}'`);
+};
+
+const validateOpenCtiToken = (token: string | null | undefined): boolean => {
+  if (!token) return false;
+  const regex = /^flgrn_octi_tkn_[A-Za-z0-9_-]{64}$/;
+  return regex.test(token);
 };
 
 /**

@@ -131,7 +131,7 @@ cd docker
 Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
 You can either rename the file `.env.sample` as `.env` and enter the values or just directly edit the `docker-compose.yml` with the values for your environment.
-Warning regarding the OPENCTI_ADMIN_TOKEN variable: you must use uuidgen to generate a valid token otherwise the container will not start.
+Warning regarding the OPENCTI_ADMIN_TOKEN variable: you must use uuidgen to generate a valid token or have a properly OpenCTI formatted token, otherwise the container will not start.
 
 !!! note "Configuration static parameters"
 
@@ -308,7 +308,7 @@ cd opencti/opencti-platform/opencti-graphql
 cp config/default.json config/production.json
 ```
 
-Change the *config/production.json* file according to your configuration of ElasticSearch, Redis, RabbitMQ and S3 bucket as well as default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
+Change the *config/production.json* file according to your configuration of ElasticSearch, Redis, RabbitMQ and S3 bucket as well as default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/) or an OpenCTI formatted token).
 
 #### Install the Python modules
 
