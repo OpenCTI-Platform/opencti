@@ -8291,6 +8291,9 @@ enum IrMatchStatus {
 
 type IrPathCondition {
   direction: IrDirection!
+
+  """Types of the entity in between (any type when empty)"""
+  intermediate_types: [String!]
   relationship_types: [String!]!
   target_group_ids: [String!]!
   target_ids: [String!]!
@@ -8300,6 +8303,7 @@ type IrPathCondition {
 
 input IrPathConditionInput {
   direction: IrDirection!
+  intermediate_types: [String!]
   relationship_types: [String!]!
   target_group_ids: [String!]
   target_ids: [String!]!
