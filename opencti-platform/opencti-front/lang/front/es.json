@@ -7514,5 +7514,9 @@
   "Target filters": "Filtros del destino",
   "Source filters": "Filtros del origen",
   "that has {properties}": "que tiene {properties}",
-  "{count} values": "{count} valores"
+  "{count} values": "{count} valores",
+  "specific entities": "entidades específicas",
+  "any of a type": "cualquiera de un tipo",
+  "Add a type…": "Añadir un tipo…",
+  "Specific entities or any of a type": "Entidades específicas o cualquiera de un tipo"
 }

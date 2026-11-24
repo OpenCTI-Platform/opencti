@@ -7514,5 +7514,9 @@
   "Target filters": "대상 필터",
   "Source filters": "원본 필터",
   "that has {properties}": "{properties}을(를) 가진",
-  "{count} values": "값 {count}개"
+  "{count} values": "값 {count}개",
+  "specific entities": "특정 엔터티",
+  "any of a type": "특정 유형의 모든 항목",
+  "Add a type…": "유형 추가…",
+  "Specific entities or any of a type": "특정 엔터티 또는 특정 유형의 모든 항목"
 }

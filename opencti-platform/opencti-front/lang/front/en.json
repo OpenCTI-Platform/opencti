@@ -7515,5 +7515,9 @@
   "Target filters": "Target filters",
   "Source filters": "Source filters",
   "that has {properties}": "that has {properties}",
-  "{count} values": "{count} values"
+  "{count} values": "{count} values",
+  "specific entities": "specific entities",
+  "any of a type": "any of a type",
+  "Add a type…": "Add a type…",
+  "Specific entities or any of a type": "Specific entities or any of a type"
 }

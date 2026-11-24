@@ -7514,5 +7514,9 @@
   "Target filters": "Фильтры цели",
   "Source filters": "Фильтры источника",
   "that has {properties}": "с {properties}",
-  "{count} values": "Значений: {count}"
+  "{count} values": "Значений: {count}",
+  "specific entities": "конкретные сущности",
+  "any of a type": "любая сущность типа",
+  "Add a type…": "Добавить тип…",
+  "Specific entities or any of a type": "Конкретные сущности или любая сущность типа"
 }

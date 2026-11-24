@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Input } from '@filigran/design-system';
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
@@ -109,6 +109,65 @@ const LabelsValueField = ({ value, onChange }: Omit<FieldProps, 'rule'>) => {
   );
 };
 
+type Choice = 'entities' | 'types';
+
+// "When it is targeted by": specific entities OR any entity of a type, never both. The choice comes first,
+// then only its field shows; changing it clears the other's values (and the filters narrowing the types).
+const EntitiesOrTypeField = ({ searchTypes, typeOptions, value, onChange, plainEntities }: {
+  searchTypes?: string[];
+  typeOptions: Option[];
+  value: IrPresetValue;
+  onChange: (v: IrPresetValue) => void;
+  plainEntities: (entities: IrPresetValue['entities']) => IrPresetValue['entities'];
+}) => {
+  const { t_i18n } = useFormatter();
+  const fromValue = (): Choice | null => {
+    if (value.entities.length > 0) return 'entities';
+    return value.types.length > 0 ? 'types' : null;
+  };
+  const [choice, setChoice] = useState<Choice | null>(fromValue);
+  const pick = (next: Choice) => {
+    if (next === choice) return;
+    setChoice(next);
+    onChange({ ...value, entities: [], types: [], filters: null });
+  };
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, flex: '1 1 480px' }}>
+      <div style={{ width: 190, flex: 'none' }}>
+        <Select value={choice ?? ''} onValueChange={(v) => pick(v as Choice)}>
+          <SelectTrigger className="w-full" aria-label={t_i18n('Specific entities or any of a type')}>
+            <SelectValue placeholder={t_i18n('Choose…')} />
+          </SelectTrigger>
+          <SelectContent position="popper" side="bottom" align="start" sideOffset={4}>
+            <SelectItem value="entities">{t_i18n('specific entities')}</SelectItem>
+            <SelectItem value="types">{t_i18n('any of a type')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      {choice === 'entities' && (
+        <div style={FIELD_STYLE}>
+          <IrEntityPicker
+            types={searchTypes}
+            value={value.entities}
+            onChange={(entities) => onChange({ ...value, entities: plainEntities(entities) })}
+            placeholder={t_i18n('Search entities…')}
+          />
+        </div>
+      )}
+      {choice === 'types' && (
+        <div style={FIELD_STYLE}>
+          <IrMultiSelect
+            values={value.types}
+            options={typeOptions.map((o) => ({ value: o.value, label: `${t_i18n('Any')} ${o.label}` }))}
+            onChange={(types) => onChange({ ...value, types })}
+            placeholder={t_i18n('Add a type…')}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
+
 /**
  * The one editable value of a preset rule, shown inline after the rule's sentence.
  * value.entities: picked entities or labels; value.types: "any <Type>" choices or container types;
@@ -136,26 +195,7 @@ export const IrPresetValueField = ({ rule, flags, value, onChange }: FieldProps)
         </div>
       );
     case 'entitiesOrType':
-      return (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flex: '1 1 480px' }}>
-          <div style={FIELD_STYLE}>
-            <IrEntityPicker
-              types={searchTypes}
-              value={value.entities}
-              onChange={(entities) => onChange({ ...value, entities: plainEntities(entities) })}
-              placeholder={t_i18n('Search…')}
-            />
-          </div>
-          <div style={FIELD_STYLE}>
-            <IrMultiSelect
-              values={value.types}
-              options={typeOptions.map((o) => ({ value: o.value, label: `${t_i18n('Any')} ${o.label}` }))}
-              onChange={(types) => onChange({ ...value, types })}
-              placeholder={t_i18n('Or any type…')}
-            />
-          </div>
-        </div>
-      );
+      return <EntitiesOrTypeField searchTypes={searchTypes} typeOptions={typeOptions} value={value} onChange={onChange} plainEntities={plainEntities} />;
     case 'vocabulary':
       return (
         <div style={FIELD_STYLE}>

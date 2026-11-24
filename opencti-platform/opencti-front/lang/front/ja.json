@@ -7514,5 +7514,9 @@
   "Target filters": "ターゲットのフィルター",
   "Source filters": "ソースのフィルター",
   "that has {properties}": "{properties}を持つ",
-  "{count} values": "{count} 個の値"
+  "{count} values": "{count} 個の値",
+  "specific entities": "特定のエンティティ",
+  "any of a type": "あるタイプのすべて",
+  "Add a type…": "タイプを追加…",
+  "Specific entities or any of a type": "特定のエンティティ、またはあるタイプのすべて"
 }

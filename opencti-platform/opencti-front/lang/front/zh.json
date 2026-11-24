@@ -7514,5 +7514,9 @@
   "Target filters": "目标筛选条件",
   "Source filters": "来源筛选条件",
   "that has {properties}": "具有 {properties} 的",
-  "{count} values": "{count} 个值"
+  "{count} values": "{count} 个值",
+  "specific entities": "特定实体",
+  "any of a type": "某类型的任意实体",
+  "Add a type…": "添加类型…",
+  "Specific entities or any of a type": "特定实体或某类型的任意实体"
 }
