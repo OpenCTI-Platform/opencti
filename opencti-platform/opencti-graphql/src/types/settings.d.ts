@@ -109,5 +109,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   local_auth_lockout_final_action?: LocalAuthLockoutFinalAction;
   local_auth_lockout_window?: number;
   local_auth_lockout_duration?: number;
+  // Absent on the platforms created before it existed, which keep API Basic authentication enabled
+  api_basic_auth_enabled?: boolean;
   smtp_configuration?: SmtpConfiguration;
 }

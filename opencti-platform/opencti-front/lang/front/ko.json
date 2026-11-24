@@ -412,6 +412,7 @@
   "All types of target": "모든 대상 유형",
   "All workbenches": "모든 워크벤치",
   "All years": "모든 연도",
+  "Allow API Basic authentication": "API Basic 인증 허용",
   "Allow login from identity provider directly": "ID 공급자로부터 직접 로그인 허용",
   "Allow logout from Identity provider directly": "ID 공급자로부터 직접 로그아웃 허용",
   "Allow modification of sensitive configuration": "민감한 구성의 수정 허용",
@@ -737,6 +738,7 @@
   "Based on": "기반",
   "based-on": "관찰 가능 항목 기반",
   "Basic": "기본",
+  "Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.": "Basic 인증은 모든 API 요청마다 비밀번호를 전송합니다. 스크립트와 통합에는 대신 API 토큰을 사용하세요.",
   "Basic information": "기본 정보",
   "Basic user / password": "기본 사용자 / 비밀번호",
   "batch": "배치",
@@ -6931,7 +6933,5 @@
   "zero": "제로",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소",
-  "Pastel colours": "파스텔 색상",
-  "Show chips in soft pastel fills instead of the standard outlined colours.": "칩을 표준 윤곽선 색상 대신 부드러운 파스텔 색상으로 표시합니다."
+  "Zoom out": "축소"
 }

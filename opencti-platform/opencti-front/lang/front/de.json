@@ -412,6 +412,7 @@
   "All types of target": "Alle Arten von Ziel",
   "All workbenches": "Alle Werkbänke",
   "All years": "Alle Jahre",
+  "Allow API Basic authentication": "API-Basic-Authentifizierung zulassen",
   "Allow login from identity provider directly": "Anmeldung vom Identitätsanbieter direkt zulassen",
   "Allow logout from Identity provider directly": "Abmeldung vom Identitätsanbieter direkt zulassen",
   "Allow modification of sensitive configuration": "Änderung der sensiblen Konfiguration zulassen",
@@ -737,6 +738,7 @@
   "Based on": "Basierend auf",
   "based-on": "Basierend auf einer beobachtbaren",
   "Basic": "Basic",
+  "Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.": "Die Basic-Authentifizierung sendet bei jeder API-Anfrage ein Passwort. Skripte und Integrationen sollten stattdessen API-Tokens verwenden.",
   "Basic information": "Grundlegende Informationen",
   "Basic user / password": "Einfacher Benutzer / Passwort",
   "batch": "Stapelverarbeitung",
@@ -6931,7 +6933,5 @@
   "zero": "Null",
   "Zoom": "Vergrößern",
   "Zoom in": "Vergrößern",
-  "Zoom out": "Verkleinern",
-  "Pastel colours": "Pastellfarben",
-  "Show chips in soft pastel fills instead of the standard outlined colours.": "Chips in sanften Pastellfarben statt in den umrandeten Standardfarben anzeigen."
+  "Zoom out": "Verkleinern"
 }

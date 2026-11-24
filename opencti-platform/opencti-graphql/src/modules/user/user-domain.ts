@@ -31,6 +31,7 @@ import {
 import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
+import { checkApiBasicAuthAllowed } from './user-basic-auth';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
 import {
@@ -220,7 +221,6 @@ const ME_USER_MODIFIABLE_ATTRIBUTES = [
   'bootstrap_wizard_skipped',
   'submenu_auto_collapse',
   'monochrome_labels',
-  'pastel_colours',
   'unsubscribed_news_feed_types',
   'password',
   'draft_context',
@@ -2522,6 +2522,9 @@ export const resolveUserById = async (context: AuthContext, id: string) => {
 };
 
 export const authenticateUserByBasicAuth = async (context: AuthContext, req: OriginRequest, basicAuth: { username: string; password: string }) => {
+  // Refused before login(): the password is never checked and the attempt is never counted
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  checkApiBasicAuthAllowed(settings);
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip, { source: 'basic_auth' });
   const user = platformUsers.get(loggedUser.id);

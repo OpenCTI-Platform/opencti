@@ -43,6 +43,20 @@ describe('playbook-domain', () => {
       await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node filters are not valid JSON');
     });
 
+    it('should refuse an imported playbook from an old version whose node configuration is not valid JSON', async () => {
+      const fileUrl = new URL('testData/imported-old-playbook-with-malformed-node-configuration.json', import.meta.url);
+      const fileHandle = open(fileUrl);
+
+      await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node configuration is not valid JSON');
+    });
+
+    it('should refuse an imported playbook from an old version whose node has no configuration', async () => {
+      const fileUrl = new URL('testData/imported-old-playbook-with-missing-node-configuration.json', import.meta.url);
+      const fileHandle = open(fileUrl);
+
+      await expect(playbookImport(testContext, ADMIN_USER, fileHandle)).rejects.toThrowError('Playbook node configuration is not valid JSON');
+    });
+
     it('should update correctly a playbook imported with the old configuration', async () => {
       const fileUrl = new URL('testData/imported-playbook-with-old-scope.json', import.meta.url);
       const fileHandle = open(fileUrl);

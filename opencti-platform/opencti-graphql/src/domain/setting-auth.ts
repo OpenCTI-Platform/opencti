@@ -147,6 +147,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
     ...(newHistoryCount !== undefined && { password_policy_history_count: newHistoryCount }),
     ...(await buildLocalAuthLockoutPatch(context, input)),
+    ...(input.api_basic_auth_enabled !== undefined && input.api_basic_auth_enabled !== null && { api_basic_auth_enabled: input.api_basic_auth_enabled }),
   };
   // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
   checkPolicyAcceptsAdminPassword(context, { ...storedSettings, ...patch } as BasicStoreSettings);

@@ -20,8 +20,6 @@ interface AppThemeProviderProps {
   children: React.ReactNode;
   settings: AppThemeProvider_settings$data;
   activeTheme?: { id: string } & AppThemeType | null;
-  /** The user's "Pastel colours" preference (Profile); off: standard colours. */
-  pastelColours?: boolean | null;
 }
 
 interface AppThemeType {
@@ -95,7 +93,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
   children,
   settings,
   activeTheme,
-  pastelColours,
 }) => {
   useDocumentFaviconModifier(settings?.platform_favicon);
 
@@ -128,7 +125,7 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     secondary: themeToUse?.theme_secondary ?? defaultTheme.theme_secondary,
     accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
     text: themeToUse?.theme_text_color ?? defaultTheme.theme_text_color,
-  }, pastelColours ?? true);
+  });
   useDocumentThemeModifier(themeMode);
 
   return <ThemeProvider theme={muiTheme}>{children}</ThemeProvider>;

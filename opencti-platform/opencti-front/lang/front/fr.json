@@ -412,6 +412,7 @@
   "All types of target": "Tous les types de cible",
   "All workbenches": "Tous les établis",
   "All years": "Toutes les années",
+  "Allow API Basic authentication": "Autoriser l'authentification Basic sur l'API",
   "Allow login from identity provider directly": "Autoriser la connexion à partir d'un fournisseur d'identité directement",
   "Allow logout from Identity provider directly": "Autoriser la déconnexion à partir du fournisseur d'identité directement",
   "Allow modification of sensitive configuration": "Permettre la modification d'une configuration sensible",
@@ -737,6 +738,7 @@
   "Based on": "Basé sur",
   "based-on": "Basé sur un observable",
   "Basic": "Basique",
+  "Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.": "L'authentification Basic envoie un mot de passe à chaque requête API. Les scripts et les intégrations doivent plutôt utiliser des jetons API.",
   "Basic information": "Informations de base",
   "Basic user / password": "Utilisateur / mot de passe",
   "batch": "lot",
@@ -6931,7 +6933,5 @@
   "zero": "zéro",
   "Zoom": "Zoom",
   "Zoom in": "Zoomer",
-  "Zoom out": "Zoom arrière",
-  "Pastel colours": "Couleurs pastel",
-  "Show chips in soft pastel fills instead of the standard outlined colours.": "Afficher les puces en teintes pastel douces au lieu des couleurs standard avec contour."
+  "Zoom out": "Zoom arrière"
 }

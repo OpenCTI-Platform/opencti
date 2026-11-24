@@ -412,6 +412,7 @@
   "All types of target": "Все типы мишеней",
   "All workbenches": "Все верстаки",
   "All years": "Все годы",
+  "Allow API Basic authentication": "Разрешить Basic-аутентификацию API",
   "Allow login from identity provider directly": "Разрешить вход в систему от поставщика идентификационных данных напрямую",
   "Allow logout from Identity provider directly": "Разрешить выход из системы от провайдера идентификации напрямую",
   "Allow modification of sensitive configuration": "Позволяет изменять конфиденциальную конфигурацию",
@@ -737,6 +738,7 @@
   "Based on": "На основе",
   "based-on": "на основе",
   "Basic": "Базовая",
+  "Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.": "Basic-аутентификация передаёт пароль с каждым запросом к API. Для скриптов и интеграций используйте вместо неё API-токены.",
   "Basic information": "Основная информация",
   "Basic user / password": "Основной пользователь / пароль",
   "batch": "пакетная обработка",
@@ -6931,7 +6933,5 @@
   "zero": "ноль",
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
-  "Zoom out": "Уменьшить масштаб",
-  "Pastel colours": "Пастельные цвета",
-  "Show chips in soft pastel fills instead of the standard outlined colours.": "Показывать метки в мягких пастельных тонах вместо стандартных цветов с контуром."
+  "Zoom out": "Уменьшить масштаб"
 }

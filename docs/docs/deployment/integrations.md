@@ -73,6 +73,10 @@ For all previously explained capabilities, as they are over the HTTP protocol, 3
 	Authorization: Basic c2FtdWVsLmhhc3NpbmVBZmlsaWdyYW4uaW86TG91aXNlMTMwNCM=
 	```
 
+	!!! warning "Basic authentication"
+
+		Basic authentication is refused unless an administrator allows it in the local authentication, which a new platform does not (see [API Basic authentication](../administration/authentication-via-ui.md#api-basic-authentication)). It sends a password with every request: configure your SIEMs, scripts and other integrations with an API token instead.
+
 3. Using client certificate authentication
 
 	To know how to configure the client certificate authentication, please consult the [authentication configuration](authentication.md) section.

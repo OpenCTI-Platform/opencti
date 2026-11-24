@@ -2,10 +2,9 @@ import type { ChipSeverity } from '@filigran/design-system';
 
 /**
  * The predefined levels of OpenCTI mapped to the design-system chip tones, so a
- * severity, a priority, a score or a TLP/PAP marking draws the same standard colour
- * as in XTM One, OpenAEV and OpenCRQ when the user turns "Pastel colours" off, and
- * the pastel fill otherwise (the `pastel` class on the document root; on by default
- * in OpenCTI so existing users see no change).
+ * severity, a priority, a score or a TLP/PAP marking draws the same chip as in
+ * XTM One, OpenAEV and OpenCRQ: the single design-system style (tone fill and a
+ * hairline in the tone ink, @filigran/design-system 1.13).
  *
  * | tone     | token family     | used for                                   |
  * |----------|------------------|--------------------------------------------|

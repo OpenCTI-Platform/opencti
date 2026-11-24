@@ -13,7 +13,7 @@ describe('the bar keeps its fixed/glass treatment', () => {
     const root = container.firstElementChild as HTMLElement;
     expect(root.className).toContain('backdrop-blur-sm');
     expect(root.className).toContain('before:bg-gradient-default');
-    expect(root.className).toContain('before:opacity-94');
+    expect(root.className).toContain('before:opacity-93');
   });
 
   it('the library does not position the bar, so the product must', () => {
