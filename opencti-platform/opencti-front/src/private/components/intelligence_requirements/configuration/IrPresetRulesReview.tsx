@@ -21,6 +21,9 @@ const ReadOnlyRule = ({ rule, flags, showQuery = true }: { rule: IrRuleInstance;
       <Text as="span" variant="content-compact">
         <Box component="span" sx={{ color: 'text.secondary' }}>{t_i18n(def.sentence)}</Box>
         {values.length > 0 && <Box component="span" sx={{ fontWeight: 600 }}>{` ${values.join(', ')}`}</Box>}
+        {def.value === 'filters' && (
+          <Box component="span" sx={{ fontWeight: 600 }}>{` · ${t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: countFilters(rule.value.filters) } })}`}</Box>
+        )}
       </Text>
       {showQuery && (
         <IconButton aria-label={t_i18n('Query this rule runs')} tooltip={<QueryTooltip rule={rule} flags={flags} />}>
@@ -76,7 +79,7 @@ const IrPresetRulesReview = ({ items, flags, onEdit }: {
               {item.kind === 'custom' && (
                 <Text as="span" variant="content-compact">
                   <Box component="span" sx={{ color: 'text.secondary' }}>{t_i18n('Advanced search criteria')}</Box>
-                  <Box component="span" sx={{ fontWeight: 600 }}>{` · ${t_i18n('{count} filters', { values: { count: countFilters(item.filters) } })}`}</Box>
+                  <Box component="span" sx={{ fontWeight: 600 }}>{` · ${t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: countFilters(item.filters) } })}`}</Box>
                 </Text>
               )}
             </Box>

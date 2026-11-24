@@ -7,7 +7,7 @@ import IconButton from '@common/button/IconButton';
 import { useFormatter } from '../../../../components/i18n';
 import IrPresetValueField from './IrPresetValueField';
 import IrFilterBuilder from './IrFilterBuilder';
-import { getRule, type IrPresetRule } from './irPresetRules';
+import { ADVANCED_RULE_KEY, getRule, type IrPresetRule } from './irPresetRules';
 import { presetQueryChips, type IrPresetItem, type IrQueryChip, type IrPresetValue, type IrRuleInstance } from './irPresetDraft';
 
 // The cards of the criteria step: one rule, a group of rules (AND) or advanced search criteria.
@@ -81,7 +81,9 @@ const QueryChips = ({ chips }: { chips: IrQueryChip[] }) => {
           <Box component="span" sx={{ display: 'inline-block', bgcolor: 'action.selected', borderRadius: 0.5, px: 0.75, py: 0.25 }}>
             <Text as="span" variant="content-caption">
               {`${chip.key} ${chip.operator ?? '='} `}
-              <Box component="span" sx={chip.fromUser ? { color: 'primary.main', fontWeight: 600 } : undefined}>{chip.values || '…'}</Box>
+              <Box component="span" sx={chip.fromUser ? { color: 'primary.main', fontWeight: 600 } : undefined}>
+                {chip.filterCount !== undefined ? t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: chip.filterCount } }) : chip.values || '…'}
+              </Box>
             </Text>
           </Box>
         </React.Fragment>
@@ -142,6 +144,32 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }:
 }) => {
   const { t_i18n } = useFormatter();
   const def = getRule(rule.ruleKey);
+  if (def.value === 'filters') {
+    return (
+      <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+          <Text as="span" variant="content-compact">
+            <Box component="span" sx={{ color: 'text.secondary' }}>{t_i18n(def.sentence)}</Box>
+          </Text>
+          <Box sx={{ flex: 1 }} />
+          {showQuery && (
+            <IconButton aria-label={t_i18n('Query this rule runs')} tooltip={<QueryTooltip rule={rule} flags={flags} />}>
+              <Icon name="info" size={16} />
+            </IconButton>
+          )}
+          {onRemove && (
+            <IconButton aria-label={t_i18n('Remove rule')} onClick={onRemove}>
+              <Icon name="x" size={16} />
+            </IconButton>
+          )}
+        </Box>
+        <Suspense fallback={<Spinner size="sm" />}>
+          <IrFilterBuilder value={rule.value.filters} onChange={(filters) => onChange({ ...rule.value, filters })} />
+        </Suspense>
+        {error && <ErrorText>{presetText(error, t_i18n)}</ErrorText>}
+      </Box>
+    );
+  }
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -356,6 +384,7 @@ export const IrPresetItemCard = ({
               open={groupMenuOpen}
               onOpenChange={onGroupMenuOpenChange}
               onPick={onAddGroupRule}
+              onAdvanced={() => onAddGroupRule(ADVANCED_RULE_KEY)}
               trigger={<FdsButton type="button" priority="tertiary" size="sm" startIcon={<Icon name="plus" size={16} />}>{t_i18n('Add rule to group')}</FdsButton>}
             />
           </Box>

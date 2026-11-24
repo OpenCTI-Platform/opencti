@@ -18,12 +18,14 @@ import {
 } from './irConfigTypes';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { getRule, IR_PIR_TYPES, type IrPirType, type IrPresetRule } from './irPresetRules';
+import { countFilters } from './irSentence';
 
 export interface IrPresetValue {
   entities: IrEntityOption[]; // picked entities, and labels as { value: labelId, label: labelValue, type: 'Label' }
   types: string[]; // the "any ..." choices and container types
   terms: string[]; // vocabulary keys, keywords and text values
   number: number | null;
+  filters: string | null; // advanced search criteria, serialized for the backend
 }
 
 export interface IrRuleInstance {
@@ -46,7 +48,7 @@ export interface IrPresetGeneral {
 
 type Translate = (s: string) => string;
 
-export const emptyValue = (): IrPresetValue => ({ entities: [], types: [], terms: [], number: null });
+export const emptyValue = (): IrPresetValue => ({ entities: [], types: [], terms: [], number: null, filters: null });
 
 // region names and values
 const MAX_NAMED_VALUES = 3;
@@ -59,7 +61,7 @@ export const valueLabels = (def: IrPresetRule, value: IrPresetValue, t: Translat
   ...(value.number !== null ? [String(value.number)] : []),
 ];
 
-const hasValue = (value: IrPresetValue) => value.entities.length + value.types.length + value.terms.length > 0 || value.number !== null;
+const hasValue = (value: IrPresetValue) => value.entities.length + value.types.length + value.terms.length > 0 || value.number !== null || !!value.filters;
 
 const namedValues = (def: IrPresetRule, value: IrPresetValue, t: Translate): string => {
   const labels = valueLabels(def, value, t);
@@ -73,7 +75,7 @@ const subjectOf = (pirType: IrPirType, t: Translate) => t(IR_PIR_TYPES.find((p) 
 const rulePredicate = (rule: IrRuleInstance, t: Translate): string => {
   const def = getRule(rule.ruleKey);
   const verb = t(def.verb);
-  if (def.value === 'none') return verb;
+  if (def.value === 'none' || def.value === 'filters') return verb;
   const values = namedValues(def, rule.value, t);
   if (verb === ':') return `${t('one of')} ${values}`;
   if (verb.includes('{v}')) return verb.replace('{v}', values);
@@ -108,7 +110,9 @@ export const validatePresetItems = (items: IrPresetItem[]): { itemId: string; ru
   if (items.length === 0) return [{ itemId: '', message: 'Add at least one rule' }];
   const errors: { itemId: string; ruleId?: string; message: string }[] = [];
   const checkRule = (itemId: string, rule: IrRuleInstance) => {
-    if (getRule(rule.ruleKey).value !== 'none' && !hasValue(rule.value)) errors.push({ itemId, ruleId: rule.id, message: 'Add a value' });
+    const kind = getRule(rule.ruleKey).value;
+    if (kind === 'filters' && !rule.value.filters) errors.push({ itemId, ruleId: rule.id, message: 'Add filters' });
+    else if (kind !== 'none' && kind !== 'filters' && !hasValue(rule.value)) errors.push({ itemId, ruleId: rule.id, message: 'Add a value' });
   };
   items.forEach((item) => {
     if (item.kind === 'rule') checkRule(item.id, item.rule);
@@ -127,6 +131,7 @@ export interface IrQueryChip {
   operator?: '=' | '≥'; // '=' when absent
   values: string;
   fromUser: boolean;
+  filterCount?: number; // advanced search criteria: the values are their number of filters, written with its plural
 }
 
 const FILTER_KEY_LABELS: Record<string, string> = {
@@ -203,6 +208,10 @@ export const presetQueryChips = (rule: IrRuleInstance, flags: string[], t: Trans
     ];
   }
   const entityType: IrQueryChip = { key: t('Entity type'), operator: '=', values: flagged, fromUser: false };
+  if (build.kind === 'filters') {
+    const count = countFilters(rule.value.filters);
+    return [entityType, { key: t('Advanced search criteria'), operator: '=', values: '', fromUser: true, ...(count > 0 ? { filterCount: count } : {}) }];
+  }
   if (build.kind === 'fixedFilter') return [entityType, ...fixedChips(build.filters, t)];
   const operator: IrQueryChip['operator'] = build.kind === 'entityFilter' && build.operator === 'gte' ? '≥' : '=';
   return [entityType, ...userChips(valueKeyLabel(def)).map((chip) => ({ ...chip, operator }))];
@@ -290,6 +299,12 @@ const buildParts = (def: IrPresetRule, value: IrPresetValue, flags: string[], gr
         filterGroup([filter('entity_type', ['User-Account']), filter('account_login', value.terms, 'ends_with')]),
         filterGroup([filter('entity_type', ['Credential']), filter('value', value.terms, 'contains')]),
       ]), flags);
+    case 'filters':
+      return {
+        criterion: { kind: 'attribute', target_types: flags, target_filters: value.filters },
+        condition: { filters: value.filters, link: null },
+        groups: [],
+      };
     case 'keywords': {
       if (!asCriterion) throw new Error('A keywords rule cannot be a condition of a group');
       const groupId = addGroup({ kind: 'keywords', role: 'entry', keywords: value.terms });

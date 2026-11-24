@@ -11,7 +11,7 @@ import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementC
 import IrTypeStep from './IrTypeStep';
 import IrRulesStep from './IrRulesStep';
 import IrPresetRulesReview from './IrPresetRulesReview';
-import { IR_PIR_TYPES, rulesForType, type IrPirType } from './irPresetRules';
+import { ADVANCED_RULE_KEY, IR_PIR_TYPES, rulesForType, type IrPirType } from './irPresetRules';
 import { defaultItemName, presetItemsToDraft, validatePresetItems, type IrPresetGeneral, type IrPresetItem } from './irPresetDraft';
 import { presetText } from './IrPresetItemCard';
 import { writeConfigView } from './irSentence';
@@ -19,7 +19,8 @@ import { writeConfigView } from './irSentence';
 // The items still possible with other flagged types (Threat custom): a rule that no longer fits goes,
 // so does a group left without rules; advanced search criteria go only when nothing is flagged anymore.
 const itemsForFlags = (items: IrPresetItem[], flags: string[]): IrPresetItem[] => {
-  const offered = new Set(rulesForType('threat_custom', flags).map((rule) => rule.key));
+  // advanced search criteria fit any flagged type
+  const offered = new Set([...rulesForType('threat_custom', flags).map((rule) => rule.key), ...(flags.length > 0 ? [ADVANCED_RULE_KEY] : [])]);
   return items.flatMap((item): IrPresetItem[] => {
     if (item.kind === 'rule') return offered.has(item.rule.ruleKey) ? [item] : [];
     if (item.kind === 'custom') return flags.length > 0 ? [item] : [];

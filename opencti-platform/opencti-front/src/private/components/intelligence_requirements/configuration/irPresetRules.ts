@@ -13,7 +13,7 @@ export interface IrPirTypeDefinition {
   enabled: boolean;
 }
 
-export type IrValueKind = 'none' | 'entities' | 'entitiesOrType' | 'vocabulary' | 'labels' | 'keywords' | 'text' | 'number' | 'containerTypes';
+export type IrValueKind = 'none' | 'entities' | 'entitiesOrType' | 'vocabulary' | 'labels' | 'keywords' | 'text' | 'number' | 'containerTypes' | 'filters';
 
 // direction follows the graph-criterion meaning:
 // incoming: the flagged entity is the source (malware -targets-> sector)
@@ -29,7 +29,8 @@ export type IrRuleBuild =
   | { kind: 'container' }
   | { kind: 'containerFixed'; filters: FilterGroup }
   | { kind: 'indicated' }
-  | { kind: 'domains' };
+  | { kind: 'domains' }
+  | { kind: 'filters' }; // advanced search criteria: the standard OpenCTI filters
 
 export interface IrPresetRule {
   key: string;
@@ -112,7 +113,11 @@ export const IR_PIR_TYPES: IrPirTypeDefinition[] = [
 
 const entityFilter = (key: string, operator: 'eq' | 'gte' = 'eq'): IrRuleBuild => ({ kind: 'entityFilter', key, operator });
 
+// Advanced search criteria inside a group. Outside a group, they are an item of their own (not a rule of the catalogue).
+export const ADVANCED_RULE_KEY = 'advanced';
+
 export const IR_PRESET_RULES: IrPresetRule[] = [
+  { key: ADVANCED_RULE_KEY, sentence: 'Advanced search criteria', verb: 'matching custom filters', value: 'filters', build: { kind: 'filters' }, appliesTo: 'any', pirTypes: 'all' },
   // shared rules
   { key: 'one-of', sentence: 'Is one of', verb: ':', value: 'entities', build: { kind: 'oneOf' }, appliesTo: 'any', pirTypes: 'all' },
   { key: 'has-label', sentence: 'Has the label', verb: 'labelled', value: 'labels', build: entityFilter('objectLabel'), appliesTo: 'any', pirTypes: 'all' },
@@ -418,6 +423,7 @@ const appliesToFlags = (rule: IrPresetRule, flags: string[]) => rule.appliesTo =
 // Rules offered for a PIR type: its own and the shared ones, narrowed to the flagged types.
 // Threat custom offers every rule that fits the chosen flags, whatever the type of the rule.
 export const rulesForType = (pirType: IrPirType, flags: string[]): IrPresetRule[] => IR_PRESET_RULES.filter((rule) => {
+  if (rule.key === ADVANCED_RULE_KEY) return false; // offered on its own, below the rules of the menus
   if (!appliesToFlags(rule, flags)) return false;
   if (pirType === 'threat_custom') return true;
   return rule.pirTypes === 'all' || rule.pirTypes.includes(pirType);

@@ -22,6 +22,34 @@ const targetsRule = { id: 'r2', ruleKey: 'targets', value: v({ entities: [fs] })
 const usesRule = { id: 'r3', ruleKey: 'uses', value: v({ entities: [ap('T1185'), ap('T1056.003'), ap('T1557')] }) };
 const general = { name: 'Banking malware', question: 'Which malware threatens our banking customers?', description: '', priority: 'high' as const };
 
+const advancedRule = { id: 'adv', ruleKey: 'advanced', value: v({ filters: JSON.stringify({ mode: 'and', filters: [{ key: ['confidence'], values: ['80'], operator: 'gte', mode: 'or' }], filterGroups: [] }) }) };
+
+describe('advanced search criteria in a group', () => {
+  it('names the group with them', () => {
+    expect(defaultItemName('malware', { id: 'g', kind: 'group', name: '', rules: [targetsRule, advancedRule] }, t))
+      .toBe('Malware targeting Financial services AND matching custom filters');
+  });
+  it('asks for filters when there are none', () => {
+    const group = { id: 'g', kind: 'group' as const, name: 'n', rules: [targetsRule, { ...advancedRule, value: emptyValue() }] };
+    expect(validatePresetItems([group])).toEqual([{ itemId: 'g', ruleId: 'adv', message: 'Add filters' }]);
+  });
+  it('makes them a filters condition of the criterion', () => {
+    const draft = presetItemsToDraft(general, 'malware', ['Malware'], [{ id: 'g', kind: 'group', name: 'n', rules: [targetsRule, advancedRule] }]);
+    expect(draft.criteria[0].conditions[0].filters).toBe(advancedRule.value.filters);
+    expect(draft.criteria[0].conditions[0].link).toBeNull();
+  });
+  it('makes them the criterion when they come first', () => {
+    const draft = presetItemsToDraft(general, 'malware', ['Malware'], [{ id: 'g', kind: 'group', name: 'n', rules: [advancedRule, targetsRule] }]);
+    expect(draft.criteria[0]).toMatchObject({ kind: 'attribute', target_types: ['Malware'], target_filters: advancedRule.value.filters });
+  });
+  it('shows them in the query', () => {
+    expect(presetQueryChips(advancedRule, ['Malware'], t)).toEqual([
+      { key: 'Entity type', operator: '=', values: 'Malware', fromUser: false },
+      { key: 'Advanced search criteria', operator: '=', values: '', fromUser: true, filterCount: 1 },
+    ]);
+  });
+});
+
 describe('default names', () => {
   it('writes the name from the rule and its values', () => {
     expect(defaultRuleName('malware', targetsRule, t)).toBe('Malware targeting Financial services');

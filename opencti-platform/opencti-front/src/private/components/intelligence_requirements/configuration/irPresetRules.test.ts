@@ -17,6 +17,10 @@ describe('rulesForType', () => {
     expect(rulesForType('threat_custom', ['Report']).map((r) => r.key)).toEqual(['one-of', 'has-label', 'mentions', 'in-container']);
     expect(rulesForType('threat_custom', ['IPv4-Addr', 'Sector']).map((r) => r.key)).toEqual(['one-of', 'has-label', 'mentions', 'in-container']);
   });
+  it('keeps advanced search criteria out of the rule lists: menus offer them on their own', () => {
+    expect(rulesForType('threat_custom', ['Malware']).map((r) => r.key)).not.toContain('advanced');
+    expect(rulesForGroup('malware', ['Malware']).map((r) => r.key)).not.toContain('advanced');
+  });
   it('offers no rule while nothing is flagged', () => {
     expect(rulesForType('threat_custom', [])).toEqual([]);
   });
