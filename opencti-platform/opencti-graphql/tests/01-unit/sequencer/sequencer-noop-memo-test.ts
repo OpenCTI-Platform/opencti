@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   isNoopOfServedBasis,
+  noopDatesHold,
   NoopMemo,
   NoopMemoDiag,
   noopMemoKey,
@@ -78,11 +79,22 @@ describe('noopMemoKey: eligibility and canonical input', () => {
   });
 
   it('should tell two dates apart (an object walk would read both as {})', () => {
-    const first = noopMemoKey(intentOf({ input: { created: new Date('2024-01-01T00:00:00.000Z') } }));
-    const second = noopMemoKey(intentOf({ input: { created: new Date('2025-01-01T00:00:00.000Z') } }));
+    const first = noopMemoKey(intentOf({ input: { first_seen: new Date('2024-01-01T00:00:00.000Z') } }));
+    const second = noopMemoKey(intentOf({ input: { first_seen: new Date('2025-01-01T00:00:00.000Z') } }));
     expect(first).not.toBeNull();
     expect(first).not.toEqual(second);
-    expect(noopMemoKey(intentOf({ input: { created: new Date('invalid') } }))).toBeNull();
+    expect(noopMemoKey(intentOf({ input: { first_seen: new Date('invalid') } }))).toBeNull();
+  });
+
+  it('should leave created and modified out of the key (connectors re-stamp them per bundle), unreadable ones refused', () => {
+    const plain = noopMemoKey(intentOf({ input: { name: 'Technology' } }));
+    const stamped = noopMemoKey(intentOf({ input: { name: 'Technology', created: '2026-11-03T09:51:00.218Z', modified: new Date('2026-11-03T09:51:00.218Z') } }));
+    const restamped = noopMemoKey(intentOf({ input: { name: 'Technology', created: '2026-11-03T09:51:03.608Z', modified: '2026-11-03T09:51:03.608Z' } }));
+    expect(plain).not.toBeNull();
+    expect(stamped).toEqual(plain);
+    expect(restamped).toEqual(plain);
+    expect(noopMemoKey(intentOf({ input: { name: 'Technology', created: 'not a date' } }))).toBeNull();
+    expect(noopMemoKey(intentOf({ input: { name: 'Technology', modified: new Date('invalid') } }))).toBeNull();
   });
 
   it('should key a complete create apart from a plain one (markings are created complete)', () => {
@@ -149,6 +161,30 @@ describe('noopRecordOf: what a no-op apply leaves to record', () => {
     const basis = { _index: 'idx', ...basisOf('i1', 'marking-definition--1') };
     const complete = { element: basis, isCreation: false, event: null };
     expect(noopRecordOf('k', basis, complete, tok('7:1'))).toMatchObject({ targetId: 'i1', result: complete });
+  });
+
+  it('should carry the target dates of the basis, null when empty or unreadable', () => {
+    const basis = { _index: 'idx', ...basisOf('i1', 'identity--1', { created: '2020-01-23T00:00:00.000Z', modified: '' }) };
+    expect(noopRecordOf('k', basis, basis, tok('7:1'))?.targetDates).toEqual({ created: Date.parse('2020-01-23T00:00:00.000Z'), modified: null });
+    const unreadable = { _index: 'idx', ...basisOf('i1', 'identity--1', { created: 'garbage' }) };
+    expect(noopRecordOf('k', unreadable, unreadable, tok('7:1'))?.targetDates).toEqual({ created: null, modified: null });
+  });
+});
+
+describe('noopDatesHold: the input dates cannot change the target', () => {
+  const dates = { created: Date.parse('2020-01-23T00:00:00.000Z'), modified: Date.parse('2020-02-01T00:00:00.000Z') };
+  it('should hold without dates, for a created no older than the target one, for any modified when the target has one', () => {
+    expect(noopDatesHold({ name: 'x' }, dates)).toBe(true);
+    expect(noopDatesHold({ created: '2020-01-23T00:00:00.000Z' }, dates)).toBe(true);
+    expect(noopDatesHold({ created: new Date('2026-11-03T09:51:00.000Z'), modified: '2026-11-03T09:51:00.000Z' }, dates)).toBe(true);
+    expect(noopDatesHold({ modified: '2019-01-01T00:00:00.000Z' }, dates)).toBe(true);
+  });
+
+  it('should not hold for an older created (the upsert keeps it), a date on a target without one, an unreadable date', () => {
+    expect(noopDatesHold({ created: '2019-12-31T23:59:59.999Z' }, dates)).toBe(false);
+    expect(noopDatesHold({ created: '2026-11-03T09:51:00.000Z' }, { ...dates, created: null })).toBe(false);
+    expect(noopDatesHold({ modified: '2026-11-03T09:51:00.000Z' }, { ...dates, modified: null })).toBe(false);
+    expect(noopDatesHold({ created: 'not a date' }, dates)).toBe(false);
   });
 });
 
@@ -290,6 +326,27 @@ describe('takeNoopMemoHits: settle only what can be nothing else', () => {
     const { hits } = await takeNoopMemoHits([repeat], memo, versionsOf, keys, new Set(['Label']));
     expect(hits).toEqual([]);
     expect(keys.has(repeat)).toBe(false);
+  });
+
+  it('should settle a re-stamped repeat whose dates cannot change the target, and keep the entry for one that can', async () => {
+    const memo = new NoopMemo(100);
+    const sector = (created: string) => intentOf({ type: 'Sector', input: { name: 'Technology', created, modified: created }, candidateIds: ['identity--1'] });
+    const key = noopMemoKey(sector('2026-11-03T09:51:00.218Z')) as string;
+    memo.record(recordOf(key, basisOf('i1', 'identity--1', { created: '2026-11-03T09:51:00.218Z', modified: '2026-11-03T09:51:00.218Z' })));
+    const { versionsOf } = versionsServer({ i1: '7:1' });
+    const restamped = sector('2026-11-03T09:51:03.608Z');
+    const first = await takeNoopMemoHits([restamped], memo, versionsOf, new WeakMap(), new Set(['Sector']));
+    expect(first.hits.map((h) => h.intent)).toEqual([restamped]);
+    const older = sector('2025-12-29T19:37:08.000Z');
+    const second = await takeNoopMemoHits([older], memo, versionsOf, new WeakMap(), new Set(['Sector']));
+    expect(second.hits).toEqual([]);
+    expect(second.rest).toEqual([older]);
+    expect(second.misses.datesChanged).toEqual(1);
+    expect(memo.get(key)).toBeDefined();
+    // in one batch, the older one may write the target: the re-stamped repeat is not settled either
+    const both = await takeNoopMemoHits([sector('2026-11-03T09:51:03.608Z'), sector('2025-12-29T19:37:08.000Z')], memo, versionsOf, new WeakMap(), new Set(['Sector']));
+    expect(both.hits).toEqual([]);
+    expect(both.misses.inBatchWriter).toEqual(1);
   });
 
   it('should key an ineligible intent nowhere and never settle it', async () => {

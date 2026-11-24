@@ -39,7 +39,7 @@ const tokenOf = (seqNo: number, source: Record<string, any> = { url: 'u' }): Noo
 
 const memoWith = (intent: SequencerIntent, targetId: string, token: NoopToken) => {
   const memo = new NoopMemo(10);
-  memo.record({ key: noopMemoKey(intent) as string, result: { internal_id: targetId }, targetId, targetIndex: 'idx', targetIds: [targetId], token });
+  memo.record({ key: noopMemoKey(intent) as string, result: { internal_id: targetId }, targetId, targetIndex: 'idx', targetIds: [targetId], token, targetDates: { created: null, modified: null } });
   return memo;
 };
 
@@ -59,10 +59,10 @@ describe('isLikelyNoop: the in-memory hint, no engine read', () => {
   it('should not move the entry in the LRU (a hint must not keep an entry the batch check would evict)', () => {
     const memo = new NoopMemo(2);
     const first = intentOf('first');
-    memo.record({ key: noopMemoKey(first) as string, result: {}, targetId: 'r1', targetIndex: 'idx', targetIds: ['r1'], token: tokenOf(1) });
-    memo.record({ key: noopMemoKey(intentOf('second')) as string, result: {}, targetId: 'r2', targetIndex: 'idx', targetIds: ['r2'], token: tokenOf(1) });
+    memo.record({ key: noopMemoKey(first) as string, result: {}, targetId: 'r1', targetIndex: 'idx', targetIds: ['r1'], token: tokenOf(1), targetDates: { created: null, modified: null } });
+    memo.record({ key: noopMemoKey(intentOf('second')) as string, result: {}, targetId: 'r2', targetIndex: 'idx', targetIds: ['r2'], token: tokenOf(1), targetDates: { created: null, modified: null } });
     expect(isLikelyNoop(first, memo, new Set(['External-Reference']))).toBe(true);
-    memo.record({ key: noopMemoKey(intentOf('third')) as string, result: {}, targetId: 'r3', targetIndex: 'idx', targetIds: ['r3'], token: tokenOf(1) });
+    memo.record({ key: noopMemoKey(intentOf('third')) as string, result: {}, targetId: 'r3', targetIndex: 'idx', targetIds: ['r3'], token: tokenOf(1), targetDates: { created: null, modified: null } });
     // the oldest one goes, read or not
     expect(memo.has(noopMemoKey(first) as string)).toBe(false);
   });

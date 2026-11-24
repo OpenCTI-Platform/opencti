@@ -1046,6 +1046,7 @@ const runBatchLoop = async () => {
       if (misses) {
         if (misses.ineligible > 0) sequencerMetrics.mapEvent('noop_memo_ineligible', misses.ineligible);
         if (misses.noEntry > 0) sequencerMetrics.mapEvent('noop_memo_no_entry', misses.noEntry);
+        if (misses.datesChanged > 0) sequencerMetrics.mapEvent('noop_memo_dates_changed', misses.datesChanged);
         if (misses.tokenChanged > 0) sequencerMetrics.mapEvent('noop_memo_token_changed', misses.tokenChanged);
         if (misses.inBatchWriter > 0) sequencerMetrics.mapEvent('noop_memo_inbatch_writer', misses.inBatchWriter);
         if (misses.hashMatches > 0) sequencerMetrics.mapEvent('noop_memo_hash_match', misses.hashMatches);

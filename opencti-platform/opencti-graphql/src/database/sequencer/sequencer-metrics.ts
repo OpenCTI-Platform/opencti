@@ -10,7 +10,7 @@ export type IntentOutcome = 'applied' | 'coalesced' | 'parked' | 'expired' | 'fa
 export type BatchPhase = 'resolve' | 'order' | 'apply' | 'commit' | 'events' | 'resolve_ahead' | 'resolve_locked'
   | 'locked_recheck' | 'locked_bases' | 'locked_dedup' | 'locked_relation_bases';
 export type MapEvent = 'hit' | 'miss' | 'evict' | 'invalidate' | 'absent' | 'written_hit' | 'written_shielded' | 'recheck_conflict' | 'lock_retry' | 'apply_lock_retry' | 'apply_merged_endpoint'
-  | 'noop_memo_ineligible' | 'noop_memo_no_entry' | 'noop_memo_token_changed' | 'noop_memo_inbatch_writer' | 'noop_memo_recorded' | 'noop_memo_record_dropped'
+  | 'noop_memo_ineligible' | 'noop_memo_no_entry' | 'noop_memo_dates_changed' | 'noop_memo_token_changed' | 'noop_memo_inbatch_writer' | 'noop_memo_recorded' | 'noop_memo_record_dropped'
   | 'noop_memo_seen' | 'noop_memo_basis_mismatch' | 'noop_memo_first_of_type' | 'noop_memo_stripped' | 'noop_memo_no_version' | 'noop_memo_unkeyed' | 'noop_memo_hash_match'
   | 'noop_tagged' | 'noop_tag_miss'
   | 'dedup_before_lock' | 'dedup_stamp_changed' | 'dedup_stamps_outlived' | 'dedup_research' | 'partial_acquire' | 'partial_carried_groups';

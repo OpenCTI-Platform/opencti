@@ -21,6 +21,9 @@
 // draft (the map never serves a draft), without a replay context (eventId, synchronizedUpsert:
 // their freshness checks read more than the basis), whose input is plain data without data URIs
 // (files and embedded images have side effects even when the patch is empty).
+// Dates (2026-11-24): connectors re-stamp `created` / `modified` of shared entities (sectors, countries,
+// malware) in every bundle, which made every key unique (0 hits). The key leaves them out; a hit also
+// needs the input's dates unable to change the target (noopDatesHold).
 import { createHash } from 'node:crypto';
 import { getInstanceIds } from '../../schema/identifier';
 import { getDraftContext } from '../../utils/draftContext';
@@ -40,12 +43,19 @@ export interface NoopTarget {
 // The current tokens of the targets by internal id, a target not found is absent
 export type NoopVersionsOf = (targets: NoopTarget[]) => Promise<Map<string, NoopToken>>;
 
+// The target's `created` / `modified` in epoch ms, null when empty or unreadable
+export interface NoopTargetDates {
+  created: number | null;
+  modified: number | null;
+}
+
 export interface NoopMemoEntry {
   result: any;
   targetId: string;
   targetIndex: string;
   targetIds: string[];
   token: NoopToken;
+  targetDates: NoopTargetDates;
 }
 
 // A no-op seen at apply, recorded at commit if its target kept the token read before its basis
@@ -102,7 +112,19 @@ export const noopTokenOf = (seqNo: number, primaryTerm: number, source: unknown)
 export const sameNoopToken = (current: NoopToken | undefined, recorded: NoopToken): boolean => current !== undefined
   && (current.version === recorded.version || current.hash === recorded.hash);
 
-// The memo key of an intent, null when it is not eligible
+// The dates the upsert aligns instead of copying (utils/upsert-utils.js): `created` kept only when
+// older than the stored one, `modified` not an upsert attribute (it only fills an empty value)
+const NOOP_KEY_DATE_FIELDS = ['created', 'modified'];
+
+// epoch ms of a date input or stored value, null when empty, NaN when unreadable
+const dateMs = (value: unknown): number | null => {
+  if (value === null || value === undefined || value === '') return null;
+  if (value instanceof Date) return value.getTime();
+  return typeof value === 'string' ? Date.parse(value) : Number.NaN;
+};
+
+// The memo key of an intent, null when it is not eligible. The dates are left out of the key
+// (noopDatesHold checks them at hit time) but an unreadable one still makes the intent ineligible.
 export const noopMemoKey = (intent: SequencerIntent): string | null => {
   if (intent.kind !== 'entity') return null;
   const optKeys = Object.keys(intent.opts ?? {});
@@ -110,8 +132,27 @@ export const noopMemoKey = (intent: SequencerIntent): string | null => {
   const complete = intent.opts?.complete === true;
   if (intent.context?.eventId || intent.context?.synchronizedUpsert) return null;
   if (getDraftContext(intent.context, intent.user)) return null;
-  const input = canonicalInput(intent.input);
+  const source = intent.input as Record<string, unknown> | null | undefined;
+  if (source && NOOP_KEY_DATE_FIELDS.some((field) => Number.isNaN(dateMs(source[field])))) return null;
+  const keyed = source && typeof source === 'object' && NOOP_KEY_DATE_FIELDS.some((field) => field in source)
+    ? Object.fromEntries(Object.entries(source).filter(([field]) => !NOOP_KEY_DATE_FIELDS.includes(field)))
+    : source;
+  const input = canonicalInput(keyed);
   return input === null ? null : `${intent.user.id}|${intent.type}|${complete ? 'c' : ''}|${input}`;
+};
+
+// The input's dates cannot change the target: a `created` no older than the target's (the upsert
+// keeps the oldest), a `modified` only when the target has one (otherwise the upsert fills it)
+export const noopDatesHold = (input: Record<string, unknown> | null | undefined, dates: NoopTargetDates): boolean => {
+  const created = dateMs(input?.created);
+  if (created !== null && (dates.created === null || Number.isNaN(created) || created < dates.created)) return false;
+  const modified = dateMs(input?.modified);
+  return modified === null || dates.modified !== null;
+};
+
+const storedDateMs = (value: unknown): number | null => {
+  const ms = dateMs(value);
+  return ms === null || Number.isNaN(ms) ? null : ms;
 };
 
 // The record of a no-op apply against `basis`, null without a token read before the basis. A
@@ -119,7 +160,8 @@ export const noopMemoKey = (intent: SequencerIntent): string | null => {
 export const noopRecordOf = (key: string, basis: any, result: any, token: NoopToken | undefined): NoopRecord | null => {
   const targetId = (result?.element ?? result)?.internal_id;
   if (token === undefined || typeof targetId !== 'string' || targetId !== basis?.internal_id || typeof basis._index !== 'string') return null;
-  return { key, result, targetId, targetIndex: basis._index, targetIds: getInstanceIds(basis), token };
+  const targetDates = { created: storedDateMs(basis.created), modified: storedDateMs(basis.modified) };
+  return { key, result, targetId, targetIndex: basis._index, targetIds: getInstanceIds(basis), token, targetDates };
 };
 
 // LRU bounded
@@ -251,6 +293,7 @@ export interface NoopMemoHit {
 export interface NoopMemoMisses {
   ineligible: number;
   noEntry: number;
+  datesChanged: number; // the entry stays: the input's dates would change the target, not the target itself
   tokenChanged: number;
   inBatchWriter: number;
   hashMatches: number; // not a miss: candidates kept on the source hash, the version had moved
@@ -272,7 +315,7 @@ export const takeNoopMemoHits = async (
   keyedTypes: Set<string>,
   onOutcome?: (intent: SequencerIntent, outcome: NoopDiagOutcome, key: string | null) => void,
 ): Promise<{ hits: NoopMemoHit[]; rest: SequencerIntent[]; misses: NoopMemoMisses }> => {
-  const misses: NoopMemoMisses = { ineligible: 0, noEntry: 0, tokenChanged: 0, inBatchWriter: 0, hashMatches: 0 };
+  const misses: NoopMemoMisses = { ineligible: 0, noEntry: 0, datesChanged: 0, tokenChanged: 0, inBatchWriter: 0, hashMatches: 0 };
   const candidates = new Map<SequencerIntent, { key: string; entry: NoopMemoEntry }>();
   batch.forEach((intent) => {
     // a key costs a walk of the input: only for the types an apply already ended as a no-op
@@ -285,7 +328,10 @@ export const takeNoopMemoHits = async (
     }
     keys.set(intent, key);
     const entry = memo.get(key);
-    if (entry) {
+    if (entry && !noopDatesHold(intent.input, entry.targetDates)) {
+      misses.datesChanged += 1;
+      onOutcome?.(intent, 'dates_changed', key);
+    } else if (entry) {
       candidates.set(intent, { key, entry });
     } else {
       misses.noEntry += 1;
@@ -329,7 +375,7 @@ export const takeNoopMemoHits = async (
 // task 0040 diagnosis (contention_diag): per entity type, what happened to the memo's intents and how
 // many distinct keys they carry. Distinct keys close to the intent count means inputs that vary per
 // occurrence (nothing to memoize); far below it with many no_entry means records that do not land.
-export type NoopDiagOutcome = 'ineligible' | 'no_entry' | 'token_changed' | 'inbatch_writer' | 'hit'
+export type NoopDiagOutcome = 'ineligible' | 'no_entry' | 'dates_changed' | 'token_changed' | 'inbatch_writer' | 'hit'
   | 'applied_noop' | 'applied_write' | 'applied_create' | 'recorded' | 'dropped_written' | 'dropped_version';
 
 // FNV-1a: the diagnosis counts distinct keys without holding them
