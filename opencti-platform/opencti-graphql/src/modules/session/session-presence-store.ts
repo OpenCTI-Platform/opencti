@@ -22,11 +22,13 @@ local now = tonumber(time[1]) * 1000 + math.floor(tonumber(time[2]) / 1000)
 // KEYS: leases, closing, origin, check_at. ARGV: lease ttl, keys ttl, grace period, origin (empty to keep it), connection ids...
 // Refused while the session is being logged out. The deadline of the session is only pushed forward, to the end of
 // the grace period following its leases. Returns that deadline, -1 when refused.
+// The expired leases are purged first: those left by a crashed node do not pile up while other tabs keep the session.
 const SAVE_LEASES_SCRIPT = `
 if redis.call('EXISTS', KEYS[2]) == 1 then
   return -1
 end
 ${REDIS_NOW}
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', now)
 local expiry = now + tonumber(ARGV[1])
 for i = 5, #ARGV do
   redis.call('ZADD', KEYS[1], expiry, ARGV[i])

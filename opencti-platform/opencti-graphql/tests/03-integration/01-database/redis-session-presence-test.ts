@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { getClientBase } from '../../../src/database/redis';
 import {
   checkSessionLeases,
   findDueSessions,
@@ -71,6 +72,15 @@ describe('Redis session presence', () => {
 
     await wait(150);
     expect((await checkSessionLeases(sessionId, 1000, 100)).isAlive).toBe(false);
+  });
+
+  it('should purge the expired leases when leases are written', async () => {
+    const sessionId = newSessionId();
+    await saveSessionLeases(sessionId, ['crashed-node-connection'], 50, KEYS_TTL, 0);
+    await wait(100);
+
+    await saveSessionLeases(sessionId, ['connection-1'], 60000, KEYS_TTL, 0);
+    expect(await getClientBase().zrange(`session_presence:{${sessionId}}:leases`, 0, -1)).toEqual(['connection-1']);
   });
 
   it('should refuse new leases while the session is being logged out', async () => {

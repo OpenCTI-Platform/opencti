@@ -57,6 +57,7 @@ const store = vi.hoisted(() => {
     hasLiveLease: (sessionId: string, connectionId: string) => (leases.get(sessionId)?.get(connectionId) ?? 0) > now(),
     saveSessionLeases: vi.fn(async (sessionId: string, connectionIds: string[], leaseTtl: number, _keysTtl: number, gracePeriod: number, origin?: unknown) => {
       if ((closing.get(sessionId) ?? 0) > now()) return undefined;
+      purgeExpiredLeases(sessionId);
       const expiry = now() + leaseTtl;
       const sessionLeases = leases.get(sessionId) ?? new Map<string, number>();
       connectionIds.forEach((connectionId) => sessionLeases.set(connectionId, expiry));
