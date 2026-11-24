@@ -36,7 +36,25 @@ export default class ContainerAddObservablesPage {
     return this.page.getByRole('button', { name: observableName });
   }
 
+  getPanel() {
+    return this.page.getByRole('dialog', { name: 'Add observables' });
+  }
+
+  // Scoped to the panel: the success message has a Close button too
   getCloseObservablesListButton() {
-    return this.page.getByRole('button', { name: 'Close' });
+    return this.getPanel().getByRole('button', { name: 'Close' });
+  }
+
+  // The confirmation shown once a created object is added to the container
+  getAddedMessage() {
+    return this.page.getByRole('status');
+  }
+
+  getUndoButton() {
+    return this.page.getByRole('button', { name: 'Undo', exact: true });
+  }
+
+  getCloseMessageButton() {
+    return this.page.getByRole('alert').getByRole('button', { name: 'Close', exact: true });
   }
 }
