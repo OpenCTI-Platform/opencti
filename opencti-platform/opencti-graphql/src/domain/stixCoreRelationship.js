@@ -18,7 +18,8 @@ import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filt
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 import { paginatedForExportContext } from '../modules/internal/document/document-domain';
-import { shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverage-utils';
+import { removeHasCoveredForRemovedEntities, shouldHandleHasCoveredRel, transformHasCoveredFromId } from '../modules/securityCoverage/securityCoverage-utils';
+import { COVERED_ENTITIES_TYPE, SECURITY_COVERAGE_SCOPE_RELATION_TARGETS, SECURITY_COVERAGE_SCOPE_RELATIONS } from '../modules/securityCoverage/securityCoverage-domain';
 
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
@@ -113,9 +114,29 @@ export const addStixCoreRelationship = async (context, user, stixCoreRelationshi
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 
+const cleanupSecurityCoverageOnRelationDelete = async (context, relationshipType, from, to) => {
+  // Only a relationship the assessed scope follows can change it (same definition as securityCoverageStixBundle).
+  // Other targets are never sent to OpenAEV: skipping them avoids useless lookups on every deletion.
+  if (
+    !(SECURITY_COVERAGE_SCOPE_RELATIONS.includes(relationshipType))
+    || !SECURITY_COVERAGE_SCOPE_RELATION_TARGETS.includes(to.entity_type)
+    || !COVERED_ENTITIES_TYPE.includes(from.entity_type)) {
+    return;
+  }
+
+  // If all conditions are met, call the cleanup function to remove has-covered relationships if any
+  await removeHasCoveredForRemovedEntities(context, from.internal_id, [to.internal_id]);
+};
+
 export const stixCoreRelationshipDelete = async (context, user, stixCoreRelationshipId) => {
   const stixCoreRelationship = await findById(context, user, stixCoreRelationshipId);
   await deleteElementById(context, user, stixCoreRelationshipId, stixCoreRelationship.relationship_type);
+  await cleanupSecurityCoverageOnRelationDelete(
+    context,
+    stixCoreRelationship.relationship_type,
+    { internal_id: stixCoreRelationship.fromId, entity_type: stixCoreRelationship.fromType },
+    { internal_id: stixCoreRelationship.toId, entity_type: stixCoreRelationship.toType },
+  );
   return stixCoreRelationshipId;
 };
 
@@ -123,7 +144,9 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromI
   if (!isStixCoreRelationship(relationshipType)) {
     throw FunctionalError(`Only stix-core-relationship can be deleted through this method, not ${relationshipType}.`);
   }
-  await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  // from and to are returned resolved, whatever kind of ids the caller gave.
+  const { from, to } = await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  await cleanupSecurityCoverageOnRelationDelete(context, relationshipType, from, to);
   return true;
 };
 

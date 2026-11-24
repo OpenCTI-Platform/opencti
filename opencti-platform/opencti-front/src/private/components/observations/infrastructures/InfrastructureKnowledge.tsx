@@ -12,15 +12,26 @@ import { InfrastructureKnowledge_infrastructure$key } from './__generated__/Infr
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const INFRASTRUCTURE_OBSERVABLES_RELATIONSHIP_TYPES = [
+  'communicates-with',
+  'consists-of',
+  'related-to',
+  'technology-from',
+  'technology-to',
+  'technology',
+];
+
 const infrastructureKnowledgeFragment = graphql`
-  fragment InfrastructureKnowledge_infrastructure on Infrastructure {
+  fragment InfrastructureKnowledge_infrastructure on Infrastructure
+  @argumentDefinitions(observablesFilters: { type: "FilterGroup" }) {
     id
     name
     aliases
     first_seen
     last_seen
     entity_type
-    ...StixCoreObjectKnowledgeBar_stixCoreObject
+    ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
   }
 `;
 
@@ -38,6 +49,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
       <StixCoreObjectKnowledgeBar
         stixCoreObjectLink={link}
         data={infrastructureData}
+        observablesRelationshipTypes={INFRASTRUCTURE_OBSERVABLES_RELATIONSHIP_TYPES}
         availableSections={[
           'threats',
           'threat_actors',
@@ -163,14 +175,7 @@ const InfrastructureKnowledge = ({ infrastructure }: { infrastructure: Infrastru
               entityLink={link}
               defaultStartTime={infrastructureData.first_seen}
               defaultStopTime={infrastructureData.last_seen}
-              relationshipTypes={[
-                'communicates-with',
-                'consists-of',
-                'related-to',
-                'technology-from',
-                'technology-to',
-                'technology',
-              ]}
+              relationshipTypes={INFRASTRUCTURE_OBSERVABLES_RELATIONSHIP_TYPES}
               isRelationReversed={false}
             />
           )}

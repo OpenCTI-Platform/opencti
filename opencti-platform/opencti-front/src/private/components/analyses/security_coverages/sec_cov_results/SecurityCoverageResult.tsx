@@ -14,7 +14,10 @@ import IconButton from '@common/button/IconButton';
 import { InfoOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { useComputeLink } from '../../../../../utils/hooks/useAppData';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { resolveTypesForRelationship } from '../../../../../utils/Relation';
 import SecurityCoverageResultFormDrawer from './SecurityCoverageResultFormDrawer';
+import { buildSecurityCoverageResultSearchFilters } from './SecurityCoverageResult-utils';
 import {
   SecurityCoverageResultLinesPaginationQuery,
   SecurityCoverageResultLinesPaginationQuery$variables,
@@ -273,7 +276,11 @@ const SecurityCoverageResultComponent = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const computeLink = useComputeLink();
+  const { schema } = useAuth();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
+  // the tested entities are the targets of has-covered, as defined by the relationships schema
+  const testedEntityTypes = resolveTypesForRelationship(schema.schemaRelationsTypesMapping, 'has-covered', 'to', 'Security-Coverage-Result');
+  const resultIds = (results ?? []).map((r) => r.id);
   const LOCAL_STORAGE_KEY = `container-${id}-security-coverage-result`;
   const initialValues = {
     filters: { ...emptyFilterGroup },
@@ -302,7 +309,7 @@ const SecurityCoverageResultComponent = ({
     filters: [
       {
         key: 'fromOrToId',
-        values: (results ?? []).map((r) => r.id),
+        values: resultIds,
         operator: 'eq',
         mode: 'or',
       },
@@ -363,12 +370,14 @@ const SecurityCoverageResultComponent = ({
             setNumberOfElements: storageHelpers.handleSetNumberOfElements,
           } as UsePreloadedPaginationFragment<SecurityCoverageResultLinesPaginationQuery>}
           entityTypes={['stix-core-relationship']}
-          availableFilterKeys={['toTypes']}
+          availableFilterKeys={['coverage_information', 'fromId', 'toId', 'toTypes', 'updated_at']}
+          availableRelationFilterTypes={{ fromId: ['Security-Coverage-Result'], toId: testedEntityTypes, toTypes: testedEntityTypes }}
           resolvePath={(data: SecurityCoverageResultLines_data$data) => data.securityCoverage?.stixCoreRelationshipsFromResults?.edges?.map((n) => n?.node)}
           dataColumns={dataColumns}
           getComputeLink={(node) => computeLink({ ...node, from: undefined })}
           exportContext={{ entity_id: id, entity_type: 'stix-core-relationship' }}
           contextFilters={contextFilters}
+          searchContextFinal={{ entityTypes: ['stix-core-relationship'], searchFilters: buildSecurityCoverageResultSearchFilters(resultIds) }}
           rootRef={tableRootRef ?? undefined}
           additionalHeaderButtons={[
             <SecurityCoverageResultFormDrawer

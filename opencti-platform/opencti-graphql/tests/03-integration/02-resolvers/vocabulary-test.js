@@ -104,6 +104,14 @@ describe('Vocabulary resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
     expect(queryResult.data).not.toBeNull();
   });
+  it('should list vocabularies by their configured order when the ordering is null', async () => {
+    const queryResult = await queryAsAdminWithSuccess({
+      query: LIST_QUERY,
+      variables: { category: 'opinion_ov', first: 50, orderBy: null, orderMode: null },
+    });
+    const names = queryResult.data.vocabularies.edges.map(({ node }) => node.name);
+    expect(names).toEqual(['strongly-disagree', 'disagree', 'neutral', 'agree', 'strongly-agree']);
+  });
   it('should update vocabulary', async () => {
     let queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,

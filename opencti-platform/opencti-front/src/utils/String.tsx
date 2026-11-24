@@ -148,6 +148,15 @@ export const uniqWithByFields = <T extends Record<string, unknown>>(fields: (key
 
 export const capitalizeFirstLetter = (str: string): string => str.charAt(0).toUpperCase() + str.slice(1);
 
+/**
+ * Lower cases a string and removes its accents (diacritics), e.g. "Éléphant" gives "elephant".
+ * Used to compare strings case and accent insensitively.
+ */
+export const removeAccentsAndLowerCase = (value: string): string => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase();
+
 export const capitalizeWords = (str: string): string => str.split(' ').map(capitalizeFirstLetter).join(' ');
 
 export const toCamelCase = (str: string): string => {

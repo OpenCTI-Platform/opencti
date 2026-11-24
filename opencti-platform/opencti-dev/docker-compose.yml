@@ -14,7 +14,7 @@ services:
       - 5540:5540
   opencti-dev-elasticsearch:
     container_name: opencti-dev-elasticsearch
-    image: elasticsearch:8.19.25@sha256:ef44866274bd7cb2c644f4f6657ce0832819f662adb66b2769d0ba5dabad77d6
+    image: elasticsearch:8.19.25@sha256:d609f45c5b8ac4f97090d4029520a256581c8f0b70b6cc28aa82255aa98b9bec
     volumes:
       - esdata:/usr/share/elasticsearch/data
       - essnapshots:/usr/share/elasticsearch/snapshots
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: kibana:8.19.25@sha256:1ea7dd43dbd5d41a5dcaffcddf611ffd0bd75e2c71b63d9adf1081ecb621a18f
+    image: kibana:8.19.25@sha256:f0a187a94c3e8bfad1d08c2df95107f5ba5cc87059990f67f7e2693cc652cee6
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped

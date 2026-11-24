@@ -20,6 +20,12 @@ export const isUnsecureHttpResourceAllowed = () => {
   return IS_HTTP_ALLOWED;
 };
 
+// The script snippet is inline HTML: the CSP allows inline scripts only when a snippet is configured.
+const IS_SCRIPT_SNIPPET_CONFIGURED: boolean = (nconf.get('app:script_snippet')?.trim() ?? '') !== '';
+export const isScriptSnippetConfigured = () => {
+  return IS_SCRIPT_SNIPPET_CONFIGURED;
+};
+
 // upgrade-insecure-requests also makes the browser load the platform's own resources over HTTPS,
 // which breaks a platform served over plain HTTP: only an explicit app:allow_unsecure_http_resources=false sends it, not the switch.
 const UPGRADE_INSECURE_REQUESTS: boolean = !booleanConf('app:allow_unsecure_http_resources', true);

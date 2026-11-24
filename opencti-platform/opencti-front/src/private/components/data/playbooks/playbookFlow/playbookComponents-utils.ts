@@ -13,6 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
+import { removeAccentsAndLowerCase } from '../../../../../utils/String';
 import type { PlaybookCategory } from './__generated__/PlaybookFlow_playbookComponents.graphql';
 import { PlaybookBundleElementsToApply, type PlaybookComponent, type PlaybookComponentConfigSchema, type PlaybookComponents, type PlaybookConfig } from '../types/playbook-types';
 import type { PlaybookFlowFormData } from './PlaybookFlowForm';
@@ -51,20 +52,18 @@ export function groupAndSortPlaybookComponents(
 
 // Keyboard-first palette: keep the components whose translated name or description holds every word
 // of the search, case and accent insensitive. An empty search keeps every group as it is.
-const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
 export function filterPlaybookComponentGroups(
   groups: PlaybookComponentGroup[],
   search: string,
   translate: (value: string) => string = (value) => value,
 ): PlaybookComponentGroup[] {
-  const words = normalize(search).split(/\s+/).filter((word) => word.length > 0);
+  const words = removeAccentsAndLowerCase(search).split(/\s+/).filter((word) => word.length > 0);
   if (words.length === 0) return groups;
   return groups
     .map(({ category, items }) => ({
       category,
       items: items.filter((component) => {
-        const haystack = normalize(`${translate(component.name)} ${translate(component.description ?? '')} ${component.name}`);
+        const haystack = removeAccentsAndLowerCase(`${translate(component.name)} ${translate(component.description ?? '')} ${component.name}`);
         return words.every((word) => haystack.includes(word));
       }),
     }))

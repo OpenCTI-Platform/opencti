@@ -5,7 +5,7 @@ import path from 'node:path';
 import {
   ADMIN_USER,
   ADMIN_API_TOKEN,
-  createHttpClient,
+  createTokenHttpClient,
   DATA_FILE_TEST,
   executeExternalQuery,
   SYNC_LIVE_EVENTS_SIZE,
@@ -81,7 +81,7 @@ const restoreFile = async () => {
 };
 
 export const syncRestore = async () => {
-  const client = createHttpClient();
+  const client = createTokenHttpClient(ADMIN_API_TOKEN);
   // Pre check
   const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
   // Create the backup

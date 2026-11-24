@@ -8,6 +8,9 @@ import { RegionKnowledge_region$key } from './__generated__/RegionKnowledge_regi
 import useAuth from '../../../../utils/hooks/useAuth';
 import { getRelationshipTypesForEntityType } from '../../../../utils/Relation';
 
+// Relationship types listed by the Observables view, also counted by the knowledge bar (#19499)
+export const REGION_OBSERVABLES_RELATIONSHIP_TYPES = ['related-to', 'located-at'];
+
 const regionKnowledgeFragment = graphql`
   fragment RegionKnowledge_region on Region {
     id
@@ -280,7 +283,7 @@ const RegionKnowledgeComponent = ({
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={region.id}
-              relationshipTypes={['related-to', 'located-at']}
+              relationshipTypes={REGION_OBSERVABLES_RELATIONSHIP_TYPES}
               stixCoreObjectTypes={['Stix-Cyber-Observable']}
               entityLink={link}
               allDirections={true}
