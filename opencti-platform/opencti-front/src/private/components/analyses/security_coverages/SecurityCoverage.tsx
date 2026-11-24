@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef, useState, useTransition } from 'react';
+import React, { Suspense, useEffect, useState, useTransition } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
@@ -16,7 +16,7 @@ import SecurityCoverageTestedEntitiesChart from './SecurityCoverageTestedEntitie
 import SecurityCoverageMainInfo from './SecurityCoverageMainInfo';
 import SecurityCoverageResultSelector from './SecurityCoverageResultSelector';
 import { SecurityCoverageScopedQuery } from './__generated__/SecurityCoverageScopedQuery.graphql';
-import { buildResultOptions, buildResultScopeVariables, buildScopeRefreshKey, resolveSelectedResult } from './securityCoverageResultScope';
+import { buildResultOptions, buildResultScopeVariables, resolveSelectedResult } from './securityCoverageResultScope';
 
 const securityCoverageKillChainsQuery = graphql`
   query SecurityCoverageKillChainsQuery {
@@ -106,7 +106,6 @@ const securityCoverageFragment = graphql`
       id
       name
       external_uri
-      coverage_last_result
     }
     ...SecurityCoverageMainInfo_securityCoverage
     ...SecurityCoverageTestedEntitiesChart_securityCoverage
@@ -172,8 +171,6 @@ const SecurityCoverageComponent = ({
   const securityCoverageResults = securityCoverage.results ?? [];
   const isSelectedResultGone = selectedResultId !== null
     && resolveSelectedResult(securityCoverageResults, selectedResultId) === null;
-  const refreshKey = buildScopeRefreshKey(securityCoverage.updated_at, securityCoverageResults);
-  const lastRefreshKey = useRef(refreshKey);
 
   // What the content shows follows the query that is committed, not the menu: the menu answers at once,
   // the main info and the widgets switch together when the data of the new selection has arrived.
@@ -204,20 +201,6 @@ const SecurityCoverageComponent = ({
       disposeScopedQuery();
     }
   }, [isSelectedResultGone, disposeScopedQuery]);
-
-  // The subscription pushed an update of the coverage or of one of its results: refetch the selected result.
-  useEffect(() => {
-    if (lastRefreshKey.current === refreshKey) return;
-    lastRefreshKey.current = refreshKey;
-    if (selectedResultId && !isSelectedResultGone) {
-      startTransition(() => {
-        loadScopedQuery(
-          buildResultScopeVariables(securityCoverage.id, selectedResultId),
-          { fetchPolicy: 'network-only' },
-        );
-      });
-    }
-  }, [refreshKey, selectedResultId, isSelectedResultGone, securityCoverage.id, loadScopedQuery]);
 
   const widgetSx = { opacity: isPending ? 0.6 : 1, pointerEvents: isPending ? 'none' : 'auto' };
   return (

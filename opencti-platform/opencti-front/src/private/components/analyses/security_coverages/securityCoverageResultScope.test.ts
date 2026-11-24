@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ALL_RESULTS_VALUE, buildResultOptions, buildResultScopeVariables, buildScopeRefreshKey, resolveSelectedResult, toResultId } from './securityCoverageResultScope';
+import { ALL_RESULTS_VALUE, buildResultOptions, buildResultScopeVariables, resolveSelectedResult, toResultId } from './securityCoverageResultScope';
 
 describe('securityCoverageResultScope', () => {
   const paris = { id: 'scr-paris', name: 'OAEV Paris', external_uri: 'https://paris' };
@@ -53,20 +53,5 @@ describe('securityCoverageResultScope', () => {
       filters: { mode: 'and', filters: [{ key: ['fromId'], values: ['scr-paris'], operator: 'eq', mode: 'or' }], filterGroups: [] },
       fromId: ['scr-paris'],
     });
-  });
-  it('changes the refresh key when the coverage or one of its results is updated', () => {
-    const base = buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris', coverage_last_result: '2026-11-18T10:00:00Z' }]);
-    expect(buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris', coverage_last_result: '2026-11-18T10:00:00Z' }])).toBe(base);
-    expect(buildScopeRefreshKey('2026-11-19T11:00:00Z', [{ id: 'scr-paris', coverage_last_result: '2026-11-18T10:00:00Z' }])).not.toBe(base);
-    expect(buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris', coverage_last_result: '2026-11-19T09:00:00Z' }])).not.toBe(base);
-    expect(buildScopeRefreshKey('2026-11-19T10:00:00Z', [])).not.toBe(base);
-  });
-  it('gives the same refresh key for a null and an undefined last result', () => {
-    expect(buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris', coverage_last_result: null }]))
-      .toBe(buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris' }]));
-  });
-  it('changes the refresh key when a result is removed', () => {
-    const both = buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris' }, { id: 'scr-lyon' }]);
-    expect(buildScopeRefreshKey('2026-11-19T10:00:00Z', [{ id: 'scr-paris' }])).not.toBe(both);
   });
 });

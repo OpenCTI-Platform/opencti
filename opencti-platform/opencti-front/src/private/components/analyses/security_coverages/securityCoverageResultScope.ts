@@ -67,15 +67,3 @@ export const buildResultScopeVariables = (securityCoverageId: string, securityCo
   }),
   fromId: [securityCoverageResultId],
 });
-
-/**
- * Changes whenever the subscription pushes an update of the coverage or of one of its security coverage results,
- * so that the query of the selected result can be refetched.
- */
-export const buildScopeRefreshKey = (
-  updatedAt: string | null | undefined,
-  securityCoverageResults: ReadonlyArray<{ readonly id: string; readonly coverage_last_result?: string | null }>,
-): string => {
-  const securityCoverageResultsKey = securityCoverageResults.map((securityCoverageResult) => `${securityCoverageResult.id}:${securityCoverageResult.coverage_last_result ?? ''}`).join('|');
-  return `${updatedAt ?? ''}#${securityCoverageResultsKey}`;
-};
