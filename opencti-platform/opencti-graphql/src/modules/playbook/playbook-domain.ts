@@ -44,9 +44,11 @@ import {
   assertNodeConfigurationIsComplete,
   checkPlaybookFiltersAndBuildConfigWithCorrectFilters,
   deleteLinksAndAllChildren,
+  parsePlaybookDefinition,
+  parsePlaybookNodeInputConfiguration,
   updateImportedPlaybookDefinitionScope,
 } from './playbook-utils';
-import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
+import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, type RunAsConfiguration, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -255,21 +257,26 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
   return JSON.stringify(definition);
 };
 
-// Enforce the AI-agent `run_as` guardrail on a node configuration: the
-// agent runs on behalf of the configured user, so only the author
-// themselves or a service account may be selected. Components without a
-// `run_as` value are a no-op (see assertRunAsUserAllowed). The
-// configuration can be a raw client-provided JSON string (insert path),
-// so a parse failure is treated as "no run_as" rather than throwing here.
-const validateNodeRunAs = async (context: AuthContext, user: AuthUser, configuration?: string | null) => {
-  if (!configuration) return;
-  let parsed: { run_as?: string | { label?: string; value?: string } | null };
-  try {
-    parsed = JSON.parse(configuration);
-  } catch {
-    return;
-  }
-  await assertRunAsUserAllowed(context, user, parsed.run_as);
+/**
+ * Check the configuration of a node sent by the add, replace and insert node
+ * mutations, parsing it once: valid JSON, filters accepted by the component,
+ * and the AI-agent `run_as` guardrail (the agent runs on behalf of the
+ * configured user, so only the author themselves or a service account may be
+ * selected; a configuration without `run_as` passes).
+ *
+ * @param context Auth context.
+ * @param user User saving the node.
+ * @param input Node input.
+ * @returns The parsed configuration, and the stringified configuration to store.
+ */
+const prepareNodeConfiguration = async (context: AuthContext, user: AuthUser, input: PlaybookAddNodeInput) => {
+  const config = parsePlaybookNodeInputConfiguration(input);
+  const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input.component_id, config, user.id);
+  await assertRunAsUserAllowed(context, user, config.run_as as RunAsConfiguration | undefined);
+  return {
+    config,
+    configuration,
+  };
 };
 
 // A playbook runs from a single entry point: its definition holds at most one
@@ -314,65 +321,37 @@ export const assertPlaybookDefinitionIsValid = (definition: ComponentDefinition)
   });
 };
 
-const PLAYBOOK_NODE_FILTER_FIELDS = ['filters', 'applyWithFilters'];
-
-const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
+/**
+ * Check a whole stringified definition, as written by an import, a duplication
+ * or the playbook_definition field patch. These paths never go through the node
+ * mutations, so each step configuration and its filters are parsed here: a
+ * malformed one would be stored and only fail when the playbook runs, the
+ * cache manager reads it or the editor opens the step.
+ *
+ * @param rawDefinition Stringified playbook definition. An empty one is skipped.
+ * @throws FunctionalError if the definition is invalid.
+ */
+export const assertPlaybookDefinitionStringIsValid = (rawDefinition: string | null | undefined) => {
   if (!rawDefinition) {
     return;
   }
-  let definition: ComponentDefinition;
-  try {
-    definition = JSON.parse(rawDefinition) as ComponentDefinition;
-  } catch {
-    throw FunctionalError('Playbook definition is not valid JSON');
-  }
-  // The whole-definition paths (import, duplicate, playbook_definition field
-  // patch) never go through assertNodeConfigurationIsComplete, so each step
-  // configuration string is parsed here: a malformed one would be stored and
-  // only fail when the playbook runs or the editor opens the step.
-  // The filter strings a step carries (filters, applyWithFilters) are parsed
-  // too: a step configuration can be valid JSON around a filter that is not,
-  // which the runtime and the cache only meet later. Syntax only: the keys and
-  // ids a filter names vary per platform and are adjusted after an import.
-  (definition.nodes ?? []).forEach((node) => {
-    if (!node?.configuration) {
-      return;
-    }
-    let configuration: unknown;
-    try {
-      configuration = JSON.parse(node.configuration);
-    } catch {
-      throw FunctionalError('Playbook node configuration is not valid JSON', { node_id: node.id, component_id: node.component_id });
-    }
-    if (!configuration || typeof configuration !== 'object') {
-      return;
-    }
-    PLAYBOOK_NODE_FILTER_FIELDS.forEach((field) => {
-      const value = (configuration as Record<string, unknown>)[field];
-      if (typeof value !== 'string' || value === '') {
-        return;
-      }
-      try {
-        JSON.parse(value);
-      } catch {
-        throw FunctionalError('Playbook node filters are not valid JSON', { node_id: node.id, component_id: node.component_id, field });
-      }
-    });
-  });
-  assertPlaybookDefinitionIsValid(definition);
+
+  assertPlaybookDefinitionIsValid(parsePlaybookDefinition(rawDefinition));
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {
   await checkEnterpriseEdition(context);
-  const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
-  await validateNodeRunAs(context, user, configuration);
+  const {
+    config,
+    configuration,
+  } = await prepareNodeConfiguration(context, user, input);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { input });
   }
-  assertNodeConfigurationIsComplete(relatedComponent, configuration);
+  assertNodeConfigurationIsComplete(relatedComponent, config);
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported', { input });
@@ -393,7 +372,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration, // TODO Check valid json
+    configuration,
     description: input.description || undefined,
   });
   // The node and the link to its parent are written in the same patch, so the
@@ -444,8 +423,10 @@ export const playbookReplaceNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
-  const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
-  await validateNodeRunAs(context, user, configuration);
+  const {
+    config,
+    configuration,
+  } = await prepareNodeConfiguration(context, user, input);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -453,7 +434,7 @@ export const playbookReplaceNode = async (
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
-  assertNodeConfigurationIsComplete(relatedComponent, configuration);
+  assertNodeConfigurationIsComplete(relatedComponent, config);
   const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
@@ -481,7 +462,7 @@ export const playbookReplaceNode = async (
         name: input.name,
         position: input.position,
         component_id: input.component_id,
-        configuration, // TODO Check valid json
+        configuration,
         description: input.description || undefined,
       };
     }
@@ -503,14 +484,17 @@ export const playbookInsertNode = async (
   input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
-  await validateNodeRunAs(context, user, input.configuration);
+  const {
+    config,
+    configuration,
+  } = await prepareNodeConfiguration(context, user, input);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
     throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
-  assertNodeConfigurationIsComplete(relatedComponent, input.configuration);
+  assertNodeConfigurationIsComplete(relatedComponent, config);
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
     throw UnsupportedError('Playbook multiple entrypoint is not supported');
@@ -522,7 +506,7 @@ export const playbookInsertNode = async (
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}', // TODO Check valid json
+    configuration,
     description: input.description || undefined,
   });
   // Replace node with new position (an end step goes on a new branch: the child stays where it is)
@@ -840,7 +824,7 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-type PlaybookCreationType = {
+export type PlaybookCreationType = {
   name: string;
   description?: string | null;
   playbook_start?: string;
@@ -878,8 +862,8 @@ export const playbookEdit = async (context: AuthContext, user: AuthUser, id: str
   // run_as guardrail on any such crafted call so it cannot be bypassed.
   const definitionInput = input.find((editInput) => editInput.key === 'playbook_definition');
   if (definitionInput) {
-    await assertDefinitionRunAsAllowed(context, user, definitionInput.value?.[0]);
     assertPlaybookDefinitionStringIsValid(definitionInput.value?.[0]);
+    await assertDefinitionRunAsAllowed(context, user, definitionInput.value?.[0]);
   }
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -913,12 +897,16 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
+  // Checked before the scope migration, which parses the definition and each
+  // node configuration of an older export: a malformed one would otherwise
+  // reach the user as a raw SyntaxError. The migration and the run_as reset
+  // below only rewrite node configurations, so the result stays valid.
+  assertPlaybookDefinitionStringIsValid(config.playbook_definition);
   const updatedPlaybookDefinition = updateImportedPlaybookDefinitionScope(config.playbook_definition, parsedData.openCTI_version);
   // Imported definitions carry user ids from another platform; reset any
   // disallowed AI-agent run_as to the importing user so the import cannot set
   // up an impersonation, without hard-failing on now-unknown foreign ids.
   config.playbook_definition = await sanitizeDefinitionRunAs(context, user, updatedPlaybookDefinition);
-  assertPlaybookDefinitionStringIsValid(config.playbook_definition);
 
   const importData = {
     name: config.name,
@@ -928,8 +916,12 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_mode: config.playbook_mode,
     playbook_definition: config.playbook_definition,
   };
-  const importPlaybook = await createPlaybook(context, user, importData);
-  const importPlaybookId = importPlaybook.id;
+  const importPlaybook = await playbookAddFromImport(context, user, importData);
+  return importPlaybook.id;
+};
+
+export const playbookAddFromImport = async (context: AuthContext, user: AuthUser, input: PlaybookCreationType) => {
+  const importPlaybook = await createPlaybook(context, user, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -937,12 +929,12 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     event_access: 'extended',
     message: `import ${importPlaybook.name} playbook`,
     context_data: {
-      id: importPlaybookId,
+      id: importPlaybook.id,
       entity_type: ENTITY_TYPE_PLAYBOOK,
       input: importPlaybook,
     },
   });
-  return importPlaybookId;
+  return importPlaybook;
 };
 
 export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id: string) => {

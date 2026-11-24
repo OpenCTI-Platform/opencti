@@ -6,6 +6,7 @@ import SessionStoreMemory from './sessionStore-memory';
 import RedisStore from './sessionStore-redis';
 import { getPlatformCrypto } from '../utils/platformCrypto';
 import { memoize } from '../utils/memoize';
+import { ConfigurationError } from '../config/errors';
 
 const sessionManager = nconf.get('app:session_manager');
 
@@ -58,7 +59,45 @@ const createApplicationSession = async () => {
   };
 };
 
+// Highest value of a GraphQL Int, the type the maximum lifetime is exposed with in the platform settings
+const MAX_SESSION_MAX_LIFETIME = 2147483647;
+
+// Maximum lifetime of a session in ms, counted from the login and never extended by the user activity.
+// 0 (the default) means no limit, as an unset or empty value does (an empty environment variable is common in
+// deployment templates). Any other value that is not a whole number of ms in range makes the platform refuse
+// to start (see boot): falling back to no limit would silently disable a security setting.
+export const getSessionMaxLifetime = () => {
+  const configuredValue = conf.get('app:session_max_lifetime');
+  if (configuredValue === undefined || configuredValue === null || configuredValue === '') {
+    return 0;
+  }
+  // Environment values are parsed (true, false, [] ...): only a number or a string of digits is a lifetime,
+  // as converting anything else to a number would give a meaningless limit (true is 1 ms, false is no limit)
+  const isNumericValue = typeof configuredValue === 'number' || (typeof configuredValue === 'string' && /^\d+$/.test(configuredValue));
+  const maxLifetime = isNumericValue ? Number(configuredValue) : NaN;
+  if (!Number.isInteger(maxLifetime) || maxLifetime < 0 || maxLifetime > MAX_SESSION_MAX_LIFETIME) {
+    throw ConfigurationError(
+      `Invalid app:session_max_lifetime: expected a whole number of milliseconds between 0 (no limit) and ${MAX_SESSION_MAX_LIFETIME}`,
+      { value: configuredValue },
+    );
+  }
+  return maxLifetime;
+};
+
 const getApplicationSession = memoize(createApplicationSession);
+
+// A session over its maximum lifetime must be ended, whatever the activity of its user.
+// A session without a valid login time cannot prove its age: it is ended as well when a limit is set.
+export const isSessionOverMaxLifetime = (sessionUser, maxLifetime = getSessionMaxLifetime(), nowTime = Date.now()) => {
+  if (maxLifetime <= 0) {
+    return false;
+  }
+  const loginTime = Date.parse(sessionUser?.session_creation ?? '');
+  if (Number.isNaN(loginTime)) {
+    return true;
+  }
+  return nowTime - loginTime >= maxLifetime;
+};
 
 const getSessionStore = async () => (await getApplicationSession()).sessionStore;
 
@@ -102,6 +141,13 @@ export const findSessionByRawId = async (rawSessionId) => {
 export const killSessionByRawId = async (rawSessionId) => {
   const store = await getSessionStore();
   return store.destroy(rawSessionId);
+};
+
+// Delete a session, returning true only for the call that actually deleted it. When several requests
+// (possibly on several nodes) end the same session at once, a single one of them gets true.
+export const endSessionByRawId = async (rawSessionId) => {
+  const killed = await killSessionByRawId(rawSessionId);
+  return killed?.deleted === true;
 };
 
 const killSessions = async (sessionsIds) => {

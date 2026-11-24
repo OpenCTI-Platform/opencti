@@ -197,13 +197,9 @@ const buildConnectSrc = () => {
   return connectSrc;
 };
 
-const buildObjectSrc = () => {
-  const objectSrc = ["'self'", 'data:', 'https://*'];
-  if (isUnsecureHttpResourceAllowed()) {
-    objectSrc.push('http://*');
-  }
-  return objectSrc;
-};
+// The platform renders no <object> or <embed>: the PDF viewer draws in a canvas (worker-src),
+// and the user HTML is sanitized without them.
+const OBJECT_SRC = ["'none'"];
 
 export const buildPublicHelmetParameters = (): HelmetOptions => {
   const ancestorsFromConfig = getPublicAuthorizedDomainsFromConfiguration();
@@ -225,7 +221,7 @@ export const buildPublicHelmetParameters = (): HelmetOptions => {
         imgSrc: buildImgSrcSrc(),
         manifestSrc: buildManifestSrc(),
         connectSrc: buildConnectSrc(),
-        objectSrc: buildObjectSrc(),
+        objectSrc: OBJECT_SRC,
         workerSrc: ["'self'", 'blob:'],
         frameSrc: allowedFrameSrc,
         frameAncestors: frameAncestorDomains,
@@ -255,7 +251,7 @@ export const buildDefaultHelmetParameters = (): HelmetOptions => {
         imgSrc: buildImgSrcSrc(),
         manifestSrc: buildManifestSrc(),
         connectSrc: buildConnectSrc(),
-        objectSrc: buildObjectSrc(),
+        objectSrc: OBJECT_SRC,
         workerSrc: ["'self'", 'blob:'],
         frameAncestors: "'none'",
         upgradeInsecureRequests: isUpgradeInsecureRequestsEnabled() ? [] : null,

@@ -10,6 +10,7 @@ import {
   getLastPlaybookExecutions,
   getRedisVersion,
   INGESTION_LOG_TTL,
+  killSession,
   lockResource,
   PLAYBOOK_EXECUTIONS_MAX_LENGTH,
   CACHE_RESET_TOPIC,
@@ -28,6 +29,7 @@ import {
   redisPushIngestionLog,
   redisPlaybookUpdate,
   redisSetForgotPasswordOtp,
+  setSession,
   redisSetTelemetryAdd,
   redisSetXtmAgentResponse,
   setEditContext,
@@ -93,6 +95,18 @@ describe('Redis basic and utils', () => {
     });
     const expired = await redisGetForgotPasswordOtp(id);
     expect(expired).toBeNull();
+  });
+});
+
+describe('Redis sessions', () => {
+  it('should tell only one of concurrent kills that it deleted the session', async () => {
+    const sessionKey = `sess:${uuid()}`;
+    await setSession(sessionKey, { user: { id: 'user-id' } }, 60);
+
+    const kills = await Promise.all([killSession(sessionKey), killSession(sessionKey), killSession(sessionKey)]);
+
+    expect(kills.filter((kill) => kill.deleted)).toHaveLength(1);
+    expect(await killSession(sessionKey)).toMatchObject({ sessionId: sessionKey, deleted: false });
   });
 });
 

@@ -65,6 +65,8 @@ import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemp
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
 import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
+import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
+import { executiveCustomView, malwareCustomView } from './configPreset-customViews-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -125,6 +127,13 @@ const vocabularyItem = (category: string) => ({
 const statusTemplateItem = (template: { standard_id: string; name: string }) => ({
   key: template.standard_id,
   label: template.name,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
+const formIntakeItem = (form: { standard_id: string; name: string }) => ({
+  key: form.standard_id,
+  label: form.name,
   translatable: false,
   dependsOn: [],
   isDefault: false,
@@ -302,6 +311,18 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(2),
       },
       {
+        key: 'customViews',
+        label: 'Custom views',
+        description: 'Custom views of the entity types and their widgets',
+        group: { key: 'customization', label: 'Customization' },
+        // By name, with the entity type of the view in the label
+        items: [
+          { key: executiveCustomView.standard_id, label: 'Executive overview (Report)', translatable: false, dependsOn: [], isDefault: false },
+          { key: malwareCustomView.standard_id, label: 'Malware triage (Malware)', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'connectors',
         label: 'Connectors',
         description: 'Managed connectors and their parameters, without their secrets',
@@ -343,6 +364,27 @@ describe('Config preset exportable types query', () => {
         group: { key: 'integrations', label: 'Integrations' },
         items: [{ key: 'Partner/TAXII', label: 'Partner/TAXII', translatable: false, dependsOn: [], isDefault: false }],
         itemsPageInfo: onePage(1),
+      },
+      {
+        key: 'formIntakes',
+        label: 'Form intakes',
+        description: 'Form intakes and their schema',
+        group: { key: 'integrations', label: 'Integrations' },
+        // By name
+        items: [formIntakeItem(incidentForm), formIntakeItem(reportForm)],
+        itemsPageInfo: onePage(2),
+      },
+      {
+        key: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, created stopped',
+        group: { key: 'automationRules', label: 'Automation & Rules' },
+        items: [
+          { key: 'Enrich reports', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Enrich reports (1)', label: 'Enrich reports', translatable: false, dependsOn: [], isDefault: false },
+          { key: 'Triage/Phishing', label: 'Triage/Phishing', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(3),
       },
       {
         key: 'ruleEngine',
@@ -412,8 +454,8 @@ describe('Config preset exportable types query', () => {
     expect(types.map((type) => [type.key, type.lockedByEnterpriseEdition])).toEqual([
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
-      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
-      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false], ['fintelDesigns', true],
+      ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['customViews', false], ['connectors', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -465,11 +507,14 @@ describe('Config preset exportable types query', () => {
       ['statusTemplates', 'taxonomy'],
       ['caseTemplates', 'taxonomy'],
       ['dashboards', 'dashboards'],
+      ['customViews', 'customization'],
       ['connectors', 'integrations'],
       ['rssFeeds', 'integrations'],
       ['csvFeeds', 'integrations'],
       ['jsonFeeds', 'integrations'],
       ['taxiiFeeds', 'integrations'],
+      ['formIntakes', 'integrations'],
+      ['playbooks', 'automationRules'],
       ['ruleEngine', 'automationRules'],
       ['fintelDesigns', 'customization'],
     ]);

@@ -13,8 +13,10 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   fullEntitiesList: vi.fn(),
   fullRelationsList: vi.fn(),
   fullEntitiesThroughRelationsToList: vi.fn(),
+  internalFindByIds: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
+  internalFindByIdsMapped: vi.fn(),
 }));
 // A family of the Enterprise Edition reads its entities through a domain that checks the license: the platform has it here
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
@@ -45,7 +47,7 @@ vi.mock('../../../../src/domain/rules', async (importOriginal) => ({
 }));
 
 import { getRules, RULES_DECLARATION } from '../../../../src/domain/rules';
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIdsMapped, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { Readable } from 'node:stream';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
@@ -68,9 +70,12 @@ import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemp
 import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
+import { enrichPlaybook, EXPORTED_PLAYBOOK_DEFINITION, playbookAuthor } from './configPreset-playbooks-fixtures';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
+import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
+import { executiveCustomView, malwareCustomView } from './configPreset-customViews-fixtures';
 
 const context = { source: 'test' } as AuthContext;
 const user = { id: 'admin-id', capabilities: [{ name: 'BYPASS' }] } as AuthUser;
@@ -119,6 +124,7 @@ describe('Config preset registry', () => {
     withSettings({});
     mockConfigPresetLoaders(entitySettings);
     withRules();
+    vi.mocked(internalFindByIdsMapped).mockResolvedValue({ [playbookAuthor.id]: playbookAuthor } as never);
     vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId, type = 'has-capability') => {
       return ROLE_CAPABILITIES[roleId][type].map((name) => ({ id: `${name}-id`, name })) as never;
     });
@@ -224,12 +230,36 @@ describe('Config preset registry', () => {
       },
       // The dashboards by name, never an investigation
       { id: 'dashboards', label: 'Custom dashboards', description: '', group: 'dashboards', itemIds: [executiveDashboard.standard_id, socDashboard.standard_id] },
+      // The custom views of every entity type, by name
+      {
+        id: 'customViews',
+        label: 'Custom views',
+        description: 'Custom views of the entity types and their widgets',
+        group: 'customization',
+        itemIds: [executiveCustomView.standard_id, malwareCustomView.standard_id],
+      },
       { id: 'connectors', label: 'Connectors', description: 'Managed connectors and their parameters, without their secrets', group: 'integrations', itemIds: ['mitre'] },
       // The feeds by name; the next feeds of the same name by creation date
       { id: 'rssFeeds', label: 'RSS feeds', description: 'RSS feeds and their parameters, without their state', group: 'integrations', itemIds: ['Security news', 'Security news (1)'] },
       { id: 'csvFeeds', label: 'CSV feeds', description: 'CSV feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
       { id: 'jsonFeeds', label: 'JSON feeds', description: 'JSON feeds with their mapper, without their credentials', group: 'integrations', itemIds: [] },
       { id: 'taxiiFeeds', label: 'TAXII feeds', description: 'TAXII feeds and their parameters, without their credentials', group: 'integrations', itemIds: ['Partner/TAXII'] },
+      // The form intakes by name
+      {
+        id: 'formIntakes',
+        label: 'Form intakes',
+        description: 'Form intakes and their schema',
+        group: 'integrations',
+        itemIds: [incidentForm.standard_id, reportForm.standard_id],
+      },
+      // The playbooks by name; the next playbooks of the same name by creation date
+      {
+        id: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, created stopped',
+        group: 'automationRules',
+        itemIds: ['Enrich reports', 'Enrich reports (1)', 'Triage/Phishing'],
+      },
       // Every rule the platform declares, by its id
       {
         id: 'ruleEngine',
@@ -250,7 +280,7 @@ describe('Config preset registry', () => {
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'fintelDesigns']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'playbooks', 'fintelDesigns']);
   });
 
   it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template, a case template or a fintel design name', async () => {
@@ -292,17 +322,24 @@ describe('Config preset registry', () => {
       ['Phishing triage', false],
       ['Executive summary', false],
       ['SOC overview', false],
+      ['Executive overview (Report)', false],
+      ['Malware triage (Malware)', false],
       ['MITRE', false],
       ['Security news', false],
       ['Security news', false],
       ['Partner/TAXII', false],
+      ['Incident intake', false],
+      ['Report intake', false],
+      ['Enrich reports', false],
+      ['Enrich reports', false],
+      ['Triage/Phishing', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
       ['Night briefing', false],
     ]);
   });
 
-  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase, a status template or a case template by its standard id, a vocabulary category by its name', async () => {
+  it('writes one distinct JSON file per item, in the folder of its category, a theme, a label, an exclusion list, a phase, a status template, a case template or a form intake by its standard id, a vocabulary category by its name', async () => {
     const paths = (await Promise.all(CONFIG_PRESET_FAMILIES.map(async (family) => {
       const items = await family.resolveItems(context, user, null, []);
       return items.map((item) => configPresetItemFilePath(family, item));
@@ -344,10 +381,17 @@ describe('Config preset registry', () => {
       `taxonomy/case_templates/${phishingCaseTemplate.standard_id}.json`,
       `dashboards/${executiveDashboard.standard_id}.json`,
       `dashboards/${socDashboard.standard_id}.json`,
+      `customization/custom_views/${executiveCustomView.standard_id}.json`,
+      `customization/custom_views/${malwareCustomView.standard_id}.json`,
       'integrations/connectors/mitre.json',
       'integrations/rss_feeds/Security news.json',
       'integrations/rss_feeds/Security news (1).json',
       'integrations/taxii_feeds/Partner_TAXII.json',
+      `integrations/form_intakes/${incidentForm.standard_id}.json`,
+      `integrations/form_intakes/${reportForm.standard_id}.json`,
+      'automation_rules/playbooks/Enrich reports.json',
+      'automation_rules/playbooks/Enrich reports (1).json',
+      'automation_rules/playbooks/Triage_Phishing.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
       `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
@@ -535,6 +579,44 @@ describe('Config preset registry', () => {
     });
   });
 
+  describe('playbooks', () => {
+    it('exports the definition as it is, its users referenced by standard id, never its running state', async () => {
+      const exported = await exportConfigPresetItem(context, user, findFamily('playbooks'), await findItem('playbooks', 'Enrich reports'));
+      expect(exported).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'automationRules.playbooks',
+        id: 'Enrich reports',
+        configuration: {
+          name: 'Enrich reports',
+          description: enrichPlaybook.description,
+          playbook_start: 'node-start',
+          playbook_definition: EXPORTED_PLAYBOOK_DEFINITION,
+        },
+      });
+      expect(internalFindByIdsMapped).toHaveBeenCalledWith(context, expect.anything(), [playbookAuthor.id], { type: 'User', baseData: true });
+    });
+
+    it('keeps a user the platform does not find as it is', async () => {
+      vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({} as never);
+      const exported = await exportConfigPresetItem(context, user, findFamily('playbooks'), await findItem('playbooks', 'Enrich reports'));
+      expect(exported.configuration.playbook_definition).toEqual(enrichPlaybook.playbook_definition);
+    });
+
+    it('lists every playbook of a name, however many share it', async () => {
+      const homonyms = Array.from({ length: 105 }, (_, index) => ({ ...enrichPlaybook, id: `homonym-${index}`, internal_id: `homonym-${index}`, created_at: `2026-01-01T00:00:${String(index).padStart(3, '0')}Z` }));
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce(homonyms as never);
+      const items = await findFamily('playbooks').resolveItems(context, user, null, []);
+      expect(items).toHaveLength(105);
+      expect(new Set(items.map(({ id }) => id)).size).toBe(105);
+      expect(items.map(({ id }) => id)).toContain('Enrich reports (104)');
+    });
+
+    it('searches the playbooks by name', async () => {
+      const page = await findFamily('playbooks').listItems(context, user, { first: 10, search: 'triage' });
+      expect(page.edges.map(({ node }) => node.id)).toEqual(['Triage/Phishing']);
+    });
+  });
+
   describe('rule engine', () => {
     it('exports the activation of a rule alone, under the id of the rule', async () => {
       const family = findFamily('ruleEngine');
@@ -680,6 +762,47 @@ describe('Config preset registry', () => {
       expect(await ids(null, [])).toEqual([otherEmailTemplate.standard_id, customEmailTemplate.standard_id]);
       expect(await ids(null, [otherEmailTemplate.standard_id])).toEqual([customEmailTemplate.standard_id]);
       expect(await ids([customEmailTemplate.standard_id], [])).toEqual([customEmailTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      expect(await ids([], [])).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('form intakes', () => {
+    const formIntakes = findFamily('formIntakes');
+    const pageIds = async (args: Parameters<typeof formIntakes.listItems>[2]) => (await formIntakes.listItems(context, user, args)).edges.map(({ node }) => node.id);
+
+    it('is exported into the Integrations folder and offers to overwrite a form or to add a copy of it', () => {
+      expect(formIntakes.directory).toBe('integrations/form_intakes');
+      expect(formIntakes.importModes).toEqual(['OVERWRITE', 'COPY']);
+    });
+
+    it('lists the state of the form, and exports the import format only, with the standard id of the form', async () => {
+      expect((await findItem('formIntakes', incidentForm.standard_id)).isEnabled).toBe(true);
+      expect((await findItem('formIntakes', reportForm.standard_id)).isEnabled).toBe(false);
+      const file = await exportConfigPresetItem(context, user, formIntakes, await findItem('formIntakes', incidentForm.standard_id));
+      expect(file).toMatchObject({
+        type: 'integrations.formIntakes',
+        id: incidentForm.standard_id,
+        configuration: { name: 'Incident intake', description: 'Reports an incident', active: true },
+      });
+      expect(typeof (file.configuration as { form_schema: unknown }).form_schema).toBe('object');
+      expect(JSON.stringify(file)).not.toMatch(/creator|created_at|internal_id/);
+    });
+
+    it('applies ids and excluded ids to the form intakes, and lists none for an empty list of ids', async () => {
+      expect(await pageIds({ ids: [reportForm.standard_id] })).toEqual([reportForm.standard_id]);
+      expect(await pageIds({ excludedIds: [reportForm.standard_id] })).toEqual([incidentForm.standard_id]);
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every form
+      expect(await pageIds({ ids: [] })).toEqual([]);
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+
+    it('resolves the form intakes to export, with the same rules as the listing', async () => {
+      const ids = async (selected: string[] | null, excluded: string[]) => (await formIntakes.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [reportForm.standard_id])).toEqual([incidentForm.standard_id]);
+      expect(await ids([reportForm.standard_id], [])).toEqual([reportForm.standard_id]);
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
@@ -1061,6 +1184,51 @@ describe('Config preset registry', () => {
       vi.mocked(fullEntitiesList).mockClear();
       expect(await ids([], [])).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('custom views', () => {
+    const views = findFamily('customViews');
+
+    it('exports a view in the import format only, without whether it is enabled or the default of its entity type', async () => {
+      const item = await findItem('customViews', executiveCustomView.standard_id);
+      const file = await exportConfigPresetItem(context, user, views, item);
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.customViews',
+        id: executiveCustomView.standard_id,
+        configuration: {
+          name: 'Executive overview',
+          target_entity_type: 'Report',
+          description: 'The view of the executives',
+          manifest: executiveCustomView.manifest,
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|executive-custom-view-id|"enabled"|"default"|"slug"/);
+    });
+
+    it('exports a view without description nor manifest with an empty description, so that an overwrite clears it, and no manifest', async () => {
+      const item = await findItem('customViews', malwareCustomView.standard_id);
+      const file = await exportConfigPresetItem(context, user, views, item);
+      expect(file.configuration).toEqual({ name: 'Malware triage', target_entity_type: 'Malware', description: '' });
+    });
+
+    it('lists the views by name, with their entity type in the label, and finds them by standard id', async () => {
+      const page = await views.listItems(context, user, { first: 10 });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable])).toEqual([
+        [executiveCustomView.standard_id, 'Executive overview (Report)', false],
+        [malwareCustomView.standard_id, 'Malware triage (Malware)', false],
+      ]);
+      const ids = async (selected: string[] | null, excluded: string[]) => (await views.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [])).toEqual([executiveCustomView.standard_id, malwareCustomView.standard_id]);
+      expect(await ids(null, [executiveCustomView.standard_id])).toEqual([malwareCustomView.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every view
+      expect(await ids([], [])).toEqual([]);
+      expect((await views.listItems(context, user, { first: 10, ids: [] })).edges).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
     });
   });
 

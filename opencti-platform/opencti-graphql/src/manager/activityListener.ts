@@ -157,8 +157,9 @@ const initActivityManager = () => {
           await activityLogger(action, message);
         }
         if (action.event_scope === 'logout') {
-          const isLastTabClosed = action.context_data?.reason === 'last_tab_closed';
-          await activityLogger(action, isLastTabClosed ? 'logout (last tab closed)' : 'logout');
+          const logoutReasons = { last_tab_closed: 'last tab closed', max_lifetime: 'maximum session lifetime reached' };
+          const reason = action.context_data?.reason;
+          await activityLogger(action, reason ? `logout (${logoutReasons[reason]})` : 'logout');
         }
         if (action.event_scope === 'forgot') {
           await activityLogger(action, action.message);

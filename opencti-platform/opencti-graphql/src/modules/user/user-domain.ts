@@ -49,7 +49,7 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../../database/redis';
-import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
+import { endSessionByRawId, isSessionOverMaxLifetime, killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -163,14 +163,13 @@ import type { ProviderUserInfo } from '../authenticationProvider/providers-confi
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../../manager/telemetryManager';
-import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../emailTemplate/emailTemplate-types';
 import { doYield } from '../../utils/eventloop-utils';
 import { disablePublicSharingForDeletedUser } from '../dataSharing/dataSharing-utils';
 import { deleteAllIngestionDeduplicationRulesForUser } from '../ingestionDeduplication/ingestionDeduplicationRule-domain';
-import { sanitizeUser } from '../../utils/templateContextSanitizer';
-import { type LockedUserEmailData, renderEmailTemplate } from '../emailTemplate/emailTemplate-render';
+import type { LockedUserEmailData } from '../emailTemplate/emailTemplate-render';
+import { sendEmailTemplateToRecipient } from '../emailTemplate/emailTemplate-send';
 import { totp } from '../../utils/totp';
 import { pushAll } from '../../utils/arrayUtil';
 import { USER_MERGED_INTO_FIELD } from '../userMerge/userMerge-types';
@@ -1066,7 +1065,8 @@ type MailTargetUser = Omit<AuthUser, 'organizations' | 'account_lock_after_date'
   account_lock_after_date: string | undefined;
 };
 
-// lockedUserData: the account locked by the local authentication lockout, for its $locked_user and $lock variables
+// lockedUserData: the values of the $locked_user and $lock variables. Only the "Send test email" button of a template
+// passes them, with an example lock, so that the administrator sees what the email of a lock looks like
 export const sendEmailToUser = async (context: AuthContext, user: AuthUser, input: SendUserMailInput, lockedUserData?: LockedUserEmailData) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
@@ -1078,45 +1078,20 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
     throw UnsupportedError('Target user not found', { id: input.target_user_id });
   }
 
-  const organizationNames = (targetUser.organizations ?? []).map((org) => org.name);
-
   const emailTemplate = await internalLoadById<BasicStoreEntityEmailTemplate>(context, user, input.email_template_id);
   if (!emailTemplate || emailTemplate.entity_type !== ENTITY_TYPE_EMAIL_TEMPLATE) {
     throw UnsupportedError('Invalid email template', { id: input.email_template_id });
   }
 
-  const templateUser = {
-    ...sanitizeUser(targetUser),
-    api_token: '', // empty token by default
-    account_lock_after_date: targetUser.account_lock_after_date
-      ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd') : '',
-  };
-
   // If the template asks for a user token, we need to generate a new one.
+  let apiToken: string | undefined;
   if (emailTemplate.template_body.includes('$user.api_token')) {
     const inputToken: TokenAddInput = { name: 'Template generated token' };
     const token = await addUserTokenByAdmin(context, user, input.target_user_id, inputToken);
-    templateUser.api_token = token.plaintext_token;
+    apiToken = token.plaintext_token;
   }
 
-  const renderedHtml = await renderEmailTemplate(emailTemplate.template_body, {
-    platformUrl: settings.platform_url,
-    user: templateUser,
-    organizationNames,
-    lockedUserData,
-  });
-
-  const sendMailArgs = {
-    from: await smtpComputeFrom(emailTemplate.sender_email),
-    to: targetUser.user_email,
-    subject: emailTemplate.email_object,
-    html: renderedHtml,
-  };
-
-  await sendMail(sendMailArgs, {
-    identifier: `user-${targetUser.id}`,
-    category: 'user-notification',
-  });
+  await sendEmailTemplateToRecipient(emailTemplate, targetUser, { platformUrl: settings.platform_url, category: 'user-notification', apiToken, lockedUserData });
   await addUserEmailSendCount();
   await publishUserAction({
     user,
@@ -2728,7 +2703,74 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string } } };
+type SessionEndRequest = { sessionID?: string; session?: { user?: unknown; regenerate?: (callback: (err?: unknown) => void) => void } };
+type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string } } };
+
+// The ended session must not stay on the request: the end of the request would save it again.
+// The request gets a new empty session instead, as the rest of the request may still use one: a login
+// mutation sent with the cookie of the ended session binds the user to the session of its request.
+// req.session.regenerate() is the public API of express-session for this: it deletes the session from the store
+// (already done, so a no-op) and gives the request a new one, neither saved nor sent as a cookie unless something
+// is put in it (saveUninitialized: false). Without it, or when it fails, the session is only removed from the
+// request, as req.session.destroy() does.
+const renewRequestSession = async (req: SessionEndRequest) => {
+  const { session } = req;
+  if (session?.regenerate) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        session.regenerate!((err) => (err ? reject(err) : resolve()));
+      });
+      return;
+    } catch (err) {
+      logApp.warn('Fail to give a new session to a request whose session is over its maximum lifetime', { cause: err });
+    }
+  }
+  delete req.session;
+};
+
+// End a session that reached its maximum lifetime (app:session_max_lifetime): the session is deleted,
+// so its user must log in again, and the logout is recorded in the activity log.
+// Several requests of the same session can reach it at once, possibly on several nodes (a page sends its
+// queries in parallel): each one ends the session, but only the one that actually deleted it records the logout.
+const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser) => {
+  const { sessionID } = req;
+  let isDeletedByThisRequest = false;
+  if (sessionID) {
+    try {
+      isDeletedByThisRequest = await endSessionByRawId(sessionID);
+    } catch (err) {
+      logApp.error('Fail to delete a session over its maximum lifetime', { cause: err, user_id: user.id });
+    }
+  }
+  await renewRequestSession(req);
+  if (isDeletedByThisRequest) {
+    await publishUserAction({
+      user,
+      event_type: 'authentication',
+      event_access: 'administration',
+      event_scope: 'logout',
+      context_data: { reason: 'max_lifetime' },
+    });
+  }
+};
+
+// A stream is authenticated once, when it opens, then serves events for a long time: the maximum lifetime of
+// its session is checked again before each batch of events. Only a stream authenticated by its session is
+// concerned: a bearer token is used before the session cookie the request may also carry (as in
+// authenticateUserFromRequest), so an unrelated session must not close a stream authenticated by a token.
+// When the session is over its maximum lifetime, it is ended and the logout recorded, as for any other request.
+// Returns true when the stream must be closed.
+export const endStreamSessionOverMaxLifetime = async (context: AuthContext, req: SessionAuthRequest & SessionEndRequest) => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser || extractTokenFromBearer(req.headers.authorization) || !isSessionOverMaxLifetime(sessionUser)) {
+    return false;
+  }
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const logged = platformUsers.get(sessionUser.id);
+  await endSessionOverMaxLifetime(req, userWithOrigin(req, { ...sessionUser, ...logged }) as AuthUser);
+  return true;
+};
+
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {
@@ -2757,8 +2799,14 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   if (sessionUser) {
     const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(sessionUser.id);
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
+    const authUser = userWithOrigin(req, { ...sessionUser, ...logged });
+    // The maximum lifetime is counted from the login: the activity of the user never extends it
+    if (isSessionOverMaxLifetime(sessionUser)) {
+      // The user of the session may no longer be in the cache: the logout is recorded with its session identity
+      await endSessionOverMaxLifetime(req, authUser as AuthUser);
+      return undefined;
+    }
+    return authUser;
   }
   // endregion
   // region Direct authentication

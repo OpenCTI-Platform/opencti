@@ -5,6 +5,7 @@ import LtsLicenseRoot from './LtsLicenseRoot';
 import { HighLevelError } from './Error';
 import LoginRoot from '../../public/LoginRoot';
 import withRouter from '../../utils/compat_router/withRouter';
+import StaleChunkReloadGate from './StaleChunkReloadGate';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {
@@ -17,6 +18,14 @@ class AuthBoundaryComponent extends React.Component {
   }
 
   render() {
+    return (
+      <StaleChunkReloadGate error={this.state.error}>
+        {this.renderContent()}
+      </StaleChunkReloadGate>
+    );
+  }
+
+  renderContent() {
     if (this.state.error) {
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];

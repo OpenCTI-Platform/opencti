@@ -25,6 +25,7 @@ It is set after a successful login (local credentials, SAML, OpenID Connect, LDA
 1. The server creates a session (stored in Redis or in-memory) and sends the `opencti_session` cookie to the browser.
 1. On every subsequent request, the browser sends the cookie back, and the server validates the session.
 1. The session lifetime is **rolling** — each request resets the expiry timer.
+1. When `app:session_max_lifetime` is set, the session ends at that lifetime after the login, even when the user stays active.
 
 ### Configuration
 
@@ -32,6 +33,7 @@ It is set after a successful login (local credentials, SAML, OpenID Connect, LDA
 |:---------------------------------|:-----------------------------------|:-------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
 | `app:session_timeout`            | `APP__SESSION_TIMEOUT`             | `1200000` (20 min) | Session duration in milliseconds. The session expires after this period of inactivity.                                               |
 | `app:session_idle_timeout`       | `APP__SESSION_IDLE_TIMEOUT`        | `0` (disabled)     | Idle timeout in milliseconds. When set to a value greater than 0, the session expires if no activity is detected within this window. |
+| `app:session_max_lifetime`       | `APP__SESSION_MAX_LIFETIME`        | `0` (disabled)     | Maximum lifetime in milliseconds, counted from the login. User activity does not extend it: when it is reached, the session ends and the user must log in again, whatever the authentication provider. Any value that is not a whole number between `0` and `2147483647` (about 24.8 days) prevents the platform from starting. |
 | `app:session_cookie`             | `APP__SESSION_COOKIE`              | `false`            | When `true`, the cookie has no fixed expiry and is removed when the browser is closed (browser session cookie).                      |
 | `app:https_cert:cookie_secure`   | `APP__HTTPS_CERT__COOKIE_SECURE`   | `false`            | When `true`, the cookie is only sent over HTTPS connections. **Set to `true` in production with TLS.**                               |
 | `app:https_cert:cookie_samesite` | `APP__HTTPS_CERT__COOKIE_SAMESITE` | `lax`              | Controls the `SameSite` attribute of the cookie. Accepted values: `strict`, `lax`, `none`.                                           |

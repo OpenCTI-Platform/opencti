@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The maximum lifetime of a session is read from the configuration, which is loaded with the first import
+vi.hoisted(() => {
+  process.env.APP__SESSION_MAX_LIFETIME = String(12 * 60 * 60 * 1000);
+});
+
 vi.mock('../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../src/config/conf');
   return {
@@ -13,8 +18,17 @@ vi.mock('../../../src/database/engine', () => ({ elCount: vi.fn(), elList: vi.fn
 vi.mock('../../../src/database/middleware-loader', () => ({ fullRelationsList: vi.fn() }));
 vi.mock('../../../src/database/middleware', () => ({ stixLoadById: vi.fn(), storeLoadByIdsWithRefs: vi.fn() }));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesListFromCache: vi.fn(), getEntitiesMapFromCache: vi.fn(), getEntityFromCache: vi.fn() }));
+// The session store is simulated: deleting a session tells, as the real stores do, whether this call deleted it
+const liveSessions = vi.hoisted(() => new Set<string>());
+vi.mock('../../../src/database/session', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/session')>()),
+  endSessionByRawId: vi.fn(async (sessionId: string) => liveSessions.delete(sessionId)),
+}));
+vi.mock('../../../src/listener/UserActionListener', () => ({ publishUserAction: vi.fn().mockResolvedValue({}) }));
 
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../../src/database/cache';
+import { endSessionByRawId } from '../../../src/database/session';
+import { publishUserAction } from '../../../src/listener/UserActionListener';
 import { BYPASS, SYSTEM_USER } from '../../../src/utils/access';
 // eslint-disable-next-line import/extensions
 import { refreshStreamUser } from '../../../src/graphql/sseMiddleware.js';
@@ -144,6 +158,89 @@ describe('refreshStreamUser', () => {
     const { user: refreshed } = await refreshServedStreamUser(req, { isPublicUser: true });
 
     expect(refreshed.id).toBe('public-user-id');
+  });
+
+  describe('with a stream opened with a session', () => {
+    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+    const SESSION_ID = 'session-id';
+    const overLimitLoginTime = () => Date.now() - TWELVE_HOURS - 60 * 1000;
+    // Each stream holds its own copy of the session, as each one read it from the store when it opened
+    const withSession = (req: any, loginTime: number, headers: Record<string, string> = {}) => ({
+      ...req,
+      headers,
+      header: () => undefined,
+      sessionID: SESSION_ID,
+      session: { user: { id: req.user.id, session_creation: new Date(loginTime).toISOString() } },
+    });
+
+    beforeEach(() => {
+      liveSessions.clear();
+      liveSessions.add(SESSION_ID);
+      vi.mocked(endSessionByRawId).mockClear();
+      vi.mocked(publishUserAction).mockClear();
+    });
+
+    it('should serve the user while the session is under its maximum lifetime', async () => {
+      const user = buildUser();
+      const req = withSession(buildRequest(user), Date.now() - TWELVE_HOURS + 60 * 1000);
+      mockPlatformUsers(user);
+
+      const { user: refreshed } = await refreshServedStreamUser(req);
+
+      expect(refreshed.id).toBe('user-id');
+      expect(endSessionByRawId).not.toHaveBeenCalled();
+    });
+
+    it('should end the session and record the logout once the session reached its maximum lifetime', async () => {
+      const user = buildUser();
+      const req = withSession(buildRequest(user), overLimitLoginTime());
+      mockPlatformUsers(user);
+
+      const refreshed = await refreshStreamUser(req);
+
+      expect(refreshed.error).toBe('the session of the user reached its maximum lifetime');
+      expect(endSessionByRawId).toHaveBeenCalledWith(SESSION_ID);
+      expect(publishUserAction).toHaveBeenCalledTimes(1);
+      expect(publishUserAction).toHaveBeenCalledWith(expect.objectContaining({
+        user: expect.objectContaining({ id: 'user-id', origin: expect.objectContaining({ socket: 'query' }) }),
+        event_scope: 'logout',
+        context_data: { reason: 'max_lifetime' },
+      }));
+    });
+
+    it('should record the logout once when several streams of the session reach its maximum lifetime', async () => {
+      const user = buildUser();
+      const loginTime = overLimitLoginTime();
+      mockPlatformUsers(user);
+
+      const results = await Promise.all([1, 2, 3].map(() => refreshStreamUser(withSession(buildRequest(user), loginTime))));
+
+      results.forEach((refreshed) => expect(refreshed.error).toBe('the session of the user reached its maximum lifetime'));
+      expect(publishUserAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('should keep serving a stream authenticated by a token, whatever the session the request also carries', async () => {
+      // The bearer token is used before the session cookie, so the session does not authenticate this stream
+      const user = buildUser();
+      const req = withSession(buildRequest(user), overLimitLoginTime(), { authorization: 'Bearer api-token' });
+      mockPlatformUsers(user);
+
+      const { user: refreshed } = await refreshServedStreamUser(req);
+
+      expect(refreshed.id).toBe('user-id');
+      expect(endSessionByRawId).not.toHaveBeenCalled();
+      expect(publishUserAction).not.toHaveBeenCalled();
+    });
+
+    it('should not check the session of the requester of a public stream', async () => {
+      const publicUser = buildUser({ id: 'public-user-id', internal_id: 'public-user-id' });
+      const req = withSession(buildRequest(publicUser, undefined), Date.now() - TWELVE_HOURS - 60 * 1000);
+      mockPlatformUsers(publicUser);
+
+      const { user: refreshed } = await refreshServedStreamUser(req, { isPublicUser: true });
+
+      expect(refreshed.id).toBe('public-user-id');
+    });
   });
 
   describe('with an applicant impersonated by the authenticated user', () => {
