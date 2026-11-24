@@ -5,8 +5,10 @@ import { LogoXtmOneIcon } from 'filigran-icon';
 import { useTheme } from '@mui/material/styles';
 import { Formik, Form } from 'formik';
 import Button from '@common/button/Button';
+import IconButton from '@common/button/IconButton';
+import { Close } from '@mui/icons-material';
 import FiligranIcon from '@components/common/FiligranIcon';
-import { MESSAGING$ } from '../relay/environment';
+import { MESSAGING$, MessageAction } from '../relay/environment';
 import { useFormatter } from './i18n';
 import type { Theme } from './Theme';
 import RequestAccessDialog from './RequestAccessDialog';
@@ -32,6 +34,9 @@ const Message = () => {
   const [text, setText] = useState<string | ReactElement>('');
   const [_, setError] = useState(false);
   const [fullError, setFullError] = useState<FullError | null>(null);
+  const [action, setAction] = useState<MessageAction | null>(null);
+  // While hovered or focused, a message stays, so that its action can be reached
+  const [paused, setPaused] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   let isEnterpriseEdition = false;
   let isRequestAccessFeatureEnabled = false;
@@ -52,7 +57,7 @@ const Message = () => {
     const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
-          const firstMessage = messages[0] as { text: string | ReactElement; type: string; fullError: FullError | null };
+          const firstMessage = messages[0] as { text: string | ReactElement; type: string; fullError: FullError | null; action?: MessageAction };
           const textPart = firstMessage.text;
           const translatedText = (typeof textPart === 'string' || textPart instanceof String)
             ? t_i18n(textPart)
@@ -63,6 +68,8 @@ const Message = () => {
           setError(firstMessageError);
           setText(translatedText);
           setType(firstMessage.type);
+          setAction(firstMessage.action ?? null);
+          setPaused(false);
         }
       },
     });
@@ -90,6 +97,56 @@ const Message = () => {
   };
 
   const entityIds = fullError?.extensions?.data?.entityIds || [];
+
+  const renderSuccessAlert = () => {
+    if (!action) {
+      return (
+        <Alert severity="success" onClose={() => handleCloseMessage()}>
+          {text}
+        </Alert>
+      );
+    }
+    // MUI drops its close button when an action is given, so both are rendered here
+    return (
+      <Alert
+        severity="success"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        action={(
+          <>
+            <Button
+              variant="tertiary"
+              size="small"
+              onClick={() => {
+                action.onClick();
+                handleCloseMessage();
+              }}
+            >
+              {t_i18n(action.label)}
+            </Button>
+            <IconButton
+              variant="tertiary"
+              size="small"
+              aria-label={t_i18n('Close')}
+              onClick={() => handleCloseMessage()}
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          </>
+        )}
+      >
+        <span role="status">{text}</span>
+      </Alert>
+    );
+  };
+
+  const autoHideDuration = () => {
+    if (paused) return null;
+    if (action) return 8000;
+    return type === 'message' ? 4000 : 8000;
+  };
 
   const displayAlert = () => {
     if (isRequestAccessFeatureEnabled && fullError?.extensions?.code === 'ACCESS_REQUIRED') {
@@ -145,17 +202,8 @@ const Message = () => {
           </Alert>
         );
       case 'message':
-        return (
-          <Alert severity="success" onClose={() => handleCloseMessage()}>
-            {text}
-          </Alert>
-        );
       default:
-        return (
-          <Alert severity="success" onClose={() => handleCloseMessage()}>
-            {text}
-          </Alert>
-        );
+        return renderSuccessAlert();
     }
   };
 
@@ -165,7 +213,7 @@ const Message = () => {
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
         open={open}
         onClose={(__, reason) => handleCloseMessage(reason)}
-        autoHideDuration={type === 'message' ? 4000 : 8000}
+        autoHideDuration={autoHideDuration()}
       >
         {displayAlert()}
       </Snackbar>
