@@ -31,11 +31,15 @@ const itemsForFlags = (items: IrPresetItem[], flags: string[]): IrPresetItem[] =
 
 const emptyGeneral = (): IrPresetGeneral => ({ name: '', question: '', description: '', priority: 'medium' });
 
+interface IrCreationWizardProps {
+  onCancel: () => void; // closes the create panel
+}
+
 /**
- * Creation of a requirement: pick a PIR type (step 1), build its criteria from the type's preset rules (step 2),
- * then review the requirement in the configuration form, scoring included (step 3).
+ * Creation of a requirement, in the create panel: pick a PIR type (step 1), build its criteria from the type's
+ * preset rules (step 2), then review the requirement in the configuration form, scoring included (step 3).
  */
-const IrCreationWizard = () => {
+const IrCreationWizard = ({ onCancel }: IrCreationWizardProps) => {
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(0);
   const [general, setGeneral] = useState<IrPresetGeneral>(emptyGeneral);
@@ -69,8 +73,13 @@ const IrCreationWizard = () => {
   };
 
   return (
-    <Box sx={{ maxWidth: step === 2 ? undefined : 1100 }}>
-      <Stepper activeStep={step} sx={{ mb: 3, maxWidth: 1100 }}>
+    // Escape closes a select or picker of the steps, never the create panel with the steps done: their popups are
+    // portals, whose key events still bubble here through React
+    <Box onKeyDown={(e) => {
+      if (e.key === 'Escape') e.stopPropagation();
+    }}
+    >
+      <Stepper activeStep={step} sx={{ mb: 3 }}>
         {steps.map((label) => (
           <Step key={label}>
             <StepLabel>{label}</StepLabel>
@@ -123,6 +132,8 @@ const IrCreationWizard = () => {
           key={reviewKey}
           initialDraft={presetItemsToDraft(general, pirType, flags, items)}
           view="fields"
+          stacked
+          onCancel={onCancel}
           onCreated={(id) => writeConfigView(id, 'fields')}
           rulesReview={(
             <IrPresetRulesReview
@@ -136,7 +147,7 @@ const IrCreationWizard = () => {
           )}
         />
       )}
-      <Box sx={{ display: 'flex', gap: 1, mt: 2, maxWidth: 1100 }}>
+      <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
         {step > 0 && <Button variant="secondary" onClick={() => setStep(step - 1)}>{t_i18n('Back')}</Button>}
         <Box sx={{ flex: 1 }} />
         {step < steps.length - 1 && <Button disabled={missingValue} onClick={next}>{t_i18n('Next')}</Button>}

@@ -154,9 +154,12 @@ interface IntelligenceRequirementConfigurationFormProps {
   onCreated?: (id: string) => void;
   // A requirement built from preset rules: its rules, read-only, take the place of the question, subjects and scope blocks
   rulesReview?: ReactNode;
+  // In the create panel: the dry run goes under the form, and Cancel closes the panel
+  stacked?: boolean;
+  onCancel?: () => void;
 }
 
-const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = 'fields', onCreated, rulesReview }: IntelligenceRequirementConfigurationFormProps) => {
+const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = 'fields', onCreated, rulesReview, stacked = false, onCancel }: IntelligenceRequirementConfigurationFormProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [draft, setDraft] = useState<IrDraft>(initialDraft);
@@ -305,7 +308,7 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
   };
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1100px) minmax(320px, 400px)', gap: 2, alignItems: 'start' }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: stacked ? 'minmax(0, 1fr)' : 'minmax(0, 1100px) minmax(320px, 400px)', gap: 2, alignItems: 'start' }}>
       <Box sx={{ minWidth: 0 }}>
         {/* Identity */}
         <Paper padding={24} style={{ marginBottom: 16 }}>
@@ -641,14 +644,16 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
           </Row>
         </Paper>
 
+        {stacked && <Box sx={{ mb: 2 }}><IrDryRunPanel draft={draft} irId={irId} /></Box>}
         {error && <Box sx={{ mb: 2 }}><Alert severity="error" title={error} /></Box>}
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mb: 4 }}>
-          <Button variant="secondary" onClick={() => navigate(irId ? `/dashboard/intelligence_requirements/${irId}` : '/dashboard/intelligence_requirements')}>{t_i18n('Cancel')}</Button>
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', mb: stacked ? 0 : 4 }}>
+          <Button variant="secondary" onClick={() => (onCancel ? onCancel() : navigate(irId ? `/dashboard/intelligence_requirements/${irId}` : '/dashboard/intelligence_requirements'))}>{t_i18n('Cancel')}</Button>
           <Button onClick={save} disabled={adding || updating}>{irId ? t_i18n('Save configuration') : t_i18n('Create')}</Button>
         </Box>
       </Box>
-      {/* Dry run of the configuration being written: what it represents today, and its verdict on a chosen entity */}
-      <IrDryRunPanel draft={draft} irId={irId} />
+      {/* Dry run of the configuration being written: what it represents today, and its verdict on a chosen entity.
+          In the create panel it goes above the actions, the panel being too narrow for a side column */}
+      {!stacked && <IrDryRunPanel draft={draft} irId={irId} />}
     </Box>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { useLocation, useSearchParams } from 'react-router';
+import { Navigate, useLocation, useSearchParams } from 'react-router';
 import { Alert, Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
@@ -8,7 +8,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
-import IrCreationWizard from './IrCreationWizard';
 import { type IrCriterionKind, type IrCriterionMode, type IrDirection, type IrDraft, type IrGroupKind, type IrGroupRole, type IrPriority, type IrStatus } from './irConfigTypes';
 import { type IrConfigView, readConfigView, writeConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationQuery, IntelligenceRequirementConfigurationQuery$data } from './__generated__/IntelligenceRequirementConfigurationQuery.graphql';
@@ -198,7 +197,7 @@ const IntelligenceRequirementConfiguration = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const aiNotes = state?.aiNotes;
   const picked = searchParams.get('view');
-  // A proposal of the AI opens in the form fields, as before; a new requirement starts with the creation wizard
+  // A proposal of the AI opens in the form fields; a blank requirement is created in the create panel of the list
   const view: IrConfigView = picked === 'fields' || picked === 'sentence' ? picked : 'fields';
   const changeView = (next: IrConfigView) => setSearchParams({ view: next }, { replace: true, state });
   return (
@@ -236,7 +235,7 @@ const IntelligenceRequirementConfiguration = () => {
           <IrViewToggle view={view} onChange={changeView} />
           <IntelligenceRequirementConfigurationForm initialDraft={state.aiDraft} view={view} onCreated={(id) => writeConfigView(id, view)} />
         </>
-      ) : <IrCreationWizard />}
+      ) : <Navigate to="/dashboard/intelligence_requirements" replace />}
     </>
   );
 };

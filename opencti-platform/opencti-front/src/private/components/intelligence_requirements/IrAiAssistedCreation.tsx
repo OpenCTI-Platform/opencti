@@ -22,6 +22,7 @@ import { AddOutlined, ArrowDropDownOutlined, ArrowDropUpOutlined } from '@mui/ic
 import { LogoXtmOneIcon } from 'filigran-icon';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
+import IrCreationWizard from './configuration/IrCreationWizard';
 import FiligranIcon from '@components/common/FiligranIcon';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { useFormatter } from '../../../components/i18n';
@@ -310,10 +311,10 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
 // so the toolbar keeps one button at every width.
 const IrAiAssistedCreation = () => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const { visible, xtmOneConfigured, termsPending, disabledReason } = useIrAiGate('Create with AI');
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
+  const [blankOpen, setBlankOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const [agent, setAgent] = useState<AgentOption | null | undefined>(undefined);
 
@@ -328,13 +329,25 @@ const IrAiAssistedCreation = () => {
     setMenuOpen(false);
     action();
   };
-  const createBlank = () => navigate('/dashboard/intelligence_requirements/new');
+  const createBlank = () => setBlankOpen(true);
+  // The blank requirement is created in the create panel; a click outside it does not lose the steps already done
+  const blankPanel = (
+    <Drawer open={blankOpen} onClose={() => setBlankOpen(false)} title={t_i18n('Create a requirement')} size="large" disableBackdropClose>
+      {({ onClose }) => <IrCreationWizard onCancel={onClose} />}
+    </Drawer>
+  );
   // AI disabled on the platform: one plain button, no menu of a single entry
   if (!visible) {
-    return <Button data-testid="create-intelligence-requirement-button" aria-label={t_i18n('Create a requirement')} onClick={createBlank}>{t_i18n('Create')}</Button>;
+    return (
+      <>
+        <Button data-testid="create-intelligence-requirement-button" aria-label={t_i18n('Create a requirement')} onClick={createBlank}>{t_i18n('Create')}</Button>
+        {blankPanel}
+      </>
+    );
   }
   return (
     <>
+      {blankPanel}
       <Menu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
         <MenuTrigger asChild>
           <Button
