@@ -333,6 +333,33 @@ describe('WorkflowTransitions – status out of sync with the workflow', () => {
     expect(screen.queryByText('Clear')).toBeNull();
   });
 
+  it('renders the divergence after the transition button so the button stays next to the status', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'new',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        pendingStatus: null,
+        pendingError: 'x_opencti_workflow_id was set to Status "status-2"',
+        pendingTransition: null,
+        allowedTransitions: [{
+          event: 'Starting',
+          toState: 'starting',
+          actions: [],
+          comment: null,
+          requiresShareOrganizationInput: false,
+          requiresUnshareOrganizationInput: false,
+          toStatus: makeStatus(),
+        }],
+      },
+    });
+    testRender(<WorkflowTransitions data={draft} />);
+    const button = screen.getByRole('button', { name: 'Starting' });
+    const message = screen.getByText('Status out of sync with the workflow');
+    expect(button.compareDocumentPosition(message) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('opens the divergence reason from the keyboard', async () => {
     const { user } = testRender(<WorkflowTransitions data={makeDivergedDraft()} />);
     await user.tab();
