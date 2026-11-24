@@ -5,7 +5,7 @@ import LtsLicenseRoot from './LtsLicenseRoot';
 import { HighLevelError } from './Error';
 import LoginRoot from '../../public/LoginRoot';
 import withRouter from '../../utils/compat_router/withRouter';
-import { isReloadingForStaleChunk, onStaleChunkReloadCanceled } from '../../utils/staleChunkReload';
+import StaleChunkReloadGate from './StaleChunkReloadGate';
 
 class AuthBoundaryComponent extends React.Component {
   constructor(props) {
@@ -13,29 +13,20 @@ class AuthBoundaryComponent extends React.Component {
     this.state = { error: null, stack: null };
   }
 
-  componentDidMount() {
-    // A canceled reload leaves the hidden error in place: show it now
-    this.unsubscribeReloadCanceled = onStaleChunkReloadCanceled(() => {
-      if (this.state.error) {
-        this.forceUpdate();
-      }
-    });
-  }
-
-  componentWillUnmount() {
-    this.unsubscribeReloadCanceled();
-  }
-
   componentDidCatch(error, stack) {
     this.setState({ error, stack });
   }
 
   render() {
+    return (
+      <StaleChunkReloadGate error={this.state.error}>
+        {this.renderContent()}
+      </StaleChunkReloadGate>
+    );
+  }
+
+  renderContent() {
     if (this.state.error) {
-      // The page reloads to the new build: no error to show
-      if (isReloadingForStaleChunk(this.state.error)) {
-        return null;
-      }
       const baseErrors = this.state.error.res?.errors ?? [];
       const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);

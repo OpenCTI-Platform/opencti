@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
-import { initStaleChunkReload, isReloadingForStaleChunk, isStaleChunkReloadPending, onStaleChunkReloadCanceled, resetStaleChunkReloadForTests } from './staleChunkReload';
+import { initStaleChunkReload, isReloadingForStaleChunk, onStaleChunkReloadCanceled, resetStaleChunkReloadForTests } from './staleChunkReload';
 
 // What Vite rejects a lazy import with when a file of a previous build is gone
 const chunkError = new TypeError('Failed to fetch dynamically imported module: https://opencti/assets/RootSearch-4RXO6ypR.js');
@@ -32,7 +32,7 @@ describe('initStaleChunkReload', () => {
     dispatchPreloadError(chunkError);
 
     expect(reload).toHaveBeenCalledTimes(1);
-    expect(isStaleChunkReloadPending()).toBe(true);
+    expect(isReloadingForStaleChunk(chunkError)).toBe(true);
   });
 
   it('reloads only once when several chunks fail', () => {
@@ -49,7 +49,7 @@ describe('initStaleChunkReload', () => {
     dispatchPreloadError(chunkError);
 
     expect(reload).not.toHaveBeenCalled();
-    expect(isStaleChunkReloadPending()).toBe(false);
+    expect(isReloadingForStaleChunk(chunkError)).toBe(false);
   });
 
   it('reloads again once the previous reload is old enough', () => {
@@ -68,7 +68,7 @@ describe('initStaleChunkReload', () => {
     dispatchPreloadError(chunkError);
 
     expect(reload).not.toHaveBeenCalled();
-    expect(isStaleChunkReloadPending()).toBe(false);
+    expect(isReloadingForStaleChunk(chunkError)).toBe(false);
   });
 
   it('does not reload when the browser is offline: the chunk is not gone, the network is', () => {
@@ -77,7 +77,7 @@ describe('initStaleChunkReload', () => {
     dispatchPreloadError(chunkError);
 
     expect(reload).not.toHaveBeenCalled();
-    expect(isStaleChunkReloadPending()).toBe(false);
+    expect(isReloadingForStaleChunk(chunkError)).toBe(false);
   });
 
   it.each([
@@ -177,7 +177,6 @@ describe('a reload the user cancels', () => {
 
     vi.advanceTimersByTime(10_000);
 
-    expect(isStaleChunkReloadPending()).toBe(false);
     expect(isReloadingForStaleChunk(chunkError)).toBe(false);
     expect(onCanceled).toHaveBeenCalledTimes(1);
     unsubscribe();

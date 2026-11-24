@@ -9,7 +9,8 @@ import { useFormatter } from '../../components/i18n';
 import withRouter from '../../utils/compat_router/withRouter';
 import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
 import { logger } from '../../utils/logging/logger';
-import { isReloadingForStaleChunk, onStaleChunkReloadCanceled } from '../../utils/staleChunkReload';
+import { isReloadingForStaleChunk } from '../../utils/staleChunkReload';
+import StaleChunkReloadGate from './StaleChunkReloadGate';
 
 // --- Region UI errors components
 // -------------------------------
@@ -62,19 +63,6 @@ class ErrorBoundaryComponent extends React.Component {
     return { error };
   }
 
-  componentDidMount() {
-    // A canceled reload leaves the hidden error in place: show it now
-    this.unsubscribeReloadCanceled = onStaleChunkReloadCanceled(() => {
-      if (this.state.error) {
-        this.forceUpdate();
-      }
-    });
-  }
-
-  componentWillUnmount() {
-    this.unsubscribeReloadCanceled();
-  }
-
   componentDidCatch(error, errorInfo) {
     const isNetworkError = this.state.error?.data?.res ?? this.state.error?.res;
     if (!isNetworkError && !isReloadingForStaleChunk(error)) {
@@ -94,11 +82,15 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   render() {
+    return (
+      <StaleChunkReloadGate error={this.state.error}>
+        {this.renderContent()}
+      </StaleChunkReloadGate>
+    );
+  }
+
+  renderContent() {
     if (this.state.error) {
-      // The page reloads to the new build: no error to show
-      if (isReloadingForStaleChunk(this.state.error)) {
-        return null;
-      }
       const types = map((e) => e.extensions?.code, getGraphQLResponseErrors(this.state.error));
       // Specific error catching
       if (includes('COMPLEX_SEARCH_ERROR', types)) {

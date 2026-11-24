@@ -25,8 +25,6 @@ let reloadPending = false;
 let preloadErrors = new WeakSet<object>();
 let canceledListeners = new Set<() => void>();
 
-export const isStaleChunkReloadPending = (): boolean => reloadPending;
-
 // True when this error is one the page is already reloading for: nothing to show or log
 export const isReloadingForStaleChunk = (error: unknown): boolean => {
   return reloadPending && typeof error === 'object' && error !== null && preloadErrors.has(error);
