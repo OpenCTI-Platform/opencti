@@ -3,7 +3,7 @@
 [project]
 name = "opencti"
 version = "0.0.0"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = ["Private :: Do Not Upload"]
 
 # tooling of the MkDocs documentation site (docs/)

@@ -2,7 +2,7 @@
 name = "opencti-platform-python"
 version = "0.0.0"
 description = "Python runtime of the OpenCTI platform (indicator pattern checks and generation)."
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 # never published on PyPI: PyPI rejects this classifier
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [

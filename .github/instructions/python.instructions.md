@@ -14,7 +14,7 @@ This guide covers:
 ## Architecture
 
 ### Tech Stack
-- **Python**: 3.10 to 3.12 (Matrix tested)
+- **Python**: 3.11 to 3.12 (Matrix tested)
 - **Library**: `pycti`
 - **Linting**: flake8, black, isort
 - **Testing**: pytest
@@ -28,7 +28,7 @@ This guide covers:
 ## Setup & Build
 
 ### Prerequisites
-- **uv** (standalone installer) and **Python 3.10+** with its development headers: `yarn install:python` creates the shared `.venv` with the system `python3`, the interpreter that node-calls-python embeds in the platform, and the other syncs reuse it.
+- **uv** (standalone installer) and **Python 3.11+** with its development headers: `yarn install:python` creates the shared `.venv` with the system `python3`, the interpreter that node-calls-python embeds in the platform, and the other syncs reuse it.
 
 ### Commands
 

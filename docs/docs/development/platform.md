@@ -48,7 +48,7 @@ yarn install
 yarn install:python
 ```
 
-`yarn install:python` runs `uv sync` on the [uv](https://docs.astral.sh/uv/) workspace of the repository: the Python dependencies of the platform, of the worker and of the client are locked in `uv.lock` at the repository root and installed in `~/opencti/.venv`, for the system `python3` that the platform embeds (3.10 or later, with its development headers). Install uv with its [standalone installer](https://docs.astral.sh/uv/getting-started/installation/) first.
+`yarn install:python` runs `uv sync` on the [uv](https://docs.astral.sh/uv/) workspace of the repository: the Python dependencies of the platform, of the worker and of the client are locked in `uv.lock` at the repository root and installed in `~/opencti/.venv`, for the system `python3` that the platform embeds (3.11 or later, with its development headers). Install uv with its [standalone installer](https://docs.astral.sh/uv/getting-started/installation/) first.
 
 ### Development configuration
 

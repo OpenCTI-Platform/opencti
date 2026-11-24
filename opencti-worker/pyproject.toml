@@ -2,7 +2,7 @@
 name = "opencti-worker"
 version = "0.0.0"
 description = "OpenCTI worker, consumes the RabbitMQ queues and pushes the bundles to the platform."
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 # never published on PyPI: PyPI rejects this classifier
 classifiers = ["Private :: Do Not Upload"]
 dependencies = [

@@ -278,7 +278,7 @@ sudo apt-get update
 sudo apt-get install build-essential nodejs npm python3 python3-dev
 ```
 
-The Python modules of the platform and of the workers are installed with [uv](https://docs.astral.sh/uv/): install it with its [standalone installer](https://docs.astral.sh/uv/getting-started/installation/). Python must be 3.10 or later.
+The Python modules of the platform and of the workers are installed with [uv](https://docs.astral.sh/uv/): install it with its [standalone installer](https://docs.astral.sh/uv/getting-started/installation/). Python must be 3.11 or later.
 
 #### Download the application files
 

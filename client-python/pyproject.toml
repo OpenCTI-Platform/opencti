@@ -6,7 +6,7 @@ readme = "README.md"
 license = "Apache-2.0"
 authors = [{ name = "Filigran", email = "contact@filigran.io" }]
 maintainers = [{ name = "Filigran", email = "contact@filigran.io" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
