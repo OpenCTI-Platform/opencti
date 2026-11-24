@@ -39,7 +39,7 @@ from collections import deque
 from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import boto3
 import jwt
@@ -1962,35 +1962,50 @@ def _flatten_exception(exc: BaseException) -> List[BaseException]:
     return [exc]
 
 
-def _exception_to_connector_error(exc: BaseException) -> Dict:
-    # pylint: disable=broad-except
-    # This path must never raise: a property raising anything (not only AttributeError) must not hide the error
-    try:
-        code = getattr(exc, "code", None)
-    except Exception:
-        code = None
-    # A third-party code (urllib HTTPError.code is an int...) is ignored
-    # strip() also turns a str subclass (a str enum) into a plain str
-    code = code.strip() if isinstance(code, str) else ""
-    try:
-        criticity = getattr(exc, "criticity", None)
-    except Exception:
-        criticity = None
-    try:
-        # An IntEnum (Criticity of the connectors SDK) is sent as a plain int
-        criticity = int(_parse_criticity(criticity))
-    except (TypeError, ValueError):
-        criticity = CONNECTOR_UNKNOWN_ERROR_CRITICITY
-    try:
-        text = str(exc)
-    except Exception:
-        text = ""
-    name = type(exc).__name__
-    return {
-        "code": code or CONNECTOR_UNKNOWN_ERROR_CODE,
-        "message": f"{name}: {text}" if text else name,
-        "criticity": criticity,
-    }
+class _ExceptionConverter:
+    """Converts an exception raised by a connector run into a connector error.
+
+    It never raises: the exception may come from any library, and a failure
+    here would stop the scheduler again.
+    """
+
+    def __init__(self, exc: BaseException):
+        self.exc = exc
+
+    def to_error(self) -> Dict:
+        return {
+            "code": self.code(),
+            "message": self.message(),
+            "criticity": self.criticity(),
+        }
+
+    def code(self) -> str:
+        code = self._read(lambda: self.exc.code)
+        # A third-party code (urllib HTTPError.code is an int...) is ignored
+        if not isinstance(code, str) or not code.strip():
+            return CONNECTOR_UNKNOWN_ERROR_CODE
+        # strip() also turns a str subclass (a str enum) into a plain str
+        return code.strip()
+
+    def criticity(self) -> int:
+        try:
+            # An IntEnum (Criticity of the connectors SDK) is sent as a plain int
+            return int(_parse_criticity(self._read(lambda: self.exc.criticity)))
+        except (TypeError, ValueError):
+            return CONNECTOR_UNKNOWN_ERROR_CRITICITY
+
+    def message(self) -> str:
+        name = type(self.exc).__name__
+        text = self._read(lambda: str(self.exc))
+        return f"{name}: {text}" if text else name
+
+    @staticmethod
+    def _read(reader: Callable[[], Any]) -> Any:
+        # A property or __str__ may raise anything, not only AttributeError: read as missing
+        try:
+            return reader()
+        except Exception:  # pylint: disable=broad-except
+            return None
 
 
 class ConnectorInfo:
@@ -3431,11 +3446,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.connector_info.errors = self.connector_info.errors + returned_errors
         if run_exception is not None:
             for exc in _flatten_exception(run_exception):
-                self.connector_info.add_error(**_exception_to_connector_error(exc))
+                self.connector_info.add_error(**_ExceptionConverter(exc).to_error())
             self.metric.inc("error_count")
             self.connector_logger.error(
                 "Connector run raised an exception",
-                {"reason": _exception_to_connector_error(run_exception)["message"]},
+                {"reason": _ExceptionConverter(run_exception).message()},
             )
         if self.connector_info.errors:
             self.connector_logger.info(
