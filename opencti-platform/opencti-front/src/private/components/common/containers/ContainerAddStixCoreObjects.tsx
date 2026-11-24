@@ -1,7 +1,6 @@
 import React, { FunctionComponent, ReactNode, useEffect, useState } from 'react';
 import * as R from 'ramda';
 import { Form, Formik, FormikConfig } from 'formik';
-import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import IconButton from '@common/button/IconButton';
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
@@ -11,10 +10,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
-import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { containerAddStixCoreObjectsLinesRelationAddMutation, containerAddStixCoreObjectsLinesRelationDeleteMutation } from './ContainerAddStixCoreObjectsLines';
-import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
 import {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
@@ -43,8 +39,8 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { insertNode } from '../../../../utils/store';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { addObjectToContainer, removeObjectFromContainer } from './containerObjects';
 import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { DefaultMarking } from '../../settings/marking_definitions/markingDefinition.types';
@@ -128,8 +124,6 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
     [stixCoreObject.id, stixCoreObject.standard_id],
     current,
   ));
-  // ID is not valid pagination options, will be handled better when hooked
-  const { id: _, count: __, ...containerPaginationOptions } = paginationOptions ?? {};
 
   const sendStixCoreObjectModification = (
     stixCoreObject: ContainerAddStixCoreObjectsLine,
@@ -138,6 +132,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
     setSubmitting?: (isSubmitting: boolean) => void,
     resetForm?: () => void,
   ) => {
+    const args = { containerId, objectId: stixCoreObject.id, knowledgeGraph, paginationOptions, commitMessage, references };
     const complete = (callback?: (o: ContainerAddStixCoreObjectsLine) => void) => {
       if (typeof callback === 'function') {
         callback(stixCoreObject);
@@ -145,68 +140,23 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
       if (setSubmitting) setSubmitting(false);
       if (resetForm) resetForm();
     };
+    // The error is already shown by the mutation
+    const fail = () => {
+      if (setSubmitting) setSubmitting(false);
+    };
     if (isAdded(stixCoreObject)) {
-      commitMutation({
-        mutation: knowledgeGraph
-          ? reportKnowledgeGraphMutationRelationDeleteMutation
-          : containerAddStixCoreObjectsLinesRelationDeleteMutation,
-        variables: {
-          id: containerId,
-          toId: stixCoreObject.id,
-          relationship_type: 'object',
-          commitMessage,
-          references,
-        },
-        updater: knowledgeGraph ? undefined : (store: RecordSourceSelectorProxy) => {
-          markAsRemoved(stixCoreObject);
-          const containerRecord = store.get(containerId);
-          const conn = containerRecord && ConnectionHandler.getConnection(
-            containerRecord,
-            'Pagination_objects',
-            containerPaginationOptions,
-          );
-          if (conn) ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-        },
-        onCompleted: () => {
-          markAsRemoved(stixCoreObject);
-          complete(onDelete);
-        },
-        setSubmitting,
-      });
+      removeObjectFromContainer(args).then(() => {
+        markAsRemoved(stixCoreObject);
+        complete(onDelete);
+      }).catch(fail);
     } else {
-      const input = {
-        toId: stixCoreObject.id,
-        relationship_type: 'object',
-      };
-      commitMutation({
-        mutation: knowledgeGraph
-          ? reportKnowledgeGraphtMutationRelationAddMutation
-          : containerAddStixCoreObjectsLinesRelationAddMutation,
-        variables: {
-          id: containerId,
-          input,
-          commitMessage,
-          references,
-        },
+      addObjectToContainer({
+        ...args,
         optimisticUpdater: knowledgeGraph ? undefined : () => markAsAdded(stixCoreObject),
-        updater: knowledgeGraph ? undefined : (store: RecordSourceSelectorProxy) => {
-          insertNode(
-            store,
-            'Pagination_objects',
-            containerPaginationOptions,
-            'containerEdit',
-            containerId,
-            'relationAdd',
-            { input, commitMessage, references },
-            'to',
-          );
-        },
-        onCompleted: () => {
-          if (knowledgeGraph) markAsAdded(stixCoreObject);
-          complete(onAdd);
-        },
-        setSubmitting,
-      });
+      }).then(() => {
+        if (knowledgeGraph) markAsAdded(stixCoreObject);
+        complete(onAdd);
+      }).catch(fail);
     }
   };
 

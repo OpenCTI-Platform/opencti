@@ -3,14 +3,11 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
 import { Form, Formik } from 'formik';
-import { ConnectionHandler } from 'relay-runtime';
-import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { ContainerAddStixCoreObjecstLineDummy, ContainerAddStixCoreObjectsLine } from './ContainerAddStixCoreObjectsLine';
 import { setNumberOfElements } from '../../../../utils/Number';
-import { insertNode } from '../../../../utils/store';
+import { addObjectToContainer, removeObjectFromContainer } from './containerObjects';
 import CommitMessage from '../form/CommitMessage';
 
 const nbOfRowsToLoad = 50;
@@ -90,149 +87,39 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const alreadyAdded = stixCoreObject.id in addedStixCoreObjects || stixCoreObject.standard_id in addedStixCoreObjects;
+    const args = { containerId, objectId: stixCoreObject.id, knowledgeGraph, paginationOptions, commitMessage, references };
+    const markAsAdded = () => this.setState((state) => ({
+      addedStixCoreObjects: { ...state.addedStixCoreObjects, [stixCoreObject.id]: stixCoreObject },
+    }));
+    const complete = () => {
+      if (setSubmitting) setSubmitting(false);
+      if (resetForm) resetForm(true);
+    };
+    // The error is already shown by the mutation
+    const fail = () => {
+      if (setSubmitting) setSubmitting(false);
+    };
     if (alreadyAdded) {
-      if (knowledgeGraph) {
-        commitMutation({
-          mutation: reportKnowledgeGraphMutationRelationDeleteMutation,
-          variables: {
-            id: containerId,
-            toId: stixCoreObject.id,
-            relationship_type: 'object',
-            commitMessage,
-            references,
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: R.dissoc(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-            if (typeof onDelete === 'function') {
-              onDelete(stixCoreObject);
-            }
-            if (setSubmitting) setSubmitting(false);
-            if (resetForm) resetForm(true);
-          },
-          setSubmitting,
-        });
-      } else {
-        commitMutation({
-          mutation: containerAddStixCoreObjectsLinesRelationDeleteMutation,
-          variables: {
-            id: containerId,
-            toId: stixCoreObject.id,
-            relationship_type: 'object',
-            commitMessage,
-            references,
-          },
-          updater: (store) => {
-            const id = stixCoreObject.id in addedStixCoreObjects ? stixCoreObject.id : stixCoreObject.standard_id;
-            this.setState({
-              addedStixCoreObjects: R.dissoc(
-                id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-            // ID is not valid pagination options, will be handled better when hooked
-            const options = { ...paginationOptions };
-            delete options.id;
-            delete options.count;
-            const conn = ConnectionHandler.getConnection(
-              store.get(containerId),
-              'Pagination_objects',
-              options,
-            );
-            ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: R.dissoc(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-            if (typeof onDelete === 'function') {
-              onDelete(stixCoreObject);
-            }
-            if (setSubmitting) setSubmitting(false);
-            if (resetForm) resetForm(true);
-          },
-          setSubmitting,
-        });
-      }
+      removeObjectFromContainer(args).then(() => {
+        this.setState((state) => ({
+          addedStixCoreObjects: R.omit([stixCoreObject.id, stixCoreObject.standard_id], state.addedStixCoreObjects),
+        }));
+        if (typeof onDelete === 'function') {
+          onDelete(stixCoreObject);
+        }
+        complete();
+      }).catch(fail);
     } else {
-      const input = {
-        toId: stixCoreObject.id,
-        relationship_type: 'object',
-      };
-      if (knowledgeGraph) {
-        commitMutation({
-          mutation: reportKnowledgeGraphtMutationRelationAddMutation,
-          variables: {
-            id: containerId,
-            input,
-            commitMessage,
-            references,
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: {
-                ...this.state.addedStixCoreObjects,
-                [stixCoreObject.id]: stixCoreObject,
-              },
-            });
-            if (typeof onAdd === 'function') {
-              onAdd(stixCoreObject);
-            }
-            if (setSubmitting) setSubmitting(false);
-            if (resetForm) resetForm(true);
-          },
-          setSubmitting,
-        });
-      } else {
-        commitMutation({
-          mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
-          variables: {
-            id: containerId,
-            input,
-            commitMessage,
-            references,
-          },
-          optimisticUpdater: () => {
-            this.setState({
-              addedStixCoreObjects: {
-                ...this.state.addedStixCoreObjects,
-                [stixCoreObject.id]: stixCoreObject,
-              },
-            });
-          },
-          updater: (store) => {
-            // ID is not valid pagination options, will be handled better when hooked
-            const options = { ...paginationOptions };
-            delete options.id;
-            delete options.count;
-            insertNode(
-              store,
-              'Pagination_objects',
-              options,
-              'containerEdit',
-              containerId,
-              'relationAdd',
-              { input, commitMessage, references },
-              'to',
-            );
-          },
-          onCompleted: () => {
-            if (typeof onAdd === 'function') {
-              onAdd(stixCoreObject);
-            }
-            if (setSubmitting) setSubmitting(false);
-            if (resetForm) resetForm(true);
-          },
-          setSubmitting,
-        });
-      }
+      addObjectToContainer({
+        ...args,
+        optimisticUpdater: knowledgeGraph ? undefined : markAsAdded,
+      }).then(() => {
+        if (knowledgeGraph) markAsAdded();
+        if (typeof onAdd === 'function') {
+          onAdd(stixCoreObject);
+        }
+        complete();
+      }).catch(fail);
     }
   }
 
