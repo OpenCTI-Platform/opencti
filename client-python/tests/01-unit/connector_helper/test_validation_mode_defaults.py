@@ -7,7 +7,7 @@ and when receiving messages without an explicit validation_mode field.
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from pycti.connector.opencti_connector_helper import ListenQueue
+from pycti.connector.opencti_connector_helper import ConnectorInfo, ListenQueue
 
 
 class DummyLogger:
@@ -38,6 +38,8 @@ class DummyHelper:
         self.callback = MagicMock(return_value="success")
         self.api = MagicMock()
         self.api_impersonate = MagicMock()
+        self.connector_info = ConnectorInfo()
+        self.metric = MagicMock()
 
 
 class TestValidationModeDefaults(TestCase):

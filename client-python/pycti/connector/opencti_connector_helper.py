@@ -820,7 +820,10 @@ class ListenQueue(threading.Thread):
             if "configuration" in json_data:
                 event_data["configuration"] = json_data["configuration"]
             # Send the enriched to the callback
-            message = self.callback(event_data)
+            # The executor reports an exception it raises to the platform, with the ping, and re-raises it
+            message = _listener_callback_executor(
+                self.helper, returns_errors=False
+            ).execute(lambda: self.callback(event_data))
             if work_id:
                 self.helper.api.work.to_processed(work_id, message)
             self._set_draft_id("")
@@ -2268,6 +2271,24 @@ class ConnectorInfoErrorCollector(ErrorCollector):
         self._connector_info.clear_errors()
 
 
+def _listener_callback_executor(helper, returns_errors: bool) -> CallbackExecutor:
+    """Executor of a callback of a connector that listens to a queue or a stream.
+
+    Such a connector has no run: the errors of its callbacks accumulate in its
+    ConnectorInfo until a ping sends them (``clear_errors_once_sent``). An
+    exception the callback raises is re-raised, so the listener handles it as
+    it always did.
+    """
+    return CallbackExecutor(
+        ConnectorInfoErrorCollector(helper.connector_info),
+        helper.connector_logger,
+        helper.metric,
+        reset_on_each_run=False,
+        returns_errors=returns_errors,
+        swallow_errors=False,
+    )
+
+
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     """Main helper class for developing OpenCTI connectors.
 
@@ -3547,10 +3568,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         through the provided callback function. This method blocks until the
         listener is stopped.
 
+        An exception the callback raises closes the work in error, and is
+        reported to the platform with the ping, like an error added with
+        ``connector_info.add_error``: each one (each exception of an
+        ``ExceptionGroup``) with its ``code`` and ``criticity`` attributes, or
+        ``other.unknown`` and 50 when it has none. Errors are cleared once a
+        ping has sent them.
+
         :param message_callback: Function to process incoming messages. Receives
             event data dict and should return a status message string.
         :type message_callback: Callable[[Dict], str]
         """
+        self.connector_info.clear_errors_once_sent = True
         self.listen_queue = ListenQueue(
             self,
             self.opencti_token,
