@@ -14,6 +14,7 @@ import { isFilterGroupNotEmpty, canonicalizeFilterGroupForBackend } from '../../
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
+import useSchema from '../../utils/hooks/useSchema';
 import Security from '../../utils/Security';
 import { export_max_size } from '../../utils/utils';
 import FilterIconButton from '../FilterIconButton';
@@ -105,6 +106,18 @@ const DataTableFilters = ({
     },
   } = useDataTableContext();
   const { selectedElements } = useEntityToggle(storageKey);
+  const { isRelationship } = useSchema();
+
+  // The global search lists relationships too, but the stix core objects export cannot export them:
+  // they are not sent to the export connectors.
+  const selectedIds = Object.keys(selectedElements);
+  const excludedIds = exportContext?.entity_type === 'Stix-Core-Object'
+    ? selectedIds.filter((id) => {
+        const entityType = selectedElements[id]?.entity_type;
+        return !!entityType && isRelationship(entityType);
+      })
+    : [];
+  const exportedIds = selectedIds.filter((id) => !excludedIds.includes(id));
 
   const exportDisabled = !exportContext || (numberOfElements
     && ((Object.keys(selectedElements).length > export_max_size
@@ -120,7 +133,7 @@ const DataTableFilters = ({
   };
 
   return (
-    <ExportContext.Provider value={{ selectedIds: Object.keys(selectedElements) }}>
+    <ExportContext.Provider value={{ selectedIds: exportedIds, excludedRelationshipsCount: excludedIds.length }}>
       {/* `alignItems: center`: without it the row defaults to `stretch`, so the left group (which centres its own
           children) and the right group of 36px toggles resolved to different centre lines — measured 305 against
           303 on the entity Analyses tab, which is the 2px misalignment reported there. */}
