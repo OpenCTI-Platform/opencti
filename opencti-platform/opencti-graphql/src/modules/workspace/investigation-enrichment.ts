@@ -4,7 +4,7 @@ import { AccessOperation, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, validateU
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { type BasicStoreEntityWorkspace } from './workspace-types';
 import { findWorkPaginated, loadWorkById } from '../../domain/work';
-import { elUpdate, ES_MAX_PAGINATION } from '../../database/engine';
+import { elUpdate } from '../../database/engine';
 import { emptyPaginationResult, isNotEmptyField, READ_INDEX_HISTORY } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { WorkInvestigationStatus, WorkspaceEnrichmentWorksArgs } from '../../generated/graphql';
@@ -71,7 +71,8 @@ export const findInvestigationEnrichmentWorks = async (
   const investigationFilters = addFilter(args.filters, 'investigation_id', workspace.id);
 
   // 01. Collect the sources of the works of the investigation, reading only that field
-  const works = await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
+  const sourceIdsSet = new Set<string | undefined>();
+  await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
     context,
     user,
     [ENTITY_TYPE_WORK],
@@ -79,12 +80,14 @@ export const findInvestigationEnrichmentWorks = async (
       indices: [READ_INDEX_HISTORY],
       filters: investigationFilters,
       orderBy: ['timestamp', 'internal_id'],
-      first: ES_MAX_PAGINATION,
       baseData: true,
       baseFields: ['event_source_id'],
+      callback: async (works) => {
+        works.forEach((work) => sourceIdsSet.add(work.event_source_id));
+      },
     },
   );
-  const sourceIds = [...new Set(works.map((work) => work.event_source_id).filter(isNotEmptyField))];
+  const sourceIds = [...sourceIdsSet].filter(isNotEmptyField);
   if (sourceIds.length === 0) {
     return emptyPaginationResult();
   }
