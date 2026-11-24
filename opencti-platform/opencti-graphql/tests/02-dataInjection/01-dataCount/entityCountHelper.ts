@@ -10,7 +10,7 @@ export const entitiesCounter = {
   CourseOfAction: 1,
   Credential: 1,
   DecayRule: 4,
-  EntitySetting: 47,
+  EntitySetting: 48,
   ExternalReference: 7,
   Group: TESTING_GROUPS.length + 3,
   Incident: 1,
@@ -43,7 +43,7 @@ export const entitiesCounter = {
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
-  Vocabulary: 481, // 360 + 121 System asset vocabularies
+  Vocabulary: 492, // 371 + 121 System asset vocabularies
   // The onboarding template, and the template for the locked users (behind the LOCAL_AUTH_LOCKOUT feature flag, enabled in the tests)
   EmailTemplate: 2,
   RetentionRule: 4,

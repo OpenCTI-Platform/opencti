@@ -236,6 +236,10 @@ const investigationGraphObjectsFragment = graphql`
               name
               description
             }
+            ... on Procedure {
+              name
+              description
+            }
             ... on Language {
               name
             }
@@ -327,6 +331,7 @@ const investigationGraphObjectsFragment = graphql`
               relationship_type
               start_time
               stop_time
+              component_index
               confidence
               is_inferred
               created

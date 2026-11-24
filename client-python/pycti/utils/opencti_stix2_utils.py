@@ -224,6 +224,8 @@ STIX_CORE_OBJECTS = [
     "vulnerability",
     "security-coverage",
     "security-coverage-result",
+    "x-opencti-procedure",
+    "x-procedure",
 ]
 
 SUPPORTED_STIX_ENTITY_OBJECTS = STIX_META_OBJECTS + STIX_CORE_OBJECTS

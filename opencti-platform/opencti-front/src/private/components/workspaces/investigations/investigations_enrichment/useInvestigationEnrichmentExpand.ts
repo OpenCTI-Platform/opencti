@@ -34,6 +34,7 @@ const touchedElementsQuery = graphql`
                   relationship_type
                   start_time
                   stop_time
+                  component_index
                   confidence
                   created
                   created_at

@@ -252,6 +252,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on DataSource {
           name
         }
+        ... on Procedure {
+          name
+        }
         ... on Case {
           name
         }
@@ -375,6 +378,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on DataSource {
               name
             }
+            ... on Procedure {
+              name
+            }
             ... on Case {
               name
             }
@@ -467,6 +473,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on DataSource {
+              name
+            }
+            ... on Procedure {
               name
             }
             ... on Case {
@@ -582,6 +591,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on DataSource {
               name
             }
+            ... on Procedure {
+              name
+            }
             ... on Case {
               name
             }
@@ -671,6 +683,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on DataSource {
+              name
+            }
+            ... on Procedure {
               name
             }
             ... on Case {

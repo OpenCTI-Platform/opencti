@@ -86,6 +86,12 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 
 ![Usage_propagation_of_parent_techniques](assets/usage_propagation_of_parent_techniques.png)
 
+#### Usage propagation of procedure techniques
+
+| Conditions                                                                                                         | Creations                      |
+|:-------------------------------------------------------------------------------------------------------------------|:-------------------------------|
+| A Campaign, Intrusion Set or Threat Actor A uses a Procedure B and the Procedure B implements an Attack Pattern C  | The Entity A uses the Entity C |
+
 #### Usage propagation via attribution
 
 | Conditions                                                                 | Creations                      |

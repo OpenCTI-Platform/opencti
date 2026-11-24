@@ -78,6 +78,7 @@ const config: CodegenConfig = {
           SecurityCoverageResult: '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types#BasicStoreEntitySecurityCoverageResult',
           AttackPatternCoverage: '../modules/securityCoverage/securityCoverage-types#CoveredEntity',
           VulnerabilityCoverage: '../modules/securityCoverage/securityCoverage-types#CoveredEntity',
+          Procedure: '../modules/procedure/procedure-types#BasicStoreEntityProcedure',
           EmailTemplate: '../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate',
           Form: '../modules/form/form-types#BasicStoreEntityForm',
           AuthenticationProvider: '../modules/authenticationProvider/authenticationProvider-types#BasicStoreEntityAuthenticationProvider',

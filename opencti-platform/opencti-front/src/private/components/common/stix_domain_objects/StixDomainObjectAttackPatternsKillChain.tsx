@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useQueryLoader } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { FileDownloadOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, ViewColumnOutlined, VisibilityOutlined } from '@mui/icons-material';
+import { FileDownloadOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, ViewColumnOutlined, VisibilityOutlined, WhatshotOutlined } from '@mui/icons-material';
 import { ProgressWrench, RelationManyToMany } from 'mdi-material-ui';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -52,9 +52,15 @@ import { useFormatter } from '../../../../components/i18n';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import Stack from '@mui/material/Stack';
+import type {
+  StixDomainObjectAttackPatternsProcedureHeatmapQuery$data,
+} from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsProcedureHeatmapQuery.graphql';
+import { PROCEDURE_HEATMAP_ENTITY_TYPES, stixDomainObjectAttackPatternsProcedureHeatmapQuery } from './StixDomainObjectAttackPatternsProcedureHeatmap';
+import useProcedureHeatmap from './useProcedureHeatmap';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -130,6 +136,14 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   );
 
   const isSecurityPlatform = entityType === 'SecurityPlatform';
+  const canShowProcedureHeatmap = PROCEDURE_HEATMAP_ENTITY_TYPES.includes(entityType);
+  const { procedureUsage, isLoading: isProcedureHeatmapLoading, toggle: handleToggleProcedureHeatmap } = useProcedureHeatmap({
+    entityId: stixDomainObjectId,
+    load: (variables) => fetchQuery(stixDomainObjectAttackPatternsProcedureHeatmapQuery, variables)
+      .toPromise() as Promise<StixDomainObjectAttackPatternsProcedureHeatmapQuery$data>,
+    onError: () => MESSAGING$.notifyError(t_i18n('The procedure heatmap could not be loaded')),
+  });
+  const isProcedureHeatmapActive = procedureUsage !== undefined || isProcedureHeatmapLoading;
   const displayButtons = !containerTypes.includes(entityType);
 
   const refetch = React.useCallback(() => {
@@ -323,6 +337,23 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   </TooltipTrigger>
                   <TooltipContent>{expandAll ? t_i18n('Collapse all') : t_i18n('Expand all')}</TooltipContent>
                 </FdsTooltip>
+
+                {canShowProcedureHeatmap && (
+                  <FdsTooltip>
+                    <TooltipTrigger asChild>
+                      <IconButton
+                        variant="default"
+                        priority="tertiary"
+                        active={isProcedureHeatmapActive}
+                        aria-label={isProcedureHeatmapActive ? t_i18n('Hide procedure heatmap') : t_i18n('Show procedure heatmap')}
+                        disabled={isProcedureHeatmapLoading}
+                        onClick={handleToggleProcedureHeatmap}
+                        icon={<WhatshotOutlined />}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>{isProcedureHeatmapActive ? t_i18n('Hide procedure heatmap') : t_i18n('Show procedure heatmap')}</TooltipContent>
+                  </FdsTooltip>
+                )}
               </Stack>
 
               {!isSecurityPlatform && (
@@ -463,6 +494,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             entityType={entityType}
             isModeOnlyActive={isModeOnlyActive}
             expandAll={expandAll}
+            procedureUsage={procedureUsage}
           />
         )}
         {currentView === 'matrix-in-line' && (

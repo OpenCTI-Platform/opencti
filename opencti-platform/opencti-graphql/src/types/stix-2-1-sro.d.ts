@@ -29,6 +29,8 @@ export interface StixRelation extends StixRelationshipObject {
   target_ref: StixId;
   start_time: StixDate;
   stop_time: StixDate;
+  x_component_index?: number;
+  x_component_type?: string;
   extensions: {
     [STIX_EXT_OCTI]: RelationExtension;
   };

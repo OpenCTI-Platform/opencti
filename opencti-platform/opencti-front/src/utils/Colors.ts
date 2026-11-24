@@ -94,6 +94,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'Course-Of-Action': 'techniques',
   'Data-Component': 'techniques',
   'Data-Source': 'techniques',
+  Procedure: 'techniques',
   Language: 'techniques',
 
   // Victimology

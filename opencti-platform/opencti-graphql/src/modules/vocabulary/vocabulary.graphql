@@ -20,6 +20,7 @@ enum VocabularyCategory {
   malware_result_ov
   malware_type_ov
   platforms_ov
+  procedure_type_ov
   opinion_ov
   organization_type_ov
   pattern_type_ov

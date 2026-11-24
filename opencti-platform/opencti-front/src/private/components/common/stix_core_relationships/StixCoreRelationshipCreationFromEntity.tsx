@@ -288,6 +288,10 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
       description
       aliases
     }
+    ... on Procedure {
+      name
+      description
+    }
     ... on Language {
       name
       aliases
@@ -404,6 +408,9 @@ export const stixCoreRelationshipCreationFromEntityQuery = graphql`
         name
       }
       ... on Narrative {
+        name
+      }
+      ... on Procedure {
         name
       }
       ... on Language {

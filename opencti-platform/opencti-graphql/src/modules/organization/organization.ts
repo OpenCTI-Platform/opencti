@@ -27,6 +27,7 @@ import { ENTITY_MEDIA_CONTENT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../administrativeArea/administrativeArea-types';
 import convertOrganizationToStix, { convertOrganizationToStix_2_0 } from './organization-converter';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
+import { ENTITY_TYPE_PROCEDURE } from '../procedure/procedure-types';
 
 const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrganization, Stix2Organization> = {
   type: {
@@ -101,6 +102,7 @@ const ORGANIZATION_DEFINITION: ModuleDefinition<StoreEntityOrganization, StixOrg
       name: RELATION_SHOULD_COVER,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
+        { name: ENTITY_TYPE_PROCEDURE, type: REL_NEW },
       ],
     },
     {

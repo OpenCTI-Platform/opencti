@@ -34,6 +34,7 @@ export const groups = new Map<string, string[]>([
       'Course-Of-Action',
       'Data-Component',
       'Data-Source',
+      'Procedure',
     ],
   ],
   ['Entities', ['Sector', 'Event', 'Organization', 'SecurityPlatform', 'System', 'Individual']],

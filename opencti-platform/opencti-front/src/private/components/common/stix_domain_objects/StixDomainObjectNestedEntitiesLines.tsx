@@ -168,6 +168,10 @@ const StixDomainObjectNestedEntitiesLinesFragment = graphql`
               name
               description
             }
+            ... on Procedure {
+              name
+              description
+            }
             ... on Language {
               name
             }
@@ -288,6 +292,10 @@ const StixDomainObjectNestedEntitiesLinesFragment = graphql`
               description
             }
             ... on Narrative {
+              name
+              description
+            }
+            ... on Procedure {
               name
               description
             }

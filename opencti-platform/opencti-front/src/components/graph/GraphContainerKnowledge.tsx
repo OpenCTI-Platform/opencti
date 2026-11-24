@@ -240,6 +240,10 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               name
               description
             }
+            ... on Procedure {
+              name
+              description
+            }
             ... on Language {
               name
             }
@@ -293,6 +297,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               relationship_type
               start_time
               stop_time
+              component_index
               confidence
               created
               is_inferred

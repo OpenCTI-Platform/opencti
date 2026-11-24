@@ -4,6 +4,7 @@ from typing import Tuple
 
 from typing_extensions import deprecated
 
+from pycti.utils.opencti_procedure_utils import normalize_procedure_bundle
 from pycti.utils.opencti_stix2_identifier import (
     external_reference_generate_id,
     kill_chain_phase_generate_id,
@@ -47,12 +48,18 @@ class OpenCTIStix2Splitter:
     handling dependencies between objects and deduplicating references.
     """
 
-    def __init__(self):
+    def __init__(self, logger=None):
         """Initialize the STIX2 bundle splitter.
 
         Sets up internal caches for tracking processed elements,
         references, and incompatible items.
+
+        :param logger: (optional) logger used to report the bundle normalization
+            warnings, which are also kept in :py:attr:`warnings`
+        :type logger: logging.Logger or None
         """
+        self.logger = logger
+        self.warnings = []
         self.cache_index = {}
         self.cache_refs = {}
         self.elements = []
@@ -270,6 +277,13 @@ class OpenCTIStix2Splitter:
 
         if "objects" not in bundle_data:
             raise Exception("File data is not a valid bundle")
+
+        # Convert procedures (x-procedure and their refs) before splitting
+        bundle_data, warnings = normalize_procedure_bundle(bundle_data)
+        self.warnings.extend(warnings)
+        if self.logger is not None:
+            for warning in warnings:
+                self.logger.warning(warning)
         if "id" not in bundle_data:
             bundle_data["id"] = "bundle--" + str(uuid.uuid4())
 

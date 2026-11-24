@@ -104,6 +104,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/techniques/data_components';
     case 'Data-Source':
       return '/dashboard/techniques/data_sources';
+    case 'Procedure':
+      return '/dashboard/techniques/procedures';
     case 'Case-Incident':
       return '/dashboard/cases/incidents';
     case 'Feedback':

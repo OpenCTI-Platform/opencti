@@ -1,0 +1,427 @@
+{
+  "type": "bundle",
+  "id": "bundle--169ea452-d54d-5538-a2be-a60b0733a9fd",
+  "objects": [
+    {
+      "type": "x-opencti-procedure",
+      "spec_version": "2.1",
+      "id": "x-opencti-procedure--8a1f3c52-6d0e-4b7a-9c2e-5f4d3b2a1e07",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "name": "Copy credential stores via wbadmin backup",
+      "description": "Read the VSS-locked Active Directory database and the SYSTEM and SECURITY hives with the signed Windows backup utility, staging the copies on a loopback administrative share so the credential stores can be cracked offline.",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "credential-access"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--a0c46471-d475-5af0-aa38-bf2f447fad21",
+        "attack-pattern--db750ea3-8749-5267-8b98-138bbc739cf7",
+        "attack-pattern--df4cb5dd-7934-5d63-be09-c5a5b31c5bbd"
+      ],
+      "x_procedure_type": "reporting",
+      "confidence": 75,
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      }
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--79939eb3-0b94-5519-8deb-c6af369d9847",
+      "command_line": "wbadmin.exe"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9c9b6624-437b-5383-a177-513149bae262",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "process--79939eb3-0b94-5519-8deb-c6af369d9847",
+      "target_ref": "x-opencti-procedure--8a1f3c52-6d0e-4b7a-9c2e-5f4d3b2a1e07",
+      "x_component_index": 0,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--23f00424-6cbf-5c4e-b0dd-41f73bd25859",
+      "value": "start backup"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--46e6b045-53d4-5dbc-9bf8-0b99ab6da516",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--23f00424-6cbf-5c4e-b0dd-41f73bd25859",
+      "target_ref": "x-opencti-procedure--8a1f3c52-6d0e-4b7a-9c2e-5f4d3b2a1e07",
+      "x_component_index": 1,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--3ab3511d-0ec2-5627-9b22-9e201051d09c",
+      "value": "-backuptarget:\\\\127.0.0.1\\C$\\ProgramData\\"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2b46b75c-cab2-53af-8177-da4499a433bf",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--3ab3511d-0ec2-5627-9b22-9e201051d09c",
+      "target_ref": "x-opencti-procedure--8a1f3c52-6d0e-4b7a-9c2e-5f4d3b2a1e07",
+      "x_component_index": 2,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--5a5a694c-0e50-5025-84cd-7139aeae51be",
+      "value": "-include:\"C:\\windows\\NTDS\\ntds.dit, C:\\windows\\system32\\config\\SYSTEM, C:\\windows\\system32\\config\\SECURITY\""
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b52f1918-34bc-5602-8ceb-b7125561f7bb",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--5a5a694c-0e50-5025-84cd-7139aeae51be",
+      "target_ref": "x-opencti-procedure--8a1f3c52-6d0e-4b7a-9c2e-5f4d3b2a1e07",
+      "x_component_index": 3,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--f37ddc42-580a-5a9c-8bdd-41ca8236050a",
+      "value": "-quiet"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c2f95b6e-81d8-58f7-b0fd-b2e40d6655cf",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--f37ddc42-580a-5a9c-8bdd-41ca8236050a",
+      "target_ref": "x-opencti-procedure--8a1f3c52-6d0e-4b7a-9c2e-5f4d3b2a1e07",
+      "x_component_index": 4,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "x-opencti-procedure",
+      "spec_version": "2.1",
+      "id": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "name": "Establish persistence via WMI event subscription",
+      "description": "Create a WMI event filter, a command line event consumer and the binding between them in the root/subscription namespace from PowerShell, so WMI runs a payload when the system uptime condition is met.",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "persistence",
+        "execution"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--d1d821a6-9637-57ea-90d1-fed293381959",
+        "attack-pattern--b4d20430-6a7e-59fd-b2e4-8d3f6be56a6a"
+      ],
+      "x_procedure_type": "reporting",
+      "confidence": 75,
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      }
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--dc2013a3-c788-5a5f-b2fe-5fa2ab159eda",
+      "command_line": "powershell.exe"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--bd38e4fc-be0e-56e3-a6af-cccdc0b77b49",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "process--dc2013a3-c788-5a5f-b2fe-5fa2ab159eda",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 0,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--46284258-6cfe-53d1-a992-f583a32f49ff",
+      "value": "Set-WmiInstance"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ebe91585-83d1-5319-a5ea-4bf9732b4d80",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--46284258-6cfe-53d1-a992-f583a32f49ff",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 1,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--c0d00d42-e6cf-5e58-9cf4-09f25049e2a5",
+      "value": "-Namespace root/subscription"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2973e0fd-54bd-5cd5-a3fc-52bc3c942b75",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--c0d00d42-e6cf-5e58-9cf4-09f25049e2a5",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 2,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--e28fde0b-4584-5bc6-8feb-6f18201284fd",
+      "value": "-Class __EventFilter"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--798e772a-f13c-55a6-866c-97e53913583b",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--e28fde0b-4584-5bc6-8feb-6f18201284fd",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 3,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--d4c0ed30-0ae7-5464-b19f-c5cfde837e06",
+      "value": "SELECT * FROM __InstanceModificationEvent WITHIN 60 WHERE TargetInstance ISA 'Win32_PerfFormattedData_PerfOS_System' AND TargetInstance.SystemUpTime >= 200 AND TargetInstance.SystemUpTime < 320"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5e8c72ef-5563-5d3c-8fad-b9f5095f3bb5",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--d4c0ed30-0ae7-5464-b19f-c5cfde837e06",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 4,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--71cb70ec-07f2-513b-837f-3546c3cc8c17",
+      "value": "-Class CommandLineEventConsumer"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a64bc46c-a51c-536d-b35c-2792d3bb714a",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--71cb70ec-07f2-513b-837f-3546c3cc8c17",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 5,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--4282dabc-6962-5f06-86f2-540017e4f5b8",
+      "value": "cmd.exe /c C:\\Windows\\Temp\\payload.exe"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--591c8968-6a11-55e2-b537-d8d0fd88bfcf",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--4282dabc-6962-5f06-86f2-540017e4f5b8",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 6,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--2e0f49d4-6531-5ae7-9957-1ceae1cea1f5",
+      "value": "-Class __FilterToConsumerBinding"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6346e5ed-deb5-5be4-b55c-a0c9c1e3449d",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--2e0f49d4-6531-5ae7-9957-1ceae1cea1f5",
+      "target_ref": "x-opencti-procedure--3e9b7d14-2c5a-4f86-8b01-7a6c5d4e3f29",
+      "x_component_index": 7,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "x-opencti-procedure",
+      "spec_version": "2.1",
+      "id": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "name": "Dump LSASS memory with comsvcs.dll MiniDump",
+      "description": "Write a full memory dump of the LSASS process to disk with the MiniDump export of the signed comsvcs.dll, loaded through rundll32, so credentials can be extracted offline.",
+      "platforms": [
+        "Windows"
+      ],
+      "tactics": [
+        "credential-access"
+      ],
+      "x_technique_refs": [
+        "attack-pattern--daf76c9d-477a-5004-be6c-73dc129b5e4d"
+      ],
+      "x_procedure_type": "reporting",
+      "confidence": 75,
+      "extensions": {
+        "extension-definition--b422519e-c47a-439d-9195-0f16b94fa889": {
+          "extension_type": "new-sdo"
+        }
+      }
+    },
+    {
+      "type": "process",
+      "spec_version": "2.1",
+      "id": "process--f8f4c638-088a-5bda-b580-b35095db4329",
+      "command_line": "rundll32.exe"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--555b510c-4ade-59f6-9c14-ab0345b4c08f",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "process--f8f4c638-088a-5bda-b580-b35095db4329",
+      "target_ref": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "x_component_index": 0,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--29eef5d4-0c8d-53ba-9e08-fc825a562368",
+      "name": "C:\\Windows\\System32\\comsvcs.dll"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3d684026-0a05-5a1b-985e-af5de60909a9",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "file--29eef5d4-0c8d-53ba-9e08-fc825a562368",
+      "target_ref": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "x_component_index": 1,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--39f37782-9fd9-574a-afad-82e1ebc327c8",
+      "value": "MiniDump"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9b8a364c-c2d0-5dcc-a3b2-10e76da84b88",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--39f37782-9fd9-574a-afad-82e1ebc327c8",
+      "target_ref": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "x_component_index": 2,
+      "x_component_type": "primary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--81547c9b-f1d0-51f5-9c4c-79276e5f8d48",
+      "value": "<lsass PID>"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--efc9fcad-ee4c-50d5-a5c0-ef4443818da9",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--81547c9b-f1d0-51f5-9c4c-79276e5f8d48",
+      "target_ref": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "x_component_index": 3,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "file",
+      "spec_version": "2.1",
+      "id": "file--1dac5a85-6745-50ff-b1cc-6f3355a861a1",
+      "name": "C:\\Windows\\Temp\\lsass.dmp"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6ec69920-9d10-550f-9e86-c968de581fca",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "file--1dac5a85-6745-50ff-b1cc-6f3355a861a1",
+      "target_ref": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "x_component_index": 4,
+      "x_component_type": "secondary"
+    },
+    {
+      "type": "text",
+      "spec_version": "2.1",
+      "id": "text--c500c4cb-b962-5a7f-8e31-bcf95345e2aa",
+      "value": "full"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--35fd1a5a-430d-5564-b09d-986def1405df",
+      "created": "2026-11-23T09:00:00.000Z",
+      "modified": "2026-11-23T09:00:00.000Z",
+      "relationship_type": "component-of",
+      "source_ref": "text--c500c4cb-b962-5a7f-8e31-bcf95345e2aa",
+      "target_ref": "x-opencti-procedure--d36fa086-c251-482a-9b2a-45c971f1e985",
+      "x_component_index": 5,
+      "x_component_type": "secondary"
+    }
+  ]
+}

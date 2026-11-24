@@ -1,7 +1,7 @@
 import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Formik, useFormikContext } from 'formik';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import { DeferredCreationContext, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
 import StixCoreObjectsField from './StixCoreObjectsField';
@@ -30,10 +30,11 @@ vi.mock('../stix_domain_objects/StixDomainObjectCreation', () => ({
 
 vi.mock('../../observations/stix_cyber_observables/StixCyberObservableCreation', () => ({ __esModule: true, default: () => null }));
 
-// The search of existing objects returns nothing
+// The search of existing objects returns nothing, unless a test sets results
+const search = vi.hoisted(() => ({ results: {} as Record<string, unknown> }));
 vi.mock('../../../../relay/environment', async (importOriginal) => ({
   ...(await importOriginal<object>()),
-  fetchQuery: () => ({ toPromise: () => Promise.resolve({}) }),
+  fetchQuery: () => ({ toPromise: () => Promise.resolve(search.results) }),
 }));
 
 const Values = () => {
@@ -111,5 +112,24 @@ describe('StixCoreObjectsField - deferred creation', () => {
       </Formik>,
     );
     expect(!!screen.queryByRole('button', { name: 'Create' })).toBe(expected);
+  });
+});
+
+describe('StixCoreObjectsField - onChange', () => {
+  afterEach(() => {
+    search.results = {};
+  });
+
+  it('should call onChange with the new selection', async () => {
+    search.results = { stixCoreObjects: { edges: [{ node: { id: 'attack-pattern-1', entity_type: 'Attack-Pattern', name: 'Phishing' } }] } };
+    const onChange = vi.fn();
+    testRender(
+      <Formik initialValues={{ ttps: [] }} onSubmit={() => {}}>
+        <StixCoreObjectsField name="ttps" types={['Attack-Pattern']} multiple onChange={onChange} />
+      </Formik>,
+    );
+    await userEvent.type(screen.getByRole('combobox'), 'Phish');
+    fireEvent.click(await screen.findByRole('option', { name: /Phishing/ }));
+    expect(onChange).toHaveBeenCalledWith('ttps', [expect.objectContaining({ value: 'attack-pattern-1', type: 'Attack-Pattern' })]);
   });
 });

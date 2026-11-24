@@ -75,7 +75,7 @@ import {
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor,
 } from '../schema/stixDomainObject';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_COMPONENT_OF } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -124,6 +124,7 @@ import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
+import { ENTITY_TYPE_PROCEDURE, STIX_TYPE_PROCEDURE } from '../modules/procedure/procedure-types';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
@@ -155,6 +156,9 @@ export const convertTypeToStixType = (type: string): string => {
   }
   if (isStixDomainObjectThreatActor(type)) {
     return 'threat-actor';
+  }
+  if (type === ENTITY_TYPE_PROCEDURE) {
+    return STIX_TYPE_PROCEDURE;
   }
   return type.toLowerCase();
 };
@@ -1290,6 +1294,10 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
     target_ref: resolvedTo.standard_id,
     start_time: convertToStixDate(instance.start_time),
     stop_time: convertToStixDate(instance.stop_time),
+    ...(instance.relationship_type === RELATION_COMPONENT_OF ? {
+      x_component_index: instance.component_index,
+      x_component_type: instance.component_type,
+    } : {}),
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

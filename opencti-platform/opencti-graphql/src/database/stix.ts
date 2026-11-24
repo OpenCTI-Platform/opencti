@@ -88,6 +88,7 @@ import {
   RELATION_TRANSFERRED_TO,
   RELATION_DEMONSTRATES,
   RELATION_AMPLIFIES,
+  RELATION_COMPONENT_OF,
   RELATION_SUPPORTS,
 } from '../schema/stixCoreRelationship';
 import { isStixRefRelationship } from '../schema/stixRefRelationship';
@@ -106,6 +107,7 @@ import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
 import { pushAll } from '../utils/arrayUtil';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import { ENTITY_TYPE_PROCEDURE } from '../modules/procedure/procedure-types';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -142,6 +144,11 @@ export type RelationDefinition = { name: string; type: RelationType };
 export type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefinition> };
 
 export const stixCoreRelationshipsMapping: RelationshipMappings = {
+  // region PROCEDURE COMPONENTS
+  [`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_COMPONENT_OF, type: REL_NEW },
+  ],
+  // endregion
   // Core
   // region ATTACK_PATTERN
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -262,6 +269,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_CAMPAIGN}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
   ],
+  [`${ENTITY_TYPE_CAMPAIGN}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+  ],
   // endregion
   // region CHANNEL
   [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_CHANNEL}`]: [
@@ -307,6 +317,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_COURSE_OF_ACTION}`]: [
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_TYPE_COURSE_OF_ACTION}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_MITIGATES, type: REL_EXTENDED },
   ],
   // endregion
   // region EVENT
@@ -511,6 +524,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_VULNERABILITY}`]: [
     { name: RELATION_INDICATES, type: REL_EXTENDED },
   ],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_INDICATES, type: REL_EXTENDED },
+  ],
   // endregion
   // region INFRASTRUCTURE
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [
@@ -656,6 +672,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   ],
   [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_CAMPAIGN}`]: [
     { name: RELATION_ATTRIBUTED_TO, type: REL_EXTENDED },
+  ],
+  [`${ENTITY_TYPE_INTRUSION_SET}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
   ],
   // endregion
   // region POSITION
@@ -890,6 +909,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_THREAT_ACTOR}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
   ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL}_${ENTITY_TYPE_PROCEDURE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+  ],
   // endregion
   // region THREAT_ACTOR_GROUP
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [
@@ -968,6 +990,9 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_TARGETS, type: REL_BUILT_IN },
   ],
   [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+    { name: RELATION_USES, type: REL_EXTENDED },
+  ],
+  [`${ENTITY_TYPE_THREAT_ACTOR_GROUP}_${ENTITY_TYPE_PROCEDURE}`]: [
     { name: RELATION_USES, type: REL_EXTENDED },
   ],
   // endregion

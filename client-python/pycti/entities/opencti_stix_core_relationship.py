@@ -799,6 +799,8 @@ class StixCoreRelationship:
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         external_uri = kwargs.get("external_uri", None)
         coverage_information = kwargs.get("coverage_information", None)
+        component_index = kwargs.get("component_index", None)
+        component_type = kwargs.get("component_type", None)
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get("upsert_operations", None)
         custom_field_values = build_custom_field_values_input(
@@ -825,39 +827,40 @@ class StixCoreRelationship:
                     }
                 }
             """
-        result = self.opencti.query(
-            query,
-            {
-                "input": {
-                    "fromId": from_id,
-                    "toId": to_id,
-                    "stix_id": stix_id,
-                    "relationship_type": relationship_type,
-                    "description": description,
-                    "start_time": start_time,
-                    "stop_time": stop_time,
-                    "revoked": revoked,
-                    "confidence": confidence,
-                    "lang": lang,
-                    "created": created,
-                    "modified": modified,
-                    "createdBy": created_by,
-                    "objectMarking": object_marking,
-                    "objectLabel": object_label,
-                    "objectOrganization": granted_refs,
-                    "externalReferences": external_references,
-                    "killChainPhases": kill_chain_phases,
-                    "x_opencti_workflow_id": x_opencti_workflow_id,
-                    "x_opencti_stix_ids": x_opencti_stix_ids,
-                    "x_opencti_modified_at": x_opencti_modified_at,
-                    "external_uri": external_uri,
-                    "coverage_information": coverage_information,
-                    "update": update,
-                    "upsertOperations": upsert_operations,
-                    "customFieldValues": custom_field_values,
-                }
-            },
-        )
+        relationship_input = {
+            "fromId": from_id,
+            "toId": to_id,
+            "stix_id": stix_id,
+            "relationship_type": relationship_type,
+            "description": description,
+            "start_time": start_time,
+            "stop_time": stop_time,
+            "revoked": revoked,
+            "confidence": confidence,
+            "lang": lang,
+            "created": created,
+            "modified": modified,
+            "createdBy": created_by,
+            "objectMarking": object_marking,
+            "objectLabel": object_label,
+            "objectOrganization": granted_refs,
+            "externalReferences": external_references,
+            "killChainPhases": kill_chain_phases,
+            "x_opencti_workflow_id": x_opencti_workflow_id,
+            "x_opencti_stix_ids": x_opencti_stix_ids,
+            "x_opencti_modified_at": x_opencti_modified_at,
+            "external_uri": external_uri,
+            "coverage_information": coverage_information,
+            "update": update,
+            "upsertOperations": upsert_operations,
+            "customFieldValues": custom_field_values,
+        }
+        # A procedure component (component-of) carries its position and type.
+        if component_index is not None:
+            relationship_input["component_index"] = component_index
+        if component_type is not None:
+            relationship_input["component_type"] = component_type
+        result = self.opencti.query(query, {"input": relationship_input})
         return self.opencti.process_multiple_fields(
             result["data"]["stixCoreRelationshipAdd"]
         )
@@ -1483,6 +1486,20 @@ class StixCoreRelationship:
                 ),
                 external_uri=external_uri,
                 coverage_information=coverage_information,
+                component_index=(
+                    stix_relation["x_component_index"]
+                    if "x_component_index" in stix_relation
+                    else self.opencti.get_attribute_in_extension(
+                        "component_index", stix_relation
+                    )
+                ),
+                component_type=(
+                    stix_relation["x_component_type"]
+                    if "x_component_type" in stix_relation
+                    else self.opencti.get_attribute_in_extension(
+                        "component_type", stix_relation
+                    )
+                ),
                 revoked=(
                     stix_relation["revoked"] if "revoked" in stix_relation else None
                 ),

@@ -35,6 +35,7 @@ import Event from '../../../static/images/entities/event.svg';
 import DataComponent from '../../../static/images/entities/data-component.svg';
 import MalwareAnalysis from '../../../static/images/entities/malware-analysis.svg';
 import DataSource from '../../../static/images/entities/data-source.svg';
+import Procedure from '../../../static/images/entities/procedure.svg';
 import CaseIncident from '../../../static/images/entities/case-incident.svg';
 import Feedback from '../../../static/images/entities/feedback.svg';
 import CaseRfi from '../../../static/images/entities/case-rfi.svg';
@@ -241,6 +242,10 @@ const GRAPH_IMAGES: GraphImages = {
   'Data-Source': {
     rawImg: DataSource,
     img: generateHtmlImageElement(DataSource),
+  },
+  Procedure: {
+    rawImg: Procedure,
+    img: generateHtmlImageElement(Procedure),
   },
   'Autonomous-System': {
     rawImg: StixCyberObservable,

@@ -31,6 +31,7 @@ export const expandRelationshipsQuery = graphql`
           ... on StixCoreRelationship {
             start_time
             stop_time
+            component_index
             confidence
             relationship_type
             created
@@ -86,6 +87,7 @@ export const expandRelationshipsQuery = graphql`
               relationship_type
               start_time
               stop_time
+              component_index
               confidence
               created
               from {

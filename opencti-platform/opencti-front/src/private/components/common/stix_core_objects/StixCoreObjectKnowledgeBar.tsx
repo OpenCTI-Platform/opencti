@@ -59,6 +59,9 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
         "technology-to"
         "technology-from"
         "interpreted-by"
+        "implements-technique"
+        "exploits"
+        "mitigates"
       ]
     ) {
       label
@@ -408,10 +411,22 @@ const StixCoreObjectKnowledgeBar = ({
           count: distributions.withoutRelated['Attack-Pattern'] || 0,
         },
         {
+          label: 'Procedures',
+          iconType: 'Procedure',
+          path: 'procedures',
+          count: distributions.withoutRelated.Procedure || 0,
+        },
+        {
           label: 'Narratives',
           iconType: 'Narrative',
           path: 'narratives',
           count: distributions.withoutRelated.Narrative || 0,
+        },
+        {
+          label: 'Courses of action',
+          iconType: 'Course-Of-Action',
+          path: 'courses_of_action',
+          count: distributions.withoutRelated['Course-Of-Action'] || 0,
         },
       ].filter((item) => availableSections.includes(item.path)),
     },

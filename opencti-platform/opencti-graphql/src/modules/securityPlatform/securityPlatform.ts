@@ -7,6 +7,7 @@ import { RELATION_SHOULD_COVER } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { objectOrganization } from '../../schema/stixRefRelationship';
+import { ENTITY_TYPE_PROCEDURE } from '../procedure/procedure-types';
 
 const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform, StixSecurityPlatform, Stix2SecurityPlatform> = {
   type: {
@@ -38,6 +39,7 @@ const SECURITY_PLATFORM_DEFINITION: ModuleDefinition<StoreEntitySecurityPlatform
       name: RELATION_SHOULD_COVER,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
+        { name: ENTITY_TYPE_PROCEDURE, type: REL_NEW },
       ],
     },
   ],

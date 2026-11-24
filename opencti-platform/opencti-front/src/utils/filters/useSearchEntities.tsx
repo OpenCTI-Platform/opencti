@@ -192,6 +192,9 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           ... on DataSource {
             name
           }
+          ... on Procedure {
+            name
+          }
           ... on Case {
             name
           }

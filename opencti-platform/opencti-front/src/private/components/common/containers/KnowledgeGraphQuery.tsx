@@ -149,6 +149,9 @@ export const knowledgeGraphStixCoreObjectQuery = graphql`
             ... on Narrative {
                 name
             }
+            ... on Procedure {
+                name
+            }
             ... on DataComponent {
                 name
             }

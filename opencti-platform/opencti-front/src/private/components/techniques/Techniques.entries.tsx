@@ -15,6 +15,13 @@ const menuEntries: MenuEntry[] = [
     ...knowledge,
   },
   {
+    path: '/dashboard/techniques/procedures',
+    label: 'Procedures',
+    entityType: 'Procedure',
+    icon: <Icon name="list-checks" size={16} />,
+    ...knowledge,
+  },
+  {
     path: '/dashboard/techniques/narratives',
     label: 'Narratives',
     entityType: 'Narrative',

@@ -13,6 +13,7 @@ import type { StoreEntity } from '../../../types/store';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_PROCEDURE } from '../../procedure/procedure-types';
 import {
   ATTRIBUTE_RESULT_OF,
   ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
@@ -68,6 +69,7 @@ const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityC
         { name: ENTITY_TYPE_VULNERABILITY, type: REL_NEW },
         { name: ENTITY_HASHED_OBSERVABLE_ARTIFACT, type: REL_NEW },
         { name: ENTITY_TYPE_INDICATOR, type: REL_NEW },
+        { name: ENTITY_TYPE_PROCEDURE, type: REL_NEW },
       ],
     },
   ],

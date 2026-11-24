@@ -85,3 +85,34 @@ describe('Hook: useNavMenu hidden entity types', () => {
     expect(observablesLinks()).toHaveLength(0);
   });
 });
+
+describe('Hook: useNavMenu, Techniques group', () => {
+  const techniqueTypes = ['Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source', 'Procedure'];
+
+  const techniquesItem = () => testRenderHook(() => useNavMenu()).hook.result.current
+    .flatMap((group) => group.items)
+    .find((entry) => entry.id === 'techniques');
+
+  it('lists the Procedures entry under Techniques', () => {
+    hidden.splice(0, hidden.length);
+    const links = (techniquesItem()?.subItems ?? []).map((sub) => sub.link);
+    expect(links).toContain('/dashboard/techniques/procedures');
+  });
+
+  it('lists Procedures right under Attack patterns', () => {
+    hidden.splice(0, hidden.length);
+    const links = (techniquesItem()?.subItems ?? []).map((sub) => sub.link);
+    expect(links.slice(0, 2)).toEqual(['/dashboard/techniques/attack_patterns', '/dashboard/techniques/procedures']);
+  });
+
+  it('keeps the Techniques group when only Procedure is left visible', () => {
+    hidden.splice(0, hidden.length, ...techniqueTypes.filter((type) => type !== 'Procedure'));
+    const links = (techniquesItem()?.subItems ?? []).map((sub) => sub.link);
+    expect(links).toEqual(['/dashboard/techniques/procedures']);
+  });
+
+  it('hides the Techniques group when every Techniques type, Procedure included, is hidden', () => {
+    hidden.splice(0, hidden.length, ...techniqueTypes);
+    expect(techniquesItem()).toBeUndefined();
+  });
+});

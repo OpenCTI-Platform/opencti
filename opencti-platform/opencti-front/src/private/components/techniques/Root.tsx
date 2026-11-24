@@ -14,6 +14,8 @@ const DataComponents = lazy(() => import('./DataComponents'));
 const RootDataComponent = lazy(() => import('./data_components/Root'));
 const DataSources = lazy(() => import('./DataSources'));
 const RootDataSource = lazy(() => import('./data_sources/Root'));
+const Procedures = lazy(() => import('./Procedures'));
+const RootProcedure = lazy(() => import('./procedures/Root'));
 
 const Root = () => {
   let redirect: string | null = null;
@@ -27,6 +29,8 @@ const Root = () => {
     redirect = 'data_components';
   } else if (!useIsHiddenEntity('Data-Source')) {
     redirect = 'data_sources';
+  } else if (!useIsHiddenEntity('Procedure')) {
+    redirect = 'procedures';
   }
   return (
     <Suspense fallback={<Loader />}>
@@ -74,6 +78,14 @@ const Root = () => {
         <Route
           path="/data_sources/:dataSourceId/*"
           element={boundaryWrapper(RootDataSource)}
+        />
+        <Route
+          path="/procedures"
+          element={boundaryWrapper(Procedures)}
+        />
+        <Route
+          path="/procedures/:procedureId/*"
+          element={boundaryWrapper(RootProcedure)}
         />
       </Routes>
     </Suspense>
