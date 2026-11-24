@@ -1456,6 +1456,10 @@ class BatchCallbackWrapper:
         self.batch_callback = batch_callback
         self.batch_size = batch_size
         self.batch_timeout = batch_timeout
+        # Reports the errors of the batch callback to the platform, with the ping
+        self._callback_executor = _listener_callback_executor(
+            helper, returns_errors=True
+        )
 
         # Batch state
         self.batch: List = []
@@ -1604,7 +1608,7 @@ class BatchCallbackWrapper:
                 )
 
         try:
-            self.batch_callback(batch_data)
+            self._callback_executor.execute(lambda: self.batch_callback(batch_data))
         except Exception as e:
             self.helper.connector_logger.error(
                 "Batch callback failed",
@@ -1821,6 +1825,10 @@ class ListenStream(threading.Thread):
                 },
                 verify=self.verify_ssl,
             )
+            # Reports the errors of the callback to the platform, with the ping
+            callback_executor = _listener_callback_executor(
+                self.helper, returns_errors=True
+            )
             # Iter on stream messages
             for msg in messages:
                 if self.exit_event.is_set():
@@ -1860,7 +1868,14 @@ class ListenStream(threading.Thread):
                             state["start_from"] = str(msg.id)
                             self.helper.set_state(state)
                     else:
-                        self.callback(msg)
+                        try:
+                            callback_executor.execute(
+                                lambda msg=msg: self.callback(msg)
+                            )
+                        except Exception:
+                            # A failing callback still stops the connector: send its error before
+                            self.helper.force_ping()
+                            raise
                         # Skip state update if callback manages its own state
                         if not getattr(self.callback, "manages_state", False):
                             state = self.helper.get_state()
@@ -3613,6 +3628,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         Connects to an SSE stream and processes events through the callback.
         Parameters default to connector configuration values if not specified.
 
+        Errors are reported to the platform with the ping, and cleared once a
+        ping has sent them: those the callback returns (a list of dicts with
+        ``code``, ``message`` and ``criticity``, as with ``schedule_process``),
+        those it adds with ``connector_info.add_error``, and an exception it
+        raises, with its ``code`` and ``criticity`` attributes, or
+        ``other.unknown`` and 50 when it has none. A raised exception still
+        stops the connector, once a ping has sent it. With
+        ``create_batch_callback``, the errors and exceptions of the batch
+        callback are reported the same way.
+
         :param message_callback: Function to call for each stream event
         :type message_callback: Callable
         :param url: Base URL for stream (defaults to opencti_url)
@@ -3688,6 +3713,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         url = url.rstrip("/") + "/stream"
         if live_stream_id is not None:
             url = url + "/" + live_stream_id
+        self.connector_info.clear_errors_once_sent = True
         self.listen_stream = ListenStream(
             self,
             message_callback,
