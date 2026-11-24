@@ -5,6 +5,8 @@ import {
   filterBundleElements,
   isBundleElementMatchFilters,
   convertMembersToUsersFromElements,
+  parsePlaybookDefinition,
+  parsePlaybookNodeInputConfiguration,
   MINIMAL_COMPATIBLE_SCOPE_VERSION,
   buildPlaybookEventContext,
   updateImportedPlaybookDefinitionScope,
@@ -657,6 +659,139 @@ describe('Playbook utils unit tests', () => {
     it('should return empty array for empty members', async () => {
       const users = await convertMembersToUsersFromElements([], [element1], testBundle);
       expect(users).toEqual([]);
+    });
+  });
+
+  describe('Function parsePlaybookNodeInputConfiguration()', () => {
+    const validFilters = JSON.stringify({
+      mode: 'and',
+      filters: [{ key: ['entity_type'], operator: 'eq', values: ['Report'], mode: 'or' }],
+      filterGroups: [],
+    });
+    const buildInput = (configuration?: string | null) => ({
+      name: 'my node',
+      component_id: 'PLAYBOOK_FILTERING_COMPONENT',
+      configuration,
+    });
+    const configurationError = 'Playbook node configuration is not valid JSON';
+    const filtersError = 'Playbook node filters are not valid JSON';
+
+    it('should parse an empty configuration as an empty object', () => {
+      expect(parsePlaybookNodeInputConfiguration(buildInput(''))).toEqual({});
+      expect(parsePlaybookNodeInputConfiguration(buildInput(null))).toEqual({});
+      expect(parsePlaybookNodeInputConfiguration(buildInput(undefined))).toEqual({});
+    });
+
+    it('should parse a configuration with valid stringified filters', () => {
+      const config = {
+        filters: validFilters,
+        applyWithFilters: validFilters,
+        applyToElements: 'onlyMain',
+      };
+      expect(parsePlaybookNodeInputConfiguration(buildInput(JSON.stringify(config)))).toEqual(config);
+    });
+
+    it('should accept a configuration with empty filters', () => {
+      const configuration = JSON.stringify({
+        filters: '',
+        applyWithFilters: null,
+      });
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(configuration))).not.toThrow();
+    });
+
+    it('should reject a configuration that is not valid JSON', () => {
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput('{"a":'))).toThrow(configurationError);
+    });
+
+    it('should reject a configuration that is not a JSON object', () => {
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput('5'))).toThrow(configurationError);
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput('[]'))).toThrow(configurationError);
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput('null'))).toThrow(configurationError);
+    });
+
+    it('should reject a configuration with truncated filters', () => {
+      const configuration = JSON.stringify({ filters: '{"mode":"and",' });
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(configuration))).toThrow(filtersError);
+    });
+
+    it('should reject a configuration with truncated applyWithFilters', () => {
+      const configuration = JSON.stringify({
+        filters: validFilters,
+        applyWithFilters: '{"mode":"and",',
+      });
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(configuration))).toThrow(filtersError);
+    });
+
+    it('should reject a configuration with filters that are not stringified', () => {
+      const configuration = JSON.stringify({ filters: { mode: 'and', filters: [], filterGroups: [] } });
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(configuration))).toThrow(filtersError);
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(JSON.stringify({ filters: {} })))).toThrow(filtersError);
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(JSON.stringify({ applyWithFilters: [] })))).toThrow(filtersError);
+    });
+
+    it('should reject a configuration with filters that are not a JSON object', () => {
+      const configuration = JSON.stringify({ filters: '[]' });
+      expect(() => parsePlaybookNodeInputConfiguration(buildInput(configuration))).toThrow(filtersError);
+    });
+  });
+
+  describe('Function parsePlaybookDefinition()', () => {
+    const buildNode = (configuration?: string) => ({
+      id: '21f1f363-2b34-4327-802c-57ef2c3eb2ea',
+      name: 'my node',
+      position: { x: 0, y: 0 },
+      component_id: 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER',
+      configuration,
+    });
+    const buildDefinition = (configuration?: string) => JSON.stringify({
+      nodes: [buildNode(configuration)],
+      links: [],
+    });
+    const definitionError = 'Playbook definition is not valid JSON';
+    const shapeError = 'Playbook definition must hold nodes and links arrays of objects';
+    const configurationError = 'Playbook node configuration is not valid JSON';
+    const filtersError = 'Playbook node filters are not valid JSON';
+
+    it('should parse a definition with no node', () => {
+      expect(parsePlaybookDefinition('{"nodes":[],"links":[]}')).toEqual({ nodes: [], links: [] });
+    });
+
+    it('should parse a definition with valid node configurations', () => {
+      expect(parsePlaybookDefinition(buildDefinition('{}')).nodes).toHaveLength(1);
+    });
+
+    it('should reject a definition that is not valid JSON', () => {
+      expect(() => parsePlaybookDefinition('{"nodes":[],"links":[]}"')).toThrow(definitionError);
+    });
+
+    it('should reject a definition that is not a JSON object', () => {
+      expect(() => parsePlaybookDefinition('[]')).toThrow(definitionError);
+      expect(() => parsePlaybookDefinition('null')).toThrow(definitionError);
+    });
+
+    it('should reject a definition without nodes or links arrays', () => {
+      expect(() => parsePlaybookDefinition('{"links":[]}')).toThrow(shapeError);
+      expect(() => parsePlaybookDefinition('{"nodes":[]}')).toThrow(shapeError);
+      expect(() => parsePlaybookDefinition('{"nodes":{},"links":[]}')).toThrow(shapeError);
+    });
+
+    it('should reject a definition whose nodes or links are not objects', () => {
+      expect(() => parsePlaybookDefinition('{"nodes":[null],"links":[]}')).toThrow(shapeError);
+      expect(() => parsePlaybookDefinition('{"nodes":[],"links":["a"]}')).toThrow(shapeError);
+    });
+
+    it('should reject a valid definition holding a node configuration that is not valid JSON', () => {
+      expect(() => parsePlaybookDefinition(buildDefinition('{"a":'))).toThrow(configurationError);
+    });
+
+    it('should reject a valid definition holding a node without configuration', () => {
+      expect(() => parsePlaybookDefinition(buildDefinition())).toThrow(configurationError);
+      expect(() => parsePlaybookDefinition(buildDefinition(''))).toThrow(configurationError);
+    });
+
+    it('should reject a valid definition holding a node with truncated filters', () => {
+      const configuration = JSON.stringify({ filters: '{"mode":"and",' });
+      expect(() => parsePlaybookDefinition(buildDefinition(configuration))).toThrow(filtersError);
     });
   });
 });
