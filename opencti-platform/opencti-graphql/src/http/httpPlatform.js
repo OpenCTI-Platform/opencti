@@ -123,6 +123,8 @@ export const decodeStoragePath = (fileParts = []) => fileParts
 
 // -- File download
 export const handleStorageGet = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const context = await createAuthenticatedContext(req, res, 'storage_get');
     if (!context.user) {
@@ -134,7 +136,7 @@ export const handleStorageGet = async (req, res) => {
     await checkDraftInContext(context);
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
-    const stream = await downloadFile(data.id);
+    stream = await downloadFile(data.id);
     if (!stream) {
       sendMissingStorageFile(res, data.id);
       return;
@@ -144,6 +146,7 @@ export const handleStorageGet = async (req, res) => {
     res.attachment(file);
     stream.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
     logApp.error('Error getting storage get file', { cause: e, request_id: getRequestId(res) });
     res.status(503).send(errorBody(res, e));
@@ -152,6 +155,8 @@ export const handleStorageGet = async (req, res) => {
 
 // -- File view
 export const handleStorageView = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const context = await createAuthenticatedContext(req, res, 'storage_view');
     if (!context.user) {
@@ -163,7 +168,7 @@ export const handleStorageView = async (req, res) => {
     await checkDraftInContext(context);
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
-    const stream = await downloadFile(data.id);
+    stream = await downloadFile(data.id);
     if (!stream) {
       sendMissingStorageFile(res, data.id);
       return;
@@ -180,6 +185,7 @@ export const handleStorageView = async (req, res) => {
     }
     stream.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
     logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
     res.status(503).send(errorBody(res, e));
@@ -188,6 +194,8 @@ export const handleStorageView = async (req, res) => {
 
 // -- Embedded file loader
 export const handleStorageViewEmbedded = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const [_, id, __, rawFilename] = Object.values(req.params);
 
@@ -211,7 +219,7 @@ export const handleStorageViewEmbedded = async (req, res) => {
 
     const file = `embedded/${element.entity_type}/${id}/${filename}`;
     const data = await loadFile(context, context.user, file);
-    const stream = await downloadFile(data.id);
+    stream = await downloadFile(data.id);
     if (!stream) {
       sendMissingStorageFile(res, data.id);
       return;
@@ -228,6 +236,7 @@ export const handleStorageViewEmbedded = async (req, res) => {
     }
     stream.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
     logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
     res.status(503).send(errorBody(res, e));
@@ -267,6 +276,8 @@ export const handleStorageHtml = async (req, res) => {
 
 // -- Encrypted view
 export const handleStorageEncrypted = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
     if (!context.user) {
@@ -279,7 +290,7 @@ export const handleStorageEncrypted = async (req, res) => {
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
     const { metaData: { filename } } = data;
-    const stream = await downloadFile(file);
+    stream = await downloadFile(file);
     if (!stream) {
       sendMissingStorageFile(res, file);
       return;
@@ -291,6 +302,7 @@ export const handleStorageEncrypted = async (req, res) => {
     res.attachment(`${filename}.zip`);
     archive.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
     logApp.error('Error getting encrypted file', { cause: e, request_id: getRequestId(res) });
     res.status(503).send(errorBody(res, e));

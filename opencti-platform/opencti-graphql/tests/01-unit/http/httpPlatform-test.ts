@@ -678,6 +678,45 @@ describe('storage routes: file missing from object storage', () => {
   });
 });
 
+// ─── storage routes: stream released when publishing the activity fails ─────
+// The object is opened before the download/read activity is published, so a
+// failure there must destroy the stream instead of leaving it unconsumed.
+
+describe('storage routes: stream released on failure', () => {
+  const ALLOWED_CONTEXT = { user: { id: 'user-a' } };
+  const FILE = {
+    id: 'import/global/file.txt',
+    name: 'file.txt',
+    metaData: { mimetype: 'text/plain', filename: 'file.txt' },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(ALLOWED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined as any);
+    vi.mocked(loadFile).mockResolvedValue(FILE as any);
+    vi.mocked(internalLoadById).mockResolvedValue({ entity_type: 'Report' } as any);
+    vi.mocked(publishUserAction).mockRejectedValue(new Error('activity unavailable'));
+  });
+
+  it.each([
+    ['handleStorageGet', handleStorageGet, { file: ['import', 'global', 'file.txt'] }],
+    ['handleStorageView', handleStorageView, { file: ['import', 'global', 'file.txt'] }],
+    ['handleStorageViewEmbedded', handleStorageViewEmbedded, { 0: 'x', 1: 'entity-id', 2: 'y', 3: 'file.txt' }],
+    ['handleStorageEncrypted', handleStorageEncrypted, { file: ['import', 'global', 'file.txt'] }],
+  ])('%s destroys the opened stream when publishing the activity fails', async (_name, handler, params) => {
+    const stream = { pipe: vi.fn(), destroy: vi.fn() };
+    vi.mocked(downloadFile).mockResolvedValue(stream as any);
+    const res = makeStorageRes();
+
+    await handler(makeStorageReq(params), res);
+
+    expect(stream.destroy).toHaveBeenCalledTimes(1);
+    expect(stream.pipe).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
 describe('httpPlatform: /auth/:provider/callback', () => {
   const PROVIDER = 'oidc';
   const loggedUser = { id: 'user-id', user_email: 'user@example.com' };
