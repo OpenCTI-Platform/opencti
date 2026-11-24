@@ -241,7 +241,9 @@ const createApp = async (app, schema) => {
         imgSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
         connectSrc: ["'self'", 'wss://*', 'ws://*', 'data:', 'http://*', 'https://*'],
-        objectSrc: ["'self'", 'data:', 'http://*', 'https://*'],
+        // The platform renders no <object> or <embed>: the PDF viewer draws in a canvas,
+        // and the rich text editor only keeps div and span as extra HTML.
+        objectSrc: ["'none'"],
         frameSrc: opts.allowedFrameSrc,
         frameAncestors: opts.frameAncestorDomains,
       },
