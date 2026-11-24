@@ -32,7 +32,7 @@ import {
 const SESSION_PRESENCE_GRACE_PERIOD: number = conf.get('app:session_presence:grace_period') ?? 30000;
 const SESSION_PRESENCE_LEASE_TTL: number = conf.get('app:session_presence:lease_ttl') ?? 30000;
 const LEASE_RENEW_INTERVAL = Math.floor(SESSION_PRESENCE_LEASE_TTL / 3);
-// The origin of a session is kept until its logout: after its last lease, the grace period and the time to sweep it
+// The origin and the deadline of a session are kept until its logout: after its last lease, the grace period and the time to sweep it
 const PRESENCE_KEYS_TTL = SESSION_PRESENCE_LEASE_TTL + SESSION_PRESENCE_GRACE_PERIOD + 10 * 60 * 1000;
 // Long enough for every node to drop its sockets of a logged out session, at their next renewal
 const CLOSING_TTL = 6 * LEASE_RENEW_INTERVAL;
@@ -95,14 +95,14 @@ const renewNodeLeases = async () => {
   await Promise.all([...sessionConnections.entries()].map(async ([sessionId, { connectionIds, origin }]) => {
     try {
       // The origin is written again, for the tabs opened while the setting was off
-      const expiry = await saveSessionLeases(sessionId, connectionIds, SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
-      if (expiry === undefined) {
+      const checkAt = await saveSessionLeases(sessionId, connectionIds, SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, SESSION_PRESENCE_GRACE_PERIOD, origin);
+      if (checkAt === undefined) {
         // The session has been logged out: its sockets are no longer tracked
         connectionIds.forEach((connectionId) => nodeConnections.delete(connectionId));
         meterManager.sessionPresenceConnections(nodeConnections.size);
         return;
       }
-      await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
+      await scheduleSessionCheck(sessionId, checkAt, 'GT');
     } catch (cause) {
       logApp.error('[SESSION PRESENCE] Error renewing the leases of a session', { cause });
     }
@@ -130,14 +130,14 @@ export const registerSessionPresence = async (sessionId: string, origin: Presenc
   startLeasesRenewal();
   try {
     if (await isSessionPresenceEnabled()) {
-      const expiry = await saveSessionLeases(sessionId, [connectionId], SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
-      if (expiry === undefined) {
+      const checkAt = await saveSessionLeases(sessionId, [connectionId], SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, SESSION_PRESENCE_GRACE_PERIOD, origin);
+      if (checkAt === undefined) {
         nodeConnections.delete(connectionId);
         meterManager.sessionPresenceConnections(nodeConnections.size);
         return undefined;
       }
       // A session is always scheduled while it has leases: if this node crashes, the check still happens
-      await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
+      await scheduleSessionCheck(sessionId, checkAt, 'GT');
     }
   } catch (cause) {
     logApp.error('[SESSION PRESENCE] Error registering a connection, its lease is written at the next renewal', { cause });
@@ -155,10 +155,10 @@ export const unregisterSessionPresence = async (sessionId: string, connectionId:
   if (getStoppingState() || !(await isSessionPresenceEnabled())) {
     return;
   }
-  const { liveLeases, now } = await removeSessionLease(sessionId, connectionId);
+  const { liveLeases, checkAt } = await removeSessionLease(sessionId, connectionId, PRESENCE_KEYS_TTL, SESSION_PRESENCE_GRACE_PERIOD);
   if (liveLeases === 0) {
     meterManager.sessionPresenceLastDisconnection();
-    await scheduleSessionCheck(sessionId, now + SESSION_PRESENCE_GRACE_PERIOD, 'LT');
+    await scheduleSessionCheck(sessionId, checkAt, 'LT');
   }
 };
 // endregion
@@ -166,10 +166,11 @@ export const unregisterSessionPresence = async (sessionId: string, connectionId:
 // region logout of the abandoned sessions, run by the session presence manager
 const checkDueSession = async (sessionId: string, canLogout: boolean) => {
   // Without logout, the session is not marked as closing: its tabs can register again right away
-  const { isAlive, time } = await checkSessionLeases(sessionId, canLogout ? CLOSING_TTL : 0);
+  // The session may have been listed before a tab came back: it is kept until its own deadline
+  const { isAlive, time } = await checkSessionLeases(sessionId, canLogout ? CLOSING_TTL : 0, SESSION_PRESENCE_GRACE_PERIOD);
   if (isAlive) {
     meterManager.sessionPresenceCheck('alive');
-    await scheduleSessionCheck(sessionId, time + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
+    await scheduleSessionCheck(sessionId, time, 'GT');
     return;
   }
   let isLoggedOut = false;

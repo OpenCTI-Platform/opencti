@@ -34,6 +34,7 @@ const store = vi.hoisted(() => {
   const leases = new Map<string, Map<string, number>>();
   const closing = new Map<string, number>();
   const origins = new Map<string, unknown>();
+  const checkAts = new Map<string, number>();
   const due = new Map<string, number>();
   const now = () => Date.now();
   const purgeExpiredLeases = (sessionId: string) => {
@@ -48,30 +49,40 @@ const store = vi.hoisted(() => {
       leases.clear();
       closing.clear();
       origins.clear();
+      checkAts.clear();
       due.clear();
     },
     isDue: (sessionId: string) => due.has(sessionId),
     checkTime: (sessionId: string) => due.get(sessionId),
     hasLiveLease: (sessionId: string, connectionId: string) => (leases.get(sessionId)?.get(connectionId) ?? 0) > now(),
-    saveSessionLeases: vi.fn(async (sessionId: string, connectionIds: string[], leaseTtl: number, _keysTtl: number, origin?: unknown) => {
+    saveSessionLeases: vi.fn(async (sessionId: string, connectionIds: string[], leaseTtl: number, _keysTtl: number, gracePeriod: number, origin?: unknown) => {
       if ((closing.get(sessionId) ?? 0) > now()) return undefined;
       const expiry = now() + leaseTtl;
       const sessionLeases = leases.get(sessionId) ?? new Map<string, number>();
       connectionIds.forEach((connectionId) => sessionLeases.set(connectionId, expiry));
       leases.set(sessionId, sessionLeases);
       if (origin) origins.set(sessionId, origin);
-      return expiry;
+      const checkAt = Math.max(checkAts.get(sessionId) ?? 0, expiry + gracePeriod);
+      checkAts.set(sessionId, checkAt);
+      return checkAt;
     }),
-    removeSessionLease: vi.fn(async (sessionId: string, connectionId: string) => {
+    removeSessionLease: vi.fn(async (sessionId: string, connectionId: string, _keysTtl: number, gracePeriod: number) => {
       leases.get(sessionId)?.delete(connectionId);
       purgeExpiredLeases(sessionId);
-      return { liveLeases: leases.get(sessionId)?.size ?? 0, now: now() };
+      const liveLeases = leases.get(sessionId)?.size ?? 0;
+      if (liveLeases > 0) return { liveLeases, checkAt: 0 };
+      checkAts.set(sessionId, now() + gracePeriod);
+      return { liveLeases, checkAt: now() + gracePeriod };
     }),
-    checkSessionLeases: vi.fn(async (sessionId: string, closingTtl: number) => {
+    checkSessionLeases: vi.fn(async (sessionId: string, closingTtl: number, gracePeriod: number) => {
+      const checkAt = checkAts.get(sessionId) ?? 0;
+      if (now() < checkAt) return { isAlive: true, time: checkAt };
       purgeExpiredLeases(sessionId);
       const sessionLeases = leases.get(sessionId);
-      if (sessionLeases) return { isAlive: true, time: Math.max(...sessionLeases.values()) };
+      if (sessionLeases) return { isAlive: true, time: Math.max(...sessionLeases.values()) + gracePeriod };
       if (closingTtl > 0) closing.set(sessionId, now() + closingTtl);
+      leases.delete(sessionId);
+      checkAts.delete(sessionId);
       return { isAlive: false, time: now() };
     }),
     scheduleSessionCheck: vi.fn(async (sessionId: string, checkTime: number, mode: 'GT' | 'LT') => {
@@ -200,8 +211,8 @@ const loadPresenceManager = async (isApiEnabled: boolean) => {
 
 // A tab on another node: its lease is written by that node, never by the module under test
 const openTabOnAnotherNode = async (sessionId: string) => {
-  const expiry = await store.saveSessionLeases(sessionId, [`other-node-${sessionId}`], LEASE_TTL, 0, ORIGIN);
-  await store.scheduleSessionCheck(sessionId, (expiry as number) + GRACE_PERIOD, 'GT');
+  const checkAt = await store.saveSessionLeases(sessionId, [`other-node-${sessionId}`], LEASE_TTL, 0, GRACE_PERIOD, ORIGIN);
+  await store.scheduleSessionCheck(sessionId, checkAt as number, 'GT');
 };
 
 // The other node renews the lease of its tab, until the end of the given time
@@ -347,6 +358,47 @@ describe('session presence', () => {
 
     await sweepAfter(2 * GRACE_PERIOD);
     expect(session.killSessionByRawId).not.toHaveBeenCalled();
+  });
+
+  it('should keep a session listed for its check when a tab came back and closed since', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+    // The session is listed as due, then a tab comes back and closes before it is checked.
+    // The implementation given once is consumed by this call: the store is called again with its own one.
+    vi.mocked(store.findDueSessions).mockImplementationOnce(async (limit) => {
+      const dueSessions = await store.findDueSessions(limit);
+      const reopenedConnectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+      await unregisterSessionPresence(sessionId, reopenedConnectionId);
+      return dueSessions;
+    });
+
+    await logoutAbandonedSessions();
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+  });
+
+  it('should keep the grace period of the last tab when the check of a previous one is scheduled late', async () => {
+    const sessionId = nextSessionId();
+    const firstConnectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    // The first tab closes, the scheduling of its check is delayed
+    let scheduleLate: (() => Promise<void>) | undefined;
+    vi.mocked(store.scheduleSessionCheck).mockImplementationOnce(async (...args) => {
+      scheduleLate = () => store.scheduleSessionCheck(...args);
+    });
+    await unregisterSessionPresence(sessionId, firstConnectionId);
+    // A tab comes back and closes later, then the late scheduling brings the check back to the first grace period
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD / 2);
+    const secondConnectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, secondConnectionId);
+    await scheduleLate!();
+
+    await sweepAfter(GRACE_PERIOD / 2);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    await sweepAfter(GRACE_PERIOD / 2);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
   });
 
   it('should only logout the session that lost its connections', async () => {

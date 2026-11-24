@@ -142,7 +142,7 @@ class MeterManager {
     });
     this.sessionPresenceChecks = meter.createCounter('opencti_session_presence_checks', {
       valueType: ValueType.INT,
-      description: 'Counts the checks of the abandoned sessions, by result: alive (a tab came back), logout, released (already expired, or logout off)',
+      description: 'Counts the checks of the abandoned sessions, by result: alive (a tab came back, or its grace period is not over), logout, released (already expired, or logout off)',
     });
     // - Histograms
     this.latencyHistogram = meter.createHistogram('opencti_api_latency', {
