@@ -105,10 +105,30 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'You have not defined a default group for ingestion users': return t_i18n('You have not defined a default group for ingestion users');
     case 'Service account not found': return t_i18n('Service account not found');
     case 'The confidence level of the service account is not changed': return t_i18n('The confidence level of the service account is not changed');
+    case 'Playbook already exists': return t_i18n('Playbook already exists');
+    case 'Playbook name already exists': return t_i18n('Playbook name already exists');
+    case 'Several playbooks have this name: import it as a copy': return t_i18n('Several playbooks have this name: import it as a copy');
+    case 'Running: the new definition applies at once': return t_i18n('Running: the new definition applies at once');
     case 'Feed already exists': return t_i18n('Feed already exists');
     case 'Feed name already exists': return t_i18n('Feed name already exists');
     case 'Several feeds have this name: import it as a copy': return t_i18n('Several feeds have this name: import it as a copy');
     default: break;
+  }
+  const missingUsers = reason.match(/^Users not found: (.+)$/)?.[1];
+  if (missingUsers) {
+    return t_i18n('Users not found: {users}', { values: { users: missingUsers } });
+  }
+  const missingReferences = reason.match(/^References not found: (.+)$/)?.[1];
+  if (missingReferences) {
+    return t_i18n('References not found: {references}', { values: { references: missingReferences } });
+  }
+  const emptiedAccessRestrictions = reason.match(/^Access restrictions left empty: (.+)$/)?.[1];
+  if (emptiedAccessRestrictions) {
+    return t_i18n('Access restrictions left empty: {nodes}', { values: { nodes: emptiedAccessRestrictions } });
+  }
+  const runAsReset = reason.match(/^Run as reset to (.+)$/)?.[1];
+  if (runAsReset) {
+    return t_i18n('Run as reset to {name}', { values: { name: runAsReset } });
   }
   const mainOrganization = reason.match(/^Sets the main organization: (.+)$/)?.[1];
   if (mainOrganization) {

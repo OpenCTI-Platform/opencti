@@ -16,6 +16,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalFindByIds: vi.fn(),
   pageEntitiesConnection: vi.fn(),
   storeLoadById: vi.fn(),
+  internalFindByIdsMapped: vi.fn(),
 }));
 // A family of the Enterprise Edition reads its entities through a domain that checks the license: the platform has it here
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
@@ -46,7 +47,7 @@ vi.mock('../../../../src/domain/rules', async (importOriginal) => ({
 }));
 
 import { getRules, RULES_DECLARATION } from '../../../../src/domain/rules';
-import { fullEntitiesList, fullRelationsList, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIdsMapped, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { Readable } from 'node:stream';
 import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { PLATFORM_VERSION } from '../../../../src/config/conf';
@@ -69,6 +70,7 @@ import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemp
 import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { mitreConnector } from './configPreset-connectors-fixtures';
 import { exportConnector } from '../../../../src/modules/connector/connector-export';
+import { enrichPlaybook, EXPORTED_PLAYBOOK_DEFINITION, playbookAuthor } from './configPreset-playbooks-fixtures';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
@@ -121,6 +123,7 @@ describe('Config preset registry', () => {
     withSettings({});
     mockConfigPresetLoaders(entitySettings);
     withRules();
+    vi.mocked(internalFindByIdsMapped).mockResolvedValue({ [playbookAuthor.id]: playbookAuthor } as never);
     vi.mocked(roleCapabilities).mockImplementation(async (_ctx, _user, roleId, type = 'has-capability') => {
       return ROLE_CAPABILITIES[roleId][type].map((name) => ({ id: `${name}-id`, name })) as never;
     });
@@ -240,6 +243,14 @@ describe('Config preset registry', () => {
         group: 'integrations',
         itemIds: [incidentForm.standard_id, reportForm.standard_id],
       },
+      // The playbooks by name; the next playbooks of the same name by creation date
+      {
+        id: 'playbooks',
+        label: 'Playbooks',
+        description: 'Playbook definitions, created stopped',
+        group: 'automationRules',
+        itemIds: ['Enrich reports', 'Enrich reports (1)', 'Triage/Phishing'],
+      },
       // Every rule the platform declares, by its id
       {
         id: 'ruleEngine',
@@ -260,7 +271,7 @@ describe('Config preset registry', () => {
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'fintelDesigns']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'playbooks', 'fintelDesigns']);
   });
 
   it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template, a case template or a fintel design name', async () => {
@@ -308,6 +319,9 @@ describe('Config preset registry', () => {
       ['Partner/TAXII', false],
       ['Incident intake', false],
       ['Report intake', false],
+      ['Enrich reports', false],
+      ['Enrich reports', false],
+      ['Triage/Phishing', false],
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
       ['Night briefing', false],
@@ -362,6 +376,9 @@ describe('Config preset registry', () => {
       'integrations/taxii_feeds/Partner_TAXII.json',
       `integrations/form_intakes/${incidentForm.standard_id}.json`,
       `integrations/form_intakes/${reportForm.standard_id}.json`,
+      'automation_rules/playbooks/Enrich reports.json',
+      'automation_rules/playbooks/Enrich reports (1).json',
+      'automation_rules/playbooks/Triage_Phishing.json',
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
       `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
@@ -546,6 +563,44 @@ describe('Config preset registry', () => {
     it('exports a whitemark that is not set as null, to keep a stable file shape', async () => {
       withSettings({ platform_whitemark: undefined });
       expect(await (await findItem('whitemark', 'whitemark')).exporter(context, user)).toEqual({ platform_whitemark: null });
+    });
+  });
+
+  describe('playbooks', () => {
+    it('exports the definition as it is, its users referenced by standard id, never its running state', async () => {
+      const exported = await exportConfigPresetItem(context, user, findFamily('playbooks'), await findItem('playbooks', 'Enrich reports'));
+      expect(exported).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'automationRules.playbooks',
+        id: 'Enrich reports',
+        configuration: {
+          name: 'Enrich reports',
+          description: enrichPlaybook.description,
+          playbook_start: 'node-start',
+          playbook_definition: EXPORTED_PLAYBOOK_DEFINITION,
+        },
+      });
+      expect(internalFindByIdsMapped).toHaveBeenCalledWith(context, expect.anything(), [playbookAuthor.id], { type: 'User', baseData: true });
+    });
+
+    it('keeps a user the platform does not find as it is', async () => {
+      vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({} as never);
+      const exported = await exportConfigPresetItem(context, user, findFamily('playbooks'), await findItem('playbooks', 'Enrich reports'));
+      expect(exported.configuration.playbook_definition).toEqual(enrichPlaybook.playbook_definition);
+    });
+
+    it('lists every playbook of a name, however many share it', async () => {
+      const homonyms = Array.from({ length: 105 }, (_, index) => ({ ...enrichPlaybook, id: `homonym-${index}`, internal_id: `homonym-${index}`, created_at: `2026-01-01T00:00:${String(index).padStart(3, '0')}Z` }));
+      vi.mocked(fullEntitiesList).mockResolvedValueOnce(homonyms as never);
+      const items = await findFamily('playbooks').resolveItems(context, user, null, []);
+      expect(items).toHaveLength(105);
+      expect(new Set(items.map(({ id }) => id)).size).toBe(105);
+      expect(items.map(({ id }) => id)).toContain('Enrich reports (104)');
+    });
+
+    it('searches the playbooks by name', async () => {
+      const page = await findFamily('playbooks').listItems(context, user, { first: 10, search: 'triage' });
+      expect(page.edges.map(({ node }) => node.id)).toEqual(['Triage/Phishing']);
     });
   });
 
