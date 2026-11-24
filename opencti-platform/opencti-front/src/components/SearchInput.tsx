@@ -33,11 +33,13 @@ import type { NavSearchResult } from '../private/components/nav/useNavSearch';
 import type { Theme } from './Theme';
 
 const MODE_SEARCH = 'search';
-const MODE_BULK = 'bulk';
+// Bulk search is not a mode of the field: its button only leads to the bulk search page.
+// It sits in the toggle group to look like its neighbours, with a value no mode ever takes.
+const BULK_BUTTON_VALUE = 'bulk';
 const BULK_SEARCH_PATH = '/dashboard/search_bulk';
 // NLQ modes are dynamic: `nlq:<agentSlug>`
 type NlqMode = `nlq:${string}`;
-type SearchMode = typeof MODE_SEARCH | typeof MODE_BULK | NlqMode;
+type SearchMode = typeof MODE_SEARCH | NlqMode;
 
 const isNlqMode = (mode: SearchMode) => mode.startsWith('nlq:');
 
@@ -90,7 +92,7 @@ const SearchInput = (props: SearchInputProps) => {
   const fieldContainerRef = useRef<HTMLDivElement>(null);
   const suggestionsRef = useRef<NavSearchResult[]>([]);
 
-  // Current mode: 'search', 'bulk', or 'nlq:<slug>'
+  // Current mode: 'search' or 'nlq:<slug>'
   const [mode, setMode] = useState<SearchMode>(MODE_SEARCH);
 
   // NLQ agent menu state (for the dropdown arrow on the NLQ toggle)
@@ -107,9 +109,7 @@ const SearchInput = (props: SearchInputProps) => {
   const [isNlqSplitHovered, setIsNlqSplitHovered] = useState(false);
 
   useEffect(() => {
-    // Don't sync when in bulk mode: navigating to /search_bulk clears the URL
-    // keyword, but we want to keep the user's typed value in the input.
-    if (mode !== MODE_BULK && keyword !== searchValue) {
+    if (keyword !== searchValue) {
       setSearchValue(keyword);
     }
   }, [keyword]);
@@ -195,36 +195,32 @@ const SearchInput = (props: SearchInputProps) => {
     }
   }, [isAIEnabled, mode, useXtmOne, defaultNlqSlug, handleOpenNlqMenu, searchValue, onSubmit]);
 
-  // ── Mode change handler ────────────────────────────────────────────────
-  const navigateToBulkSearch = () => {
-    const encoded = encodeURIComponent(searchValue || '');
-    navigate(`${BULK_SEARCH_PATH}${searchValue ? `?q=${encoded}` : ''}`);
-  };
-
-  // The top bar outlives the page, so Bulk stays selected after the user has left the bulk
-  // search page: clicking it again must lead back there. On the page itself, it does nothing.
-  // Handled on the Bulk button itself, not on the group's null change: the Ask AI toggle sits in
-  // the same group with the current mode as value, so its clicks reach the group as null too.
-  const handleBulkClick = () => {
-    if (mode === MODE_BULK && !location.pathname.startsWith(BULK_SEARCH_PATH)) {
-      navigateToBulkSearch();
-    }
+  // ── Bulk search button ─────────────────────────────────────────────────
+  // Leads to the bulk search page, carrying what is typed in the field (the page fills its text
+  // area from ?q=), then empties the field: its content now lives on the bulk search page.
+  // The mode of the field does not change. preventDefault keeps the click from the toggle group.
+  const handleBulkClick = (event: MouseEvent<HTMLElement>) => {
+    event.preventDefault();
+    const value = searchValue?.trim() ?? '';
+    // Already on the page with nothing to carry: no new history entry for the same page.
+    if (!value && location.pathname.startsWith(BULK_SEARCH_PATH)) return;
+    setSuggestionsOpen(false);
+    setActiveIndex(-1);
+    // Not through handleValueChange: it would re-submit an empty search and fight with the navigation.
+    setSearchValue('');
+    navigate(`${BULK_SEARCH_PATH}${value ? `?q=${encodeURIComponent(value)}` : ''}`);
   };
 
   const handleModeChange = (_event: MouseEvent<HTMLElement>, newMode: SearchMode | null) => {
-    if (newMode === null) return; // MUI sends null when clicking the already-selected button
     if (newMode === MODE_SEARCH) {
       setMode(newMode);
       // Execute search immediately with current value
       if (searchValue && typeof onSubmit === 'function') {
         onSubmit(searchValue, false, undefined);
       }
-    } else if (newMode === MODE_BULK) {
-      setMode(newMode);
-      // Navigate to bulk with current value
-      navigateToBulkSearch();
     }
-    // NLQ is handled via handleNlqToggleClick, not the toggle group
+    // null: MUI reports a click on the selected button, or on the Ask AI toggle (valued with the current mode).
+    // NLQ is handled via handleNlqToggleClick, Bulk via handleBulkClick, not the toggle group.
   };
 
   // ── Compute placeholder ────────────────────────────────────────────────
@@ -233,9 +229,6 @@ const SearchInput = (props: SearchInputProps) => {
       return selectedAgent
         ? `${t_i18n('Ask your question')} - ${selectedAgent.name}`
         : `${t_i18n('Ask your question')}...`;
-    }
-    if (mode === MODE_BULK) {
-      return `${t_i18n('One keyword by line or separated by commas')}...`;
     }
     return placeholder;
   };
@@ -248,7 +241,7 @@ const SearchInput = (props: SearchInputProps) => {
   // One letter matches a dozen pages by substring: wait for two before listing them.
   const canSuggest = mode === MODE_SEARCH && (searchValue?.trim().length ?? 0) >= 2;
   const showSuggestions = suggestionsOpen && canSuggest;
-  // Bulk and NLQ modes have no popup: the field must not announce itself as a (collapsed) combobox there.
+  // NLQ modes have no popup: the field must not announce itself as a (collapsed) combobox there.
   const comboboxProps: Partial<SearchFieldProps> = mode === MODE_SEARCH
     ? {
         role: 'combobox',
@@ -316,15 +309,9 @@ const SearchInput = (props: SearchInputProps) => {
     // Pages only: Enter without a highlighted page does nothing.
     if (!pagesOnly && typeof onSubmit === 'function' && event.key === 'Enter') {
       closeSuggestions();
-      if (mode === MODE_BULK) {
-        // Navigate to bulk search page with the keyword as a query param
-        const encoded = encodeURIComponent(value);
-        navigate(`${BULK_SEARCH_PATH}${value ? `?q=${encoded}` : ''}`);
-      } else {
-        // Pass agentSlug only if it's a non-empty string (XTM One mode),
-        // otherwise pass undefined so AINLQ falls back to legacy
-        onSubmit(value, isNLQActivated, selectedAgentSlug || undefined);
-      }
+      // Pass agentSlug only if it's a non-empty string (XTM One mode),
+      // otherwise pass undefined so AINLQ falls back to legacy
+      onSubmit(value, isNLQActivated, selectedAgentSlug || undefined);
     }
   };
 
@@ -496,9 +483,15 @@ const SearchInput = (props: SearchInputProps) => {
               </ToggleButton>
             </Tooltip>
 
-            {/* Bulk mode */}
+            {/* Bulk search: an action, not a mode. Never selected, and no aria-pressed: it is not a toggle. */}
             <Tooltip title={t_i18n('Bulk search')}>
-              <ToggleButton value={MODE_BULK} sx={[toggleButtonSx, { mr: 0.75 }]} onClick={handleBulkClick}>
+              <ToggleButton
+                value={BULK_BUTTON_VALUE}
+                selected={false}
+                aria-pressed={undefined}
+                sx={[toggleButtonSx, { mr: 0.75 }]}
+                onClick={handleBulkClick}
+              >
                 <ManageSearchOutlined sx={{ fontSize: 18 }} />
               </ToggleButton>
             </Tooltip>

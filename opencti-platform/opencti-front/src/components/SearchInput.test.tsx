@@ -188,46 +188,56 @@ describe('SearchInput (top bar) shortcut target', () => {
   });
 });
 
-describe('SearchInput (top bar) in bulk mode', () => {
-  it('is not announced as a combobox and shows no pages dropdown', async () => {
-    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />);
-    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+describe('SearchInput (top bar) Bulk search button', () => {
+  const bulkButton = () => screen.getByRole('button', { name: 'Bulk search' });
 
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
-    await user.type(document.querySelector('input[name="keyword"]') as HTMLInputElement, 'imp');
-    expect(screen.queryAllByRole('option')).toHaveLength(0);
+  it('leads to the bulk search page with the typed value, then empties the field', async () => {
+    mockNavigate.mockClear();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard' });
+    await user.type(screen.getByRole('combobox'), 'apt28, apt29');
+    await user.click(bulkButton());
+
+    expect(mockNavigate).toHaveBeenCalledWith(`/dashboard/search_bulk?q=${encodeURIComponent('apt28, apt29')}`);
+    expect(screen.getByRole('combobox')).toHaveValue('');
   });
 
-  it('goes back to the bulk search page when Bulk search is clicked again from another page', async () => {
-    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard' });
-    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+  it('leads to the bulk search page from another page even with an empty field', async () => {
     mockNavigate.mockClear();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard' });
+    await user.click(bulkButton());
 
-    // The top bar outlives the page: the toggle is still selected once the user has moved elsewhere.
-    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard/search_bulk');
   });
 
-  it('does not go back to the bulk search page when Ask AI is clicked from another page', async () => {
-    const onSubmit = vi.fn();
-    const { user } = testRender(<SearchInput variant="topBar" onSubmit={onSubmit} keyword="" />, { route: '/dashboard' });
-    await user.type(document.querySelector('input[name="keyword"]') as HTMLInputElement, 'apt');
-    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
+  it('does not reload the bulk search page when clicked on it with an empty field', async () => {
     mockNavigate.mockClear();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard/search_bulk' });
+    await user.click(bulkButton());
 
-    // The AI toggle shares the group with Bulk: MUI reports its click as a click on the selected value.
-    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
     expect(mockNavigate).not.toHaveBeenCalled();
-    expect(onSubmit).toHaveBeenCalledWith('apt', true, undefined);
   });
 
-  it('does not reload the bulk search page when Bulk search is clicked on it', async () => {
-    const { user } = testRender(<SearchInput variant="topBar" onSubmit={vi.fn()} keyword="" />, { route: '/dashboard/search_bulk' });
-    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
-    mockNavigate.mockClear();
+  it('is an action, not a mode: never pressed, and the field keeps searching', async () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={onSubmit} keyword="" />, { route: '/dashboard' });
+    await user.click(bulkButton());
 
-    await user.click(screen.getByRole('button', { name: 'Bulk search' }));
-    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(bulkButton()).not.toHaveAttribute('aria-pressed');
+    expect(bulkButton()).not.toHaveClass('Mui-selected');
+    // Still the classic search field, with its placeholder, its pages dropdown and its Enter
+    const field = screen.getByRole('combobox');
+    expect(field).toHaveAttribute('placeholder', 'Search these results...');
+    await user.type(field, 'apt{Enter}');
+    expect(onSubmit).toHaveBeenCalledWith('apt', false, undefined);
+  });
+
+  it('keeps the AI mode of the field', async () => {
+    const onSubmit = vi.fn();
+    const { user } = testRender(<SearchInput variant="topBar" onSubmit={onSubmit} keyword="" />, { route: '/dashboard' });
+    await user.click(screen.getByRole('button', { name: 'Ask AI' }));
+    await user.click(bulkButton());
+
+    expect(screen.getByRole('button', { name: 'Ask AI' })).toHaveAttribute('aria-pressed', 'true');
   });
 });
 
