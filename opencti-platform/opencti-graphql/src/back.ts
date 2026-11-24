@@ -1,4 +1,3 @@
-import './config/prototype-seal';
 import './instrumentation';
 
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';

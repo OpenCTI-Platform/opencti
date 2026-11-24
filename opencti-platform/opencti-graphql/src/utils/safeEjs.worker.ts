@@ -1,4 +1,3 @@
-import '../config/prototype-seal';
 import { parentPort } from 'worker_threads';
 import type { Data } from 'ejs';
 import { safeRender } from './safeEjs';
