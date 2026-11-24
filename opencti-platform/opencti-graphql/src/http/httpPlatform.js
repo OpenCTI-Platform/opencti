@@ -108,7 +108,6 @@ const publishFileRead = async (executeContext, auth, file) => {
 // The file is indexed but its content is missing from the object storage.
 const sendMissingStorageFile = (res, fileId) => {
   logApp.warn('[FILE STORAGE] Indexed file is missing from storage', { fileId });
-  res.removeHeader('Content-disposition');
   res.type('json').status(404).send({ status: 'error', error: 'File not found' });
 };
 
@@ -135,13 +134,13 @@ export const handleStorageGet = async (req, res) => {
     await checkDraftInContext(context);
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
-    // If file is attach to a specific instance, we need to contr
-    await publishFileDownload(context, context.user, data);
     const stream = await downloadFile(data.id);
     if (!stream) {
       sendMissingStorageFile(res, data.id);
       return;
     }
+    // If file is attach to a specific instance, we need to contr
+    await publishFileDownload(context, context.user, data);
     res.attachment(file);
     stream.pipe(res);
   } catch (e) {
@@ -164,6 +163,11 @@ export const handleStorageView = async (req, res) => {
     await checkDraftInContext(context);
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
+    const stream = await downloadFile(data.id);
+    if (!stream) {
+      sendMissingStorageFile(res, data.id);
+      return;
+    }
     await publishFileRead(context, context.user, data);
     res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
     res.set('Content-Security-Policy', 'sandbox');
@@ -173,11 +177,6 @@ export const handleStorageView = async (req, res) => {
       res.set('Content-type', 'text/html; charset=utf-8');
     } else {
       res.set('Content-type', data.metaData.mimetype);
-    }
-    const stream = await downloadFile(data.id);
-    if (!stream) {
-      sendMissingStorageFile(res, data.id);
-      return;
     }
     stream.pipe(res);
   } catch (e) {
@@ -212,6 +211,11 @@ export const handleStorageViewEmbedded = async (req, res) => {
 
     const file = `embedded/${element.entity_type}/${id}/${filename}`;
     const data = await loadFile(context, context.user, file);
+    const stream = await downloadFile(data.id);
+    if (!stream) {
+      sendMissingStorageFile(res, data.id);
+      return;
+    }
     await publishFileRead(context, context.user, data);
     res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
     res.set('Content-Security-Policy', 'sandbox');
@@ -221,12 +225,6 @@ export const handleStorageViewEmbedded = async (req, res) => {
       res.set('Content-type', 'text/html; charset=utf-8');
     } else {
       res.set('Content-type', data.metaData.mimetype);
-    }
-
-    const stream = await downloadFile(data.id);
-    if (!stream) {
-      sendMissingStorageFile(res, data.id);
-      return;
     }
     stream.pipe(res);
   } catch (e) {
@@ -281,13 +279,13 @@ export const handleStorageEncrypted = async (req, res) => {
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
     const { metaData: { filename } } = data;
-    await publishFileDownload(context, context.user, data);
-    const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
     const stream = await downloadFile(file);
     if (!stream) {
       sendMissingStorageFile(res, file);
       return;
     }
+    await publishFileDownload(context, context.user, data);
+    const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
     archive.append(stream, { name: filename });
     await archive.finalize();
     res.attachment(`${filename}.zip`);

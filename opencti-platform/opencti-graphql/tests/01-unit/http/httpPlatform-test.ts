@@ -17,6 +17,10 @@ import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
 import { checkIpWhitelistForRequest } from '../../../src/http/ipWhitelistMiddleware';
+import { downloadFile } from '../../../src/database/raw-file-storage';
+import { loadFile } from '../../../src/database/file-storage';
+import { internalLoadById } from '../../../src/database/middleware-loader';
+import { publishUserAction } from '../../../src/listener/UserActionListener';
 import { sessionAuthenticateUser } from '../../../src/modules/user/user-domain';
 import { AuthenticationProviderError } from '../../../src/modules/authenticationProvider/providers-logger';
 import { AuthType, EnvStrategyType, PROVIDERS, type ProviderConfiguration } from '../../../src/modules/authenticationProvider/providers-configuration';
@@ -35,12 +39,29 @@ vi.mock('../../../src/http/httpAuthenticatedContext', () => ({
 vi.mock('../../../src/http/httpServer-draft', () => ({
   checkDraftInContext: vi.fn(),
 }));
+vi.mock('../../../src/database/raw-file-storage', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, downloadFile: vi.fn() };
+});
+vi.mock('../../../src/database/file-storage', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, loadFile: vi.fn() };
+});
+vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, internalLoadById: vi.fn() };
+});
+vi.mock('../../../src/listener/UserActionListener', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, publishUserAction: vi.fn() };
+});
 vi.mock('../../../src/config/conf', async (importOriginal) => {
   const actual: object = await importOriginal();
   return {
     ...actual,
     logApp: {
       info: vi.fn(),
+      warn: vi.fn(),
       error: vi.fn(),
     } };
 });
@@ -255,6 +276,7 @@ const makeStorageReq = (params: Record<string, unknown> = {}) => ({ params, head
 const makeStorageRes = () => ({
   sendStatus: vi.fn(),
   status: vi.fn().mockReturnThis(),
+  type: vi.fn().mockReturnThis(),
   send: vi.fn(),
   attachment: vi.fn(),
   set: vi.fn(),
@@ -587,6 +609,72 @@ describe('storage routes: draft authorization', () => {
 
     expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
     expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
+// ─── storage routes: file indexed but missing from object storage ───────────
+// `downloadFile` resolves to null when the object is gone from S3. Each handler
+// must answer 404 instead of crashing on the null stream, and must not record
+// a download/read in the activity log for a file it did not serve.
+
+describe('storage routes: file missing from object storage', () => {
+  const ALLOWED_CONTEXT = { user: { id: 'user-a' } };
+  const FILE = {
+    id: 'import/global/file.txt',
+    name: 'file.txt',
+    metaData: { mimetype: 'text/plain', filename: 'file.txt' },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createAuthenticatedContext).mockResolvedValue(ALLOWED_CONTEXT as any);
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined as any);
+    vi.mocked(loadFile).mockResolvedValue(FILE as any);
+    vi.mocked(internalLoadById).mockResolvedValue({ entity_type: 'Report' } as any);
+    vi.mocked(downloadFile).mockResolvedValue(null);
+  });
+
+  const expectNotFound = (res: any) => {
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'File not found' });
+    expect(res.status).not.toHaveBeenCalledWith(503);
+    expect(publishUserAction).not.toHaveBeenCalled();
+  };
+
+  it('handleStorageGet answers 404 without publishing a download', async () => {
+    const res = makeStorageRes();
+
+    await handleStorageGet(makeStorageReq({ file: ['import', 'global', 'file.txt'] }), res);
+
+    expectNotFound(res);
+    expect(res.attachment).not.toHaveBeenCalled();
+  });
+
+  it('handleStorageView answers 404 without publishing a read', async () => {
+    const res = makeStorageRes();
+
+    await handleStorageView(makeStorageReq({ file: ['import', 'global', 'file.txt'] }), res);
+
+    expectNotFound(res);
+    expect(res.set).not.toHaveBeenCalled();
+  });
+
+  it('handleStorageViewEmbedded answers 404 without publishing a read', async () => {
+    const res = makeStorageRes();
+
+    await handleStorageViewEmbedded(makeStorageReq({ 0: 'x', 1: 'entity-id', 2: 'y', 3: 'file.txt' }), res);
+
+    expectNotFound(res);
+    expect(res.set).not.toHaveBeenCalled();
+  });
+
+  it('handleStorageEncrypted answers 404 without publishing a download', async () => {
+    const res = makeStorageRes();
+
+    await handleStorageEncrypted(makeStorageReq({ file: ['import', 'global', 'file.txt'] }), res);
+
+    expectNotFound(res);
+    expect(res.attachment).not.toHaveBeenCalled();
   });
 });
 
