@@ -71,7 +71,7 @@ export const findInvestigationEnrichmentWorks = async (
   const investigationFilters = addFilter(args.filters, 'investigation_id', workspace.id);
 
   // 01. Collect the sources of the works of the investigation, reading only that field
-  const sourceIdsSet = new Set<string | undefined>();
+  const sourceIdsSet = new Set<string>();
   await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
     context,
     user,
@@ -83,11 +83,13 @@ export const findInvestigationEnrichmentWorks = async (
       baseData: true,
       baseFields: ['event_source_id'],
       callback: async (works) => {
-        works.forEach((work) => sourceIdsSet.add(work.event_source_id));
+        works.forEach((work) => {
+          if (isNotEmptyField(work.event_source_id)) sourceIdsSet.add(work.event_source_id);
+        });
       },
     },
   );
-  const sourceIds = [...sourceIdsSet].filter(isNotEmptyField);
+  const sourceIds = [...sourceIdsSet];
   if (sourceIds.length === 0) {
     return emptyPaginationResult();
   }

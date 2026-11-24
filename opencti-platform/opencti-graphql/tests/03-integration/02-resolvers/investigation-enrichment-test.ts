@@ -346,6 +346,31 @@ describe('Enrichments linked to an investigation', () => {
       expect(ids.sort()).toEqual([...tagged].sort());
     });
 
+    it('should ignore a work without a source', async () => {
+      const investigationId = await createWorkspace('investigation', 'Enrichment investigation (work without source)', 'edit');
+      dedicatedInvestigationIds.push(investigationId);
+      await addToInvestigation(investigationId, [enriched.id]);
+      const buildWork = (id: string, sourceId?: string) => ({
+        internal_id: id,
+        entity_type: ENTITY_TYPE_WORK,
+        event_type: ConnectorType.InternalEnrichment,
+        event_source_id: sourceId,
+        connector_id: INV_CONNECTOR_A,
+        investigation_id: investigationId,
+        timestamp: new Date().toISOString(),
+        status: 'complete',
+        messages: [],
+        errors: [],
+      });
+      const works: any[] = [buildWork('work_with_source', enriched.standard_id), buildWork('work_without_source')];
+      await elBulk(testContext, { refresh: true, body: works.flatMap((work) => [{ index: { _index: INDEX_HISTORY, _id: work.internal_id } }, work]) });
+      try {
+        expect(await listEnrichmentWorkIds(investigationId)).toEqual(['work_with_source']);
+      } finally {
+        await elDeleteInstances(testContext, works.map((work) => ({ ...work, _index: INDEX_HISTORY })));
+      }
+    });
+
     /**
      * Read the event source of each work of an investigation from the works query, by work id.
      */
