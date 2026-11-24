@@ -115,6 +115,7 @@ describe('Playbook import of a configuration preset', () => {
   it.each([
     ['a node configuration that is not an object', { nodes: [{ ...node('start', 'PLAYBOOK_LOGGER_COMPONENT', {}), configuration: 'null' }], links: [] }],
     ['a node configuration that is not JSON', { nodes: [{ ...node('start', 'PLAYBOOK_LOGGER_COMPONENT', {}), configuration: '{' }], links: [] }],
+    ['a node without configuration', { nodes: [{ ...START, configuration: '' }], links: [] }],
     ['a node without its component', { nodes: [{ id: 'start', name: 'start', position: { x: 0, y: 0 }, configuration: '{}' }], links: [] }],
     ['a link without its target', { nodes: [], links: [{ id: 'link', from: { id: 'start', port: 'out' } }] }],
   ])('refuses %s as invalid, before reading anything of the platform', async (_case, definition) => {
@@ -124,14 +125,6 @@ describe('Playbook import of a configuration preset', () => {
     expect(result).toMatchObject({ status: 'failed', code: 'invalid', reason: expect.stringContaining('Invalid playbook definition') });
     expect(fullEntitiesList).not.toHaveBeenCalled();
     expect(sanitizeDefinitionRunAs).not.toHaveBeenCalled();
-  });
-
-  it('accepts a node without configuration', async () => {
-    withPlatform([]);
-    const definition = { nodes: [{ ...START, configuration: '' }], links: [] };
-    const configuration = bundlePlaybook({ playbook_definition: JSON.stringify(definition) });
-    const result = await importConfigPresetPlaybook(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
-    expect(result.status).toBe('created');
   });
 
   it('creates a new playbook stopped, its users found by standard id, and writes nothing in a dry run', async () => {

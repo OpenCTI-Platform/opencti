@@ -1,9 +1,6 @@
 import { z } from 'zod';
 
 const isNodeConfiguration = (value: string) => {
-  if (value === '') {
-    return true;
-  }
   try {
     const configuration = JSON.parse(value);
     return !!configuration && typeof configuration === 'object' && !Array.isArray(configuration);
