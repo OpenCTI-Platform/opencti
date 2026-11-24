@@ -35,7 +35,7 @@ With an Enterprise Edition license, every change of these settings is recorded i
 ## How it works
 
 1. Each failed login on an account is counted. Nothing is locked before the maximum number of attempts.
-2. The counter covers a window that starts with the first failure. When the window ends, the counter starts again from zero. With a window of `0`, the failures are kept until a successful login or an administrator.
+2. The counter covers a window that starts with the first failure. When the window ends, the counter starts again from zero. With a window of `0`, the failures are kept until a successful login, or until an administrator sets the account back to **Active**.
 3. When the maximum number of attempts is reached, the action applies:
     - **Temporary lock**: the account cannot log in for the temporary lock duration, then it is unlocked automatically. Its status stays **Active**, so its open sessions and API tokens keep working. A login attempt during the lock is rejected, even with the right password, and is not counted.
     - **Permanent lock**: the account status is set to **Locked**. Its open sessions are closed, and its API tokens stop working. The account stays locked until an administrator unlocks it.
