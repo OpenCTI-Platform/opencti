@@ -117,6 +117,7 @@ const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
             <Security needs={security}>
               <ContainerAddStixCoreObjects
                 containerId={container.id}
+                containerType={container.entity_type}
                 containerStixCoreObjects={container.objects?.edges ?? []}
                 paginationOptions={paginationOptions}
                 targetStixCoreObjectTypes={
@@ -145,6 +146,7 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
     container: graphql`
       fragment ContainerStixObjectsOrStixRelationships_container on Container {
         id
+        entity_type
         confidence
         createdBy {
           ... on Identity {
