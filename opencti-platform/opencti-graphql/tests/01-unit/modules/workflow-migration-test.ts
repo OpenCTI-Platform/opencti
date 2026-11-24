@@ -20,6 +20,11 @@ vi.mock('../../../src/modules/workflow/domain/workflow-domain', () => ({
   hasOnlyDefaultLegacyStatuses: vi.fn(),
   migrateWorkflowFromStatuses: vi.fn(),
   resolveScopedDefinitionId: vi.fn(),
+  NON_MIGRATABLE_ENTITY_TYPES: {
+    DraftWorkspace: 'not migratable',
+    'stix-core-relationship': 'not migratable',
+    'stix-sighting-relationship': 'not migratable',
+  },
 }));
 
 const context = executionContext('migration');

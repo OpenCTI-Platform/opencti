@@ -7,7 +7,7 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { getInitialState, NEW_STATUS_NAME, REQUEST_ACCESS_ENTITY_TYPE, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
+import { getInitialState, NEW_STATUS_NAME, NON_MIGRATABLE_ENTITY_TYPES, REQUEST_ACCESS_ENTITY_TYPE, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery, WorkflowScope } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
@@ -447,7 +447,7 @@ const Workflow = ({
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [migrationOpen, setMigrationOpen] = useState(false);
   // The migration builds the workflow of the scope from its legacy statuses until one is published: it may replace a draft, never a published one.
-  const canMigrate = !workflowDefinitionStatus.hasPublishedVersion;
+  const canMigrate = !workflowDefinitionStatus.hasPublishedVersion && !NON_MIGRATABLE_ENTITY_TYPES.includes(entityType);
   const migrateLabel = scope === 'REQUEST_ACCESS' ? t_i18n('Migrate request access statuses') : t_i18n('Migrate statuses');
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(

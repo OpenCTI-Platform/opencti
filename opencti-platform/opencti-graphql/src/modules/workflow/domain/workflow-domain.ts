@@ -19,7 +19,8 @@ import { type EditInput, FilterMode, FilterOperator, StatusScope, OrderingMode, 
 import { type BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from '../../vocabulary/vocabulary-types';
 import { lockResources } from '../../../lock/master-lock';
 import { addWorkflowPublishCount, addWorkflowRequestAccessMigrationCount, addWorkflowRequestAccessPublishCount } from '../../../manager/telemetryManager';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../../../schema/internalObject';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../schema/stixDomainObject';
 import { RELATION_HAS_WORKFLOW } from '../../../schema/internalRelationship';
@@ -568,6 +569,7 @@ const initializeWorkflowInstance = async (
   // `scope` is the one the definition was resolved with. Global keeps the default 'standard' unless a supplied status resolved.
   let instanceScope: string = scope === StatusScope.Global ? 'standard' : scope;
   let pendingError: string | undefined;
+  let keptUnset = false;
   let shouldProject = false;
 
   const suppliedStatusId = entity.x_opencti_workflow_id;
@@ -580,14 +582,15 @@ const initializeWorkflowInstance = async (
       pendingError = `Supplied x_opencti_workflow_id "${suppliedStatusId}" does not resolve to any state of the published workflow`;
     }
   } else if (onRead) {
-    pendingError = 'The entity had no status when its workflow started: the status stays unset until the next transition';
+    // Expected for every entity older than its workflow: recorded in the history only, not as a pendingError the UI warns about
+    keptUnset = true;
   } else {
     shouldProject = true;
   }
 
   const timestamp = new Date().toISOString();
   const history: Array<Record<string, unknown>> = [{ state: currentState, user_id: user.id, timestamp, event: 'initialization' }];
-  if (pendingError) {
+  if (pendingError || keptUnset) {
     history.push({ state: currentState, status_id: suppliedStatusId ?? null, reason: suppliedStatusId ? 'unmapped' : 'unset', user_id: user.id, timestamp, event: EVENT_EXTERNAL_KEPT });
   }
   const instanceInput: Record<string, unknown> = {
@@ -739,14 +742,25 @@ export const getWorkflowPublishedVersionId = async (
  * Gathers the `Status`/`StatusTemplate` input data for `entityType` (all scopes, matching
  * `byScope`'s shape) and hands it to the pure `convertStatusToDefinition`.
  */
+// Entity types whose legacy statuses never become a workflow, by the platform migration or on demand.
+export const NON_MIGRATABLE_ENTITY_TYPES: Record<string, string> = {
+  // The workflow of a draft must contain a validateDraft action, a migrated one never has it
+  [ENTITY_TYPE_DRAFT_WORKSPACE]: 'DraftWorkspace statuses cannot be migrated: its workflow must contain a validateDraft action',
+  // Abstract relationship settings are only inherited defaults: the engine resolves the workflow of the concrete
+  // relationship type (exact lookup), so a definition published here is never used, and it would make the
+  // relationship edition forms read-only
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: 'Relationship statuses cannot be migrated: the workflow engine never reads a workflow on the abstract relationship settings',
+  [STIX_SIGHTING_RELATIONSHIP]: 'Sighting statuses cannot be migrated: the workflow engine never reads a workflow on the abstract relationship settings',
+};
+
 // Rejects, before reading any data, an entity type that has no workflow setting for the scope (or
-// does not exist), and DraftWorkspace, whose workflow must contain a validateDraft action a migrated
-// one never has.
+// does not exist), and the non migratable types.
 const assertMigratableEntityType = (entityType: string, scope: StatusScope = StatusScope.Global) => {
   assertScopeAllowed(entityType, scope);
   validateSetting(entityType, scope === StatusScope.RequestAccess ? 'request_access_workflow' : 'workflow_id');
-  if (entityType === ENTITY_TYPE_DRAFT_WORKSPACE) {
-    throw FunctionalError('DraftWorkspace statuses cannot be migrated: its workflow must contain a validateDraft action', { entityType });
+  const reason = NON_MIGRATABLE_ENTITY_TYPES[entityType];
+  if (reason) {
+    throw FunctionalError(reason, { entityType });
   }
 };
 

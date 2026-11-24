@@ -105,7 +105,8 @@ const allTargetsWithoutWorkflow = async (context, user, targetTypes) => {
 };
 
 // Entity types a query task can reach, read from its `entity_type eq` filters, nested groups included.
-// In `and` mode, each type filter or bounded sub-group narrows the targets: their bounds intersect.
+// In `and` mode, the bounds add up: every reached type is covered by each bound, so by their union.
+// Intersecting the names would drop a type an abstract parent covers (`[Container, Malware]` and `[Malware, Report]` still reach Reports).
 // In `or` mode, the group is only bounded when every member is: their bounds add up.
 // Any other shape (no type filter, `not_eq`, `or` with other filters) returns no type, so the caller fails closed.
 const resolveQueryTargetTypes = (filterGroup) => {
@@ -120,9 +121,7 @@ const resolveQueryTargetTypes = (filterGroup) => {
     return [];
   }
   if (filterGroup.mode === FilterMode.And) {
-    // An empty intersection (e.g. `Container` and `Report`, or contradictory filters) keeps the first bound, which still covers the targets
-    const intersection = bounds.reduce((acc, bound) => acc.filter((type) => bound.some((t) => t.toLowerCase() === type.toLowerCase())));
-    return intersection.length > 0 ? intersection : bounds[0];
+    return bounds.flat();
   }
   const everyMemberBounded = typeFilters.length === filters.length && typeFilters.every((filter) => (filter.values ?? []).length > 0)
     && subGroupBounds.every((bound) => bound.length > 0);

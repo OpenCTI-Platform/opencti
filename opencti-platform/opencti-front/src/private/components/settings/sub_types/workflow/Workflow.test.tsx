@@ -1276,6 +1276,13 @@ describe('Workflow Component', () => {
         expect(screen.getByTestId('workflow-migration-dialog')).toHaveAttribute('data-scope', 'GLOBAL');
       });
 
+      it.each(['DraftWorkspace', 'stix-core-relationship', 'stix-sighting-relationship'])('does not offer the migration on %s, whose statuses cannot be migrated', (entityType) => {
+        mockLoadedDefinition = mockWorkflowDefinition;
+        renderRfi({ scope: 'GLOBAL', entityType });
+
+        expect(screen.queryByRole('button', { name: 'Migrate statuses' })).not.toBeInTheDocument();
+      });
+
       it('does not offer the migration once the Global workflow has been published', () => {
         mockLoadedDefinition = { ...mockWorkflowDefinition, hasPublishedVersion: true };
         renderRfi({ scope: 'GLOBAL' });

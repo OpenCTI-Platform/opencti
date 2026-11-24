@@ -4934,7 +4934,7 @@ describe('getWorkflowInstance — lazy backfill', () => {
     expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
   });
 
-  it('backfills an entity without status without writing one, and records the unset status as kept', async () => {
+  it('backfills an entity without status without writing one, and records the unset status as kept without a pendingError', async () => {
     setupCommon();
     (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
     (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
@@ -4944,7 +4944,7 @@ describe('getWorkflowInstance — lazy backfill', () => {
 
     expect(projectWorkflowState).not.toHaveBeenCalled();
     const input = (createEntity as any).mock.calls[0][2];
-    expect(input.pendingError).toContain('no status');
+    expect(input.pendingError).toBeUndefined();
     expect(JSON.parse(input.history).at(-1)).toEqual(expect.objectContaining({ event: 'event_external_kept', status_id: null, reason: 'unset' }));
   });
 
@@ -5475,6 +5475,14 @@ describe('getWorkflowMigrationPreview', () => {
 
   it('rejects DraftWorkspace, whose workflow needs a validateDraft action', async () => {
     await expect(getWorkflowMigrationPreview(mockContext, mockUser, 'DraftWorkspace')).rejects.toThrow('DraftWorkspace statuses cannot be migrated');
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['stix-core-relationship', 'Relationship statuses cannot be migrated'],
+    ['stix-sighting-relationship', 'Sighting statuses cannot be migrated'],
+  ])('rejects the abstract relationship setting %s, whose workflow the engine never reads', async (entityType, message) => {
+    await expect(getWorkflowMigrationPreview(mockContext, mockUser, entityType)).rejects.toThrow(message);
     expect(fullEntitiesList).not.toHaveBeenCalled();
   });
 
@@ -6511,6 +6519,12 @@ describe('migrateWorkflowFromStatuses', () => {
   it('rejects DraftWorkspace before reading any data', async () => {
     await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'DraftWorkspace', false)).rejects.toThrow('DraftWorkspace statuses cannot be migrated');
     expect(findByType).not.toHaveBeenCalled();
+  });
+
+  it.each(['stix-core-relationship', 'stix-sighting-relationship'])('rejects the abstract relationship setting %s before reading any data', async (entityType) => {
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, entityType, true)).rejects.toThrow('statuses cannot be migrated');
+    expect(findByType).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
   });
 
   // A store that reads back what was written, as the real one does: the rollback compares the stored

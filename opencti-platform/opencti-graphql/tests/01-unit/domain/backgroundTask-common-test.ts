@@ -261,10 +261,23 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should accept a direct status replace when nested groups intersect to a type without a published workflow', async () => {
+    it('should accept a direct status replace when every and-mode bound only targets types without a published workflow', async () => {
+      const nested = { mode: 'or', filters: [typeFilter(['Malware'])], filterGroups: [] };
+      const input = queryInput({ mode: 'and', filters: [typeFilter(['Malware', 'Indicator'])], filterGroups: [nested] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should refuse a direct status replace when an abstract type in one and-mode bound covers a type with a published workflow in another', async () => {
+      const input = queryInput({ mode: 'and', filters: [typeFilter(['Container', 'Malware']), typeFilter(['Malware', ENTITY_TYPE_CONTAINER_REPORT])], filterGroups: [] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should refuse a direct status replace when an and-mode bound names a type with a published workflow, even if another bound excludes it', async () => {
       const nested = { mode: 'or', filters: [typeFilter(['Malware'])], filterGroups: [] };
       const input = queryInput({ mode: 'and', filters: [typeFilter([ENTITY_TYPE_CONTAINER_REPORT, 'Malware'])], filterGroups: [nested] });
-      await expect(checkActionValidity(testContext, userUpdate, input, scope, type)).resolves.toEqual(undefined);
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
     });
 
     it('should refuse a direct status replace when an or-group mixes a bounded and an unbounded sub-group', async () => {
