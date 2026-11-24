@@ -37,7 +37,7 @@ import uuid
 from collections import deque
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import boto3
 import jwt
@@ -1131,13 +1131,14 @@ class PingAlive(threading.Thread):
             try:
                 self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
-                connector_info = self.connector_info.all_details
+                connector_info, sent_errors = self.connector_info.details_for_ping()
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
                 result = self.api.connector.ping(
                     self.connector_id, initial_state, connector_info
                 )
+                self.connector_info.discard_sent_errors(sent_errors)
                 remote_state = (
                     json.loads(result["connector_state"])
                     if result["connector_state"] is not None
@@ -1995,6 +1996,10 @@ class ConnectorInfo:
         self._errors: List[Dict] = list(errors) if errors else []
         # Until errors are reported, none are sent: a restarted process must not clear the previous one's
         self._errors_reported = errors is not None
+        # The callbacks, the batch timer and the ping run in different threads.
+        # The error list is never changed in place: a reader keeps a stable list.
+        self._errors_lock = threading.Lock()
+        self._clear_errors_once_sent = False
         self.logger = logger
 
     @property
@@ -2016,6 +2021,49 @@ class ConnectorInfo:
         if self._errors_reported:
             details["errors"] = _sanitize_connector_errors(self._errors)
         return details
+
+    def details_for_ping(self) -> Tuple[Dict, List[Dict]]:
+        """Get the details to send with a ping, and the errors they carry.
+
+        Give the returned errors to :meth:`discard_sent_errors` once the ping
+        has succeeded.
+
+        :return: The details, as :attr:`all_details`, and the errors they carry
+        :rtype: tuple
+        """
+        with self._errors_lock:
+            return self.all_details, self._errors
+
+    @property
+    def clear_errors_once_sent(self) -> bool:
+        """Whether an error is removed once a ping has sent it.
+
+        Set for connectors that process messages continuously (``listen``,
+        ``listen_stream``), which have no run to clear their errors before.
+        A scheduled connector keeps its errors until its next run.
+        """
+        return self._clear_errors_once_sent
+
+    @clear_errors_once_sent.setter
+    def clear_errors_once_sent(self, value: bool) -> None:
+        self._clear_errors_once_sent = value
+
+    def discard_sent_errors(self, sent_errors: List[Dict]) -> None:
+        """Remove the errors a successful ping has sent, with ``clear_errors_once_sent``.
+
+        An error reported since the ping read the details is kept for the next
+        ping, even when it has the code of a sent one.
+
+        :param sent_errors: The errors returned by :meth:`details_for_ping`
+        :type sent_errors: list
+        """
+        if not self._clear_errors_once_sent or not sent_errors:
+            return
+        sent_ids = {id(error) for error in sent_errors}
+        with self._errors_lock:
+            self._errors = [
+                error for error in self._errors if id(error) not in sent_ids
+            ]
 
     @property
     def run_and_terminate(self) -> bool:
@@ -2141,8 +2189,30 @@ class ConnectorInfo:
         :param value: List of dicts with ``code``, ``message`` and ``criticity``
         :type value: list or None
         """
-        self._errors = list(value) if value else []
-        self._errors_reported = True
+        with self._errors_lock:
+            self._errors = list(value) if value else []
+            self._errors_reported = True
+
+    def add_errors(self, errors: List[Dict]) -> None:
+        """Add valid errors, an error replacing an earlier one with the same code.
+
+        The platform keeps the last report of a code anyway: replacing it here
+        bounds the list of a connector reporting the same error on every message.
+
+        :param errors: Dicts with ``code``, ``message`` and ``criticity``
+        :type errors: list
+        """
+        with self._errors_lock:
+            new_codes = {error.get("code") for error in errors}
+            self._errors = [
+                *(
+                    error
+                    for error in self._errors
+                    if error.get("code") not in new_codes
+                ),
+                *errors,
+            ]
+            self._errors_reported = True
 
     def add_error(
         self,
@@ -2150,12 +2220,13 @@ class ConnectorInfo:
         message: str,
         criticity: int,
     ) -> None:
-        """Add an error, sent on every ping until the errors are cleared.
+        """Add an error, sent with the ping.
 
-        A scheduled connector's errors are cleared before each run. An invalid
-        error is ignored with a warning, never raised. When sent, code and
-        message are truncated, a repeated code keeps its last report, and only
-        the most critical errors are kept.
+        A scheduled connector's errors are cleared before each run. Those of a
+        connector that listens to a queue or a stream are cleared once a ping
+        has sent them. An invalid error is ignored with a warning, never raised.
+        A repeated code replaces its earlier report. When sent, code and message
+        are truncated, and only the most critical errors are kept.
 
         :param code: Error code
         :type code: str
@@ -2175,13 +2246,13 @@ class ConnectorInfo:
                     {"received": repr((code, message, criticity)), "reason": str(e)},
                 )
             return
-        self._errors.append(error.model_dump())
-        self._errors_reported = True
+        self.add_errors([error.model_dump()])
 
     def clear_errors(self) -> None:
         """Remove all reported errors."""
-        self._errors = []
-        self._errors_reported = True
+        with self._errors_lock:
+            self._errors = []
+            self._errors_reported = True
 
 
 class ConnectorInfoErrorCollector(ErrorCollector):
@@ -2191,7 +2262,7 @@ class ConnectorInfoErrorCollector(ErrorCollector):
         self._connector_info = connector_info
 
     def add_errors(self, errors: List[Dict]) -> None:
-        self._connector_info.errors = [*self._connector_info.errors, *errors]
+        self._connector_info.add_errors(errors)
 
     def reset(self) -> None:
         self._connector_info.clear_errors()
