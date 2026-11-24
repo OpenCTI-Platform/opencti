@@ -58,6 +58,7 @@ ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_DRAFT_LOCK = "DRAFT_LOCKED"
 ERROR_TYPE_WORK_NOT_ALIVE = "WORK_NOT_ALIVE"
 ERROR_TYPE_TIMEOUT = "Request timed out"
+ERROR_TYPE_FUNCTIONAL = "FUNCTIONAL_ERROR"
 
 #: Platform "doc_code" are a stable contract.
 EXPECTED_FUNCTIONAL_ERROR_DOC_CODES = [
@@ -1747,6 +1748,7 @@ class OpenCTIStix2:
                 },
             )
             return
+        first_refusal = None
         for staged_sync_file in staged_sync_files:
             file_ref = {
                 "sync_id": self.opencti.sync_id,
@@ -1758,7 +1760,17 @@ class OpenCTIStix2:
                 "no_trigger_import": staged_sync_file.get("no_trigger_import", False),
                 "embedded": staged_sync_file.get("embedded", False),
             }
-            self.opencti.query(mutation, {"id": entity_id, "fileRef": file_ref})
+            try:
+                self.opencti.query(mutation, {"id": entity_id, "fileRef": file_ref})
+            except ValueError as error:
+                # A refused file must not keep the entity's other staged files out
+                is_refusal = ERROR_TYPE_FUNCTIONAL in str(error)
+                if not is_refusal:
+                    raise
+                if first_refusal is None:
+                    first_refusal = error
+        if first_refusal is not None:
+            raise first_refusal
 
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None
