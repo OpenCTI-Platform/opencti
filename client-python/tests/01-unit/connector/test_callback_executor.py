@@ -104,3 +104,100 @@ def test_base_exceptions_propagate():
 
     with pytest.raises(KeyboardInterrupt):
         _run(process)
+
+
+def test_execute_returns_the_result_of_the_run():
+    result = CallbackExecutor(
+        InMemoryErrorCollector(), MagicMock(), MagicMock()
+    ).execute(lambda: [API_ERROR])
+    assert result == [API_ERROR]
+
+
+def test_execute_returns_none_when_the_run_raised():
+    def process():
+        raise ValueError("bad value")
+
+    collector = InMemoryErrorCollector()
+    result = CallbackExecutor(collector, MagicMock(), MagicMock()).execute(process)
+    assert result is None
+    assert collector.errors == [BAD_VALUE_ERROR]
+
+
+def test_without_swallow_errors_the_exception_is_reported_then_re_raised():
+    error = ValueError("bad value")
+
+    def process():
+        raise error
+
+    collector = InMemoryErrorCollector()
+    metric = MagicMock()
+    logger = MagicMock()
+    executor = CallbackExecutor(collector, logger, metric, swallow_errors=False)
+    with pytest.raises(ValueError) as raised:
+        executor.execute(process)
+    assert raised.value is error
+    assert collector.errors == [BAD_VALUE_ERROR]
+    # Counted and logged by the caller that catches it
+    metric.inc.assert_not_called()
+    logger.error.assert_not_called()
+
+
+def test_without_swallow_errors_the_errors_yielded_before_raising_are_kept():
+    def process():
+        yield API_ERROR
+        raise ValueError("bad value")
+
+    collector = InMemoryErrorCollector()
+    executor = CallbackExecutor(
+        collector, MagicMock(), MagicMock(), swallow_errors=False
+    )
+    with pytest.raises(ValueError):
+        executor.execute(process)
+    assert collector.errors == [API_ERROR, BAD_VALUE_ERROR]
+
+
+def test_without_swallow_errors_the_result_is_returned():
+    result = CallbackExecutor(
+        InMemoryErrorCollector(), MagicMock(), MagicMock(), swallow_errors=False
+    ).execute(lambda: [API_ERROR])
+    assert result == [API_ERROR]
+
+
+def test_without_returns_errors_the_result_is_passed_through_unvalidated():
+    collector = InMemoryErrorCollector()
+    logger = MagicMock()
+    executor = CallbackExecutor(collector, logger, MagicMock(), returns_errors=False)
+    for result in ["Enrichment done", None, {"code": "X"}, ("message", [API_ERROR])]:
+        assert executor.execute(lambda result=result: result) is result
+    assert collector.errors == []
+    logger.warning.assert_not_called()
+
+
+def test_without_returns_errors_a_generator_is_not_consumed():
+    consumed = []
+
+    def process():
+        consumed.append(True)
+        yield API_ERROR
+
+    CallbackExecutor(
+        InMemoryErrorCollector(), MagicMock(), MagicMock(), returns_errors=False
+    ).execute(process)
+    assert consumed == []
+
+
+def test_without_returns_errors_a_raised_exception_is_still_reported():
+    collector = InMemoryErrorCollector()
+    metric = MagicMock()
+    logger = MagicMock()
+
+    def process():
+        raise ValueError("bad value")
+
+    result = CallbackExecutor(collector, logger, metric, returns_errors=False).execute(
+        process
+    )
+    assert result is None
+    assert collector.errors == [BAD_VALUE_ERROR]
+    metric.inc.assert_called_once_with("error_count")
+    logger.error.assert_called_once()
