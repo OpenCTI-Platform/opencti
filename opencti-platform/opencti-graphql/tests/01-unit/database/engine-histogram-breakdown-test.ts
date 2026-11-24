@@ -33,6 +33,7 @@ import {
   searchEngineInit,
 } from '../../../src/database/engine';
 import { SYSTEM_USER } from '../../../src/utils/access';
+import type { FilterGroup } from '../../../src/generated/graphql';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { CLIENT_ABORT_ERROR, DATABASE_ERROR } from '../../../src/config/errors';
 import type { AuthContext } from '../../../src/types/user';
@@ -91,11 +92,11 @@ describe('buildHistogramBreakdownAggregations', () => {
 
   it('should match an indexed form with an uppercase letter exactly, a term query of it looking for its lowercase', () => {
     // A small capital `ᴀ` is indexed as `A`: the normalizer of a term query would turn `A` into `a`, another value
-    const aggs = buildHistogramBreakdownAggregations({ field: 'report_types', keys: ['A', 'a', 'ünïcode-ꜱ'], withOther: true }, countOverTime) as any;
+    const aggs = buildHistogramBreakdownAggregations({ field: 'report_types', keys: ['A', 'a', 'σ-ж-中'], withOther: true }, countOverTime) as any;
     expect(aggs.breakdown.filters.filters).toEqual({
       k0: indexedKeyScript('report_types.keyword', 'A'),
       k1: { term: { 'report_types.keyword': 'a' } },
-      k2: { term: { 'report_types.keyword': 'ünïcode-ꜱ' } },
+      k2: { term: { 'report_types.keyword': 'σ-ж-中' } },
     });
     expect(aggs.breakdown.filters.other_bucket_key).toBe('other');
   });
@@ -483,8 +484,8 @@ describe('engine: requests of the time series breakdowns', () => {
       const completed = await elCompleteFilters(context, SYSTEM_USER, { filters });
       expect(elkSearch).toHaveBeenCalledTimes(2);
       expect(JSON.stringify(completed)).toContain('entity-1');
-      await elAggregationRanking(context, SYSTEM_USER, 'index', { ...histogramOptions, filters: completed, filtersCompleted: true, rankingOrder: 'desc' });
-      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { ...histogramOptions, filters: completed, filtersCompleted: true });
+      await elAggregationRanking(context, SYSTEM_USER, 'index', { ...histogramOptions, completedFilters: completed, rankingOrder: 'desc' });
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { ...histogramOptions, completedFilters: completed });
 
       // Nothing resolved again: one search for each aggregation
       expect(elkSearch).toHaveBeenCalledTimes(4);
@@ -492,10 +493,25 @@ describe('engine: requests of the time series breakdowns', () => {
       expect(elkSearch.mock.calls[2][0].body.query).toEqual(rawBody.query);
     });
 
-    it('should give nothing without any filter, without searching anything', async () => {
-      await expect(elCompleteFilters(context, SYSTEM_USER, {})).resolves.toBeUndefined();
-      await expect(elCompleteFilters(context, SYSTEM_USER, { filters: group([]) as any })).resolves.toBeUndefined();
+    it('should give an empty group without any filter, without searching anything', async () => {
+      await expect(elCompleteFilters(context, SYSTEM_USER, {})).resolves.toEqual(group([]));
+      await expect(elCompleteFilters(context, SYSTEM_USER, { filters: group([]) as any })).resolves.toEqual(group([]));
       expect(elkSearch).not.toHaveBeenCalled();
+    });
+
+    it('should build the same query from no completed filter as from no filter', async () => {
+      elkSearch.mockResolvedValue(searchResult);
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', histogramOptions);
+      const rawBody = lastSearchBody();
+      const completed = await elCompleteFilters(context, SYSTEM_USER, {});
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { ...histogramOptions, completedFilters: completed });
+      expect(lastSearchBody()).toEqual(rawBody);
+    });
+
+    it('should only take the completed filters elCompleteFilters makes', async () => {
+      elkSearch.mockResolvedValue(searchResult);
+      // @ts-expect-error raw filters are not completed: their dynamic sides would reach the engine unresolved
+      await elHistogramBreakdownCount(context, SYSTEM_USER, 'index', { ...histogramOptions, completedFilters: group([]) as FilterGroup });
     });
 
     it('should check the filters as the queries do', async () => {

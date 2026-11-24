@@ -135,7 +135,7 @@ const breakdown = (args: Record<string, unknown>) => timeSeriesBreakdownEntities
 // Filters as the engine completes them, told apart from the filters of the arguments
 const completedOf = (filters: unknown) => ({ completed: filters });
 const mockCompleteFilters = () => vi.mocked(engine.elCompleteFilters).mockImplementation(async (_context, _user, { filters }) => (
-  filters ? completedOf(filters) as any : undefined
+  completedOf(filters) as any
 ));
 
 describe('timeSeriesBreakdownEntities', () => {
@@ -303,17 +303,18 @@ describe('timeSeriesBreakdownEntities', () => {
     vi.mocked(engine.elHistogramBreakdownCount).mockResolvedValue(histogramsOf());
     const filters = { mode: 'and', filters: [{ key: ['objectLabel'], values: ['label-b'], operator: 'eq' }], filterGroups: [] };
 
-    await breakdown({ field: 'objectLabel', filters, noFiltersChecking: true });
+    await breakdown({ field: 'objectLabel', filters, noFiltersChecking: true, noRegardingOfFilterIdsCheck: true });
 
     expect(engine.elCompleteFilters).toHaveBeenCalledTimes(1);
     const [, completeUser, completeOptions] = vi.mocked(engine.elCompleteFilters).mock.calls[0];
     expect(completeUser).toBe(accessModule.SYSTEM_USER);
     // Checked or not as the caller asks, as each query did
-    expect(completeOptions).toMatchObject({ filters, noFiltersChecking: true });
+    expect(completeOptions).toMatchObject({ filters, noFiltersChecking: true, noRegardingOfFilterIdsCheck: true });
     const completeOrder = vi.mocked(engine.elCompleteFilters).mock.invocationCallOrder[0];
     expect(completeOrder).toBeLessThan(vi.mocked(engine.elAggregationRanking).mock.invocationCallOrder[0]);
     for (const options of [vi.mocked(engine.elAggregationRanking).mock.calls[0][3], vi.mocked(engine.elHistogramBreakdownCount).mock.calls[0][3]]) {
-      expect(options).toMatchObject({ filters: completedOf(filters), filtersCompleted: true });
+      expect(options).toMatchObject({ completedFilters: completedOf(filters) });
+      expect(options).not.toHaveProperty('filters');
     }
   });
 
@@ -774,8 +775,8 @@ describe('timeSeriesBreakdownEntities', () => {
       expect(options.intervalInclude).toBe(true);
       expect(options.startDate).toEqual(startDate);
       expect(options.endDate).toEqual(endDate);
-      expect(options.filters).toEqual(completedOf(filters));
-      expect(options.filtersCompleted).toBe(true);
+      expect(options.completedFilters).toEqual(completedOf(filters));
+      expect(options).not.toHaveProperty('filters');
     }
   });
 
@@ -1022,8 +1023,8 @@ describe('timeSeriesBreakdownHistory', () => {
       expect(options.field).toEqual('event_scope');
       expect(options.types).toEqual(['History', 'Activity']);
       expect(options.historyFiltering).toBe(true);
-      expect(options.filters).toEqual(completedOf(filters));
-      expect(options.filtersCompleted).toBe(true);
+      expect(options.completedFilters).toEqual(completedOf(filters));
+      expect(options).not.toHaveProperty('filters');
       expect(options.search).toEqual('report');
       expect(options.dateAttribute).toEqual('timestamp');
       expect(options.intervalInclude).toBe(true);
@@ -1301,8 +1302,8 @@ describe('timeSeriesBreakdownRelations', () => {
       expect(options.field).toEqual('relationship_type');
       expect(options.dateAttribute).toEqual('start_time');
       expect(options.intervalInclude).toBe(true);
-      expect(options.filters).toEqual(completedOf(filters));
-      expect(options.filtersCompleted).toBe(true);
+      expect(options.completedFilters).toEqual(completedOf(filters));
+      expect(options).not.toHaveProperty('filters');
     }
 
     await relationsBreakdown({ field: 'relationship_type', onlyInferred: true });
@@ -1478,8 +1479,8 @@ describe('stixRelationshipsTimeSeriesBreakdown', () => {
     expect(engine.elCompleteFilters).toHaveBeenCalledTimes(1);
     expect(vi.mocked(engine.elCompleteFilters).mock.calls[0][2].filters).toEqual(timeSeriesOptions.filters);
     for (const options of [discoveryOptions, histogramOptions]) {
-      expect(options.filters).toEqual(completedOf(timeSeriesOptions.filters));
-      expect(options.filtersCompleted).toBe(true);
+      expect(options.completedFilters).toEqual(completedOf(timeSeriesOptions.filters));
+      expect(options).not.toHaveProperty('filters');
       expect(options.types).toEqual(timeSeriesOptions.types);
       expect(options.types).toEqual(['stix-relationship']);
       expect(options.dateAttribute).toEqual(timeSeriesOptions.field);

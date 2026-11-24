@@ -1555,7 +1555,7 @@ const engineQueryDeps: EngineQueryDeps = {
 const elQueryBodyBuilder = (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts) => {
   return buildQueryBody(context, user, options, engineQueryDeps);
 };
-// The filters checked, converted and completed once, for queries that pass them with `filtersCompleted`
+// The filters checked, converted and completed once, for queries that pass them as `completedFilters`
 export const elCompleteFilters = (context: AuthContext, user: AuthUser, options: CompleteFiltersOpts) => {
   return completeQueryFilters(context, user, options, engineQueryDeps);
 };

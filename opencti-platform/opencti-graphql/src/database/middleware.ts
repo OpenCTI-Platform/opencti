@@ -1249,9 +1249,8 @@ const timeSeriesBreakdown = async (
   const { filters, noFiltersChecking, noRegardingOfFilterIdsCheck } = args;
   const completedFilters = await elCompleteFilters(context, user, { filters, noFiltersChecking, noRegardingOfFilterIdsCheck });
   const breakdownArgs = {
-    ...R.omit(['orderMode', 'includeOther'], args),
-    filters: completedFilters,
-    filtersCompleted: true,
+    ...R.omit(['orderMode', 'includeOther', 'filters'], args),
+    completedFilters,
     dateAttribute,
     endDate,
     field: aggregationField,
