@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Navigate, useLocation, useSearchParams } from 'react-router';
-import { Alert, Text } from '@filigran/design-system';
+import { Text } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
-import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import IntelligenceRequirementConfigurationForm from './IntelligenceRequirementConfigurationForm';
 import { type IrCriterionKind, type IrCriterionMode, type IrDirection, type IrDraft, type IrGroupKind, type IrGroupRole, type IrPriority, type IrStatus } from './irConfigTypes';
 import { type IrConfigView, readConfigView, writeConfigView } from './irSentence';
@@ -158,7 +155,7 @@ const nodeToDraft = (ir: Ir): IrDraft => ({
 });
 
 // How the scope criteria are written: the form fields, or sentences (the same configuration either way)
-const IrViewToggle = ({ view, onChange }: { view: IrConfigView; onChange: (view: IrConfigView) => void }) => {
+export const IrViewToggle = ({ view, onChange }: { view: IrConfigView; onChange: (view: IrConfigView) => void }) => {
   const { t_i18n } = useFormatter();
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
@@ -187,57 +184,3 @@ export const IntelligenceRequirementConfigurationTab = ({ irId }: { irId: string
     </>
   );
 };
-
-const IntelligenceRequirementConfiguration = () => {
-  const { t_i18n } = useFormatter();
-  const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Intelligence requirements'));
-  // Proposal of the AI assisted creation: opened unsaved, with the notes of the agent
-  const { state } = useLocation() as { state?: { aiDraft?: IrDraft; aiNotes?: { summary: string; explanations: { criterion_id: string; text: string }[] } } };
-  const [searchParams, setSearchParams] = useSearchParams();
-  const aiNotes = state?.aiNotes;
-  const picked = searchParams.get('view');
-  // A proposal of the AI opens in the form fields; a blank requirement is created in the create panel of the list
-  const view: IrConfigView = picked === 'fields' || picked === 'sentence' ? picked : 'fields';
-  const changeView = (next: IrConfigView) => setSearchParams({ view: next }, { replace: true, state });
-  return (
-    <>
-      <Breadcrumbs elements={[
-        { label: t_i18n('Intelligence requirements'), link: '/dashboard/intelligence_requirements' },
-        { label: t_i18n('New requirement'), current: true },
-      ]}
-      />
-      {state?.aiDraft && (
-        <Box sx={{ mb: 2 }}>
-          <Alert
-            severity="ia"
-            title={t_i18n('Proposed by the AI: review it, then create the requirement (it is created paused).')}
-            description={aiNotes ? (
-              <Box>
-                {aiNotes.summary && <Text as="p" variant="content-compact" style={{ marginBottom: 8 }}>{aiNotes.summary}</Text>}
-                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
-                  {aiNotes.explanations.map((e) => (
-                    <li key={e.criterion_id}>
-                      <Text as="span" variant="content-compact">
-                        <strong>{state.aiDraft?.criteria.find((c) => c.id === e.criterion_id)?.name ?? e.criterion_id}</strong>
-                        {` · ${e.text}`}
-                      </Text>
-                    </li>
-                  ))}
-                </Box>
-              </Box>
-            ) : undefined}
-          />
-        </Box>
-      )}
-      {state?.aiDraft ? (
-        <>
-          <IrViewToggle view={view} onChange={changeView} />
-          <IntelligenceRequirementConfigurationForm initialDraft={state.aiDraft} view={view} onCreated={(id) => writeConfigView(id, view)} />
-        </>
-      ) : <Navigate to="/dashboard/intelligence_requirements" replace />}
-    </>
-  );
-};
-
-export default IntelligenceRequirementConfiguration;

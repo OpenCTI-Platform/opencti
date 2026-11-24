@@ -7069,6 +7069,7 @@
   "Newest first": "新しい順",
   "Next item": "次の項目",
   "Next: configuration": "次へ: 設定",
+  "Next: review": "次へ: レビュー",
   "Next: key intelligence questions": "次へ: 重要インテリジェンス質問",
   "No batch recorded yet: the engine has not processed this requirement since its statistics exist.": "記録されたバッチはまだありません: 統計の記録開始以降、エンジンはこの要件を処理していません。",
   "No condition: every entity brought by this path enters": "条件なし: このパスで取り込まれたすべてのエンティティが追加されます",

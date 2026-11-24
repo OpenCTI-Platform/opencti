@@ -15,7 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React, { useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql } from 'react-relay';
-import { useNavigate } from 'react-router';
 import { Alert, Checkbox, Chip, Input, Menu, MenuContent, MenuItem, MenuTrigger, Paper, Text, Textarea } from '@filigran/design-system';
 import Box from '@mui/material/Box';
 import { AddOutlined, ArrowDropDownOutlined, ArrowDropUpOutlined } from '@mui/icons-material';
@@ -30,14 +29,18 @@ import Loader, { LoaderVariant } from '../../../components/Loader';
 import { environment } from '../../../relay/environment';
 import { type AgentOption, callAgent, callAgentStream, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import { IrSelect } from './configuration/IrFields';
-import { inputToDraft, type IrEntityOption } from './configuration/irConfigTypes';
+import { inputToDraft, type IrDraft, type IrEntityOption } from './configuration/irConfigTypes';
+import IntelligenceRequirementConfigurationForm from './configuration/IntelligenceRequirementConfigurationForm';
+import { IrViewToggle } from './configuration/IntelligenceRequirementConfiguration';
+import { type IrConfigView, writeConfigView } from './configuration/irSentence';
 import { IR_KIQS_ENABLED } from './configuration/irConstants';
 import useIrAiGate from './useIrAiGate';
 import type { IrAiAssistedCreationPreviewQuery, IrAiAssistedCreationPreviewQuery$data } from './__generated__/IrAiAssistedCreationPreviewQuery.graphql';
 
-// AI assisted creation of a requirement, in 3 steps the analyst validates one by one:
+// AI assisted creation of a requirement, in 4 steps the analyst validates one by one:
 // 1. the question, sharpened by the agent; 2. the key intelligence questions; 3. a configuration grounded in the
-// model and the data of the platform, checked by OpenCTI (preview) before it opens, unsaved, in the configuration screen.
+// model and the data of the platform, checked by OpenCTI (preview); then 4. its review, unsaved, in the configuration
+// form of the same panel, where the requirement is created.
 
 const INTENT = 'cti.pir_builder';
 // The analyst writes the request: the whole proposal follows its language, not the default AI language of the platform
@@ -83,8 +86,9 @@ const StepTitle = ({ index, current, label, number = index }: { index: number; c
 
 const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; onClose: () => void }) => {
   const { t_i18n } = useFormatter();
-  const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [proposal, setProposal] = useState<IrDraft | null>(null); // the configuration of step 3, opened in the form of step 4
+  const [view, setView] = useState<IrConfigView>('fields');
   const [request, setRequest] = useState('');
   const [question, setQuestion] = useState<QuestionStep | null>(null);
   const [kiqs, setKiqs] = useState<KiqStep[]>([]);
@@ -159,14 +163,13 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
     setConfig({ config: response.config, explanations: response.explanations ?? [], summary: response.summary ?? '', preview: result?.intelligenceRequirementPreview ?? null });
   });
 
-  const openInConfiguration = () => {
+  const openReview = () => {
     if (!config) return;
     const entities = new Map<string, IrEntityOption>();
     (config.preview?.groups ?? []).forEach((g) => g.entities.forEach((e) => entities.set(e.entity_id, { value: e.entity_id, label: e.name, type: e.entity_type })));
     const proposed = inputToDraft(config.config, entities);
-    const draft = IR_KIQS_ENABLED ? proposed : { ...proposed, kiqs: [] };
-    onClose();
-    navigate('/dashboard/intelligence_requirements/new', { state: { aiDraft: draft, aiNotes: { summary: config.summary, explanations: config.explanations } } });
+    setProposal(IR_KIQS_ENABLED ? proposed : { ...proposed, kiqs: [] });
+    setStep(4);
   };
 
   const goTo = (next: number, rebuild = false) => {
@@ -186,11 +189,19 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
   );
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    // Escape closes a select of the steps, never the panel with the steps done: popups are portals, whose key
+    // events still bubble here through React
+    <Box
+      sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') e.stopPropagation();
+      }}
+    >
       <Box sx={{ display: 'flex', gap: 3 }}>
         <StepTitle index={1} current={step} label={t_i18n('Question')} />
         {IR_KIQS_ENABLED && <StepTitle index={2} current={step} label={t_i18n('Key intelligence questions')} />}
         <StepTitle index={3} number={IR_KIQS_ENABLED ? 3 : 2} current={step} label={t_i18n('Configuration')} />
+        <StepTitle index={4} number={IR_KIQS_ENABLED ? 4 : 3} current={step} label={t_i18n('Review')} />
       </Box>
       {error && <Alert severity="error" title={error} />}
 
@@ -298,8 +309,45 @@ const IrAiAssistedCreationContent = ({ agent, onClose }: { agent: AgentOption; o
             <Button variant="secondary" disabled={loading} onClick={() => setStep(IR_KIQS_ENABLED ? 2 : 1)}>{t_i18n('Back')}</Button>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button variant="tertiary" disabled={loading} onClick={buildConfiguration}>{t_i18n('Regenerate')}</Button>
-              <Button disabled={loading || !config} onClick={openInConfiguration}>{t_i18n('Review in the configuration screen')}</Button>
+              <Button disabled={loading || !config} onClick={openReview}>{t_i18n('Next: review')}</Button>
             </Box>
+          </Box>
+        </>
+      )}
+
+      {step === 4 && proposal && config && (
+        <>
+          <Alert
+            severity="ia"
+            title={t_i18n('Proposed by the AI: review it, then create the requirement (it is created paused).')}
+            description={(
+              <Box>
+                {config.summary && <Text as="p" variant="content-compact" style={{ marginBottom: 8 }}>{config.summary}</Text>}
+                <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
+                  {config.explanations.map((e) => (
+                    <li key={e.criterion_id}>
+                      <Text as="span" variant="content-compact">
+                        <strong>{proposal.criteria.find((c) => c.id === e.criterion_id)?.name ?? e.criterion_id}</strong>
+                        {` · ${e.text}`}
+                      </Text>
+                    </li>
+                  ))}
+                </Box>
+              </Box>
+            )}
+          />
+          <Box>
+            <IrViewToggle view={view} onChange={setView} />
+            <IntelligenceRequirementConfigurationForm
+              initialDraft={proposal}
+              view={view}
+              stacked
+              onCancel={onClose}
+              onCreated={(id) => writeConfigView(id, view)}
+            />
+          </Box>
+          <Box>
+            <Button variant="secondary" onClick={() => setStep(3)}>{t_i18n('Back')}</Button>
           </Box>
         </>
       )}
@@ -376,7 +424,7 @@ const IrAiAssistedCreation = () => {
       </Menu>
       {termsOpen && <ValidateTermsOfUseDialog open={termsOpen} onClose={() => setTermsOpen(false)} />}
       {/* The drawer clones its single child: keep one */}
-      <Drawer open={open} onClose={() => setOpen(false)} title={t_i18n('Create with AI')} size="large">
+      <Drawer open={open} onClose={() => setOpen(false)} title={t_i18n('Create with AI')} size="large" disableBackdropClose>
         <>
           {open && agent === undefined && <Loader variant={LoaderVariant.inElement} />}
           {open && agent === null && <Alert severity="warning" title={t_i18n('No agent available')} description={t_i18n('Bind an XTM One agent to the cti.pir_builder intent.')} />}
