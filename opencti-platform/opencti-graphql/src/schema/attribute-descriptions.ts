@@ -15,7 +15,7 @@ import {
   ENTITY_TYPE_TOOL,
   isStixDomainObject,
 } from './stixDomainObject';
-import { isStixCoreRelationship } from './stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_COMPONENT_OF } from './stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../modules/securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../modules/threatActorIndividual/threatActorIndividual-types';
@@ -24,6 +24,7 @@ import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../modules/vulnerability/vulnerability-types';
+import { ENTITY_TYPE_PROCEDURE } from '../modules/procedure/procedure-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
@@ -241,6 +242,20 @@ export const ATTRIBUTE_DESCRIPTIONS_BY_TYPE: Record<string, Record<string, strin
     x_opencti_ssvc_exploitation: 'SSVC exploitation status: none, proof_of_concept or active.',
     x_opencti_ssvc_automatable: 'SSVC automatable: yes or no.',
     x_opencti_ssvc_technical_impact: 'SSVC technical impact: partial or total.',
+  },
+  [ENTITY_TYPE_PROCEDURE]: {
+    x_procedure_type: 'Type of the procedure, from the procedure_type_ov vocabulary (e.g. reporting).',
+    first_observed: 'First time the procedure was observed, in ISO 8601.',
+    last_observed: 'Last time the procedure was observed, in ISO 8601.',
+    x_execution_start: 'Start of the execution of the procedure, in ISO 8601.',
+    x_execution_end: 'End of the execution of the procedure, in ISO 8601.',
+    x_fingerprint: 'Fingerprint of the procedure: a hash of its techniques, platforms and kill chain phases. Computed at creation when not provided, never recomputed.',
+    procedureCommand: 'Process observable holding the command line the procedure runs.',
+    procedureSources: 'Identities the procedure comes from (e.g. the organization that reported it).',
+  },
+  [RELATION_COMPONENT_OF]: {
+    component_index: 'Position of the observable in the ordered components of the procedure, from 0.',
+    component_type: 'Role of the component: primary (defines the action) or secondary (modifies it or supplies a value). The component at index 0 is primary.',
   },
   [ENTITY_TYPE_CONTAINER_REPORT]: {
     published: 'Date when the report was published, in ISO 8601.',
