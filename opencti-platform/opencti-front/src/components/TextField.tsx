@@ -7,6 +7,7 @@ import { isNil } from 'ramda';
 import TextFieldAskAI from '../private/components/common/form/TextFieldAskAI';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 import useAI from '../utils/hooks/useAI';
+import { isImeComposing } from '../utils/domEvent';
 
 // MUI's own `ref` (via `FormControlProps`) points at the root `<div>`, but this
 // component forwards its ref to the actual `<input>` instead — the two are
@@ -113,6 +114,7 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>((props, for
   }, [onBeforePaste, setFieldValue, name]);
 
   const internalOnKeyDown = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
+    if (isImeComposing(event)) return;
     const { key } = event;
     if (onKeyDown) {
       onKeyDown(key);

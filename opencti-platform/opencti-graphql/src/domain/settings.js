@@ -37,7 +37,7 @@ import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 import { findById as findThemeById } from '../modules/theme/theme-domain';
 import { buildAvailableProviders } from './setting-auth';
-import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout-defaults';
 import { CguStatus, PlatformEeSource } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { checkPolicyAcceptsAdminPassword } from '../modules/user/user-domain';
@@ -327,6 +327,10 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   // Only updateLocalAuth writes it: it checks the bounds and removes the hashes no longer needed
   if (input.some((i) => i.key === 'password_policy_history_count')) {
     throw FunctionalError('The password history count can only be changed with the local authentication settings');
+  }
+  // A removed value would read as enabled again: like the other local authentication settings, even BYPASS cannot patch it here
+  if (input.some((i) => i.key === 'api_basic_auth_enabled')) {
+    throw FunctionalError('The API Basic authentication can only be changed with the local authentication settings');
   }
   const hasBypassCapability = isUserHasCapability(user, BYPASS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB) || hasBypassCapability;

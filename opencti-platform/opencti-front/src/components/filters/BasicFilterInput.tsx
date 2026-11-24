@@ -4,6 +4,7 @@ import { IconButton } from '@filigran/design-system';
 import { FocusEvent, FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { useFormatter } from '../i18n';
+import { isImeComposing } from '../../utils/domEvent';
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -83,7 +84,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
       // TextField puts onKeyDown on its root: an Enter pressed on the clear
       // button bubbles here too, and must not commit a second time.
       onKeyDown={(event) => {
-        if (event.key === 'Enter' && event.target === inputRef.current) {
+        if (event.key === 'Enter' && event.target === inputRef.current && !isImeComposing(event)) {
           commit(value);
         }
       }}

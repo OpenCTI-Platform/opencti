@@ -65,6 +65,7 @@ import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemp
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
 import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
+import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
 
 const buildSchema = () => {
   const schema = makeExecutableSchema({
@@ -125,6 +126,13 @@ const vocabularyItem = (category: string) => ({
 const statusTemplateItem = (template: { standard_id: string; name: string }) => ({
   key: template.standard_id,
   label: template.name,
+  translatable: false,
+  dependsOn: [],
+  isDefault: false,
+});
+const formIntakeItem = (form: { standard_id: string; name: string }) => ({
+  key: form.standard_id,
+  label: form.name,
   translatable: false,
   dependsOn: [],
   isDefault: false,
@@ -345,6 +353,15 @@ describe('Config preset exportable types query', () => {
         itemsPageInfo: onePage(1),
       },
       {
+        key: 'formIntakes',
+        label: 'Form intakes',
+        description: 'Form intakes and their schema',
+        group: { key: 'integrations', label: 'Integrations' },
+        // By name
+        items: [formIntakeItem(incidentForm), formIntakeItem(reportForm)],
+        itemsPageInfo: onePage(2),
+      },
+      {
         key: 'ruleEngine',
         label: 'Rule engine',
         description: 'Activation of the inference rules',
@@ -413,7 +430,7 @@ describe('Config preset exportable types query', () => {
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
       ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['connectors', true],
-      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['ruleEngine', false], ['fintelDesigns', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['ruleEngine', false], ['fintelDesigns', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
@@ -470,6 +487,7 @@ describe('Config preset exportable types query', () => {
       ['csvFeeds', 'integrations'],
       ['jsonFeeds', 'integrations'],
       ['taxiiFeeds', 'integrations'],
+      ['formIntakes', 'integrations'],
       ['ruleEngine', 'automationRules'],
       ['fintelDesigns', 'customization'],
     ]);

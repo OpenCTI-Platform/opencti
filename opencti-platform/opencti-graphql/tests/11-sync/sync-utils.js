@@ -1,7 +1,7 @@
 import { expect } from 'vitest';
 import { createReadStream } from 'node:fs';
 import { elAggregationCount } from '../../src/database/engine';
-import { ADMIN_USER, createHttpClient, DATA_FILE_TEST, executeExternalQuery, FIVE_MINUTES, testContext } from '../utils/testQuery';
+import { ADMIN_API_TOKEN, ADMIN_USER, createTokenHttpClient, DATA_FILE_TEST, executeExternalQuery, FIVE_MINUTES, testContext } from '../utils/testQuery';
 import { READ_DATA_INDICES, wait } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
@@ -163,7 +163,7 @@ export const waitForRemotePlatform = async (remoteUri, timeout = FIVE_MINUTES) =
 // Poll until the remote platform holds the same content, twice in a row so a transient match does not count.
 // It never asserts: on timeout, checkPostSyncContent reports the remaining differences.
 export const waitForRemoteSync = async (remoteUri, objectMap, relMap, isRemoteReady = async () => true, timeout = FIVE_MINUTES) => {
-  const client = createHttpClient();
+  const client = createTokenHttpClient(ADMIN_API_TOKEN);
   const deadline = Date.now() + timeout;
   let consecutiveMatches = 0;
   while (Date.now() < deadline && consecutiveMatches < 2) {
@@ -179,7 +179,7 @@ export const waitForRemoteSync = async (remoteUri, objectMap, relMap, isRemoteRe
   }
 };
 export const checkPostSyncContent = async (remoteUri, objectMap, relMap, initStixReport, ignoredRelTypes = []) => {
-  const client = createHttpClient();
+  const client = createTokenHttpClient(ADMIN_API_TOKEN);
   const { syncObjectMap, syncRelMap } = await fetchRemoteStats(client, remoteUri);
   checkMapConsistency(objectMap, syncObjectMap);
   checkMapConsistency(relMap, syncRelMap, ignoredRelTypes);

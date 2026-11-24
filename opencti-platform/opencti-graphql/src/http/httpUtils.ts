@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import type { AuthContext } from '../types/user';
 import crypto from 'node:crypto';
 import { basePath, booleanConf, getBaseUrl, logApp } from '../config/conf';
@@ -13,6 +13,7 @@ import {
   getRateProtectionTimeWindowMs,
   getRateProtectionUserAgentSkipPrefixes,
   isDevMode,
+  isScriptSnippetConfigured,
   isUnsecureHttpResourceAllowed,
   isUpgradeInsecureRequestsEnabled,
 } from './httpConfig';
@@ -21,6 +22,16 @@ import { type Options, ipKeyGenerator } from 'express-rate-limit';
 import { BlockList } from 'node:net';
 import type { Server } from 'node:http';
 import bytes from 'bytes';
+import {
+  ALREADY_DELETED_ERROR,
+  AUTH_ERRORS,
+  BAD_USER_INPUT_ERROR,
+  DRAFT_LOCKED_ERROR,
+  FUNCTIONAL_ERROR,
+  MISSING_REF_ERROR,
+  RESOURCE_NOT_FOUND_ERROR,
+  VALIDATION_ERROR,
+} from '../config/errors';
 
 export const isResponseWorthCompressing = (res: Response): boolean => {
   const contentType = res.getHeader('Content-Type');
@@ -151,7 +162,10 @@ export const decodeOidcState = (state: string | undefined) => {
 // Region helmet configuration
 
 const buildScriptSrc = () => {
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
+  const scriptSrc = ["'self'"];
+  if (isScriptSnippetConfigured()) {
+    scriptSrc.push("'unsafe-inline'");
+  }
   if (isDevMode()) {
     scriptSrc.push("'unsafe-eval'");
   }
@@ -437,6 +451,67 @@ export const clientErrorResponse = (error: any) => {
   return { status, body: { status: 'error', error: message } };
 };
 
+// region Request id
+// Error responses only carry a generic message for the platform failures (NIST SP 800-53 SI-11):
+// the request id, returned to the client and written in the error log, leads support to the full error.
+export const REQUEST_ID_HEADER = 'X-Request-ID';
+// The incoming value comes from the client and is written in the logs: only a short and safe value is reused.
+const SAFE_REQUEST_ID = /^[A-Za-z0-9._-]{1,128}$/;
+
+export const resolveRequestId = (incoming: unknown): string => {
+  return typeof incoming === 'string' && SAFE_REQUEST_ID.test(incoming) ? incoming : crypto.randomUUID();
+};
+
+export const requestIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  const requestId = resolveRequestId(req.headers['x-request-id']);
+  res.locals.requestId = requestId;
+  res.setHeader(REQUEST_ID_HEADER, requestId);
+  next();
+};
+
+export const getRequestId = (res: Response): string | undefined => res.locals?.requestId;
+// endregion
+
+// region Error messages
+export const SERVER_ERROR_MESSAGE = 'An unexpected error occurred';
+
+// The typed errors whose message is written for the caller: authentication, access, input validation,
+// not found, draft state. Any other error is a platform failure, and its message can name internal
+// components (hosts, indices, paths).
+const USER_FACING_ERROR_CODES = new Set<string>([
+  ...AUTH_ERRORS,
+  DRAFT_LOCKED_ERROR,
+  FUNCTIONAL_ERROR,
+  VALIDATION_ERROR,
+  BAD_USER_INPUT_ERROR,
+  RESOURCE_NOT_FOUND_ERROR,
+  MISSING_REF_ERROR,
+  ALREADY_DELETED_ERROR,
+]);
+
+export const isUserFacingError = (error: any): boolean => USER_FACING_ERROR_CODES.has(error?.extensions?.code);
+
+// The message an error response can carry. The full error is logged by the caller.
+export const safeErrorMessage = (error: unknown): string => {
+  return isUserFacingError(error) ? (error as Error).message : SERVER_ERROR_MESSAGE;
+};
+
+// The body of an error response, with the request id that leads to the full error in the logs.
+export const errorBody = (res: Response, error: unknown) => {
+  return { status: 'error', error: safeErrorMessage(error), request_id: getRequestId(res) };
+};
+
+// Response of an error that reached the error handler: the caller mistakes keep the message
+// of clientErrorResponse, any other error is a 500 with a generic message.
+export const errorResponse = (error: any, requestId?: string) => {
+  if (isClientRequestError(error)) {
+    const { status, body } = clientErrorResponse(error);
+    return { status, body: { ...body, request_id: requestId } };
+  }
+  return { status: 500, body: { status: 'error', error: safeErrorMessage(error), request_id: requestId } };
+};
+// endregion
+
 // graphql-upload relays raw busboy parsing errors untouched, and those carry no status at all:
 // 'Multipart: Boundary not found' when the content-type has no boundary, 'Malformed part header',
 // 'Unexpected end of form' on a truncated stream. They are caller mistakes like the rest, so they
@@ -491,6 +566,7 @@ export const logMalformedRequest = (req: Request, error: any, message = 'Malform
     contentLength: req.headers['content-length'],
     workId: req.headers['opencti-work-id'],
     draftId: req.headers['opencti-draft-id'],
+    request_id: req.res ? getRequestId(req.res) : undefined,
   });
 };
 

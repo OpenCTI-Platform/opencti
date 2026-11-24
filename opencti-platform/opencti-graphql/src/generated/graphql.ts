@@ -15972,6 +15972,7 @@ export type LocalAuthConfig = {
 };
 
 export type LocalAuthConfigInput = {
+  api_basic_auth_enabled?: InputMaybe<Scalars['Boolean']['input']>;
   enabled: Scalars['Boolean']['input'];
   local_auth_lockout_admin_max_attempts?: InputMaybe<Scalars['Int']['input']>;
   local_auth_lockout_duration?: InputMaybe<Scalars['Int']['input']>;
@@ -17480,8 +17481,8 @@ export type MeUser = BasicObject & InternalObject & {
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
-  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   password_valid_until?: Maybe<Scalars['DateTime']['output']>;
+  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -18196,7 +18197,9 @@ export type Mutation = {
   playbookFieldPatch?: Maybe<Playbook>;
   playbookImport: Scalars['String']['output'];
   playbookInsertNode: PlaybookInsertResult;
+  /** Move a node and its branch under another out port in a single write: every link reaching the node is replaced by one link from parentNodeId / parentPortId. */
   playbookMoveNode: Scalars['String']['output'];
+  /** Re-point one link in a single write: a new target node, and optionally a new source node and out port. Refuses a cycle and a node left without a parent. */
   playbookRelink: Scalars['String']['output'];
   playbookReplaceNode: Scalars['String']['output'];
   playbookStepExecution?: Maybe<Scalars['Boolean']['output']>;
@@ -24819,7 +24822,9 @@ export type PlaybookAddNodeInput = {
   configuration?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
+  /** Node this node is linked from: required for every node but the entry point, given with parentPortId. */
   parentNodeId?: InputMaybe<Scalars['ID']['input']>;
+  /** Out port of parentNodeId the link leaves from. */
   parentPortId?: InputMaybe<Scalars['ID']['input']>;
   position: PositionInput;
 };
@@ -32228,6 +32233,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   __typename?: 'Settings';
   activity_listeners?: Maybe<Array<Member>>;
   analytics_google_analytics_v4?: Maybe<Scalars['String']['output']>;
+  api_basic_auth_enabled: Scalars['Boolean']['output'];
   caller_ip?: Maybe<Scalars['String']['output']>;
   cert_auth?: Maybe<CertAuthConfig>;
   created_at: Scalars['DateTime']['output'];
@@ -32304,6 +32310,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
   platform_session_idle_timeout?: Maybe<Scalars['Int']['output']>;
   platform_session_max_concurrent?: Maybe<Scalars['Int']['output']>;
+  platform_session_max_lifetime?: Maybe<Scalars['Int']['output']>;
   platform_session_presence_enabled: Scalars['Boolean']['output'];
   platform_session_presence_supported: Scalars['Boolean']['output'];
   platform_session_timeout?: Maybe<Scalars['Int']['output']>;
@@ -38445,8 +38452,8 @@ export type User = BasicObject & InternalObject & {
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
-  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   password_valid_until?: Maybe<Scalars['DateTime']['output']>;
+  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -50351,8 +50358,8 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -53856,6 +53863,7 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   analytics_google_analytics_v4?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  api_basic_auth_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   caller_ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cert_auth?: Resolver<Maybe<ResolversTypes['CertAuthConfig']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -53929,6 +53937,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_session_idle_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_session_max_concurrent?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  platform_session_max_lifetime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_session_presence_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_session_presence_supported?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_session_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -55922,8 +55931,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;

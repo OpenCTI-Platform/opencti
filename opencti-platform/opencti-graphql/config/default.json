@@ -109,6 +109,7 @@
     },
     "account_statuses_default": "Active",
     "session_idle_timeout": 0,
+    "session_max_lifetime": 0,
     "session_manager": "shared",
     "session_presence": {
       "grace_period": 30000

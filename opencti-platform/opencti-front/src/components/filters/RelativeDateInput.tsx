@@ -7,6 +7,7 @@ import { Link } from 'react-router';
 import { useFormatter } from '../i18n';
 import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
 import { isAcceptedFromView } from '../../utils/Time';
+import { isImeComposing } from '../../utils/domEvent';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface RelativeDateInputProps {
@@ -192,7 +193,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
         }}
         onFocus={() => setIsEditing(true)}
         onKeyDown={(event) => {
-          if (event.key === 'Enter') {
+          if (event.key === 'Enter' && !isImeComposing(event)) {
             handleChangeRangeDateFilter(draft);
           }
         }}

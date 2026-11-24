@@ -41,6 +41,7 @@ const localStrategyFormQuery = graphql`
       local_auth_lockout_final_action
       local_auth_lockout_window
       local_auth_lockout_duration
+      api_basic_auth_enabled
       platform_enterprise_edition {
         license_validated
       }
@@ -82,6 +83,7 @@ const localStrategyFormMutation = graphql`
         local_auth_lockout_final_action
         local_auth_lockout_window
         local_auth_lockout_duration
+        api_basic_auth_enabled
       }
     }
   }
@@ -135,6 +137,7 @@ const localStrategyValidation = (t_i18n: Translate) => Yup.object().shape({
   // A window of 0 removes its time limit: failed login attempts are kept until a successful login or the end of a temporary lock
   local_auth_lockout_window: lockoutNumberSchema(t_i18n, LOCKOUT_WINDOW_LIMIT, 0),
   local_auth_lockout_duration: lockoutNumberSchema(t_i18n, LOCKOUT_DURATION_LIMIT),
+  api_basic_auth_enabled: Yup.boolean(),
 });
 
 interface LocalStrategyFormProps {
@@ -184,6 +187,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
     local_auth_lockout_final_action: settings.local_auth_lockout_final_action ?? 'temporary',
     local_auth_lockout_window: settings.local_auth_lockout_window ?? '',
     local_auth_lockout_duration: settings.local_auth_lockout_duration ?? '',
+    // The back end reads a missing value as enabled, the behavior of the platforms created before the setting
+    api_basic_auth_enabled: settings.api_basic_auth_enabled ?? true,
   };
 
   const handleSubmit = (
@@ -217,6 +222,8 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
           password_policy_history_count: Number(values.password_policy_history_count) || 0,
           ...(isLockoutFeatureEnabled && lockoutInput),
+          // Sent only when the switch changed: a missing value means the admin never chose, which a later release relies on
+          ...(values.api_basic_auth_enabled !== initialValues.api_basic_auth_enabled && { api_basic_auth_enabled: values.api_basic_auth_enabled }),
         },
       },
       onCompleted: () => {
@@ -264,6 +271,14 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
               </Tooltip>
             )}
           </Box>
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="api_basic_auth_enabled"
+            label={t_i18n('Allow API Basic authentication')}
+            helpertext={t_i18n('Basic authentication sends a password with every API request. Scripts and integrations should use API tokens instead.')}
+            containerstyle={{ marginTop: 20 }}
+          />
           <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>
             {t_i18n('Local password policies')}
           </Typography>
