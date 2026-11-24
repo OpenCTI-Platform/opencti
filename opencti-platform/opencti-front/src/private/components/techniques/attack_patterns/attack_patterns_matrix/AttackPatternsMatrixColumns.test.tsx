@@ -7,7 +7,7 @@ import { OperationDescriptor } from 'relay-runtime';
 import testRender from '../../../../../utils/tests/test-render';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import AttackPatternsMatrix, { attackPatternsMatrixQuery } from './AttackPatternsMatrix';
-import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
+import AttackPatternsMatrixColumns, { applyCellDecoration } from './AttackPatternsMatrixColumns';
 import { getMatrixConfig, MatrixVariant } from './attackPatternsMatrixConfig';
 import { AttackPatternsMatrixQuery } from './__generated__/AttackPatternsMatrixQuery.graphql';
 import type { CellDecoration } from './attackPatternsMatrixCellDecoration';
@@ -373,5 +373,16 @@ describe('AttackPatternsMatrix', () => {
     await screen.findAllByText(LABEL_PATTERN);
     expect(labels()).toEqual(['Alpha', 'Zeta']);
     expect(useQueryLoading).not.toHaveBeenCalled();
+  });
+});
+
+describe('applyCellDecoration', () => {
+  it('lets the decoration fill and border win over the base styles', () => {
+    const styles = { border: '1px solid red', backgroundColor: 'pink' };
+    expect(applyCellDecoration(styles, { fill: 'F', border: 'B', textTone: 'dark', linkedEntities: [], accessibleName: 'x' }))
+      .toEqual({ border: '1px solid red', borderColor: 'B', backgroundColor: 'F', labelColor: 'var(--black-1000)' });
+  });
+  it('keeps the base styles without a decoration', () => {
+    expect(applyCellDecoration({ border: 'b', backgroundColor: 'c' })).toEqual({ border: 'b', borderColor: undefined, backgroundColor: 'c', labelColor: undefined });
   });
 });
