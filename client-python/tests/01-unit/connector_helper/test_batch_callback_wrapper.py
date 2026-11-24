@@ -2,8 +2,9 @@ import queue
 import threading
 import time
 from unittest import TestCase
+from unittest.mock import MagicMock
 
-from pycti.connector.opencti_connector_helper import BatchCallbackWrapper
+from pycti.connector.opencti_connector_helper import BatchCallbackWrapper, ConnectorInfo
 
 
 class DummyLogger:
@@ -26,6 +27,8 @@ class DummyLogger:
 class DummyHelper:
     def __init__(self):
         self.connector_logger = DummyLogger()
+        self.connector_info = ConnectorInfo()
+        self.metric = MagicMock()
         self._state = None
         self.set_state_calls = []
 

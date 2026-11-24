@@ -1,7 +1,7 @@
 """OpenCTI Callback Executor module.
 
-This module runs a scheduled connector callback and collects the errors of the
-run: the errors the callback returns and the exceptions it raises.
+This module runs a connector callback and collects the errors of the run: the
+errors the callback returns and the exceptions it raises.
 """
 
 import builtins
@@ -124,11 +124,22 @@ class CallbackExecutor:
 
     The callback may return a list of errors, or yield them, and may raise:
     each raised exception (each exception of an ``ExceptionGroup``) is reported
-    as an error. An ``Exception`` never propagates, a ``BaseException`` does.
+    as an error. A ``BaseException`` always propagates.
+
+    With ``swallow_errors`` (the default), an ``Exception`` never propagates:
+    it is counted, logged and ``execute`` returns ``None``. Without it, the
+    exception is added to the error collector and re-raised, untouched: the
+    caller handles it as if the callback had raised it, logging and counting
+    included.
 
     With ``reset_on_each_run`` (the default), the error collector is reset
     before each run, so only the errors of the last run are kept. Without it,
     the errors of successive runs accumulate.
+
+    Without ``returns_errors``, the callback's return value is not a list of
+    errors (the status message of a ``listen()`` callback): it is neither
+    consumed nor validated, only returned by ``execute``, and only the raised
+    exceptions are reported.
     """
 
     def __init__(
@@ -137,20 +148,47 @@ class CallbackExecutor:
         logger,
         metric,
         reset_on_each_run: bool = True,
+        returns_errors: bool = True,
+        swallow_errors: bool = True,
     ):
         self._error_collector = error_collector
         self._logger = logger
         self._metric = metric
         self._reset_on_each_run = reset_on_each_run
+        self._returns_errors = returns_errors
+        self._swallow_errors = swallow_errors
 
-    def execute(self, callback: Callable[[], Any]) -> None:
+    def execute(self, callback: Callable[[], Any]) -> Any:
+        """Run the callback and return its result, ``None`` when it raised."""
         # Errors belong to a run: reset before it so those added with add_error during it are kept
         if self._reset_on_each_run:
             self._error_collector.reset()
-        result, exception = self._invoke(callback)
-        self._error_collector.add_errors(self._validate(result))
-        if exception is not None:
-            self._report_exception(exception)
+        if self._returns_errors:
+            result, exception = self._invoke(callback)
+            self._error_collector.add_errors(self._validate(result))
+        else:
+            result, exception = self._invoke_for_result(callback)
+        if exception is None:
+            return result
+        converter = _ExceptionConverter(exception)
+        self._error_collector.add_errors(converter.to_error_list())
+        if not self._swallow_errors:
+            # The caller counts and logs it, as when the callback raised it directly
+            raise exception
+        self._metric.inc("error_count")
+        self._logger.error(
+            "Connector run raised an exception", {"reason": converter.message()}
+        )
+        return None
+
+    @staticmethod
+    def _invoke_for_result(
+        callback: Callable[[], Any],
+    ) -> Tuple[Any, Optional[Exception]]:
+        try:
+            return callback(), None
+        except Exception as err:  # pylint: disable=broad-except
+            return None, err
 
     @staticmethod
     def _is_iterable_collection(value: Any) -> bool:
@@ -196,12 +234,3 @@ class CallbackExecutor:
                     {"received": repr(error), "reason": str(e)},
                 )
         return valid_errors
-
-    def _report_exception(self, exception: Exception) -> None:
-        converter = _ExceptionConverter(exception)
-        self._error_collector.add_errors(converter.to_error_list())
-        self._metric.inc("error_count")
-        self._logger.error(
-            "Connector run raised an exception",
-            {"reason": converter.message()},
-        )

@@ -37,7 +37,7 @@ import uuid
 from collections import deque
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import boto3
 import jwt
@@ -820,7 +820,10 @@ class ListenQueue(threading.Thread):
             if "configuration" in json_data:
                 event_data["configuration"] = json_data["configuration"]
             # Send the enriched to the callback
-            message = self.callback(event_data)
+            # The executor reports an exception it raises to the platform, with the ping, and re-raises it
+            message = _listener_callback_executor(
+                self.helper, returns_errors=False
+            ).execute(lambda: self.callback(event_data))
             if work_id:
                 self.helper.api.work.to_processed(work_id, message)
             self._set_draft_id("")
@@ -1131,13 +1134,14 @@ class PingAlive(threading.Thread):
             try:
                 self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
-                connector_info = self.connector_info.all_details
+                connector_info, sent_errors = self.connector_info.details_for_ping()
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
                 result = self.api.connector.ping(
                     self.connector_id, initial_state, connector_info
                 )
+                self.connector_info.discard_sent_errors(sent_errors)
                 remote_state = (
                     json.loads(result["connector_state"])
                     if result["connector_state"] is not None
@@ -1452,6 +1456,10 @@ class BatchCallbackWrapper:
         self.batch_callback = batch_callback
         self.batch_size = batch_size
         self.batch_timeout = batch_timeout
+        # Reports the errors of the batch callback to the platform, with the ping
+        self._callback_executor = _listener_callback_executor(
+            helper, returns_errors=True
+        )
 
         # Batch state
         self.batch: List = []
@@ -1600,7 +1608,7 @@ class BatchCallbackWrapper:
                 )
 
         try:
-            self.batch_callback(batch_data)
+            self._callback_executor.execute(lambda: self.batch_callback(batch_data))
         except Exception as e:
             self.helper.connector_logger.error(
                 "Batch callback failed",
@@ -1817,6 +1825,10 @@ class ListenStream(threading.Thread):
                 },
                 verify=self.verify_ssl,
             )
+            # Reports the errors of the callback to the platform, with the ping
+            callback_executor = _listener_callback_executor(
+                self.helper, returns_errors=True
+            )
             # Iter on stream messages
             for msg in messages:
                 if self.exit_event.is_set():
@@ -1856,7 +1868,14 @@ class ListenStream(threading.Thread):
                             state["start_from"] = str(msg.id)
                             self.helper.set_state(state)
                     else:
-                        self.callback(msg)
+                        try:
+                            callback_executor.execute(
+                                lambda msg=msg: self.callback(msg)
+                            )
+                        except Exception:
+                            # A failing callback still stops the connector: send its error before
+                            self.helper.force_ping()
+                            raise
                         # Skip state update if callback manages its own state
                         if not getattr(self.callback, "manages_state", False):
                             state = self.helper.get_state()
@@ -1995,6 +2014,10 @@ class ConnectorInfo:
         self._errors: List[Dict] = list(errors) if errors else []
         # Until errors are reported, none are sent: a restarted process must not clear the previous one's
         self._errors_reported = errors is not None
+        # The callbacks, the batch timer and the ping run in different threads.
+        # The error list is never changed in place: a reader keeps a stable list.
+        self._errors_lock = threading.Lock()
+        self._clear_errors_once_sent = False
         self.logger = logger
 
     @property
@@ -2016,6 +2039,49 @@ class ConnectorInfo:
         if self._errors_reported:
             details["errors"] = _sanitize_connector_errors(self._errors)
         return details
+
+    def details_for_ping(self) -> Tuple[Dict, List[Dict]]:
+        """Get the details to send with a ping, and the errors they carry.
+
+        Give the returned errors to :meth:`discard_sent_errors` once the ping
+        has succeeded.
+
+        :return: The details, as :attr:`all_details`, and the errors they carry
+        :rtype: tuple
+        """
+        with self._errors_lock:
+            return self.all_details, self._errors
+
+    @property
+    def clear_errors_once_sent(self) -> bool:
+        """Whether an error is removed once a ping has sent it.
+
+        Set for connectors that process messages continuously (``listen``,
+        ``listen_stream``), which have no run to clear their errors before.
+        A scheduled connector keeps its errors until its next run.
+        """
+        return self._clear_errors_once_sent
+
+    @clear_errors_once_sent.setter
+    def clear_errors_once_sent(self, value: bool) -> None:
+        self._clear_errors_once_sent = value
+
+    def discard_sent_errors(self, sent_errors: List[Dict]) -> None:
+        """Remove the errors a successful ping has sent, with ``clear_errors_once_sent``.
+
+        An error reported since the ping read the details is kept for the next
+        ping, even when it has the code of a sent one.
+
+        :param sent_errors: The errors returned by :meth:`details_for_ping`
+        :type sent_errors: list
+        """
+        if not self._clear_errors_once_sent or not sent_errors:
+            return
+        sent_ids = {id(error) for error in sent_errors}
+        with self._errors_lock:
+            self._errors = [
+                error for error in self._errors if id(error) not in sent_ids
+            ]
 
     @property
     def run_and_terminate(self) -> bool:
@@ -2141,8 +2207,30 @@ class ConnectorInfo:
         :param value: List of dicts with ``code``, ``message`` and ``criticity``
         :type value: list or None
         """
-        self._errors = list(value) if value else []
-        self._errors_reported = True
+        with self._errors_lock:
+            self._errors = list(value) if value else []
+            self._errors_reported = True
+
+    def add_errors(self, errors: List[Dict]) -> None:
+        """Add valid errors, an error replacing an earlier one with the same code.
+
+        The platform keeps the last report of a code anyway: replacing it here
+        bounds the list of a connector reporting the same error on every message.
+
+        :param errors: Dicts with ``code``, ``message`` and ``criticity``
+        :type errors: list
+        """
+        with self._errors_lock:
+            new_codes = {error.get("code") for error in errors}
+            self._errors = [
+                *(
+                    error
+                    for error in self._errors
+                    if error.get("code") not in new_codes
+                ),
+                *errors,
+            ]
+            self._errors_reported = True
 
     def add_error(
         self,
@@ -2150,12 +2238,13 @@ class ConnectorInfo:
         message: str,
         criticity: int,
     ) -> None:
-        """Add an error, sent on every ping until the errors are cleared.
+        """Add an error, sent with the ping.
 
-        A scheduled connector's errors are cleared before each run. An invalid
-        error is ignored with a warning, never raised. When sent, code and
-        message are truncated, a repeated code keeps its last report, and only
-        the most critical errors are kept.
+        A scheduled connector's errors are cleared before each run. Those of a
+        connector that listens to a queue or a stream are cleared once a ping
+        has sent them. An invalid error is ignored with a warning, never raised.
+        A repeated code replaces its earlier report. When sent, code and message
+        are truncated, and only the most critical errors are kept.
 
         :param code: Error code
         :type code: str
@@ -2175,13 +2264,13 @@ class ConnectorInfo:
                     {"received": repr((code, message, criticity)), "reason": str(e)},
                 )
             return
-        self._errors.append(error.model_dump())
-        self._errors_reported = True
+        self.add_errors([error.model_dump()])
 
     def clear_errors(self) -> None:
         """Remove all reported errors."""
-        self._errors = []
-        self._errors_reported = True
+        with self._errors_lock:
+            self._errors = []
+            self._errors_reported = True
 
 
 class ConnectorInfoErrorCollector(ErrorCollector):
@@ -2191,10 +2280,28 @@ class ConnectorInfoErrorCollector(ErrorCollector):
         self._connector_info = connector_info
 
     def add_errors(self, errors: List[Dict]) -> None:
-        self._connector_info.errors = [*self._connector_info.errors, *errors]
+        self._connector_info.add_errors(errors)
 
     def reset(self) -> None:
         self._connector_info.clear_errors()
+
+
+def _listener_callback_executor(helper, returns_errors: bool) -> CallbackExecutor:
+    """Executor of a callback of a connector that listens to a queue or a stream.
+
+    Such a connector has no run: the errors of its callbacks accumulate in its
+    ConnectorInfo until a ping sends them (``clear_errors_once_sent``). An
+    exception the callback raises is re-raised, so the listener handles it as
+    it always did.
+    """
+    return CallbackExecutor(
+        ConnectorInfoErrorCollector(helper.connector_info),
+        helper.connector_logger,
+        helper.metric,
+        reset_on_each_run=False,
+        returns_errors=returns_errors,
+        swallow_errors=False,
+    )
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -3476,10 +3583,18 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         through the provided callback function. This method blocks until the
         listener is stopped.
 
+        An exception the callback raises closes the work in error, and is
+        reported to the platform with the ping, like an error added with
+        ``connector_info.add_error``: each one (each exception of an
+        ``ExceptionGroup``) with its ``code`` and ``criticity`` attributes, or
+        ``other.unknown`` and 50 when it has none. Errors are cleared once a
+        ping has sent them.
+
         :param message_callback: Function to process incoming messages. Receives
             event data dict and should return a status message string.
         :type message_callback: Callable[[Dict], str]
         """
+        self.connector_info.clear_errors_once_sent = True
         self.listen_queue = ListenQueue(
             self,
             self.opencti_token,
@@ -3512,6 +3627,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
         Connects to an SSE stream and processes events through the callback.
         Parameters default to connector configuration values if not specified.
+
+        Errors are reported to the platform with the ping, and cleared once a
+        ping has sent them: those the callback returns (a list of dicts with
+        ``code``, ``message`` and ``criticity``, as with ``schedule_process``),
+        those it adds with ``connector_info.add_error``, and an exception it
+        raises, with its ``code`` and ``criticity`` attributes, or
+        ``other.unknown`` and 50 when it has none. A raised exception still
+        stops the connector, once a ping has sent it. With
+        ``create_batch_callback``, the errors and exceptions of the batch
+        callback are reported the same way.
 
         :param message_callback: Function to call for each stream event
         :type message_callback: Callable
@@ -3588,6 +3713,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         url = url.rstrip("/") + "/stream"
         if live_stream_id is not None:
             url = url + "/" + live_stream_id
+        self.connector_info.clear_errors_once_sent = True
         self.listen_stream = ListenStream(
             self,
             message_callback,
