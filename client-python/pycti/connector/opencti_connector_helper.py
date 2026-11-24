@@ -3383,18 +3383,26 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     ) -> None:
         # Errors belong to a run: cleared before it so those added with add_error during it are kept
         self.connector_info.clear_errors()
+        error_list = None
+        consumed_errors: List = []
+        run_exception: Optional[Exception] = None
         try:
-            error_list = message_callback()
+            result = message_callback()
+            # Strings, bytes and mappings are iterable but are not a list of errors
+            if isinstance(result, Iterable) and not isinstance(
+                result, (str, bytes, Mapping)
+            ):
+                # A generator callback runs while it is consumed: consume it here so its exceptions are caught
+                for error in result:
+                    consumed_errors.append(error)
+                error_list = consumed_errors
+            else:
+                error_list = result
         # A raised exception is reported like a returned error, and the next run is still scheduled
         except Exception as err:  # pylint: disable=broad-except
-            for exc in _flatten_exception(err):
-                self.connector_info.add_error(**_exception_to_connector_error(exc))
-            self.metric.inc("error_count")
-            self.connector_logger.error(
-                "Connector run raised an exception",
-                {"reason": _exception_to_connector_error(err)["message"]},
-            )
-            error_list = None
+            run_exception = err
+            # Errors a generator yielded before raising are kept
+            error_list = consumed_errors
         # Other non-list returns (True, a status string...) predate errors reporting and stay silent
         if isinstance(error_list, Mapping):
             self.connector_logger.warning(
@@ -3417,6 +3425,14 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         {"received": repr(error), "reason": str(e)},
                     )
             self.connector_info.errors = self.connector_info.errors + returned_errors
+        if run_exception is not None:
+            for exc in _flatten_exception(run_exception):
+                self.connector_info.add_error(**_exception_to_connector_error(exc))
+            self.metric.inc("error_count")
+            self.connector_logger.error(
+                "Connector run raised an exception",
+                {"reason": _exception_to_connector_error(run_exception)["message"]},
+            )
         if self.connector_info.errors:
             self.connector_logger.info(
                 "Errors reported by the connector run",

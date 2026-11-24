@@ -514,3 +514,49 @@ def test_run_and_terminate_sends_exception_on_final_ping():
 def test_base_exceptions_are_not_caught():
     with pytest.raises(KeyboardInterrupt):
         _build_helper()._run_and_collect_errors(_raise(KeyboardInterrupt()))
+
+
+BAD_VALUE_ERROR = {
+    "code": "other.unknown",
+    "message": "ValueError: bad value",
+    "criticity": 50,
+}
+
+
+def test_generator_callback_errors_are_stored():
+    def process():
+        yield API_ERROR
+        yield RATE_ERROR
+
+    helper = _run(process())
+    assert helper.connector_info.errors == [API_ERROR, RATE_ERROR]
+
+
+def test_generator_raising_before_yielding_is_reported():
+    def process():
+        raise ValueError("bad value")
+        yield API_ERROR  # pylint: disable=unreachable
+
+    helper = _run_raising(process)
+    assert helper.connector_info.errors == [BAD_VALUE_ERROR]
+    helper.metric.inc.assert_called_once_with("error_count")
+
+
+def test_generator_raising_after_yielding_keeps_yielded_errors():
+    def process():
+        yield API_ERROR
+        yield "oops"
+        raise ValueError("bad value")
+
+    helper = _run_raising(process)
+    assert helper.connector_info.errors == [API_ERROR, BAD_VALUE_ERROR]
+    helper.connector_logger.warning.assert_called_once()
+
+
+def test_run_and_terminate_sends_generator_exception_on_final_ping():
+    def process():
+        yield API_ERROR
+        raise ValueError("bad value")
+
+    helper, sent_on_force_ping = _run_and_terminate(process)
+    assert sent_on_force_ping[0] == [BAD_VALUE_ERROR, API_ERROR]
