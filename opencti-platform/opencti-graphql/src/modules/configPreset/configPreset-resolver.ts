@@ -41,9 +41,9 @@ const configPresetResolvers: Resolvers = {
     },
     configPresetImportSessionBackToSelection: (_, __, context) => backToConfigPresetImportSelection(context, context.user!),
     configPresetImportSessionClear: (_, { delete_file }, context) => clearConfigPresetImportSession(context, context.user!, delete_file ?? false),
-    configPresetPartialImportPreview: (_, { file, type }, context) => configPresetPartialImportPreview(context, context.user!, file, type),
-    configPresetPartialImport: (_, { file, type, items, item_modes, credentials, service_accounts }, context) => {
-      return configPresetPartialImport(context, context.user!, file, type, items, item_modes ?? [], credentials ?? [], service_accounts ?? []);
+    configPresetPartialImportPreview: (_, { file, type, scope }, context) => configPresetPartialImportPreview(context, context.user!, file, type, scope),
+    configPresetPartialImport: (_, { file, type, items, item_modes, credentials, service_accounts, scope }, context) => {
+      return configPresetPartialImport(context, context.user!, file, type, items, item_modes ?? [], credentials ?? [], service_accounts ?? [], scope);
     },
     configPresetImportUpload: async (_, { file }, context) => {
       const upload = await configPresetImportUpload(context, context.user!, file);

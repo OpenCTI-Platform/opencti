@@ -53,12 +53,12 @@ const themes = [
 const userContext = createMockUserContext({
   me: { name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } },
 });
-const renderWithPreview = async (preview: unknown, onImported = vi.fn()) => {
+const renderWithPreview = async (preview: unknown, onImported = vi.fn(), scope?: string) => {
   const onClose = vi.fn();
-  const rendered = testRender(<ConfigPresetPartialImport type="branding" itemsLabel="themes" onImported={onImported} onClose={onClose} />, { userContext });
+  const rendered = testRender(<ConfigPresetPartialImport type="branding" scope={scope} itemsLabel="themes" onImported={onImported} onClose={onClose} />, { userContext });
   const file = new File(['zip'], 'bundle.zip', { type: 'application/zip' });
   await rendered.user.upload(screen.getByTestId('config-preset-partial-import-file'), file);
-  expect(operation(rendered, 'ConfigPresetPartialImportPreviewMutation').request.variables).toEqual({ file, type: 'branding' });
+  expect(operation(rendered, 'ConfigPresetPartialImportPreviewMutation').request.variables).toEqual({ file, type: 'branding', scope: scope ?? null });
   await resolve(rendered, 'ConfigPresetPartialImportPreviewMutation', { ConfigPresetPartialImportPreview: () => preview });
   return { ...rendered, file, onClose, onImported };
 };
@@ -107,7 +107,7 @@ describe('ConfigPresetPartialImport', () => {
     // The same file, asked again
     await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetPartialImportPreviewMutation')).toHaveLength(1));
     const reread = operation(rendered, 'ConfigPresetPartialImportPreviewMutation');
-    expect(reread.request.variables).toEqual({ file: rendered.file, type: 'branding' });
+    expect(reread.request.variables).toEqual({ file: rendered.file, type: 'branding', scope: null });
     await act(async () => {
       rendered.relayEnv.mock.resolve(reread, MockPayloadGenerator.generate(reread, {
         ConfigPresetPartialImportPreview: () => ({
@@ -175,6 +175,13 @@ describe('ConfigPresetPartialImport', () => {
     ]);
   });
 
+  it('sends the scope of the screen with the preview and with the import, so that only the items in the scope are offered and imported', async () => {
+    const scope = 'Report';
+    const rendered = await renderWithPreview(previewOf(themes), vi.fn(), scope);
+    await rendered.user.click(screen.getByTestId('config-preset-partial-import-submit'));
+    expect(operation(rendered, 'ConfigPresetPartialImportMutation').request.variables).toMatchObject({ type: 'branding', scope });
+  });
+
   it('does not offer the same mode for all with a single item in conflict, its own choice is enough', async () => {
     await renderWithPreview(previewOf(themes));
     expect(screen.queryByTestId('config-preset-partial-import-apply-to-all')).not.toBeInTheDocument();
@@ -188,6 +195,7 @@ describe('ConfigPresetPartialImport', () => {
     expect(operation(rendered, 'ConfigPresetPartialImportMutation').request.variables).toEqual({
       file: rendered.file,
       type: 'branding',
+      scope: null,
       items: ['theme--b'],
       item_modes: [{ key: 'theme--b', mode: 'COPY' }],
       credentials: [],

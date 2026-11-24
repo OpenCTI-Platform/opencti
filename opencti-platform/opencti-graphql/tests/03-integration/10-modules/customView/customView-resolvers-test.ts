@@ -871,3 +871,57 @@ describe('CustomView and dashboard variables', () => {
     expect(await readStoredManifest(customViewId)).toEqual(before);
   });
 });
+
+// The file import is not the bundle import: it stays as it is, and its refusals are errors (a bundle item fails with a reason instead)
+describe('CustomView file import', () => {
+  const DATA_DIR = './tests/03-integration/10-modules/customView/data/';
+  const createdIds: string[] = [];
+
+  afterAll(async () => {
+    for (let i = 0; i < createdIds.length; i += 1) {
+      await queryAsAdminWithSuccess({ query: DELETE_CUSTOM_VIEW_QUERY, variables: { id: createdIds[i] } });
+    }
+    // Creations count in the telemetry gauges checked by the next run
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
+    await redisClearTelemetryGauge(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);
+  });
+
+  it('takes the entity type given by the user over the one of the file, and creates the view neither enabled nor the default', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile(DATA_DIR, 'custom-view-with-type.json') },
+    });
+    createdIds.push(result.data.customViewConfigurationImport.id);
+    expect(result.data.customViewConfigurationImport).toMatchObject({ name: 'A view to import', targetEntityType: ENTITY_TYPE_INTRUSION_SET, enabled: false, default: false });
+  });
+
+  it('falls back on the entity type of the file when the user gives a blank one', async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: '  ', file: createUploadFile(DATA_DIR, 'custom-view-with-type.json') },
+    });
+    createdIds.push(result.data.customViewConfigurationImport.id);
+    expect(result.data.customViewConfigurationImport).toMatchObject({ targetEntityType: 'Malware', enabled: false, default: false });
+  });
+
+  it('fails when neither the user nor the file gives an entity type', async () => {
+    await queryAsAdminWithError({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: '  ', file: createUploadFile(DATA_DIR, 'custom-view.json') },
+    }, 'Missing target entity type for custom view import', 'FUNCTIONAL_ERROR');
+  });
+
+  it('fails for an entity type that cannot have custom views', async () => {
+    await queryAsAdminWithError({
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: ENTITY_TYPE_CONTAINER_FEEDBACK, file: createUploadFile(DATA_DIR, 'custom-view.json') },
+    }, 'Custom views cannot be created for given entity type', 'FUNCTIONAL_ERROR');
+  });
+
+  it('is forbidden to a simple participant', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {
+      query: IMPORT_CUSTOM_VIEW_QUERY,
+      variables: { targetEntityType: ENTITY_TYPE_INTRUSION_SET, file: createUploadFile(DATA_DIR, 'custom-view.json') },
+    });
+  });
+});

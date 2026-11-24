@@ -13,6 +13,11 @@ import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useCustomViewImport from './import-export/useCustomViewImport';
 import CustomViewsSettingsDataTable from './CustomViewsSettingsDataTable';
 import CustomViewFormDrawer from './CustomViewFormDrawer';
+import ConfigPresetPartialImportDialog from '../../config_preset/import/partial/ConfigPresetPartialImportDialog';
+import useConfigPresetPartialImportAccess from '../../config_preset/import/partial/useConfigPresetPartialImportAccess';
+
+// The configuration preset type of the custom views
+const CUSTOM_VIEWS_CONFIG_PRESET_TYPE = 'customViews';
 
 /**
  * Custom Views settings page.
@@ -22,11 +27,36 @@ const CustomViewsSettings = () => {
   const { subType } = useSubTypeOutletContext();
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const importHelpers = useCustomViewImport({ targetEntityType: subType.id });
+  // Without the partial import (not a BYPASS user, or the CONFIG_PRESET flag off), the custom view file import stays as it is
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  // After the import of custom views from a configuration bundle: the list reads its views again
+  const [listVersion, setListVersion] = useState(0);
   const { isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = useXTMHubResourceLink('/redirect/opencti_custom_views');
   return (
     <>
       <DashboardHiddenImportInput helpers={importHelpers} />
+      {canImportFromBundle && (
+        <ConfigPresetPartialImportDialog
+          open={importDialogOpen}
+          onClose={() => setImportDialogOpen(false)}
+          title={t_i18n('Import a custom view')}
+          type={CUSTOM_VIEWS_CONFIG_PRESET_TYPE}
+          // Only the custom views of this entity type: the ones of the other types of the bundle are not offered
+          scope={subType.id}
+          itemsLabel={t_i18n('custom views')}
+          fileLabel={t_i18n('Import a custom view file')}
+          fileDescription={t_i18n('A custom view exported as a JSON file')}
+          bundleDescription={t_i18n('Select the custom views to import from a full configuration bundle (zip)')}
+          onBundleImported={() => setListVersion((version) => version + 1)}
+          // The same file import as without the dialog: the dialog closes, the file picker opens, and the import tells its outcome as before
+          onChooseFile={() => {
+            setImportDialogOpen(false);
+            importHelpers.handleImport();
+          }}
+        />
+      )}
       <Card
         title={t_i18n('Custom Views')}
         sx={{
@@ -59,7 +89,7 @@ const CustomViewsSettings = () => {
             <Tooltip title={t_i18n('Import a custom view')}>
               <IconButton
                 disabled={importHelpers.importing}
-                onClick={importHelpers.handleImport}
+                onClick={canImportFromBundle ? () => setImportDialogOpen(true) : importHelpers.handleImport}
                 size="small"
                 aria-label={t_i18n('Import a custom view')}
               >
@@ -69,7 +99,7 @@ const CustomViewsSettings = () => {
           </Stack>
         )}
       >
-        <CustomViewsSettingsDataTable targetType={subType.id} />
+        <CustomViewsSettingsDataTable key={listVersion} targetType={subType.id} />
       </Card>
       <CustomViewFormDrawer
         isOpen={isDrawerOpen}

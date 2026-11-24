@@ -18791,6 +18791,7 @@ export type MutationConfigPresetPartialImportArgs = {
   file: Scalars['Upload']['input'];
   item_modes?: InputMaybe<Array<ConfigPresetItemModeInput>>;
   items: Array<Scalars['ID']['input']>;
+  scope?: InputMaybe<Scalars['String']['input']>;
   service_accounts?: InputMaybe<Array<ConfigPresetItemServiceAccountInput>>;
   type: Scalars['ID']['input'];
 };
@@ -18798,6 +18799,7 @@ export type MutationConfigPresetPartialImportArgs = {
 
 export type MutationConfigPresetPartialImportPreviewArgs = {
   file: Scalars['Upload']['input'];
+  scope?: InputMaybe<Scalars['String']['input']>;
   type: Scalars['ID']['input'];
 };
 
