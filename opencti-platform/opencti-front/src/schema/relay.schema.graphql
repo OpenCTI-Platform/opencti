@@ -9384,8 +9384,8 @@ type Mutation {
   configPresetImportSessionClear(delete_file: Boolean): Boolean!
   configPresetImportSessionSave(file_id: ID!, revision: Int!, selections: [ConfigPresetSelectionInput!]!): ConfigPresetImportSession!
   configPresetImportUpload(file: Upload!): File!
-  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
-  configPresetPartialImportPreview(file: Upload!, type: ID!): ConfigPresetPartialImportPreview!
+  configPresetPartialImport(credentials: [ConfigPresetItemCredentialsInput!], file: Upload!, item_modes: [ConfigPresetItemModeInput!], items: [ID!]!, scope: String, service_accounts: [ConfigPresetItemServiceAccountInput!], type: ID!): ConfigPresetPartialImportOutput!
+  configPresetPartialImportPreview(file: Upload!, scope: String, type: ID!): ConfigPresetPartialImportPreview!
   connectorJWT: String!
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   contactUsXtmHub(message: String!): Success!
@@ -12491,8 +12491,6 @@ type Query {
   works(after: ID, filters: FilterGroup, first: Int, orderBy: WorksOrdering, orderMode: OrderingMode, search: String): WorkConnection
   workspace(id: String!): Workspace
   workspaces(after: ID, filters: FilterGroup, first: Int, includeAuthorities: Boolean, orderBy: WorkspacesOrdering, orderMode: OrderingMode, search: String): WorkspaceConnection
-  xtmConnections: [XtmConnection!]!
-  xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]!
 }
 
 input QueryAttribute {
@@ -13982,6 +13980,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_reference_attachment: Boolean
   platform_session_idle_timeout: Int
   platform_session_max_concurrent: Int
+  platform_session_max_lifetime: Int
   platform_session_presence_enabled: Boolean!
   platform_session_presence_supported: Boolean!
   platform_session_timeout: Int
@@ -18562,38 +18561,4 @@ enum XTMHubRegistrationStatus {
   lost_connectivity
   registered
   unregistered
-}
-
-type XtmConnection {
-  connected: Boolean!
-  product: String!
-}
-
-type XtmCounterpart {
-  facts: [XtmCounterpartFact!]!
-  key: String!
-  object_id: String!
-  object_name: String
-  object_type: String!
-  object_url: String!
-  product: String!
-}
-
-type XtmCounterpartFact {
-  key: String!
-  value: String!
-}
-
-type XtmCounterpartResult {
-  counterpart: XtmCounterpart
-  id: String!
-  product: String!
-  status: XtmCounterpartStatus!
-}
-
-enum XtmCounterpartStatus {
-  found
-  not_found
-  not_supported
-  unavailable
 }
