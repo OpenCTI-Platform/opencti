@@ -20,7 +20,12 @@ import { schemaAttributesDefinition } from '../../../../src/schema/schema-attrib
 import { ENTITY_TYPE_ACTIVITY } from '../../../../src/schema/internalObject';
 import type { ObjectAttribute } from '../../../../src/schema/attribute-definition';
 
-const { GRACE_PERIOD, LEASE_TTL, sessionManager } = vi.hoisted(() => ({ GRACE_PERIOD: 30000, LEASE_TTL: 30000, sessionManager: { value: 'shared' } }));
+const { GRACE_PERIOD, LEASE_TTL, sessionManager, apiEnabled } = vi.hoisted(() => ({
+  GRACE_PERIOD: 30000,
+  LEASE_TTL: 30000,
+  sessionManager: { value: 'shared' },
+  apiEnabled: { value: true },
+}));
 const RENEW_INTERVAL = LEASE_TTL / 3;
 
 // In memory store with the semantics of the Redis scripts (tested against Redis in the integration tests),
@@ -112,6 +117,10 @@ vi.mock('../../../../src/database/redis', () => ({
   getClusterInstances: vi.fn(),
 }));
 
+vi.mock('../../../../src/manager/managerModule', () => ({
+  registerManager: vi.fn(),
+}));
+
 vi.mock('../../../../src/modules/user/user-domain', () => ({
   userWithOrigin: vi.fn((req, user) => ({ ...user, origin: { socket: 'query', ip: req.ip, user_id: user.id } })),
 }));
@@ -128,6 +137,9 @@ vi.mock('../../../../src/config/conf', async (importOriginal: any) => {
         if (key === 'app:session_manager') return sessionManager.value;
         return actual.default.get(key);
       }),
+    },
+    get ENABLED_API() {
+      return apiEnabled.value;
     },
     getStoppingState: vi.fn(() => false),
     isFeatureEnabled: vi.fn(() => true),
@@ -169,6 +181,21 @@ const sweepAfter = async (time: number) => {
 const listClusterNodes = (...apiEnabledFlags: (boolean | undefined)[]) => {
   const nodes = apiEnabledFlags.map((apiEnabled, i) => ({ platform_id: `node-${i}`, api_enabled: apiEnabled, managers: [] }));
   vi.mocked(redis.getClusterInstances).mockResolvedValue(nodes as any);
+};
+
+// The definition of the session presence manager, as registered on a node serving the API or not.
+// The session store and the API flag are read when the module is loaded.
+const loadPresenceManager = async (isApiEnabled: boolean) => {
+  vi.resetModules();
+  apiEnabled.value = isApiEnabled;
+  try {
+    const { registerManager } = await import('../../../../src/manager/managerModule');
+    await import('../../../../src/modules/session/session-presence-manager');
+    const [definition] = vi.mocked(registerManager).mock.lastCall ?? [];
+    return { isRunning: definition?.enabledToStart(), isEnabled: definition?.enabled() };
+  } finally {
+    apiEnabled.value = true;
+  }
 };
 
 // A tab on another node: its lease is written by that node, never by the module under test
@@ -509,6 +536,11 @@ describe('session presence', () => {
     expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
   });
 
+  it('should run the session presence manager on every node with the shared session store', async () => {
+    expect(await loadPresenceManager(true)).toEqual({ isRunning: true, isEnabled: true });
+    expect(await loadPresenceManager(false)).toEqual({ isRunning: true, isEnabled: true });
+  });
+
   describe('with sessions held in the memory of each node', () => {
     // The session store is read once, when the module is loaded
     const loadDomain = async () => {
@@ -536,6 +568,12 @@ describe('session presence', () => {
       expect(await domain.isSessionPresenceSupported()).toBe(true);
       nodes(true, undefined);
       expect(await domain.isSessionPresenceSupported()).toBe(false);
+    });
+
+    it('should only run the session presence manager on the node serving the API', async () => {
+      expect(await loadPresenceManager(true)).toEqual({ isRunning: true, isEnabled: true });
+      // A node without the API is reported as disabled: the warning shows if no other node runs it
+      expect(await loadPresenceManager(false)).toEqual({ isRunning: false, isEnabled: false });
     });
 
     it('should not logout while several nodes serve the API', async () => {

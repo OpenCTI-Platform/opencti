@@ -39,7 +39,7 @@ const CLOSING_TTL = 6 * LEASE_RENEW_INTERVAL;
 const SWEEP_BATCH_SIZE = 100;
 
 // Sessions held in the memory of each node can only be logged out by that node
-const IS_SHARED_SESSION_STORE = conf.get('app:session_manager') === 'shared';
+export const IS_SHARED_SESSION_STORE = conf.get('app:session_manager') === 'shared';
 
 // The sockets of this node, by connection id
 const nodeConnections = new Map<string, { sessionId: string; origin: PresenceOrigin }>();

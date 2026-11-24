@@ -1,9 +1,11 @@
-import conf, { booleanConf, isFeatureEnabled, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
+import conf, { booleanConf, ENABLED_API, isFeatureEnabled, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
 import { type ManagerDefinition, registerManager } from '../../manager/managerModule';
-import { logoutAbandonedSessions, SESSION_PRESENCE_MANAGER_ID } from './session-presence-domain';
+import { IS_SHARED_SESSION_STORE, logoutAbandonedSessions, SESSION_PRESENCE_MANAGER_ID } from './session-presence-domain';
 
-// Logout the sessions whose last tab is gone, whichever node held their sockets
-const SESSION_PRESENCE_MANAGER_ENABLED = booleanConf('session_presence_manager:enabled', true);
+// Logout the sessions whose last tab is gone, whichever node held their sockets.
+// With sessions held in memory, only the node serving the API holds them: a node without the API would find
+// no session in its own memory and release the checks without logging out. It is then reported as disabled.
+const SESSION_PRESENCE_MANAGER_ENABLED = booleanConf('session_presence_manager:enabled', true) && (IS_SHARED_SESSION_STORE || ENABLED_API);
 const SESSION_PRESENCE_MANAGER_KEY = conf.get('session_presence_manager:lock_key') || 'session_presence_manager_lock';
 const SCHEDULE_TIME = conf.get('session_presence_manager:interval') || 5000;
 
