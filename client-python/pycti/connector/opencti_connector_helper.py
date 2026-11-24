@@ -19,7 +19,6 @@ Example:
 
 import asyncio
 import base64
-import builtins
 import concurrent.futures
 import copy
 import datetime
@@ -36,7 +35,6 @@ import threading
 import time
 import uuid
 from collections import deque
-from collections.abc import Iterable, Mapping
 from enum import Enum
 from queue import Queue
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -51,10 +49,16 @@ from fastapi.responses import JSONResponse
 from filigran_sseclient import SSEClient
 from jwt import PyJWKSet
 from pika.exceptions import NackError, UnroutableError
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import opencti_connector_build
+from pycti.connector.opencti_callback_executor import (
+    CallbackExecutor,
+    ErrorCollector,
+    _ConnectorRunError,
+    _parse_criticity,
+)
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
@@ -1887,31 +1891,6 @@ CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
 CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
 
 
-# The platform only accepts a GraphQL Int (32 bits)
-_GRAPHQL_INT_MIN = -(2**31)
-_GRAPHQL_INT_MAX = 2**31 - 1
-
-
-# Private for now: returned dicts and add_error are the documented contract, exporting it later stays compatible
-class _ConnectorRunError(BaseModel):
-    """Error returned by a connector run"""
-
-    model_config = ConfigDict(strict=True, extra="forbid")
-
-    code: str
-    message: str
-    criticity: int = Field(ge=_GRAPHQL_INT_MIN, le=_GRAPHQL_INT_MAX)
-
-
-def _parse_criticity(value) -> int:
-    # bool is an int subclass
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"criticity must be an integer, got {type(value).__name__}")
-    if not _GRAPHQL_INT_MIN <= value <= _GRAPHQL_INT_MAX:
-        raise ValueError(f"criticity {value} is out of the GraphQL Int range")
-    return value
-
-
 def _sanitize_connector_error(error) -> Optional[Dict]:
     try:
         code = error.get("code")
@@ -1946,66 +1925,6 @@ def _sanitize_connector_errors(errors) -> List[Dict]:
         last_error_by_code.values(), key=lambda error: error["criticity"], reverse=True
     )
     return deduplicated[:CONNECTOR_ERRORS_MAX_COUNT]
-
-
-# Reported for an exception that carries no valid code or criticity, as UnknownError in the connectors SDK
-CONNECTOR_UNKNOWN_ERROR_CODE = "other.unknown"
-CONNECTOR_UNKNOWN_ERROR_CRITICITY = 50
-
-# Built in since Python 3.11 only
-_BASE_EXCEPTION_GROUP = getattr(builtins, "BaseExceptionGroup", None)
-
-
-def _flatten_exception(exc: BaseException) -> List[BaseException]:
-    if _BASE_EXCEPTION_GROUP is not None and isinstance(exc, _BASE_EXCEPTION_GROUP):
-        return [leaf for inner in exc.exceptions for leaf in _flatten_exception(inner)]
-    return [exc]
-
-
-class _ExceptionConverter:
-    """Converts an exception raised by a connector run into a connector error.
-
-    It never raises: the exception may come from any library, and a failure
-    here would stop the scheduler again.
-    """
-
-    def __init__(self, exc: BaseException):
-        self.exc = exc
-
-    def to_error(self) -> Dict:
-        return {
-            "code": self.code(),
-            "message": self.message(),
-            "criticity": self.criticity(),
-        }
-
-    def code(self) -> str:
-        code = self._read(lambda: self.exc.code)
-        # A third-party code (urllib HTTPError.code is an int...) is ignored
-        if not isinstance(code, str) or not code.strip():
-            return CONNECTOR_UNKNOWN_ERROR_CODE
-        # strip() also turns a str subclass (a str enum) into a plain str
-        return code.strip()
-
-    def criticity(self) -> int:
-        try:
-            # An IntEnum (Criticity of the connectors SDK) is sent as a plain int
-            return int(_parse_criticity(self._read(lambda: self.exc.criticity)))
-        except (TypeError, ValueError):
-            return CONNECTOR_UNKNOWN_ERROR_CRITICITY
-
-    def message(self) -> str:
-        name = type(self.exc).__name__
-        text = self._read(lambda: str(self.exc))
-        return f"{name}: {text}" if text else name
-
-    @staticmethod
-    def _read(reader: Callable[[], Any]) -> Any:
-        # A property or __str__ may raise anything, not only AttributeError: read as missing
-        try:
-            return reader()
-        except Exception:  # pylint: disable=broad-except
-            return None
 
 
 class ConnectorInfo:
@@ -2263,6 +2182,19 @@ class ConnectorInfo:
         """Remove all reported errors."""
         self._errors = []
         self._errors_reported = True
+
+
+class ConnectorInfoErrorCollector(ErrorCollector):
+    """Stores the errors in a ConnectorInfo, which sends them with the ping."""
+
+    def __init__(self, connector_info: ConnectorInfo):
+        self._connector_info = connector_info
+
+    def add_errors(self, errors: List[Dict]) -> None:
+        self._connector_info.errors = [*self._connector_info.errors, *errors]
+
+    def reset(self) -> None:
+        self._connector_info.clear_errors()
 
 
 class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
@@ -3401,57 +3333,12 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def _run_and_collect_errors(
         self, message_callback: Callable[[], Optional[List[Dict]]]
     ) -> None:
-        # Errors belong to a run: cleared before it so those added with add_error during it are kept
-        self.connector_info.clear_errors()
-        error_list = None
-        consumed_errors: List = []
-        run_exception: Optional[Exception] = None
-        try:
-            result = message_callback()
-            # Strings, bytes and mappings are iterable but are not a list of errors
-            if isinstance(result, Iterable) and not isinstance(
-                result, (str, bytes, Mapping)
-            ):
-                # A generator callback runs while it is consumed: consume it here so its exceptions are caught
-                consumed_errors.extend(result)
-                error_list = consumed_errors
-            else:
-                error_list = result
-        # A raised exception is reported like a returned error, and the next run is still scheduled
-        except Exception as err:  # pylint: disable=broad-except
-            run_exception = err
-            # Errors a generator yielded before raising are kept
-            error_list = consumed_errors
-        # Other non-list returns (True, a status string...) predate errors reporting and stay silent
-        if isinstance(error_list, Mapping):
-            self.connector_logger.warning(
-                "Connector run returned a single error instead of a list, ignored",
-                {"received": repr(error_list)},
-            )
-        # Strings, bytes and mappings are iterable but are not a list of errors
-        if isinstance(error_list, Iterable) and not isinstance(
-            error_list, (str, bytes, Mapping)
-        ):
-            returned_errors: List[Dict] = []
-            for error in error_list:
-                try:
-                    returned_errors.append(
-                        _ConnectorRunError.model_validate(error).model_dump()
-                    )
-                except ValidationError as e:
-                    self.connector_logger.warning(
-                        "Malformed error response from the connector",
-                        {"received": repr(error), "reason": str(e)},
-                    )
-            self.connector_info.errors = self.connector_info.errors + returned_errors
-        if run_exception is not None:
-            for exc in _flatten_exception(run_exception):
-                self.connector_info.add_error(**_ExceptionConverter(exc).to_error())
-            self.metric.inc("error_count")
-            self.connector_logger.error(
-                "Connector run raised an exception",
-                {"reason": _ExceptionConverter(run_exception).message()},
-            )
+        CallbackExecutor(
+            ConnectorInfoErrorCollector(self.connector_info),
+            self.connector_logger,
+            self.metric,
+        ).execute(message_callback)
+        # Logged here, not by the executor, to include the errors the connector added with add_error
         if self.connector_info.errors:
             self.connector_logger.info(
                 "Errors reported by the connector run",
