@@ -17,11 +17,11 @@ describe('RedisStore destroy', () => {
   const store = new RedisStore({ ttl: 60000, prefix: 'sess:' });
 
   it('should call back with the killed session', async () => {
-    vi.mocked(killSession).mockResolvedValueOnce({ sessionId: 'sess:sid', session: {} });
+    vi.mocked(killSession).mockResolvedValueOnce({ sessionId: 'sess:sid', session: {}, deleted: true });
     const callback = vi.fn();
     await store.destroy('sid', callback);
     expect(killSession).toHaveBeenCalledWith('sess:sid');
-    expect(callback).toHaveBeenCalledWith(null, { sessionId: 'sess:sid', session: {} });
+    expect(callback).toHaveBeenCalledWith(null, { sessionId: 'sess:sid', session: {}, deleted: true });
   });
 
   it('should call back with the error when redis fails', async () => {

@@ -4,6 +4,7 @@ import { IconButton } from '@filigran/design-system';
 import { FocusEvent, FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { useFormatter } from '../i18n';
+import { isImeComposing } from '../../utils/domEvent';
 
 interface BasicFilterInputProps {
   filter?: Filter;
@@ -12,6 +13,8 @@ interface BasicFilterInputProps {
   filterValues: string[];
   label: string;
   type?: string;
+  /** Sub-filter of a nested filter (e.g. coverage_score): the value is committed to that sub-filter. */
+  subKey?: string;
 }
 
 const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
@@ -21,6 +24,7 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   filterValues,
   label,
   type,
+  subKey,
 }) => {
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -31,13 +35,24 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
   // per popover open (the operator select does not remount it), so focusing
   // on mount restores "open and type" without stealing focus on later
   // operator changes.
+  // Not for a sub-filter of a nested filter: the popover shows several inputs
+  // (name, score...), and the one taking focus would commit an empty sub-filter
+  // on blur.
   useEffect(() => {
-    inputRef.current?.focus();
+    if (!subKey) inputRef.current?.focus();
   }, []);
+
+  const commit = (newValue: string) => {
+    if (subKey) {
+      helpers?.handleChangeSubFilter(filter?.id ?? '', subKey, { values: newValue === '' ? [] : [newValue] });
+    } else {
+      helpers?.handleAddSingleValueFilter(filter?.id ?? '', newValue);
+    }
+  };
 
   const handleClear = () => {
     setValue('');
-    helpers?.handleAddSingleValueFilter(filter?.id ?? '', '');
+    commit('');
     inputRef.current?.focus();
   };
 
@@ -49,10 +64,10 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
     const relatedTarget = event.relatedTarget as HTMLElement | null;
     const field = event.currentTarget.closest('.MuiTextField-root');
     const popoverPaper = event.currentTarget.closest('.MuiPopover-paper');
-    if (relatedTarget && (field?.contains(relatedTarget) || popoverPaper?.contains(relatedTarget))) {
+    if (relatedTarget && (field?.contains(relatedTarget) || (!subKey && popoverPaper?.contains(relatedTarget)))) {
       return;
     }
-    helpers?.handleAddSingleValueFilter(filter?.id ?? '', value);
+    commit(value);
   };
 
   return (
@@ -69,8 +84,8 @@ const BasicFilterInput: FunctionComponent<BasicFilterInputProps> = ({
       // TextField puts onKeyDown on its root: an Enter pressed on the clear
       // button bubbles here too, and must not commit a second time.
       onKeyDown={(event) => {
-        if (event.key === 'Enter' && event.target === inputRef.current) {
-          helpers?.handleAddSingleValueFilter(filter?.id ?? '', value);
+        if (event.key === 'Enter' && event.target === inputRef.current && !isImeComposing(event)) {
+          commit(value);
         }
       }}
       onBlur={handleBlur}

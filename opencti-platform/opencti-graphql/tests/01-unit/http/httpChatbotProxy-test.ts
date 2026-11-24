@@ -182,6 +182,7 @@ import {
   postChatbotUpload,
 } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { DraftLockedError } from '../../../src/config/errors';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -399,7 +400,7 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     expect(res.end).toHaveBeenCalled();
   });
 
-  it('should fall back to error message when HTTP response has no detail', async () => {
+  it('should send a generic message when HTTP response has no detail', async () => {
     const httpError = new Error('Server error') as any;
     httpError.response = { status: 500, data: {} };
     mockPost.mockRejectedValue(httpError);
@@ -410,9 +411,29 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.write).toHaveBeenCalledWith(
+      expect.stringContaining('The request to XTM One failed'),
+    );
+    expect(res.write).not.toHaveBeenCalledWith(
       expect.stringContaining('Server error'),
     );
     expect(res.end).toHaveBeenCalled();
+  });
+
+  it('should not forward the detail of an upstream 5xx', async () => {
+    const httpError = new Error('Request failed with status code 502') as any;
+    httpError.response = { status: 502, data: { detail: 'connect ECONNREFUSED 10.0.0.5:5432' } };
+    mockPost.mockRejectedValue(httpError);
+
+    const req = buildReq({ agent_slug: 'test-agent', content: 'hello' });
+
+    await postAgentMessageStream(req, res);
+
+    expect(res.write).toHaveBeenCalledWith(
+      expect.stringContaining('The request to XTM One failed'),
+    );
+    expect(res.write).not.toHaveBeenCalledWith(
+      expect.stringContaining('ECONNREFUSED'),
+    );
   });
 
   it('should return 503 when a non-HTTP error is thrown', async () => {
@@ -706,7 +727,7 @@ describe('httpChatbotProxy: postAgentMessageStream', () => {
     // a cached response (or a fresh agent run) computed for another draft
     // could be replayed across draft authorization boundaries.
     setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
-    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+    vi.mocked(checkDraftInContext).mockRejectedValue(DraftLockedError('Could not find draft workspace'));
     mockRedisGetXtmAgentResponse.mockResolvedValue({
       content: '<p>This MUST NEVER be replayed</p>',
       cached_at: '2026-05-28T10:00:00.000Z',
@@ -900,7 +921,7 @@ describe('httpChatbotProxy: getChatbotFileDownload', () => {
     // without this guard a draft-scoped file could be downloaded across draft
     // authorization boundaries.
     setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
-    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+    vi.mocked(checkDraftInContext).mockRejectedValue(DraftLockedError('Could not find draft workspace'));
 
     await getChatbotFileDownload(buildDownloadReq(VALID_FILE_ID), res);
 
@@ -1106,7 +1127,7 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
 
   it('should reject with 400 when the draft context fails validation, without calling XTM One', async () => {
     setupAuthenticatedContext({ draft_context: 'forged-draft-id' });
-    vi.mocked(checkDraftInContext).mockRejectedValue(new Error('Could not find draft workspace'));
+    vi.mocked(checkDraftInContext).mockRejectedValue(DraftLockedError('Could not find draft workspace'));
 
     await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, { format: 'pdf' }), res);
 
@@ -1213,7 +1234,8 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
       expect(res.removeHeader).toHaveBeenCalledWith(header);
     }
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'socket hang up' });
+    // The cause of the stream failure stays in the logs.
+    expect(res.send).toHaveBeenCalledWith(expect.objectContaining({ status: 'error', error: 'An unexpected error occurred' }));
     expect(res.destroy).not.toHaveBeenCalled();
   });
 
@@ -1243,7 +1265,7 @@ describe('httpChatbotProxy: postChatbotArtifactDownload', () => {
     await postChatbotArtifactDownload(buildDownloadReq('report', REPORT_ID, { format: 'pdf' }), res);
 
     expect(res.status).toHaveBeenCalledWith(502);
-    expect(res.json).toHaveBeenCalledWith({ error: 'Request failed with status code 502' });
+    expect(res.json).toHaveBeenCalledWith({ error: 'The request to XTM One failed' });
   });
 
   it('should stop reading an error body and answer nothing when the browser leaves meanwhile', async () => {
@@ -1316,7 +1338,7 @@ describe('httpChatbotProxy: getChatbotSessions', () => {
     expect(res.json).toHaveBeenCalledWith(sessions);
   });
 
-  it('should surface the upstream detail and status on HTTP error', async () => {
+  it('should keep the upstream status and hide the detail of a 5xx', async () => {
     const httpError = new Error('Request failed with status code 502') as any;
     httpError.response = { status: 502, data: { detail: 'Chat history unavailable' } };
     mockGet.mockRejectedValue(httpError);
@@ -1324,7 +1346,8 @@ describe('httpChatbotProxy: getChatbotSessions', () => {
     await getChatbotSessions(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(502);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Chat history unavailable' });
+    // The detail of a 5xx can name internal components: only the status is forwarded.
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'The request to XTM One failed' });
   });
 
   it('should fall back to the error message and 503 when no HTTP response is available', async () => {
@@ -1333,7 +1356,7 @@ describe('httpChatbotProxy: getChatbotSessions', () => {
     await getChatbotSessions(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1411,7 +1434,7 @@ describe('httpChatbotProxy: deleteChatbotSession', () => {
     await deleteChatbotSession(buildDeleteReq(VALID_CONVERSATION_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1520,7 +1543,7 @@ describe('httpChatbotProxy: postChatbotMessageSteer', () => {
     await postChatbotMessageSteer(buildReq({ conversation_id: 'c-1', content: 'steer' }), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1648,7 +1671,7 @@ describe('httpChatbotProxy: postChatbotMessageApprove', () => {
     await postChatbotMessageApprove(buildSessionReq(APPROVAL_BODY), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1753,7 +1776,7 @@ describe('httpChatbotProxy: getChatbotPendingApprovals', () => {
     await getChatbotPendingApprovals(buildPendingReq(VALID_CONVERSATION_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1812,7 +1835,7 @@ describe('httpChatbotProxy: getChatbotPrompts', () => {
     await getChatbotPrompts(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1861,7 +1884,7 @@ describe('httpChatbotProxy: getChatbotQuota', () => {
     expect(res.json).toHaveBeenCalledWith(null);
   });
 
-  it('should surface the upstream detail and status on HTTP error', async () => {
+  it('should keep the upstream status and hide the detail of a 5xx', async () => {
     const httpError = new Error('Request failed with status code 502') as any;
     httpError.response = { status: 502, data: { detail: 'Quota unavailable' } };
     mockGet.mockRejectedValue(httpError);
@@ -1869,7 +1892,8 @@ describe('httpChatbotProxy: getChatbotQuota', () => {
     await getChatbotQuota(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(502);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Quota unavailable' });
+    // The detail of a 5xx can name internal components: only the status is forwarded.
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'The request to XTM One failed' });
   });
 
   it('should fall back to the error message and 503 when no HTTP response is available', async () => {
@@ -1878,7 +1902,7 @@ describe('httpChatbotProxy: getChatbotQuota', () => {
     await getChatbotQuota(buildReq(), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -1969,7 +1993,7 @@ describe('httpChatbotProxy: postChatbotMessageFeedback', () => {
     await postChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID, { rating: 'positive' }), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 
@@ -2050,7 +2074,7 @@ describe('httpChatbotProxy: deleteChatbotMessageFeedback', () => {
     await deleteChatbotMessageFeedback(buildFeedbackReq(VALID_CONVERSATION_ID, VALID_MESSAGE_ID), res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'Network failure' });
+    expect(res.send).toHaveBeenCalledWith({ status: 'error', error: 'An unexpected error occurred' });
   });
 });
 

@@ -27,7 +27,7 @@ import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { checkPolicyAcceptsAdminPassword, propagatePasswordValidityChange } from '../modules/user/user-domain';
 import { isValidPasswordHistoryCount, PASSWORD_HISTORY_MAX_COUNT, readPasswordHistoryCount, trimAllUsersPasswordHistory } from '../modules/user/user-password-history';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS, LOCAL_AUTH_LOCKOUT_KEYS, type LocalAuthLockoutKey } from './local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS, LOCAL_AUTH_LOCKOUT_KEYS, type LocalAuthLockoutKey } from './local-auth-lockout-defaults';
 
 // The password history count sent with the local settings, once validated; undefined when it is not sent.
 export const resolvePasswordHistoryCount = (input: Pick<LocalAuthConfigInput, 'password_policy_history_count'>): number | undefined => {
@@ -147,6 +147,7 @@ export const updateLocalAuth = async (context: AuthContext, user: AuthUser, sett
     ...(input.password_policy_validity_days !== undefined && { password_policy_validity_days: input.password_policy_validity_days }),
     ...(newHistoryCount !== undefined && { password_policy_history_count: newHistoryCount }),
     ...(await buildLocalAuthLockoutPatch(context, input)),
+    ...(input.api_basic_auth_enabled !== undefined && input.api_basic_auth_enabled !== null && { api_basic_auth_enabled: input.api_basic_auth_enabled }),
   };
   // With app:admin:secure_by_default, a password policy that the configured admin password does not match would make the platform refuse to start
   checkPolicyAcceptsAdminPassword(context, { ...storedSettings, ...patch } as BasicStoreSettings);

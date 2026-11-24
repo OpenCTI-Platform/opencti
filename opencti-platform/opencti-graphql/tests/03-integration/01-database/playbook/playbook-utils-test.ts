@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters } from '../../../../src/modules/playbook/playbook-utils';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, parsePlaybookNodeInputConfiguration } from '../../../../src/modules/playbook/playbook-utils';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../../src/modules/playbook/playbook-components';
 import { CREATOR_FILTER, LABEL_FILTER, REPRESENTATIVE_FILTER } from '../../../../src/utils/filtering/filtering-constants';
@@ -29,7 +29,7 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
       }),
       position: { x: 1, y: 1 },
     };
-    const result = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input, userId);
+    const result = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input.component_id, parsePlaybookNodeInputConfiguration(input), userId);
     expect(result).toEqual(JSON.stringify({ filters: JSON.stringify(filters) }));
   });
 
@@ -50,7 +50,8 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
       }),
       position: { x: 1, y: 1 },
     };
-    await expect(async () => await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input, userId))
+    const config = parsePlaybookNodeInputConfiguration(input);
+    await expect(async () => await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input.component_id, config, userId))
       .rejects.toThrowError('Stix filtering is not compatible with the provided filter key');
   });
 
@@ -92,7 +93,7 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
       }),
       position: { x: 1, y: 1 },
     };
-    const result = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input, userId);
+    const result = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input.component_id, parsePlaybookNodeInputConfiguration(input), userId);
     expect(result).toEqual(JSON.stringify({ filters: JSON.stringify(expectedFilters) }));
   });
 
@@ -113,7 +114,8 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
       }),
       position: { x: 1, y: 1 },
     };
-    await expect(async () => await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input, userId))
+    const config = parsePlaybookNodeInputConfiguration(input);
+    await expect(async () => await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input.component_id, config, userId))
       .rejects.toThrowError('Incorrect filter keys not existing in any schema definition');
   });
 });

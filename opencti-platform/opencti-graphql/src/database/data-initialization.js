@@ -301,6 +301,9 @@ export const initializeData = async (context, withMarkings = true) => {
     // A new platform starts with the local authentication lockout enabled (NIST SP 800-53 AC-7),
     // existing platforms keep it disabled at upgrade
     ...(isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) ? { local_auth_lockout_enabled: true } : {}),
+    // A new platform starts with the API Basic authentication disabled (NIST SP 800-53 IA-2): scripts and
+    // integrations use API tokens. Existing platforms never set the field, so they keep it enabled at upgrade
+    api_basic_auth_enabled: false,
     cert_auth: {
       enabled: false,
       description: null,

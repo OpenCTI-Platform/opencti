@@ -1963,9 +1963,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@filigran/design-system@npm:1.12.1":
-  version: 1.12.1
-  resolution: "@filigran/design-system@npm:1.12.1"
+"@filigran/design-system@npm:1.13.0":
+  version: 1.13.0
+  resolution: "@filigran/design-system@npm:1.13.0"
   dependencies:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
@@ -2005,7 +2005,7 @@ __metadata:
     react-dom: ^19.0.0
   bin:
     filigran-design-system: bin/install-skills.mjs
-  checksum: 10c0/df8017f2766f89e5984a131e18c2c691cc5bf64b7663a1ff604ca9cec440250619151ae6da720d885f0a6eef79536b97ce6c7df9276bd6e3117e9f89e8ab7ff8
+  checksum: 10c0/68f68269589051088340f5649881aec7c8d4b072d391224671298e1c62e802cb8d1480bcf157ee57699f98e5d49cab9db32e328a3366c035446263ddadcfc9b7
   languageName: node
   linkType: hard
 
@@ -3629,9 +3629,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@langchain/core@npm:1.4.2"
+"@langchain/core@npm:1.5.0":
+  version: 1.5.0
+  resolution: "@langchain/core@npm:1.5.0"
   dependencies:
     "@cfworker/json-schema": "npm:^4.1.4"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -3640,7 +3640,7 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^4.6.6"
-  checksum: 10c0/bd9fbdf0e37cd8cfc67f3ce7f37c65bb54c9a55fc7f08e42d0627468de18c0b2b6ca9ab580e815aba8b3a6122ea1b1c2a3cc2145ae3eb49391b45dcced2a59ae
+  checksum: 10c0/2a8c48efb08279e102cfbb654354c352dbe1addec438dc7822676540ff1f9f898c07be9f0625999db3226ca44e52179ed45eab13900b2e4faf4e4b6c9fcfa29c
   languageName: node
   linkType: hard
 
@@ -3655,16 +3655,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.8.4":
-  version: 1.8.4
-  resolution: "@langchain/openai@npm:1.8.4"
+"@langchain/openai@npm:1.8.5":
+  version: 1.8.5
+  resolution: "@langchain/openai@npm:1.8.5"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
     openai: "npm:^7.47.0"
     zod: "npm:^4.6.6"
   peerDependencies:
-    "@langchain/core": ^1.4.0
-  checksum: 10c0/19f9f90480985f29e7d12d43684daf9245d7931e4c531fa44cb0ec7ccd0bde0e8bd43f1a65b45ba8f6681e4bc98a6a0410ab49ad2970184089735d42988fb01e
+    "@langchain/core": ^1.5.0
+  checksum: 10c0/2944f24c47b39145d2feef90c4f2678d30794ec8e03b7bea86c1ae0a21b017f7e66e4eb3d83fcecb5ea87ba03c03c1eb97bc4d140c96ef15cc579a19929e3008
   languageName: node
   linkType: hard
 
@@ -7668,7 +7668,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/busboy@npm:1.5.5, @types/busboy@npm:^1.5.0":
+"@types/busboy@npm:1.5.5, @types/busboy@npm:^1.5.5":
   version: 1.5.5
   resolution: "@types/busboy@npm:1.5.5"
   dependencies:
@@ -14478,11 +14478,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-upload@npm:18.0.2":
-  version: 18.0.2
-  resolution: "graphql-upload@npm:18.0.2"
+"graphql-upload@npm:18.0.3":
+  version: 18.0.3
+  resolution: "graphql-upload@npm:18.0.3"
   dependencies:
-    "@types/busboy": "npm:^1.5.0"
+    "@types/busboy": "npm:^1.5.5"
     "@types/node": "npm:*"
     "@types/object-path": "npm:^0.11.1"
     busboy: "npm:^1.6.0"
@@ -14498,7 +14498,7 @@ __metadata:
       optional: true
     "@types/koa":
       optional: true
-  checksum: 10c0/f20f4006e34bfdfdc37877242a89aca21c8ee5e75673ec80a54dc09a740eac5e9576e07235991b54b3afdd51da584e46a76d33286d6e06f33b3d2c174831f1ef
+  checksum: 10c0/88546ae99698aad695a45b2d72682170c40523f02ff39ae58ef74c9bdd563ff09673cf2cb3879fab702bd1d0196156102e193ac94edc50d7e4b07d5e66d54188
   languageName: node
   linkType: hard
 
@@ -15768,7 +15768,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:6.2.18, jose@npm:^6.2.15":
+"jose@npm:6.2.18, jose@npm:^6.2.18":
   version: 6.2.18
   resolution: "jose@npm:6.2.18"
   checksum: 10c0/95144c43dfa0c8206f13f8133ed74ba9106785df81c864d6399af06616ad8fdbdc18937109aac099f560f6159aaf2fe2fca3984a6629c899af396a1e9986008d
@@ -18195,10 +18195,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemailer@npm:10.6.0":
-  version: 10.6.0
-  resolution: "nodemailer@npm:10.6.0"
-  checksum: 10c0/11922d84f8a0b17e35c2f8de2cf54a264b55dc1173a486bd27fa00a61f0275a319715372e98c613d02a9ff5e6d5b4bed67dcfb5e18f58c8f8f5c88095d501d45
+"nodemailer@npm:10.6.1":
+  version: 10.6.1
+  resolution: "nodemailer@npm:10.6.1"
+  checksum: 10c0/a050116bf03e84cfd1d391ae010f8f5067c8caaab9e908bbf7e3b2de49e7d6471fa739c8a126c3ea57fa927c962c7533848d22df0641f3b7c64ec2c5f888ae92
   languageName: node
   linkType: hard
 
@@ -18490,10 +18490,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"oauth4webapi@npm:^3.8.8":
-  version: 3.8.8
-  resolution: "oauth4webapi@npm:3.8.8"
-  checksum: 10c0/1f7d35ba8d7d5aa9ce9ec5959a4611ed2b5dd7830172b1546749b91dda8c53f7934e669c6f81e912c64e3ae4fc681d4d6ce149b42cc9d17db97162bf8765e028
+"oauth4webapi@npm:^3.8.9":
+  version: 3.8.9
+  resolution: "oauth4webapi@npm:3.8.9"
+  checksum: 10c0/04567cc375142acfc25fafbbf78b4cb1e5145185cb603d5694c5085f9fabb18474438fedd93531b04d5561ab1153a7a582b3f2767329724a09c5f10fc9c846a1
   languageName: node
   linkType: hard
 
@@ -18722,7 +18722,7 @@ __metadata:
     "@faker-js/faker": "npm:10.6.0"
     "@filigran/chatbot": "npm:7.0.0"
     "@filigran/chatbot-legacy": "npm:@filigran/chatbot@1.1.2"
-    "@filigran/design-system": "npm:1.12.1"
+    "@filigran/design-system": "npm:1.13.0"
     "@filigran/rich-text-editor": "npm:2.0.1"
     "@fontsource/geologica": "npm:5.3.0"
     "@fontsource/ibm-plex-sans": "npm:5.3.0"
@@ -18888,9 +18888,9 @@ __metadata:
     "@graphql-tools/schema": "npm:11.0.9"
     "@graphql-tools/utils": "npm:13.2.2"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:1.4.2"
+    "@langchain/core": "npm:1.5.0"
     "@langchain/mistralai": "npm:1.2.0"
-    "@langchain/openai": "npm:1.8.4"
+    "@langchain/openai": "npm:1.8.5"
     "@lezer/javascript": "npm:1.5.6"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:2.7.0"
@@ -18985,7 +18985,7 @@ __metadata:
     graphql-scalars: "npm:2.0.1"
     graphql-subscriptions: "npm:3.1.0"
     graphql-tag: "npm:2.12.7"
-    graphql-upload: "npm:18.0.2"
+    graphql-upload: "npm:18.0.3"
     graphql-ws: "npm:6.4.3"
     helmet: "npm:8.3.0"
     http-proxy-agent: "npm:9.1.0"
@@ -19010,9 +19010,9 @@ __metadata:
     node-fetch: "npm:3.3.2"
     node-forge: "npm:1.4.3"
     node-gyp-build: "npm:4.8.4"
-    nodemailer: "npm:10.6.0"
+    nodemailer: "npm:10.6.1"
     openai: "npm:7.62.0"
-    openid-client: "npm:6.9.0"
+    openid-client: "npm:6.9.1"
     openid-clientv5: "npm:openid-client@5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:13.6.0"
@@ -19035,7 +19035,7 @@ __metadata:
     turndown: "npm:7.2.5"
     typescript: "npm:@typescript/typescript6@6.0.2"
     typescript-eslint: "npm:8.72.2"
-    undici: "npm:8.12.4"
+    undici: "npm:8.13.1"
     unzipper: "npm:0.12.5"
     uuid: "npm:14.0.3"
     uuid-time: "npm:1.0.0"
@@ -19089,13 +19089,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@npm:6.9.0":
-  version: 6.9.0
-  resolution: "openid-client@npm:6.9.0"
+"openid-client@npm:6.9.1":
+  version: 6.9.1
+  resolution: "openid-client@npm:6.9.1"
   dependencies:
-    jose: "npm:^6.2.15"
-    oauth4webapi: "npm:^3.8.8"
-  checksum: 10c0/546f9404f869f8168ed6760ab764f4c7105d8a712879caa801c7a65da0d5c57166536700578df56638bbd701b73696439bdbff91c150ea3550d25e32c8ef5e9d
+    jose: "npm:^6.2.18"
+    oauth4webapi: "npm:^3.8.9"
+  checksum: 10c0/9a3c90e9368420b345b06572432090267decae11b8253b07c4e4364b57f1165f49ea97040e5e498e0a1f90ab3b1173ea924b51e8d67fbc4083039f049ae7a3f0
   languageName: node
   linkType: hard
 
@@ -23392,10 +23392,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:8.12.4, undici@npm:^8.12.3, undici@npm:^8.4.1":
-  version: 8.12.4
-  resolution: "undici@npm:8.12.4"
-  checksum: 10c0/2a83590ce3347ca4e8fb83917bd7ad1d0bcb72ecb6d1a5066f01a89b4941becac569412aa27d7318119ea1a20d217018cce535f8eeed3c1b307d87426f96cfe3
+"undici@npm:8.13.1, undici@npm:^8.12.3, undici@npm:^8.4.1":
+  version: 8.13.1
+  resolution: "undici@npm:8.13.1"
+  checksum: 10c0/ee202b4da4f4a663e723696c6d6f6f27f3424aaddd652ceccf1062beaddce171809445cbdbedc50dcd53f0119a1fe8ce20f7c5d320039e71915418dfc98b58a0
   languageName: node
   linkType: hard
 

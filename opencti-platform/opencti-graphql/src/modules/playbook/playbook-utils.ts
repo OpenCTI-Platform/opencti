@@ -270,34 +270,43 @@ export const missingRequiredConfigurationFields = (
   });
 };
 
-/** Refuses a node whose configuration leaves a required choice empty (add, replace and insert). */
-export const assertNodeConfigurationIsComplete = (component: PlaybookComponent<object>, configuration: string | null | undefined) => {
-  let config: Record<string, unknown>;
-  try {
-    config = configuration ? JSON.parse(configuration) : {};
-  } catch {
-    throw FunctionalError('Playbook node configuration is not valid JSON', { component_id: component.id });
-  }
+/**
+ * Refuse a node whose configuration leaves a required choice empty (add, replace and insert).
+ *
+ * @param component Component of the node.
+ * @param config Parsed node configuration.
+ * @throws FunctionalError listing the missing fields.
+ */
+export const assertNodeConfigurationIsComplete = (component: PlaybookComponent<object>, config: Record<string, unknown>) => {
   const missing = missingRequiredConfigurationFields(component.configuration_schema as ConfigurationSchemaLike | undefined, config);
   if (missing.length > 0) {
     throw FunctionalError('Playbook node configuration misses required fields', { component_id: component.id, missing });
   }
 };
 
+/**
+ * Check the filters of a node configuration and build the configuration to store:
+ * the cron trigger filters are converted, the other components' filters must be
+ * compatible with stix matching.
+ *
+ * @param context Auth context.
+ * @param user User saving the node.
+ * @param componentId Component of the node.
+ * @param config Node configuration, parsed by parsePlaybookNodeInputConfiguration.
+ * @param userId Id the "@me" filter values resolve to.
+ * @returns The stringified configuration to store.
+ */
 export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   context: AuthContext,
   user: AuthUser,
-  input: PlaybookAddNodeInput,
+  componentId: string,
+  config: Record<string, unknown>,
   userId: string,
 ) => {
-  if (!input.configuration) {
-    return '{}';
-  }
   let stringifiedFilters;
-  const config = JSON.parse(input.configuration);
   if (config.filters) {
-    const filterGroup = JSON.parse(config.filters) as FilterGroup;
-    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+    const filterGroup = JSON.parse(config.filters as string) as FilterGroup;
+    if (componentId === PLAYBOOK_INTERNAL_DATA_CRON.id) {
       const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else {
@@ -373,4 +382,126 @@ export const updateImportedPlaybookDefinitionScope = (playbookDefinition: string
     nodes,
   });
   return finalPlaybookDefinition;
+};
+
+/**
+ * Tell whether a parsed JSON value is an object (not an array, a primitive or null).
+ *
+ * @param value Parsed JSON value.
+ * @returns True if the value is a JSON object.
+ */
+const isJSONObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
+
+/**
+ * Parse a value that must be a string holding a JSON object.
+ *
+ * @param value Value to parse.
+ * @param errorMessage Message of the FunctionalError thrown when the value is invalid.
+ * @param errorData Context added to the FunctionalError.
+ * @returns The parsed object.
+ * @throws FunctionalError if the value is not a string holding a JSON object.
+ */
+const parseJSONObject = (value: unknown, errorMessage: string, errorData: Record<string, unknown>): Record<string, unknown> => {
+  if (typeof value !== 'string') {
+    throw FunctionalError(errorMessage, {
+      ...errorData,
+      reason: 'Expected a stringified JSON object',
+    });
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch (error) {
+    throw FunctionalError(errorMessage, {
+      ...errorData,
+      reason: (error as Error).message,
+    });
+  }
+
+  if (!isJSONObject(parsed)) {
+    throw FunctionalError(errorMessage, {
+      ...errorData,
+      reason: 'Expected a JSON object',
+    });
+  }
+  return parsed;
+};
+
+// Configuration fields holding stringified filters, parsed again by the components and the cache manager.
+const PLAYBOOK_NODE_FILTER_FIELDS = ['filters', 'applyWithFilters'];
+
+/**
+ * Parse a playbook node configuration: a string holding a JSON object, whose
+ * stringified filters fields hold JSON objects too. Syntax only: the keys and
+ * ids a filter names vary per platform, they are checked when a node is saved
+ * from the editor and adjusted after an import.
+ *
+ * @param configuration Stringified node configuration.
+ * @param errorData Context identifying the node in the FunctionalError.
+ * @returns The parsed configuration.
+ * @throws FunctionalError if the configuration or one of its filters is invalid.
+ */
+const parsePlaybookNodeConfiguration = (configuration: unknown, errorData: Record<string, unknown>): Record<string, unknown> => {
+  const config = parseJSONObject(configuration, 'Playbook node configuration is not valid JSON', errorData);
+  PLAYBOOK_NODE_FILTER_FIELDS.forEach((field) => {
+    const value = config[field];
+    if (value !== undefined && value !== null && value !== '') {
+      parseJSONObject(value, 'Playbook node filters are not valid JSON', {
+        ...errorData,
+        field,
+      });
+    }
+  });
+  return config;
+};
+
+/**
+ * Parse the configuration of a node sent by the add, replace and insert node
+ * mutations. An empty configuration is valid and stands for an empty object.
+ *
+ * @param input Node input.
+ * @returns The parsed configuration.
+ * @throws FunctionalError if the configuration or one of its filters is invalid.
+ */
+export const parsePlaybookNodeInputConfiguration = (input: Pick<PlaybookAddNodeInput, 'name' | 'component_id' | 'configuration'>) => {
+  if (!input.configuration) {
+    return {};
+  }
+
+  return parsePlaybookNodeConfiguration(input.configuration, {
+    name: input.name,
+    component_id: input.component_id,
+  });
+};
+
+/**
+ * Parse a stringified playbook definition, as written whole by an import, a
+ * duplication or the playbook_definition field patch: it must hold nodes and
+ * links arrays, and each node a valid configuration. Unlike a node input, a
+ * stored node needs a non-empty configuration: the components, the cache
+ * manager and the import scope migration all parse it.
+ *
+ * @param rawDefinition Stringified playbook definition.
+ * @returns The parsed definition.
+ * @throws FunctionalError if the definition or the configuration of one of its nodes is invalid.
+ */
+export const parsePlaybookDefinition = (rawDefinition: string): ComponentDefinition => {
+  const definition = parseJSONObject(rawDefinition, 'Playbook definition is not valid JSON', {});
+  const {
+    nodes,
+    links,
+  } = definition;
+  if (!Array.isArray(nodes) || !nodes.every(isJSONObject) || !Array.isArray(links) || !links.every(isJSONObject)) {
+    throw FunctionalError('Playbook definition must hold nodes and links arrays of objects');
+  }
+
+  nodes.forEach((node) => parsePlaybookNodeConfiguration(node.configuration, {
+    node_id: node.id,
+    name: node.name,
+    component_id: node.component_id,
+  }));
+  return definition as unknown as ComponentDefinition;
 };

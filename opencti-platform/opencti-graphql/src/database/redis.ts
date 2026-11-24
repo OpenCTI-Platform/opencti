@@ -226,10 +226,12 @@ const setInList = async (listId: string, keyId: string, expirationTime: number, 
     await deleteOldestKeysFromList(listId, maxLength);
   }
 };
+// Returns the number of deleted keys: 1 only for the call that actually deleted it, as DEL is atomic
 const delKeyWithList = async (keyId: string, listIds: string[]) => {
   const keyPromise = getClientBase().del(keyId);
   const listsPromise = listIds.map((listId) => getClientBase().zrem(listId, keyId));
-  await Promise.all([keyPromise, ...listsPromise]);
+  const [deletedKeys] = await Promise.all([keyPromise, ...listsPromise]);
+  return deletedKeys;
 };
 const setKeyWithList = async (keyId: string, listIds: string[], keyData: any, expirationTime: number, maxLength?: number) => {
   const keyPromise = getClientBase().set(keyId, JSON.stringify(keyData), 'EX', expirationTime);
@@ -288,10 +290,11 @@ export const getSessionTtl = (key: string) => {
 export const setSession = (key: string, value: any, expirationTime: number) => {
   return setKeyWithList(key, ['platform_sessions'], value, expirationTime);
 };
+// `deleted` is true only for the call that removed the session, even when several nodes kill it at the same time
 export const killSession = async (key: string) => {
   const currentSession = await getSession(key);
-  await delKeyWithList(key, ['platform_sessions']);
-  return { sessionId: key, session: currentSession };
+  const deletedKeys = await delKeyWithList(key, ['platform_sessions']);
+  return { sessionId: key, session: currentSession, deleted: deletedKeys === 1 };
 };
 export const getSessionKeys = () => {
   return getClientBase().zrange('platform_sessions', 0, -1);
@@ -912,6 +915,8 @@ export const redisConsumePasswordChangeAttempt = async (targetUserId: string, su
 export const localAuthLockoutKeys = (emailHash: string) => ({
   failures: `local_auth_lockout:{${emailHash}}:attempts`,
   lock: `local_auth_lockout:{${emailHash}}:lock`,
+  // Set when the administrators get the email of a lock: no other email for this account until it expires
+  emailed: `local_auth_lockout:{${emailHash}}:emailed`,
 });
 
 export type LocalAuthLockType = 'temporary' | 'permanent';
@@ -994,7 +999,14 @@ export const redisReleaseLocalAuthAttempt = async (emailHash: string, attempt: {
 
 export const redisClearLocalAuthLockout = async (emailHash: string) => {
   const keys = localAuthLockoutKeys(emailHash);
-  await getClientBase().del(keys.failures, keys.lock);
+  await getClientBase().del(keys.failures, keys.lock, keys.emailed);
+};
+
+// Claims the email of a lock for this account, once for all the nodes: false while an email of a previous lock
+// is more recent than the cooldown. A login accepted or an account set back to Active ends the cooldown (redisClearLocalAuthLockout)
+export const redisClaimLocalAuthLockEmail = async (emailHash: string, cooldownMs: number) => {
+  const result = await getClientBase().set(localAuthLockoutKeys(emailHash).emailed, '1', 'PX', cooldownMs, 'NX');
+  return result === 'OK';
 };
 // endregion - local authentication lockout
 

@@ -23,6 +23,7 @@ import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-r
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
 import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
 import { dashboardsFamily } from './registry/dashboards-configPreset-registry';
+import { formIntakesFamily } from './registry/formIntakes-configPreset-registry';
 
 export { BRANDING_FAMILY_ID } from './registry/common-configPreset-registry';
 
@@ -52,6 +53,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   csvFeedsFamily,
   jsonFeedsFamily,
   taxiiFeedsFamily,
+  formIntakesFamily,
   ruleEngineFamily,
   fintelDesignsFamily,
 ];

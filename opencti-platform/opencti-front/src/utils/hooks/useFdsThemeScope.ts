@@ -40,10 +40,6 @@ const SETTINGS = Object.keys(SETTING_TOKENS) as (keyof FdsCustomTheme)[];
 const useFdsThemeScope = (
   themeName: string | undefined,
   custom: FdsCustomTheme = {},
-  /** The user's "Pastel colours" preference: the `pastel` root class the library's
-   *  `pastel:` variant reads. On by default in OpenCTI (no breaking change for
-   *  existing users); turned off, the chips draw the standard colours every module uses. */
-  pastel = true,
 ): FdsThemeMode => {
   const mode: FdsThemeMode = isLightThemeName(themeName) ? 'light' : 'dark';
   const { background, paper, nav, primary, secondary, accent, text } = custom;
@@ -53,10 +49,6 @@ const useFdsThemeScope = (
     root.classList.toggle('dark', mode === 'dark');
     root.classList.toggle('light', mode === 'light');
   }, [mode]);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('pastel', pastel);
-  }, [pastel]);
 
   useEffect(() => {
     const root = document.documentElement;

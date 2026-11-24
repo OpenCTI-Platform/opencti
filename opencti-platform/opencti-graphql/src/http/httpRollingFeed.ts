@@ -1,13 +1,14 @@
 import * as R from 'ramda';
 import type Express from 'express';
 import nconf from 'nconf';
-import { basePath } from '../config/conf';
+import { basePath, logApp } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { isUserHasCapability, isUserInPlatformOrganization, SYSTEM_USER, TAXIIAPI } from '../utils/access';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
+import { getRequestId, isUserFacingError, SERVER_ERROR_MESSAGE } from './httpUtils';
 import { findById as findFeed } from '../modules/dataSharing/feed-domain';
 import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
@@ -29,13 +30,24 @@ const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
 type NeighborsMap = Map<string, Map<string, BasicStoreBase[]>>;
 
-const errorConverter = (e: any) => {
-  const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);
+// A platform failure gets a generic title and no details: its message and data can name internal
+// components (NIST SP 800-53 SI-11). The full error is logged with the request_id given to the client.
+// The typed errors (config/errors) are GraphQL errors: their code and data are in `extensions`.
+export const errorConverter = (e: any, res: Express.Response) => {
+  const requestId = getRequestId(res);
+  const data = e?.extensions?.data ?? {};
+  const httpStatus = data.http_status || 500;
+  if (!isUserFacingError(e)) {
+    logApp.error('CSV feed request failed', { cause: e, request_id: requestId });
+    return { title: SERVER_ERROR_MESSAGE, request_id: requestId, http_status: httpStatus };
+  }
+  const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'), R.dissoc('genre'))(data);
   return {
     title: e.message,
-    error_code: e.name,
-    description: e.data?.reason,
-    http_status: e.data?.http_status || 500,
+    request_id: requestId,
+    error_code: e.extensions?.code,
+    description: data.reason,
+    http_status: httpStatus,
     details,
   };
 };
@@ -344,7 +356,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       });
       res.send();
     } catch (e) {
-      const errorDetail = errorConverter(e);
+      const errorDetail = errorConverter(e, res);
       res.status(errorDetail.http_status).send(errorDetail);
     }
   });

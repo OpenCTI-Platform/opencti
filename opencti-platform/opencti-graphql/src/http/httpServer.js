@@ -16,7 +16,7 @@ import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/c
 import rateLimit from 'express-rate-limit';
 import createApp from './httpPlatform';
 import createApolloServer, { createSubscriptionServerOptions } from '../graphql/graphql';
-import { getSessionMiddleware } from '../database/session';
+import { getSessionMiddleware, isSessionOverMaxLifetime } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -34,6 +34,7 @@ import {
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
+  requestIdMiddleware,
 } from './httpUtils';
 import { getMaxPayloadBodySize } from './httpConfig';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
@@ -79,6 +80,17 @@ export const extractWsSessionContext = async (context) => {
     const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(wsSession?.user.id);
     sessionContext.user = { ...wsSession?.user, ...logged, origin };
+    // A subscription is authenticated by the session as well: its maximum lifetime applies.
+    // It is only checked when a subscription is requested: a subscription already open when the session reaches
+    // its maximum lifetime stays alive. This is accepted, as the next HTTP request of the front then fails and sends
+    // the user back to the login page, which closes the WebSocket. The check compares dates only, so it also works
+    // with the copy of the session this connection keeps from its first subscription request.
+    // The subscription is only refused here, the session is not ended: the activity listener ignores the actions
+    // of a subscription, so a logout published from here would never be recorded. The next HTTP request ends the
+    // session and records the logout.
+    if (isSessionOverMaxLifetime(wsSession.user)) {
+      throw ForbiddenAccess('User must be authenticated');
+    }
     sessionContext.batch = computeLoaders(sessionContext, sessionContext.user);
     return sessionContext;
   }
@@ -90,7 +102,9 @@ const createHttpServer = async () => {
   const app = express();
   // Disable the X-Powered-By header to avoid leaking framework information.
   app.disable('x-powered-by');
-  // Rate limiter must be first registered so it applies to all requests including /graphql
+  // Request id first, so every response carries it, the rate limited ones included.
+  app.use(requestIdMiddleware);
+  // Rate limiter must be registered before the other middlewares so it applies to all requests including /graphql
   // Even before session so it avoid creating session on rate limited requests.
   app.use(rateLimit(buildRateLimiterOptions()));
   app.use(await getSessionMiddleware());

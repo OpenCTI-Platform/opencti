@@ -151,14 +151,17 @@ const FilterValueInput: FunctionComponent<FilterValueInputProps> = ({
       );
     }
     if (isNumericFilter(fDefinition?.type)) {
+      // A sub-filter that does not exist yet has no value: the whole values array (objects) is only the fallback of top-level filters.
+      const numericValues = fSubKey ? (filterValues.find((f) => f.key === fDefinition?.filterKey)?.values ?? []) : computedValues;
       return withVariableSwitch(
         <BasicFilterInput
           filter={filter}
           filterKey={filterKey}
-          filterValues={toFixedValues(computedValues)}
+          filterValues={toFixedValues(numericValues)}
           helpers={helpers}
-          label={filterLabel}
+          label={fSubKey ? t_i18n(fDefinition?.label ?? fSubKey) : filterLabel}
           type="number"
+          subKey={fSubKey}
         />,
       );
     }
