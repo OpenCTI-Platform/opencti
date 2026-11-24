@@ -145,20 +145,17 @@ describe('authenticateUserFromRequest: maximum lifetime of a session', () => {
   });
 
   it('should let a login sent with the cookie of an ended session bind the user to a new session', async () => {
-    // As express-session does: the store gives the request a new empty session, with a new id
+    // As express-session does: regenerate() gives the request a new empty session, with a new id
     const newSession = () => ({
       regenerate: vi.fn((callback: (err?: unknown) => void) => callback()),
       save: vi.fn(),
     } as Record<string, any>);
-    const req: any = {
-      ...sessionRequest(overLimitLoginTime()),
-      sessionStore: {
-        generate: vi.fn((request: any) => {
-          request.sessionID = 'new-session-id';
-          request.session = newSession();
-        }),
-      },
-    };
+    const req: any = sessionRequest(overLimitLoginTime());
+    req.session.regenerate = vi.fn((callback: (err?: unknown) => void) => {
+      req.sessionID = 'new-session-id';
+      req.session = newSession();
+      callback();
+    });
     // The GraphQL context of the login request authenticates it first: the session is over its lifetime
     expect(await authenticateUserFromRequest(context, req)).toBeUndefined();
     expect(endSessionByRawId).toHaveBeenCalledWith(SESSION_ID);
@@ -169,6 +166,16 @@ describe('authenticateUserFromRequest: maximum lifetime of a session', () => {
 
     expect(req.session.user).toEqual(expect.objectContaining({ id: USER.id, session_creation: expect.any(String) }));
     expect(req.session.save).toHaveBeenCalled();
+  });
+
+  it('should remove the ended session from the request when it cannot get a new one', async () => {
+    const req: any = sessionRequest(overLimitLoginTime());
+    req.session.regenerate = vi.fn((callback: (err?: unknown) => void) => callback(new Error('Store unavailable')));
+
+    expect(await authenticateUserFromRequest(context, req)).toBeUndefined();
+
+    expect(req.session).toBeUndefined();
+    expect(publishUserAction).toHaveBeenCalledTimes(1);
   });
 
   it('should not authenticate the request when the session cannot be deleted', async () => {

@@ -10,6 +10,8 @@ describe('formatSessionMaxLifetime', () => {
   });
 
   it('should show the lifetime in the largest unit it is a whole number of', () => {
+    expect(formatSessionMaxLifetime(7 * 24 * 60 * 60 * 1000, t_i18n)).toBe('7 days');
+    expect(formatSessionMaxLifetime(36 * 60 * 60 * 1000, t_i18n)).toBe('36 hours');
     expect(formatSessionMaxLifetime(12 * 60 * 60 * 1000, t_i18n)).toBe('12 hours');
     expect(formatSessionMaxLifetime(120000, t_i18n)).toBe('2 minutes');
     expect(formatSessionMaxLifetime(90000, t_i18n)).toBe('90 seconds');
@@ -17,6 +19,7 @@ describe('formatSessionMaxLifetime', () => {
   });
 
   it('should use the singular for a lifetime of one unit', () => {
+    expect(formatSessionMaxLifetime(24 * 60 * 60 * 1000, t_i18n)).toBe('1 day');
     expect(formatSessionMaxLifetime(60 * 60 * 1000, t_i18n)).toBe('1 hour');
     expect(formatSessionMaxLifetime(60 * 1000, t_i18n)).toBe('1 minute');
     expect(formatSessionMaxLifetime(1000, t_i18n)).toBe('1 second');
