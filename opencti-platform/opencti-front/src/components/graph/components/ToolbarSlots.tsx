@@ -1,9 +1,12 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, ReactNode } from 'react';
 import GraphToolbarItem from './GraphToolbarItem';
 import GraphToolbarOptionsList from './GraphToolbarOptionsList';
-import { GroupDivider, Pinned, RenderFunction, RenderSlot } from './ToolbarParts';
+import { GroupDivider, Pinned, WideControl } from './ToolbarParts';
 import { TOOLBAR_GAP_PX } from '../utils/graphToolbarOverflow';
 import type { ToolbarAction, ToolbarSlot } from '../ToolbarShell';
+
+/** Calls the render function of a pinned slot as its own component, like `RenderFunction`, with the fold state. */
+const RenderSlot = ({ render, folded }: { render: (state: { folded: boolean }) => ReactNode; folded: boolean }) => <>{render({ folded })}</>;
 
 interface ToolbarSlotsProps<G extends string> {
   layout: readonly ToolbarSlot<G>[];
@@ -26,11 +29,7 @@ const ToolbarSlots = <G extends string>({ layout, actions, shownIds, groupLabels
   const renderAction = (action: ToolbarAction<G>) => {
     // A wide control (a select, a combobox) is drawn as is, and measured.
     if (action.render) {
-      return (
-        <div key={action.id} ref={observeWide} data-toolbar-action={action.id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <RenderFunction render={action.render} />
-        </div>
-      );
+      return <WideControl key={action.id} id={action.id} render={action.render} observe={observeWide} />;
     }
     // An action with options opens them as a menu anchored to its button.
     return (

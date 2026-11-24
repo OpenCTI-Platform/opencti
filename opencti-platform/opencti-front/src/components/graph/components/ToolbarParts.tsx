@@ -3,6 +3,15 @@ import Divider from '@mui/material/Divider';
 import { TOOLBAR_GAP_PX } from '../utils/graphToolbarOverflow';
 
 /**
+ * Data attributes the toolbar measures (see `useToolbarRoom`).
+ * The parts below write them; the selectors read them. Keep both here.
+ */
+export const PINNED_SELECTOR = ':scope > [data-toolbar-pinned]:not([data-toolbar-creation])';
+export const CREATION_SELECTOR = ':scope > [data-toolbar-creation]';
+export const WIDE_CONTROL_SELECTOR = '[data-toolbar-action]';
+export const WIDE_CONTROL_ID_ATTRIBUTE = 'data-toolbar-action';
+
+/**
  * A part of the toolbar row that never moves to "More actions".
  * The toolbar measures pinned parts to know how much room is left for the actions.
  * `creation` marks the parts that can fold into one button (the graph creation tools).
@@ -26,7 +35,15 @@ export const Pinned = ({ children, style, label, creation }: { children: ReactNo
  */
 export const RenderFunction = ({ render }: { render: () => ReactNode }) => <>{render()}</>;
 
-/** Same as `RenderFunction`, for a pinned slot that needs to know whether the creation tools are folded. */
-export const RenderSlot = ({ render, folded }: { render: (state: { folded: boolean }) => ReactNode; folded: boolean }) => <>{render({ folded })}</>;
+/** A wide control (a select, a combobox) in the row. Measured by its id, and watched for size changes through `observe`. */
+export const WideControl = ({ id, render, observe }: {
+  id: string;
+  render: () => ReactNode;
+  observe: (element: HTMLDivElement | null) => (() => void) | undefined;
+}) => (
+  <div ref={observe} data-toolbar-action={id} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+    <RenderFunction render={render} />
+  </div>
+);
 
 export const GroupDivider = () => <Divider orientation="vertical" aria-hidden sx={{ height: 24, marginX: 1, flexShrink: 0 }} />;

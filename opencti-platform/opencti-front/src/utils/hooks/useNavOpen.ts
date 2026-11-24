@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
+import { readNavOpen } from '@components/nav/navBarConstants';
 import { MESSAGING$ } from '../../relay/environment';
-
-const readNavOpen = () => localStorage.getItem('navOpen') === 'true';
 
 /** Whether the left navigation is open. Updates when the user opens or closes it. */
 const useNavOpen = () => {

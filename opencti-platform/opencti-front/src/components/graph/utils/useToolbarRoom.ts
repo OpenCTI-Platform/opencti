@@ -1,6 +1,7 @@
 import { MutableRefObject, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import useResizeObserver from '../../../utils/hooks/useResizeObserver';
 import { FOLDED_CREATION_WIDTH, shouldFoldCreationTools, TOOLBAR_GAP_PX } from './graphToolbarOverflow';
+import { CREATION_SELECTOR, PINNED_SELECTOR, WIDE_CONTROL_ID_ATTRIBUTE, WIDE_CONTROL_SELECTOR } from '../components/ToolbarParts';
 
 interface ToolbarRoomOptions {
   /** Horizontal padding of the row, both sides added. */
@@ -19,9 +20,10 @@ interface ToolbarRoomOptions {
  * wide control (a select, a combobox). A wide control keeps its last width while it sits
  * in "More actions", so the plan knows when it fits back in the row.
  *
- * Measuring reads the DOM before paint (layout effect), so the first paint already shows
- * the right actions. The row elements are found through their data attributes:
- * `data-toolbar-pinned`, `data-toolbar-creation` (see `Pinned`) and `data-toolbar-action`.
+ * Widths of the pinned parts and wide controls are read before paint (layout effect).
+ * The row width comes from a ResizeObserver, so it arrives after the first render:
+ * until then the room is unknown and every action that is not rare is drawn.
+ * The row elements are found through the selectors of `ToolbarParts`.
  */
 const useToolbarRoom = (
   rowRef: MutableRefObject<HTMLDivElement | null>,
@@ -58,11 +60,11 @@ const useToolbarRoom = (
     const widthOf = (selector: string) => Array.from(row.querySelectorAll<HTMLElement>(selector))
       .reduce((sum, element) => sum + element.offsetWidth + TOOLBAR_GAP_PX, 0);
 
-    const fixed = widthOf(':scope > [data-toolbar-pinned]:not([data-toolbar-creation])');
+    const fixed = widthOf(PINNED_SELECTOR);
     if (Math.abs(fixed - fixedWidth) > 1) setFixedWidth(fixed);
 
     // Creation tools are measured only while unfolded. Once folded, their last width decides when they unfold.
-    const foldable = widthOf(':scope > [data-toolbar-creation]');
+    const foldable = widthOf(CREATION_SELECTOR);
     if (!folded && Math.abs(foldable - foldableWidth) > 1) setFoldableWidth(foldable);
 
     if (foldNow !== folded) {
@@ -71,8 +73,8 @@ const useToolbarRoom = (
     }
 
     const changed: Record<string, number> = {};
-    row.querySelectorAll<HTMLElement>('[data-toolbar-action]').forEach((element) => {
-      const id = element.getAttribute('data-toolbar-action') ?? '';
+    row.querySelectorAll<HTMLElement>(WIDE_CONTROL_SELECTOR).forEach((element) => {
+      const id = element.getAttribute(WIDE_CONTROL_ID_ATTRIBUTE) ?? '';
       const width = element.offsetWidth + TOOLBAR_GAP_PX;
       if (Math.abs(width - (wideWidths[id] ?? -Infinity)) > 1) changed[id] = width;
     });

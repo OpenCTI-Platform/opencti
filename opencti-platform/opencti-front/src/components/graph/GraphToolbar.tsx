@@ -16,6 +16,7 @@ import GraphCounters from './components/GraphCounters';
 import useGraphToolbarActions, { GRAPH_TOOLBAR_GROUPS, type GraphToolbarAction, type GraphToolbarGroup, useGraphToolbarGroupLabels } from './components/useGraphToolbarActions';
 import ToolbarShell, { type ToolbarSlot } from './ToolbarShell';
 import { GroupDivider } from './components/ToolbarParts';
+import { TOOLBAR_GAP_PX } from './utils/graphToolbarOverflow';
 import { useFormatter } from '../i18n';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
@@ -25,7 +26,6 @@ export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpa
   warning?: React.ReactNode;
 };
 
-const GAP_PX = 4;
 const SEARCH_WIDTH = 220;
 
 /**
@@ -98,7 +98,7 @@ const GraphToolbar = ({
     host.setAttribute('data-graph-creation-tools', '');
     host.style.display = 'flex';
     host.style.alignItems = 'center';
-    host.style.gap = `${GAP_PX}px`;
+    host.style.gap = `${TOOLBAR_GAP_PX}px`;
     return host;
   }, []);
   const attachCreationHost = useCallback((slot: HTMLDivElement | null) => {
