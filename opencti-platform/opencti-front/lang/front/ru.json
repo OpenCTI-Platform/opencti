@@ -7413,5 +7413,10 @@
   "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "каждое правило добавляет свой вес к оценке сущностей, которые оно приносит; увеличьте его, чтобы добавлять баллы, когда сущность также соответствует условию",
   "Remove boost": "Удалить бонус",
   "Scoring": "Оценка",
-  "when the entity also meets these conditions": "когда сущность также соответствует этим условиям"
+  "when the entity also meets these conditions": "когда сущность также соответствует этим условиям",
+  "{points} points when {conditions}": "{points} баллов, когда {conditions}",
+  "a path condition": "условие пути",
+  "linked to a subject group": "связано с группой субъектов",
+  "Save boost": "Сохранить бонус",
+  "Weighting changes from {from} to {to} for entities that also meet these conditions.": "Вес меняется с {from} на {to} для сущностей, которые также соответствуют этим условиям."
 }

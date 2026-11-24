@@ -33,7 +33,7 @@ import IrDryRunPanel from './IrDryRunPanel';
 import { boostRule, isWeightRule, weightRule } from './irPresetDraft';
 import IrCriterionSentence from './IrCriterionSentence';
 import IrConditionSentence from './IrConditionSentence';
-import type { IrConfigView } from './irSentence';
+import { countFilters, type IrConfigView } from './irSentence';
 import type { IntelligenceRequirementConfigurationFormAddMutation } from './__generated__/IntelligenceRequirementConfigurationFormAddMutation.graphql';
 import type { IntelligenceRequirementConfigurationFormUpdateMutation } from './__generated__/IntelligenceRequirementConfigurationFormUpdateMutation.graphql';
 
@@ -168,6 +168,33 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
   const setGroup = (id: string, patch: Partial<IrGroupDraft>) => set({ groups: draft.groups.map((g) => (g.id === id ? { ...g, ...patch } : g)) });
   const setCriterion = (id: string, patch: Partial<IrCriterionDraft>) => set({ criteria: draft.criteria.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
   const setRule = (id: string, patch: Partial<IrRuleDraft>) => set({ rules: draft.rules.map((r) => (r.id === id ? { ...r, ...patch } : r)) });
+  // Boosts of the preset scoring are written in a draft of their own and only reach the requirement when saved
+  const [boostEdits, setBoostEdits] = useState<Record<string, IrRuleDraft>>({});
+  const [boostErrors, setBoostErrors] = useState<Record<string, string>>({});
+  const without = <T,>(record: Record<string, T>, id: string) => Object.fromEntries(Object.entries(record).filter(([key]) => key !== id));
+  const openBoost = (boost: IrRuleDraft) => setBoostEdits((edits) => ({ ...edits, [boost.id]: boost }));
+  const closeBoost = (id: string) => {
+    setBoostEdits((edits) => without(edits, id));
+    setBoostErrors((errors) => without(errors, id));
+  };
+  const editBoost = (id: string, patch: Partial<IrRuleDraft>) => setBoostEdits((edits) => ({ ...edits, [id]: { ...edits[id], ...patch } }));
+  const hasCondition = (boost: IrRuleDraft) => countFilters(boost.filters) > 0 || !!boost.link || !!boost.path_condition;
+  const conditionSummary = (boost: IrRuleDraft) => [
+    ...(countFilters(boost.filters) > 0 ? [t_i18n('{count} filters', { values: { count: countFilters(boost.filters) } })] : []),
+    ...(boost.link ? [t_i18n('linked to a subject group')] : []),
+    ...(boost.path_condition ? [t_i18n('a path condition')] : []),
+  ].join(', ');
+  const saveBoost = (id: string) => {
+    const boost = boostEdits[id];
+    if (!boost) return;
+    // without a condition a boost would only be more weight: the weight field is for that
+    if (!hasCondition(boost)) {
+      setBoostErrors((errors) => ({ ...errors, [id]: t_i18n('Add a condition') }));
+      return;
+    }
+    set({ rules: draft.rules.some((r) => r.id === id) ? draft.rules.map((r) => (r.id === id ? boost : r)) : [...draft.rules, boost] });
+    closeBoost(id);
+  };
   const setCondition = (criterion: IrCriterionDraft, id: string, patch: Partial<IrConditionDraft>) => setCriterion(criterion.id, {
     conditions: criterion.conditions.map((k) => (k.id === id ? { ...k, ...patch } : k)),
   });
@@ -472,50 +499,79 @@ const IntelligenceRequirementConfigurationForm = ({ initialDraft, irId, view = '
           >
             {draft.criteria.map((criterion) => {
               const weight = draft.rules.find((r) => isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
-              const boosts = draft.rules.filter((r) => !isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
+              const weightPoints = weight?.points ?? 0;
+              const saved = draft.rules.filter((r) => !isWeightRule(r) && r.applies_to_criterion_id === criterion.id);
+              // boosts being written, not saved yet: the dry run and the score ignore them until the user saves
+              const unsaved = Object.values(boostEdits).filter((b) => b.applies_to_criterion_id === criterion.id && !saved.some((r) => r.id === b.id));
               const setWeight = (points: number) => (weight
                 ? setRule(weight.id, { points })
                 : set({ rules: [...draft.rules, weightRule(criterion, points)] }));
+              const renderEditor = (boost: IrRuleDraft) => (
+                <Box key={boost.id} sx={{ mt: 2, pl: 2, borderLeft: '2px solid', borderColor: 'primary.main' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
+                    <Box sx={{ width: 140 }}>
+                      <Input label={t_i18n('Boost (points)')} type="number" value={String(boost.points)} onChange={(e) => editBoost(boost.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
+                    </Box>
+                    <Box sx={{ flex: 1, pb: 1 }}>
+                      <Text as="span" variant="content-caption">{t_i18n('when the entity also meets these conditions')}</Text>
+                    </Box>
+                  </Box>
+                  {/* the conditions of the boost, lower in the form */}
+                  <Box sx={{ mt: 2 }}>
+                    <IrFilterBuilder value={boost.filters} onChange={(filters) => editBoost(boost.id, { filters })} />
+                    <GroupLinkFields
+                      value={boost.link}
+                      onChange={(link) => editBoost(boost.id, { link })}
+                      relationshipOptions={relationshipOptions}
+                      groupOptions={entityGroupOptions}
+                    />
+                    <PathConditionFields
+                      value={boost.path_condition}
+                      onChange={(path_condition) => editBoost(boost.id, { path_condition })}
+                      relationshipOptions={relationshipOptions}
+                      directionOptions={directionOptions}
+                      groupOptions={entityGroupOptions}
+                    />
+                  </Box>
+                  {boostErrors[boost.id] && (
+                    <Text as="p" variant="content-caption" style={{ marginTop: 8 }}>
+                      <Box component="span" sx={{ color: 'error.main' }}>{boostErrors[boost.id]}</Box>
+                    </Text>
+                  )}
+                  <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                    <Button size="small" onClick={() => saveBoost(boost.id)}>{t_i18n('Save boost')}</Button>
+                    <Button variant="secondary" size="small" onClick={() => closeBoost(boost.id)}>{t_i18n('Cancel')}</Button>
+                  </Box>
+                </Box>
+              );
               return (
                 <Box key={criterion.id} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 2, mb: 1.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
                     <Box sx={{ flex: 1, pb: 1 }}><Text as="span" variant="content-compact-bold">{criterion.name}</Text></Box>
                     <Box sx={{ width: 140 }}>
-                      <Input label={t_i18n('Weight')} type="number" value={String(weight?.points ?? 0)} onChange={(e) => setWeight(Number.parseInt(e.target.value || '0', 10))} />
+                      <Input label={t_i18n('Weight')} type="number" value={String(weightPoints)} onChange={(e) => setWeight(Number.parseInt(e.target.value || '0', 10))} />
                     </Box>
                   </Box>
-                  {boosts.map((boost) => (
-                    <Box key={boost.id} sx={{ mt: 2, pl: 2, borderLeft: '2px solid', borderColor: 'primary.main' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                        <Box sx={{ width: 140 }}>
-                          <Input label={t_i18n('Boost (points)')} type="number" value={String(boost.points)} onChange={(e) => setRule(boost.id, { points: Number.parseInt(e.target.value || '0', 10) })} />
-                        </Box>
-                        <Box sx={{ flex: 1, pb: 1 }}>
-                          <Text as="span" variant="content-caption">{t_i18n('when the entity also meets these conditions')}</Text>
-                        </Box>
-                        <IconButton aria-label={t_i18n('Remove boost')} onClick={() => set({ rules: draft.rules.filter((r) => r.id !== boost.id) })}><DeleteOutlined fontSize="small" /></IconButton>
+                  {saved.map((boost) => (boostEdits[boost.id] ? renderEditor(boostEdits[boost.id]) : (
+                    // a saved boost reads back: its points, its conditions, and the weighting it gives
+                    <Box key={boost.id} sx={{ mt: 2, pl: 2, borderLeft: '2px solid', borderColor: 'primary.main', display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Text as="div" variant="content-compact-bold">
+                          {t_i18n('{points} points when {conditions}', { values: { points: `${boost.points >= 0 ? '+' : ''}${boost.points}`, conditions: conditionSummary(boost) } })}
+                        </Text>
+                        <Text as="div" variant="content-caption">
+                          <Box component="span" sx={{ color: 'text.secondary' }}>
+                            {t_i18n('Weighting changes from {from} to {to} for entities that also meet these conditions.', { values: { from: weightPoints, to: weightPoints + boost.points } })}
+                          </Box>
+                        </Text>
                       </Box>
-                      {/* the conditions of the boost, lower in the form */}
-                      <Box sx={{ mt: 2 }}>
-                        <IrFilterBuilder value={boost.filters} onChange={(filters) => setRule(boost.id, { filters })} />
-                        <GroupLinkFields
-                          value={boost.link}
-                          onChange={(link) => setRule(boost.id, { link })}
-                          relationshipOptions={relationshipOptions}
-                          groupOptions={entityGroupOptions}
-                        />
-                        <PathConditionFields
-                          value={boost.path_condition}
-                          onChange={(path_condition) => setRule(boost.id, { path_condition })}
-                          relationshipOptions={relationshipOptions}
-                          directionOptions={directionOptions}
-                          groupOptions={entityGroupOptions}
-                        />
-                      </Box>
+                      <Button variant="tertiary" size="small" onClick={() => openBoost(boost)}>{t_i18n('Edit')}</Button>
+                      <IconButton aria-label={t_i18n('Remove boost')} onClick={() => set({ rules: draft.rules.filter((r) => r.id !== boost.id) })}><DeleteOutlined fontSize="small" /></IconButton>
                     </Box>
-                  ))}
+                  )))}
+                  {unsaved.map(renderEditor)}
                   <Box sx={{ mt: 1.5 }}>
-                    <Button variant="tertiary" size="small" startIcon={<Icon name="plus" size={16} />} onClick={() => set({ rules: [...draft.rules, boostRule(criterion)] })}>
+                    <Button variant="tertiary" size="small" startIcon={<Icon name="plus" size={16} />} onClick={() => openBoost(boostRule(criterion))}>
                       {t_i18n('Boost score weighting')}
                     </Button>
                   </Box>

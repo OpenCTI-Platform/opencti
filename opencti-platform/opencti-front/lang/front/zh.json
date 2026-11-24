@@ -7413,5 +7413,10 @@
   "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "每条规则将其权重加到其引入实体的分数上；提高权重可在实体还满足某条件时加分",
   "Remove boost": "删除加分",
   "Scoring": "评分",
-  "when the entity also meets these conditions": "当实体还满足这些条件时"
+  "when the entity also meets these conditions": "当实体还满足这些条件时",
+  "{points} points when {conditions}": "{conditions} 时 {points} 分",
+  "a path condition": "路径条件",
+  "linked to a subject group": "关联到主体组",
+  "Save boost": "保存加分",
+  "Weighting changes from {from} to {to} for entities that also meet these conditions.": "对同时满足这些条件的实体，权重从 {from} 变为 {to}。"
 }

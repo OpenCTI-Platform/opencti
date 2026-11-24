@@ -7413,5 +7413,10 @@
   "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "各ルールは取り込むエンティティのスコアに重みを加えます。エンティティが条件も満たす場合にポイントを加えるにはブーストします",
   "Remove boost": "ブーストを削除",
   "Scoring": "スコアリング",
-  "when the entity also meets these conditions": "エンティティがこれらの条件も満たす場合"
+  "when the entity also meets these conditions": "エンティティがこれらの条件も満たす場合",
+  "{points} points when {conditions}": "{conditions} の場合 {points} ポイント",
+  "a path condition": "パス条件",
+  "linked to a subject group": "サブジェクトグループにリンク",
+  "Save boost": "ブーストを保存",
+  "Weighting changes from {from} to {to} for entities that also meet these conditions.": "これらの条件も満たすエンティティの重みは {from} から {to} に変わります。"
 }

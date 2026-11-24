@@ -7413,5 +7413,10 @@
   "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "각 규칙은 가져오는 엔터티의 점수에 가중치를 더합니다. 엔터티가 조건도 충족할 때 점수를 더하려면 부스트하세요",
   "Remove boost": "부스트 제거",
   "Scoring": "점수",
-  "when the entity also meets these conditions": "엔터티가 이 조건도 충족할 때"
+  "when the entity also meets these conditions": "엔터티가 이 조건도 충족할 때",
+  "{points} points when {conditions}": "{conditions}일 때 {points}점",
+  "a path condition": "경로 조건",
+  "linked to a subject group": "주제 그룹에 연결됨",
+  "Save boost": "부스트 저장",
+  "Weighting changes from {from} to {to} for entities that also meet these conditions.": "이 조건도 충족하는 엔터티의 가중치가 {from}에서 {to}(으)로 바뀝니다."
 }

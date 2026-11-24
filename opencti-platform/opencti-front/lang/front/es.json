@@ -7413,5 +7413,10 @@
   "each rule adds its weight to the score of the entities it brings in; boost it to add points when an entity also meets a condition": "cada regla suma su peso a la puntuación de las entidades que aporta; auméntelo para sumar puntos cuando una entidad además cumple una condición",
   "Remove boost": "Quitar bonificación",
   "Scoring": "Puntuación",
-  "when the entity also meets these conditions": "cuando la entidad además cumple estas condiciones"
+  "when the entity also meets these conditions": "cuando la entidad además cumple estas condiciones",
+  "{points} points when {conditions}": "{points} puntos cuando {conditions}",
+  "a path condition": "una condición de ruta",
+  "linked to a subject group": "vinculado a un grupo de sujetos",
+  "Save boost": "Guardar bonificación",
+  "Weighting changes from {from} to {to} for entities that also meet these conditions.": "La ponderación cambia de {from} a {to} para las entidades que además cumplen estas condiciones."
 }
