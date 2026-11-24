@@ -208,7 +208,7 @@ const IrRuleRow = ({ rule, flags, onChange, onRemove, error, showQuery = true }:
       {canNarrow && !showNarrowing && (
         <Box sx={{ mt: 0.5 }}>
           <FdsButton type="button" priority="tertiary" size="sm" startIcon={<Icon name="plus" size={16} />} onClick={() => setNarrowing(true)}>
-            {t_i18n('Narrow with filters')}
+            {t_i18n('Add filter')}
           </FdsButton>
         </Box>
       )}
