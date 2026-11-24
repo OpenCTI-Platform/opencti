@@ -18,6 +18,9 @@ export interface ToolbarMetrics {
   divider: number;
 }
 
+/** Gap between two controls of the toolbar row: 0.5 theme spacing unit, 4 px with the 8 px theme spacing. */
+export const TOOLBAR_GAP_UNITS = 0.5;
+export const TOOLBAR_GAP_PX = 4;
 /** A medium design-system icon button (36 px) and the toolbar gap after it. */
 export const TOOLBAR_ACTION_WIDTH = 40;
 /** A vertical divider with its margins and the toolbar gap after it. */

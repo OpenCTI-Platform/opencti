@@ -21,7 +21,8 @@ import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
 import type { GraphToolbarAction } from './useGraphToolbarActions';
-import { RenderFunction, type ToolbarAction } from '../ToolbarShell';
+import type { ToolbarAction } from '../ToolbarShell';
+import { RenderFunction } from './ToolbarParts';
 import GraphToolbarOptionsList, { checkable } from './GraphToolbarOptionsList';
 
 /** The toolbar glyphs, brought down to the size of a menu item. */

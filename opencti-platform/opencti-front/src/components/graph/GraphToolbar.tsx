@@ -14,7 +14,8 @@ import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './compone
 import GraphToolbarItem from './components/GraphToolbarItem';
 import GraphCounters from './components/GraphCounters';
 import useGraphToolbarActions, { GRAPH_TOOLBAR_GROUPS, type GraphToolbarAction, type GraphToolbarGroup, useGraphToolbarGroupLabels } from './components/useGraphToolbarActions';
-import ToolbarShell, { GroupDivider, type ToolbarSlot } from './ToolbarShell';
+import ToolbarShell, { type ToolbarSlot } from './ToolbarShell';
+import { GroupDivider } from './components/ToolbarParts';
 import { useFormatter } from '../i18n';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
