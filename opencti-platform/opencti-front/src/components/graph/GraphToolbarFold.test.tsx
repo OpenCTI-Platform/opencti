@@ -34,7 +34,7 @@ const view: GraphViewActions = {
 
 describe('GraphToolbar on a narrow graph', () => {
   beforeEach(() => {
-    // A spy, restored after each test: deleting the getter would leave the next test files of the worker without it.
+    // A spy, not a deleted getter: the next test files of the worker need jsdom's.
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function offsetWidth(this: HTMLElement) {
       return this.hasAttribute('data-toolbar-pinned') ? 120 : 0;
     });

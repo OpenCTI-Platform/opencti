@@ -4,7 +4,6 @@ import { act, screen, within } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import ToolbarShell, { type ToolbarAction, type ToolbarSlot } from './ToolbarShell';
 
-// The row is as wide as each test sets it.
 const row = vi.hoisted(() => ({ width: 2000 }));
 vi.mock('../../utils/hooks/useResizeObserver', () => ({ default: () => ({ width: row.width, height: 54 }) }));
 // Width drawn for each wide control, by action id; every other element measures 0.
@@ -50,7 +49,7 @@ const renderShell = (actions: ToolbarAction<Group>[], layout: ToolbarSlot<Group>
 
 describe('ToolbarShell', () => {
   beforeEach(() => {
-    // A spy, restored after each test: deleting the getter would leave the next test files of the worker without it.
+    // A spy, not a deleted getter: the next test files of the worker need jsdom's.
     vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockImplementation(function offsetWidth(this: HTMLElement) {
       const id = this.getAttribute('data-toolbar-action');
       return id ? (widths[id] ?? 0) : 0;
@@ -105,13 +104,12 @@ describe('ToolbarShell', () => {
   it('keeps the width measured in the row while the control waits in "More actions"', () => {
     const render = vi.fn(() => <button type="button">Kill chain</button>);
     const { rerender, element } = renderShell([posture(render)]);
-    // Measured at 300 px in a wide row; then the declared estimate is no longer used.
     widths.posture = 330;
     rerender(element);
     row.width = 200;
     rerender(element);
     expect(screen.queryByRole('button', { name: 'Kill chain' })).toBeNull();
-    // The 300 px estimate and its divider would fit in this row; the 330 px measured do not.
+    // The 300 px estimate would fit here; the 330 px measured do not.
     row.width = 360;
     rerender(element);
     expect(screen.queryByRole('button', { name: 'Kill chain' })).toBeNull();
@@ -215,11 +213,10 @@ describe('ToolbarShell', () => {
 
       disconnect() {}
     });
-    // 400 px less the padding holds the 300 px control and its divider, not 380 px.
     row.width = 400;
     renderShell([posture()]);
     expect(screen.getByRole('button', { name: 'Kill chain' })).toBeInTheDocument();
-    // The control grows through its own state (a chip added): the toolbar is not rendered again by its parent.
+    // The control grows on its own: only its observer can tell the toolbar.
     widths.posture = 380;
     const wrapper = document.querySelector('[data-toolbar-action="posture"]');
     act(() => {

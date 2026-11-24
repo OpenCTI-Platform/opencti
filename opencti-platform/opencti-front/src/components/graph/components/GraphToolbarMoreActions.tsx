@@ -70,11 +70,9 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             onKeyDown={(event) => {
-              // Escape closes the menu.
               if (event.key === 'Escape') return;
               event.stopPropagation();
-              // Tab and Shift+Tab move between the fields of the control, wrapping around: the menu keeps the focus,
-              // as any menu does, without trapping it on one field.
+              // Tab stays in the menu, as in any menu, moving between the fields of the control.
               if (event.key === 'Tab') moveFocusWithin(event.currentTarget, event.shiftKey ? -1 : 1, event);
             }}
           >
@@ -114,7 +112,6 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
 
 interface GraphToolbarMoreActionsProps<G extends string> {
   actions: readonly ToolbarAction<G>[];
-  /** Order of the groups, as in the toolbar. */
   groups: readonly G[];
   groupLabels: Record<G, string>;
 }

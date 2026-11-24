@@ -41,12 +41,10 @@ const TimeRangeTooltip = ({
 
 export interface GraphToolbarTimeRangeProps {
   timeRange: GraphTimeRange;
-  /** Undefined: the whole range. */
   selectedInterval?: [Date, Date];
   onChange: (interval: [Date, Date]) => void;
 }
 
-/** The time range panel docked under a toolbar: how many dated links fall in each slice, and the range to keep. */
 const GraphToolbarTimeRange = ({ timeRange, selectedInterval, onChange }: GraphToolbarTimeRangeProps) => {
   const theme = useTheme<Theme>();
 

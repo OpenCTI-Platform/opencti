@@ -1,6 +1,5 @@
 import { type FocusEvent, type KeyboardEvent, type MutableRefObject, useEffect, useRef } from 'react';
 
-// A select, native or a combobox trigger, is a control of the toolbar too: the wide controls hold some.
 const CONTROL_SELECTOR = 'button, input, select, [role="button"], [role="combobox"]';
 
 /** The controls of a toolbar a reader can reach, in reading order: enabled and drawn. */

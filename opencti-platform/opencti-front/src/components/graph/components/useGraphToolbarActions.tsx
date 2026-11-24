@@ -61,7 +61,6 @@ export interface GraphToolbarOption {
   selected?: boolean;
 }
 
-/** An action of the graph toolbar, or of its context menu and "More actions". */
 export type GraphToolbarAction = ToolbarAction<GraphToolbarGroup>;
 
 const ICON = { fontSize: 'medium' } as const;

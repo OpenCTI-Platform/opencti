@@ -17,7 +17,6 @@ import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraf
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { SURFACE_LAYER, layerInputVars } from '../../utils/fdsLayer';
 
-/** An action of a docked toolbar: a button, a toggle, a list, or a wide control drawn by the view. */
 export interface ToolbarAction<G extends string = string> extends ToolbarOverflowCandidate {
   group: G;
   /** Translated, sentence case; the same whatever the state of a toggle. */
@@ -37,9 +36,9 @@ export interface ToolbarAction<G extends string = string> extends ToolbarOverflo
     multiple?: boolean;
     onSelect: (key: string) => void;
   };
-  /** A wide control drawn instead of an icon button (a select, a combobox). Measured; `width` is its estimate until then. */
+  /** A wide control (a select, a combobox) drawn instead of an icon. Measured; `width` is its estimate until then. */
   render?: () => ReactNode;
-  /** Content of the "More actions" submenu that stands for this action when it has no room. */
+  /** What "More actions" shows for this control when the row has no room for it. */
   submenu?: () => ReactNode;
 }
 
@@ -48,7 +47,6 @@ export type ToolbarSlot<G extends string> =
   | {
     kind: 'pinned';
     key: string;
-    /** Names the slot as a group for assistive technologies. */
     label?: string | ((state: { folded: boolean }) => string | undefined);
     style?: CSSProperties;
     /** Folds with the other foldable slots when the row cannot hold them (the graph's creation tools). */
@@ -57,35 +55,26 @@ export type ToolbarSlot<G extends string> =
   };
 
 export interface ToolbarShellProps<G extends string> {
-  /** Accessible name of the row, e.g. 'Graph toolbar'. */
   label: string;
   /** Left to right. A group slot draws a divider before it unless nothing is drawn before it. */
   layout: readonly ToolbarSlot<G>[];
   actions: readonly ToolbarAction<G>[];
-  /** Order of the groups in "More actions", and their headings. */
   groups: readonly G[];
   groupLabels: Record<G, string>;
-  /** Kept out of the row whatever the room, listed in "More actions". */
   menuOnly?: readonly ToolbarAction<G>[];
-  /** Whether an action without room goes to "More actions"; defaults to true. */
   listInMoreActions?: (action: ToolbarAction<G>) => boolean;
-  /** "More actions" takes the free space on its left (no pinned slot does). */
   pushMoreActionsRight?: boolean;
   height: number;
   progress?: boolean;
   fullscreen?: boolean;
   paperRef?: Ref<HTMLDivElement>;
-  /** Spread on the surface, e.g. `{ 'data-graph-toolbar': '' }`. */
   rootAttributes?: Record<`data-${string}`, string>;
-  /** Under the row, inside the surface (the graph's time-range panel). */
   below?: ReactNode;
   /** After the row, outside its keyboard path (the folded creation tools' popover). */
   renderAfterRow?: (state: { folded: boolean }) => ReactNode;
-  /** Called when the foldable slots fold or unfold. */
   onFoldChange?: (folded: boolean) => void;
 }
 
-/** Gap between two controls of the toolbar, in theme spacing units and in pixels. */
 const GAP_UNITS = 0.5;
 const GAP_PX = 4;
 const ROW_HEIGHT = 54;
@@ -106,22 +95,14 @@ export const Pinned = ({ children, style, label, creation }: { children: ReactNo
   </div>
 );
 
-/**
- * Calls a render function as a component of its own: the hooks it calls belong to it, so the
- * control can move between the row and "More actions" without changing the hooks of its host.
- */
+// A component of its own, so the hooks of a render function survive a move between the row and "More actions".
 export const RenderFunction = ({ render }: { render: () => ReactNode }) => <>{render()}</>;
 
 const RenderSlot = ({ render, folded }: { render: (state: { folded: boolean }) => ReactNode; folded: boolean }) => <>{render({ folded })}</>;
 
 export const GroupDivider = () => <Divider orientation="vertical" aria-hidden sx={{ height: 24, marginX: 1, flexShrink: 0 }} />;
 
-/**
- * The surface docked under a view, holding its toolbar: the parts the view pins, then its actions
- * grouped by intent, and a "More actions" menu for the rare actions and those the row has no room
- * for. Wide controls are measured; the actions that do not fit leave from the least important.
- * It is one tab stop; the arrow keys move between its controls.
- */
+/** The toolbar docked under a view, shared by the graph and the matrix: the actions without room go to "More actions". */
 const ToolbarShell = <G extends string>({
   label,
   layout,
@@ -161,8 +142,7 @@ const ToolbarShell = <G extends string>({
   const [folded, setFolded] = useState(false);
   // Width of each wide control, measured while in the row; kept while it waits in "More actions".
   const [wideWidths, setWideWidths] = useState<Record<string, number>>({});
-  // A wide control can grow through its own state (a chip added) without the toolbar rendering again:
-  // each one is observed, and a change of size renders the toolbar, whose layout effect measures it.
+  // A wide control can grow on its own (a chip added): observed, so the row is planned again.
   const [, setResized] = useState(0);
   const wideObserver = useMemo(
     () => (typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => setResized((count) => count + 1))),
