@@ -205,14 +205,27 @@ For a detailed list of exposed metrics, please refer to the [Telemetry](../deplo
 |:------------------------------------|:---------------------------------|:------------------------|:-------------------------------------------------------------------------------------------------------------|
 | xtm:openaev_url                     | XTM__OPENAEV_URL                 |                         | OpenAEV URL                                                                                                  |
 | xtm:openaev_api_url                 | XTM__OPENAEV_API_URL             |                         | If sets, overrides the API base URL used for the OpenAEV integration                                         |
-| xtm:openaev_token                   | XTM__OPENAEV_TOKEN               |                         | OpenAEV token                                                                                                |
 | xtm:openaev_disable_display         | XTM__OPENAEV_DISABLE_DISPLAY     | false                   | Disable OpenAEV posture in the UI                                                                            |
+| xtm:openaev_token                   | XTM__OPENAEV_TOKEN               |                         | Deprecated, no longer read: the OpenAEV lookups are signed per user. Kept declared for existing deployments   |
+| xtm:openaev_tenant_id               | XTM__OPENAEV_TENANT_ID           |                         | OpenAEV tenant the counterpart lookups target. Empty: OpenAEV's default tenant (single-tenant OpenAEV)       |
 | xtm:opencrq_url                     | XTM__OPENCRQ_URL                 |                         | OpenCRQ URL. When set, the OpenCRQ entry of the product switcher opens this instance instead of filigran.io  |
+| xtm:opencrq_api_url                 | XTM__OPENCRQ_API_URL             |                         | If set, overrides the tRPC base URL used for the OpenCRQ counterpart lookups (default: `{opencrq_url}/trpc`)  |
+| xtm:opencrq_token                   | XTM__OPENCRQ_TOKEN               |                         | OpenCRQ service-account token for the counterpart lookups. Facts are read as the user only through XTM One |
 | xtm:opengrc_url                     | XTM__OPENGRC_URL                 |                         | Deprecated: former name of `XTM__OPENCRQ_URL`, read only when `XTM__OPENCRQ_URL` is not set                  |
 | xtm:opengrc_token                   | XTM__OPENGRC_TOKEN               |                         | Deprecated: OpenGRC is the former name of OpenCRQ                                                            |
 | xtm:xtmhub_url                      | XTM__XTMHUB_URL                  | https://hub.filigran.io | XTM Hub URL. If set to an empty string, integration of XTM Hub features into OpenCTI will be removed from UI |
 | xtm:xtm_one_url                     | XTM__XTM_ONE_URL                 | https://common.xtm1.filigran.io | XTM One URL, as reachable from OpenCTI (an internal address such as `http://xtm-one:4000` in Docker works) |
 | xtm:xtm_one_token                   | XTM__XTM_ONE_TOKEN               |                         | XTM One registration token. With the URL, the platform registers with XTM One every 5 minutes                |
+
+!!! note "The XTM emblem: counterparts in the other products (feature flag `XTM_COUNTERPARTS`)"
+
+    Behind the dedicated feature flag `XTM_COUNTERPARTS`, off by default (add it to `app:enabled_dev_features`), the header of an object shows one XTM emblem: purple when XTM One, OpenAEV or OpenCRQ holds the object, grey otherwise. Its click opens a surface with one section per product (found, not found, unavailable, and not connected for the users who can configure the platform) and a button to open the object there. While the flag is off, OpenCTI sends no counterpart call to any product. Each product is optional and backward compatible: a product version without the counterpart lookup answers 404 and is simply not listed.
+
+    | Product | Route OpenCTI calls | Minimum version |
+    |:--------|:--------------------|:----------------|
+    | XTM One | `POST /api/v1/organization-context/assets/lookup` | the first release serving that route |
+    | OpenAEV | `POST /api/tenants/{tenant}/xtm/objects/{kind}`, behind OpenAEV's own counterparts feature flag | the first release serving that route with its flag on |
+    | OpenCRQ | the `xtm` tRPC lookup, behind OpenCRQ's own counterparts feature flag | the first release serving that lookup with its flag on |
 
 !!! note "XTM One reached on an internal URL"
 
