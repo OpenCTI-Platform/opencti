@@ -120,20 +120,28 @@ const startLeasesRenewal = () => {
   }
 };
 
-// Returns the id of the registered connection, or undefined when the session is being logged out
+// Returns the id of the registered connection, or undefined when the session is being logged out.
+// The connection is tracked before its lease is written: if Redis fails, the next renewal writes its lease
+// and schedules its session. If this node crashes meanwhile, the socket is closed, so the tab reconnects to another node.
 export const registerSessionPresence = async (sessionId: string, origin: PresenceOrigin) => {
   const connectionId = uuidv4();
-  if (await isSessionPresenceEnabled()) {
-    const expiry = await saveSessionLeases(sessionId, [connectionId], SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
-    if (expiry === undefined) {
-      return undefined;
-    }
-    // A session is always scheduled while it has leases: if this node crashes, the check still happens
-    await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
-  }
   nodeConnections.set(connectionId, { sessionId, origin });
   meterManager.sessionPresenceConnections(nodeConnections.size);
   startLeasesRenewal();
+  try {
+    if (await isSessionPresenceEnabled()) {
+      const expiry = await saveSessionLeases(sessionId, [connectionId], SESSION_PRESENCE_LEASE_TTL, PRESENCE_KEYS_TTL, origin);
+      if (expiry === undefined) {
+        nodeConnections.delete(connectionId);
+        meterManager.sessionPresenceConnections(nodeConnections.size);
+        return undefined;
+      }
+      // A session is always scheduled while it has leases: if this node crashes, the check still happens
+      await scheduleSessionCheck(sessionId, expiry + SESSION_PRESENCE_GRACE_PERIOD, 'GT');
+    }
+  } catch (cause) {
+    logApp.error('[SESSION PRESENCE] Error registering a connection, its lease is written at the next renewal', { cause });
+  }
   return connectionId;
 };
 

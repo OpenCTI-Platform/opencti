@@ -403,6 +403,28 @@ describe('session presence', () => {
     expect(await registerSessionPresence(sessionId, ORIGIN)).toBeUndefined();
   });
 
+  it('should write at the next renewal the lease of a connection that failed to be written', async () => {
+    const sessionId = nextSessionId();
+    vi.mocked(store.saveSessionLeases).mockRejectedValueOnce(new Error('Redis unavailable'));
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN);
+    expect(connectionId).toBeDefined();
+    expect(store.hasLiveLease(sessionId, connectionId as string)).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    expect(store.hasLiveLease(sessionId, connectionId as string)).toBe(true);
+    expect(store.isDue(sessionId)).toBe(true);
+  });
+
+  it('should schedule at the next renewal a session whose check failed to be scheduled', async () => {
+    const sessionId = nextSessionId();
+    vi.mocked(store.scheduleSessionCheck).mockRejectedValueOnce(new Error('Redis unavailable'));
+    await registerSessionPresence(sessionId, ORIGIN);
+    expect(store.isDue(sessionId)).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(RENEW_INTERVAL);
+    expect(store.isDue(sessionId)).toBe(true);
+  });
+
   it('should stop tracking the sockets of a session logged out by another node', async () => {
     const sessionId = nextSessionId();
     const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
@@ -718,6 +740,17 @@ describe('session presence', () => {
       vi.mocked(store.saveSessionLeases).mockResolvedValueOnce(undefined);
 
       await expect(onSessionPresenceConnect(buildContext())).resolves.toBe(false);
+    });
+
+    it('should keep tracking a socket whose lease failed to be written', async () => {
+      const sessionId = nextSessionId();
+      mockSessionMiddleware(sessionId, { user: USER });
+      vi.mocked(store.saveSessionLeases).mockRejectedValueOnce(new Error('Redis unavailable'));
+      const ctx = buildContext();
+
+      await expect(onSessionPresenceConnect(ctx)).resolves.toBeUndefined();
+      await onSessionPresenceClose(ctx);
+      expect(store.removeSessionLease).toHaveBeenCalledOnce();
     });
 
     it('should accept the socket even if the presence fails', async () => {
