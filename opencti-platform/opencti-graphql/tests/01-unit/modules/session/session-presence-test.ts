@@ -337,6 +337,18 @@ describe('session presence', () => {
     expect(store.isDue(sessionId)).toBe(false);
   });
 
+  it('should audit the logout as an internal action of the user once the origin has expired', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = await registerSessionPresence(sessionId, ORIGIN) as string;
+    await unregisterSessionPresence(sessionId, connectionId);
+    vi.mocked(store.findSessionOrigin).mockResolvedValueOnce(undefined);
+
+    await sweepAfter(GRACE_PERIOD);
+    expect(session.killSessionByRawId).toHaveBeenCalledExactlyOnceWith(sessionId);
+    const { user } = vi.mocked(listener.publishUserAction).mock.calls[0][0];
+    expect(user.origin).toEqual({ socket: 'internal', user_id: USER.id });
+  });
+
   it('should keep the session while another connection is alive, renewing its lease', async () => {
     const sessionId = nextSessionId();
     const firstConnectionId = await registerSessionPresence(sessionId, ORIGIN) as string;

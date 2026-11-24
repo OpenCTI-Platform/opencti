@@ -178,10 +178,12 @@ const checkDueSession = async (sessionId: string, canLogout: boolean) => {
     const session = await findSessionByRawId(sessionId);
     // A session already logged out or expired is only released
     if (session?.user) {
-      const origin = await findSessionOrigin(sessionId);
+      // The origin expires with the other keys of the session: a later check, for instance once the manager is enabled
+      // again, is audited as an internal action of the user (the activity listener drops an action without origin)
+      const origin = await findSessionOrigin(sessionId) ?? { socket: 'internal', user_id: session.user.id };
       await killSessionByRawId(sessionId);
       await publishUserAction({
-        user: { ...session.user, origin: origin ?? {} },
+        user: { ...session.user, origin },
         event_type: 'authentication',
         event_access: 'administration',
         event_scope: 'logout',
