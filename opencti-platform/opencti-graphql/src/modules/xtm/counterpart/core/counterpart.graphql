@@ -1,0 +1,56 @@
+# The objects OpenCTI and the other XTM products both hold, each matched on its natural key, read on
+# the server from the OpenCTI object (counterpart-keys.ts):
+# System, Hostname, IPv4/IPv6-Addr: the hostname of an asset
+# Attack-Pattern: its MITRE id (x_mitre_id)
+# Vulnerability: its CVE id
+# Report, Threat actor, Intrusion set, Malware, Campaign: the STIX id a scenario was generated from
+# Incident, Sighting: an external reference URL equal to the link of an alert a collector matched
+
+# Whether another XTM product is connected to this platform. Never carries a credential or an address.
+type XtmConnection {
+  product: String!
+  connected: Boolean!
+}
+
+# One key fact of a counterpart: a stable key (findings, affected_assets, simulations, last_simulation) and its value as text.
+type XtmCounterpartFact {
+  key: String!
+  value: String!
+}
+
+# An object of a connected XTM product matching one key of this platform (key: the key it matched on).
+type XtmCounterpart {
+  key: String!
+  product: String!
+  object_id: String!
+  object_type: String!
+  object_name: String
+  object_url: String!
+  facts: [XtmCounterpartFact!]!
+}
+
+# found: the product holds the object (counterpart set); not_found: it does not;
+# not_supported: the product has no such lookup (draw nothing); unavailable: it could not answer this time.
+enum XtmCounterpartStatus {
+  found
+  not_found
+  not_supported
+  unavailable
+}
+
+# The answer for one object of this platform in one connected product. OpenAEV and XTM One answer
+# under the calling user's own rights. OpenCRQ answers as its service account: name and link for any
+# user who reads the object here, facts only when that user has rights in OpenCRQ.
+type XtmCounterpartResult {
+  id: String!
+  product: String!
+  status: XtmCounterpartStatus!
+  counterpart: XtmCounterpart
+}
+
+type Query {
+  xtmConnections: [XtmConnection!]! @auth @ff(flags: ["XTM_COUNTERPARTS"], softFail: true, defaultValue: "[]")
+  # The counterparts of objects of this platform given by id; keys are read on the server. An id the
+  # caller cannot read, or whose object has no key, gets no entry.
+  xtmCounterpartsOf(ids: [String!]!): [XtmCounterpartResult!]! @auth(for: [KNOWLEDGE]) @ff(flags: ["XTM_COUNTERPARTS"], softFail: true, defaultValue: "[]")
+}
