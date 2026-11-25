@@ -238,6 +238,31 @@ export const getSecurityCoverageResultIds = (securityCoverage: BasicStoreEntityS
   return securityCoverage[RELATION_RESULT_OF] ?? [];
 };
 
+/**
+ * Neighbors of a security coverage: its results, their has-covered relationships and the covered targets.
+ * Its results are linked through a ref, not a stix-core relationship, so a generic neighbor lookup misses them.
+ * The covered entity is not a neighbor: what a playbook does with the coverage must not spread to it.
+ *
+ * @returns Internal ids, without duplicates. Empty when the coverage is not found or has no result.
+ */
+export const findSecurityCoverageNeighborIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  securityCoverageId: string,
+): Promise<string[]> => {
+  const securityCoverage = await findById(context, user, securityCoverageId);
+  const resultIds = securityCoverage ? getSecurityCoverageResultIds(securityCoverage) : [];
+  if (resultIds.length === 0) {
+    return [];
+  }
+  const hasCoveredRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_HAS_COVERED, { fromId: resultIds, baseData: true });
+  return Array.from(new Set([
+    ...resultIds,
+    ...hasCoveredRelations.map((relation) => relation.id),
+    ...hasCoveredRelations.map((relation) => relation.toId),
+  ]));
+};
+
 export const findCoveredEntitiesDistribution = async (
   context: AuthContext,
   user: AuthUser,

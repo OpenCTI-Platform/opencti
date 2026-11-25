@@ -53,6 +53,9 @@ import { PLAYBOOK_AI_AGENT_TRANSFORM_COMPONENT } from './components/ai-agent-com
 import { PLAYBOOK_AI_AGENT_SEND_COMPONENT } from './components/ai-agent-send-component';
 import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 import { buildPlaybookEventContext, extractBundleBaseElement } from './playbook-utils';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, type StixSecurityCoverageResult } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { findSecurityCoverageNeighborIds } from '../securityCoverage/securityCoverage-domain';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -590,6 +593,16 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       const baseDataSighting = baseData as StixSighting;
       if (baseDataSighting.sighting_of_ref && baseDataSighting.where_sighted_refs) {
         idsToResolve = R.uniq([...idsToResolve, baseDataSighting.sighting_of_ref, ...baseDataSighting.where_sighted_refs]);
+      }
+      // In case of security coverage, results are linked through a ref: resolve them with their has-covered and targets
+      if (type === ENTITY_TYPE_SECURITY_COVERAGE) {
+        const securityCoverageNeighborIds = await findSecurityCoverageNeighborIds(context, AUTOMATION_MANAGER_USER, id);
+        idsToResolve = R.uniq([...idsToResolve, ...securityCoverageNeighborIds]);
+      }
+      // In case of security coverage result, we also resolve its parent security coverage
+      const baseDataSecurityCoverageResult = baseData as StixSecurityCoverageResult;
+      if (type === ENTITY_TYPE_SECURITY_COVERAGE_RESULT && baseDataSecurityCoverageResult.result_of_ref) {
+        idsToResolve = R.uniq([...idsToResolve, baseDataSecurityCoverageResult.result_of_ref]);
       }
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve) as StixObject[];
       if (elements.length > 0) {
