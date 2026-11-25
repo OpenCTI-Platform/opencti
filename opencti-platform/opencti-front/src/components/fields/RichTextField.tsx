@@ -5,7 +5,7 @@ import { FieldProps, useField } from 'formik';
 import { isNil } from 'ramda';
 import { CSSProperties, ReactNode, useRef } from 'react';
 import useAI from '../../utils/hooks/useAI';
-import { useFormatter } from '../i18n';
+import useRichTextFieldLabels from './useRichTextFieldLabels';
 
 interface RichTextFormikFieldProps extends FieldProps<string> {
   disabled?: boolean;
@@ -47,7 +47,7 @@ const RichTextFormikField = ({
   pageBreak = true,
   taskList = true,
 }: RichTextFormikFieldProps) => {
-  const { t_i18n } = useFormatter();
+  const richTextLabels = useRichTextFieldLabels();
   const [, meta] = useField(name);
   const { enabled, configured } = useAI();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -111,7 +111,7 @@ const RichTextFormikField = ({
         fullscreen={hasFullScreen}
         pageBreak={pageBreak}
         taskList={taskList}
-        labels={{ unsavedChanges: t_i18n('You have unsaved changes') }}
+        labels={richTextLabels}
       />
       {showAskAi && (
         <TextFieldAskAI

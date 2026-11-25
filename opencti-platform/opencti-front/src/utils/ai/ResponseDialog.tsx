@@ -29,6 +29,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
 import { RichTextField, RichTextFieldHandle } from '@filigran/design-system/rich-text-field';
 import { useFormatter } from '../../components/i18n';
+import useRichTextFieldLabels from '../../components/fields/useRichTextFieldLabels';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import { cleanHtmlTags, isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
@@ -118,6 +119,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
   const richTextFieldRef = useRef<RichTextFieldHandle>(null);
   const { t_i18n } = useFormatter();
+  const richTextLabels = useRichTextFieldLabels();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
   const isLegacyMode = !agentMode;
@@ -342,6 +344,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             generating={effectiveDisabled}
             height={height - 80}
             fullscreen={false}
+            labels={richTextLabels}
           />
         </Box>
       )}

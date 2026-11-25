@@ -13,6 +13,7 @@ import { ContainerMappingContent_container$data } from '@components/common/conta
 import StixCoreObjectMappableContent from './StixCoreObjectMappableContent';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import { useFormatter } from '../../../../components/i18n';
+import useRichTextFieldLabels from '../../../../components/fields/useRichTextFieldLabels';
 import StixCoreObjectContentFiles, { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
 import { APP_BASE_PATH, commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
@@ -465,6 +466,7 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
 }) => {
   const stixCoreObject = useFragment(stixCoreObjectContentFragment, stixCoreObjectKey);
   const { t_i18n } = useFormatter();
+  const richTextLabels = useRichTextFieldLabels();
   const navigate = useNavigate();
   const location = useLocation();
   const { typesWithFintelTemplates } = useAttributes();
@@ -794,6 +796,7 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
                   }}
                   height={height - 80}
                   fullscreen={false}
+                  labels={richTextLabels}
                 />
                 <TextFieldAskAI
                   currentValue={currentContent ?? ''}
