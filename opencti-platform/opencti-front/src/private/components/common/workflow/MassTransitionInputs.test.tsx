@@ -6,10 +6,7 @@ import MassTransitionInputs from './MassTransitionInputs';
 
 const mocks = vi.hoisted(() => ({ canBypassMandatoryFields: false }));
 
-vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../utils/hooks/useGranted')>();
-  return { ...actual, default: () => mocks.canBypassMandatoryFields };
-});
+vi.mock('./useCanBypassMandatoryFields', () => ({ default: () => mocks.canBypassMandatoryFields }));
 
 const lastReport = (onChange: ReturnType<typeof vi.fn>) => onChange.mock.calls.at(-1)?.[0];
 

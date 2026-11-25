@@ -79,6 +79,8 @@ vi.mock('../../../../utils/hooks/useGranted', async (importOriginal) => ({
   isBypassUser: () => permissions.bypass,
 }));
 
+vi.mock('./useCanBypassMandatoryFields', () => ({ default: () => permissions.mandatoryFields }));
+
 vi.mock('../../../../relay/environment', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../../../relay/environment')>();
   return {

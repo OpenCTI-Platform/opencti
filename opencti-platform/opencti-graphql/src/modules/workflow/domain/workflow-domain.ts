@@ -1972,8 +1972,12 @@ const getMissingOrganizationInput = (requirements: TransitionInputRequirements, 
   return undefined;
 };
 
-// Inputs the triggering user must give: the organizations, and a required comment unless the user can bypass mandatory fields
+// Inputs the transition rejects or needs: a comment on a disabled transition, the organizations, and a required comment unless the user can bypass mandatory fields
 const getMissingTransitionInput = (user: AuthUser, transition: TransitionInputRequirements, comment?: string, runtimeParams: Record<string, unknown> = {}) => {
+  // A comment is only stored when the transition allows or requires one: a disabled, missing or unknown mode rejects it
+  if (comment?.trim() && transition.comment !== 'allowed' && transition.comment !== 'required') {
+    return 'A comment is not allowed for this transition';
+  }
   if (transition.comment === 'required' && !comment?.trim() && !isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {
     return 'A comment is required for this transition';
   }
@@ -2371,11 +2375,13 @@ export const triggerWorkflowEvent = async (
   user: AuthUser,
   entityId: string,
   eventName: string,
-  comment?: string,
+  rawComment?: string,
   runtimeParams: Record<string, unknown> = {},
   closingReason?: string,
   options: { fromState?: string } = {},
 ): Promise<TriggerResult> => {
+  // A blank comment is no comment: it is neither stored nor checked against the transition comment mode
+  const comment = rawComment?.trim() || undefined;
   // 1. Fetch the entity
   const entity = await storeLoadById(context, user, entityId, 'Basic-Object');
   if (!entity) {
@@ -2495,7 +2501,7 @@ export const triggerWorkflowEvent = async (
 
     // 5. Reject a transition whose required inputs are missing, before any action runs
     const transition = definition.getTransitions(currentStateId).find((t) => t.event === eventName);
-    const missingInput = transition && getMissingTransitionInput(user, transition, comment, runtimeParams);
+    const missingInput = transition && getMissingTransitionInput(executionUser, transition, comment, runtimeParams);
     if (missingInput) {
       return { success: false, reason: missingInput, entity };
     }

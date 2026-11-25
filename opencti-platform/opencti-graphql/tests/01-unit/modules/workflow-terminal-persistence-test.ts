@@ -70,7 +70,7 @@ describe('Terminal workflow persistence', () => {
     definition = {
       initialState: 'initial',
       states: [{ statusId: 'initial' }, { statusId: 'reviewed', onEnter: [{ type: 'terminalTestEnter' }] }],
-      transitions: [{ from: 'reviewed', event: 'Validate', syncActions: [{ type: 'validateDraft' }] }],
+      transitions: [{ from: 'reviewed', event: 'Validate', comment: 'allowed', syncActions: [{ type: 'validateDraft' }] }],
     };
     vi.mocked(findByType).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-id' } as any);
     vi.mocked(loadEntity).mockImplementation(async () => ({ ...stored }));

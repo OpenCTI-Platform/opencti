@@ -3363,6 +3363,13 @@ describe('Transition comments – Domain', () => {
       (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-id' } });
     };
 
+    const mockTransition = (transition: Record<string, unknown>) => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...transition }] }));
+    };
+    afterEach(() => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
+    });
+
     const getLastHistoryEntry = () => {
       const updateCall = (updateAttribute as any).mock.calls[0];
       const historyArg = updateCall[4].find((a: any) => a.key === 'history');
@@ -3372,6 +3379,7 @@ describe('Transition comments – Domain', () => {
 
     it('should include the user-provided comment in the history entry', async () => {
       setupMocks();
+      mockTransition({ comment: 'allowed' });
 
       await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Reviewed and approved');
 
@@ -3394,14 +3402,26 @@ describe('Transition comments – Domain', () => {
       expect(getLastHistoryEntry()).not.toHaveProperty('comment');
     });
 
-    describe('required inputs', () => {
-      const mockTransition = (transition: Record<string, unknown>) => {
-        (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', ...transition }] }));
-      };
-      afterEach(() => {
-        (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
-      });
+    it.each([undefined, 'disabled', '', 'unexpected'])('should reject a comment on a transition whose comment mode is %j, before any action runs', async (mode) => {
+      setupMocks();
+      mockTransition({ comment: mode });
 
+      const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Sneaky comment');
+
+      expect(result).toMatchObject({ success: false, reason: 'A comment is not allowed for this transition' });
+      expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+      expect(updateAttribute).not.toHaveBeenCalled();
+    });
+
+    it('should accept a blank comment on a transition whose comment mode is disabled', async () => {
+      setupMocks();
+      mockTransition({ comment: 'disabled' });
+
+      expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', '   ')).toMatchObject({ success: true });
+      expect(getLastHistoryEntry()).not.toHaveProperty('comment');
+    });
+
+    describe('required inputs', () => {
       it('should reject a transition that requires a comment when none is given, before any action runs', async () => {
         setupMocks();
         mockTransition({ comment: 'required' });
@@ -3419,6 +3439,15 @@ describe('Transition comments – Domain', () => {
 
         expect(await triggerWorkflowEvent(mockContext, mockUser, 'entity-id', 'review', 'Reviewed')).toMatchObject({ success: true });
         expect(await triggerWorkflowEvent(mockContext, bypassFieldsUser, 'entity-id', 'review')).toMatchObject({ success: true });
+      });
+
+      it('should not let a draft-only bypass-fields capability skip a required comment', async () => {
+        setupMocks();
+        mockTransition({ comment: 'required' });
+        const draftOnlyUser = { id: 'user-id', draft_context: 'draft-1', capabilities: [], capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS' }] } as any;
+
+        expect(await triggerWorkflowEvent(mockContext, draftOnlyUser, 'entity-id', 'review'))
+          .toMatchObject({ success: false, reason: 'A comment is required for this transition' });
       });
 
       it.each([
@@ -3461,12 +3490,18 @@ describe('Transition comments – Domain', () => {
       // Default: every recipient resolves to a user object that has access.
       (resolveUserById as any).mockImplementation((_ctx: any, id: string) => Promise.resolve({ id }));
       (internalLoadById as any).mockResolvedValue(mockEntity);
+      // The notified comment must be one the transition allows
+      (WorkflowFactory.createDefinition as any).mockImplementation(() => ({ ...defaultCreateDefinition(), getTransitions: () => [{ event: 'review', to: 'reviewed', comment: 'allowed' }] }));
     };
 
     beforeEach(() => {
       vi.clearAllMocks();
       (addNotification as any).mockResolvedValue({});
       (extractEntityRepresentativeName as any).mockReturnValue('Test Entity');
+    });
+
+    afterEach(() => {
+      (WorkflowFactory.createDefinition as any).mockImplementation(defaultCreateDefinition);
     });
 
     it('should call addNotification for each assignee and participant when a comment is provided', async () => {

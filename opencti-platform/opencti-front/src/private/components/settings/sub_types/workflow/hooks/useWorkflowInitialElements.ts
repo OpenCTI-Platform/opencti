@@ -106,7 +106,10 @@ export const useWorkflowInitialElements = (
 
     // 2. Map transitions to transition nodes
     const transitionNodes: Node[] = workflowDefinition.transitions
-      .map(({ from, to, event, conditions = {}, comment, closingReason, asyncActions = [], syncActions = [] }) => {
+      .map(({ from, to, event, conditions: rawConditions, comment, closingReason, asyncActions = [], syncActions = [] }) => {
+        // Migrated transitions come back with `conditions: null`, which a destructuring default would keep:
+        // the form only renders the conditions editor for a truthy value.
+        const conditions = rawConditions ?? {};
         const fromIds = (Array.isArray(from) ? from : [from]).join(',');
         return {
           id: `${WorkflowNodeType.transition}-${fromIds}-${event}-${to ?? '_unlinked'}`,
