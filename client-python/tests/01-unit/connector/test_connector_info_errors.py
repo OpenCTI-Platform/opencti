@@ -102,6 +102,30 @@ def test_sent_errors_drop_invalid_entries():
     assert info.all_details["errors"] == [API_ERROR]
 
 
+def test_sent_errors_warn_once_per_dropped_entry():
+    logger = MagicMock()
+    malformed_error = {"code": 404, "message": "integer code", "criticity": 0}
+    info = ConnectorInfo(errors=[API_ERROR, malformed_error, None], logger=logger)
+    assert info.all_details["errors"] == [API_ERROR]
+    assert [call.args[0] for call in logger.warning.call_args_list] == [
+        "Malformed error ignored on ping",
+        "Malformed error ignored on ping",
+    ]
+    assert logger.warning.call_args_list[0].args[1]["received"] == repr(malformed_error)
+
+
+def test_sent_valid_errors_do_not_warn():
+    logger = MagicMock()
+    info = ConnectorInfo(errors=[API_ERROR, RATE_ERROR], logger=logger)
+    info.all_details
+    logger.warning.assert_not_called()
+
+
+def test_sent_errors_without_logger_drop_malformed_entries_silently():
+    info = ConnectorInfo(errors=[API_ERROR, "not a dict"])
+    assert info.all_details["errors"] == [API_ERROR]
+
+
 def test_sent_errors_are_sorted_from_most_to_least_critical():
     info = ConnectorInfo()
     for criticity in [1, 3, 0, 2]:

@@ -1888,19 +1888,27 @@ class ListenStream(threading.Thread):
 CONNECTOR_ERRORS_MAX_COUNT = 20
 
 
-def _sanitize_connector_error(error) -> Optional[Dict]:
+def _sanitize_connector_error(error, logger=None) -> Optional[Dict]:
     # A malformed error is dropped: it must never make the ping mutation fail
     try:
         return _ConnectorRunError.model_validate(error).to_graphql_dict()
-    except ValidationError:
+    except ValidationError as e:
+        # A connector bug: without this warning, the error would silently never reach the platform
+        if logger is not None:
+            logger.warning(
+                "Malformed error ignored on ping",
+                {"received": repr(error), "reason": str(e)},
+            )
         return None
 
 
-def _sanitize_connector_errors(errors) -> List[Dict]:
+def _sanitize_connector_errors(errors, logger=None) -> List[Dict]:
     try:
         sanitized = [
             sanitized_error
-            for sanitized_error in map(_sanitize_connector_error, errors)
+            for sanitized_error in (
+                _sanitize_connector_error(error, logger) for error in errors
+            )
             if sanitized_error is not None
         ]
     except Exception:  # pylint: disable=broad-except
@@ -2000,7 +2008,7 @@ class ConnectorInfo:
         }
         # An explicit list, even empty, replaces the errors stored by the platform
         if self._errors_reported:
-            details["errors"] = _sanitize_connector_errors(self._errors)
+            details["errors"] = _sanitize_connector_errors(self._errors, self.logger)
         return details
 
     @property
