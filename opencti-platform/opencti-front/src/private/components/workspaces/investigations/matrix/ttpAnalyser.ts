@@ -50,9 +50,10 @@ export const getScoringLinks = (rawObjects: ObjectToParse[]): ScoringLink[] => {
   });
 };
 
-export const analyseTechniqueUsage = (rawObjects: ObjectToParse[]): Map<string, TechniqueUsage> => {
+/** Each attack pattern's score: the number of distinct entities its links reach, with those entities. */
+export const scoreLinks = (links: ScoringLink[]): Map<string, TechniqueUsage> => {
   const entitiesByTechnique = new Map<string, Map<string, LinkedEntity>>();
-  getScoringLinks(rawObjects).forEach(({ attackPattern, entity }) => {
+  links.forEach(({ attackPattern, entity }) => {
     let entities = entitiesByTechnique.get(attackPattern.id);
     if (!entities) {
       entities = new Map();
@@ -73,3 +74,5 @@ export const analyseTechniqueUsage = (rawObjects: ObjectToParse[]): Map<string, 
   });
   return usage;
 };
+
+export const analyseTechniqueUsage = (rawObjects: ObjectToParse[]): Map<string, TechniqueUsage> => scoreLinks(getScoringLinks(rawObjects));

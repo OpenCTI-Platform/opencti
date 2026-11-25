@@ -3,7 +3,7 @@ import { isOutsideTimeRange } from '../../../../../components/graph/utils/graphT
 import type { GraphLink } from '../../../../../components/graph/graph.types';
 import { defaultDate } from '../../../../../utils/defaultRepresentatives';
 import { jsDate } from '../../../../../utils/Time';
-import { getScoringLinks, type ScoringLink } from './ttpAnalyser';
+import type { ScoringLink } from './ttpAnalyser';
 
 export type MatrixRelationshipType = 'uses' | 'indicates' | 'object';
 
@@ -76,8 +76,8 @@ const uniqueById = <T extends { id: string }>(items: T[]) => {
   });
 };
 
-export const getMatrixFilterOptions = (rawObjects: ObjectToParse[], noneLabel: string): MatrixFilterOptions => {
-  const links = getScoringLinks(rawObjects);
+/** What the filter lists offer: only what the scoring links of the investigation hold. */
+export const getMatrixFilterOptions = (links: ScoringLink[], noneLabel: string): MatrixFilterOptions => {
   const relationshipTypes = new Set(links.map(({ relationship }) => relationship.relationship_type));
   return {
     entityTypes: [...new Set(links.map(({ entity }) => entity.entity_type))].sort(),
@@ -100,19 +100,22 @@ const isLinkKept = (link: ScoringLink, filters: InvestigationMatrixFilters, inte
     && !(interval && isOutsideTimeRange(relationshipDate(link.relationship), interval));
 };
 
-/** rawObjects without the scoring relationships the filters drop; entities and other objects untouched. */
-export const filterMatrixObjects = (rawObjects: ObjectToParse[], filters: InvestigationMatrixFilters): ObjectToParse[] => {
-  if (!hasActiveMatrixFilters(filters)) return rawObjects;
-  const interval: [Date, Date] | undefined = filters.timeRange
-    ? [jsDate(filters.timeRange[0]), jsDate(filters.timeRange[1])]
-    : undefined;
+/** The stored time range as dates; undefined for the whole range. */
+export const matrixFiltersInterval = (filters: InvestigationMatrixFilters): [Date, Date] | undefined => {
+  return filters.timeRange ? [jsDate(filters.timeRange[0]), jsDate(filters.timeRange[1])] : undefined;
+};
+
+/** The scoring links the filters keep. */
+export const filterScoringLinks = (links: ScoringLink[], filters: InvestigationMatrixFilters): ScoringLink[] => {
+  if (!hasActiveMatrixFilters(filters)) return links;
+  const interval = matrixFiltersInterval(filters);
   // A "uses" between two attack patterns scores both ends: the relationship goes as soon as one of
   // its links is dropped, so a filtered-out entity never shows in a hover list.
   const dropped = new Set(
-    getScoringLinks(rawObjects)
+    links
       .filter((link) => !isLinkKept(link, filters, interval))
       .map(({ relationship }) => relationship.id),
   );
-  if (dropped.size === 0) return rawObjects;
-  return rawObjects.filter(({ id }) => !dropped.has(id));
+  if (dropped.size === 0) return links;
+  return links.filter(({ relationship }) => !dropped.has(relationship.id));
 };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MATRIX_FILTERS, filterMatrixObjects, getMatrixFilterOptions, hasActiveMatrixFilters, type InvestigationMatrixFilters } from './matrixFilters';
-import { analyseTechniqueUsage } from './ttpAnalyser';
+import { DEFAULT_MATRIX_FILTERS, filterScoringLinks, getMatrixFilterOptions, hasActiveMatrixFilters, type InvestigationMatrixFilters } from './matrixFilters';
+import { getScoringLinks, scoreLinks } from './ttpAnalyser';
 import { NO_AUTHOR_ID, NO_MARKING_ID, type ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
 
 interface Extra {
@@ -38,7 +38,14 @@ const filters = (patch: Partial<InvestigationMatrixFilters>): InvestigationMatri
   ...patch,
 });
 
-const ids = (objects: ObjectToParse[]) => objects.map(({ id }) => id);
+// The relationships whose scoring links the filters keep, each once.
+const keptIds = (objects: ObjectToParse[], matrixFilters: InvestigationMatrixFilters) => [
+  ...new Set(filterScoringLinks(getScoringLinks(objects), matrixFilters).map(({ relationship }) => relationship.id)),
+];
+
+const scoresOf = (objects: ObjectToParse[], matrixFilters = DEFAULT_MATRIX_FILTERS) => {
+  return scoreLinks(filterScoringLinks(getScoringLinks(objects), matrixFilters));
+};
 
 // One attack pattern scored twice: used by an intrusion set, held by a report.
 const AP1 = ap('ap1');
@@ -49,22 +56,23 @@ const USES = rel('uses-1', 'uses', 'is-a', 'ap1', { objectMarking: [TLP_CLEAR], 
 const CONTAINS = rel('contains-1', 'object', 'report', 'ap1', { created_at: '2024-06-01T00:00:00.000Z' });
 const OBJECTS = [AP1, INTRUSION_SET, REPORT, USES, CONTAINS];
 
-describe('filterMatrixObjects', () => {
-  it('keeps every object with the default filters', () => {
-    expect(filterMatrixObjects(OBJECTS, DEFAULT_MATRIX_FILTERS)).toEqual(OBJECTS);
+describe('filterScoringLinks', () => {
+  it('keeps every link with the default filters', () => {
+    const links = getScoringLinks(OBJECTS);
+    expect(filterScoringLinks(links, DEFAULT_MATRIX_FILTERS)).toBe(links);
   });
 
   it('drops the links of a disabled relationship type, contains included', () => {
-    expect(analyseTechniqueUsage(OBJECTS).get('ap1')?.score).toBe(2);
-    const result = filterMatrixObjects(OBJECTS, filters({ disabledRelationshipTypes: ['object'] }));
-    expect(ids(result)).toEqual(['ap1', 'is-a', 'report', 'uses-1']);
-    expect(analyseTechniqueUsage(result).get('ap1')?.score).toBe(1);
+    expect(scoresOf(OBJECTS).get('ap1')?.score).toBe(2);
+    const noContains = filters({ disabledRelationshipTypes: ['object'] });
+    expect(keptIds(OBJECTS, noContains)).toEqual(['uses-1']);
+    expect(scoresOf(OBJECTS, noContains).get('ap1')?.score).toBe(1);
   });
 
   it('drops the links to a disabled linked entity type', () => {
-    const result = filterMatrixObjects(OBJECTS, filters({ disabledEntityTypes: ['Intrusion-Set'] }));
-    expect(ids(result)).toEqual(['ap1', 'is-a', 'report', 'contains-1']);
-    expect(analyseTechniqueUsage(result).get('ap1')?.linkedEntities.map(({ id }) => id)).toEqual(['report']);
+    const noIntrusionSet = filters({ disabledEntityTypes: ['Intrusion-Set'] });
+    expect(keptIds(OBJECTS, noIntrusionSet)).toEqual(['contains-1']);
+    expect(scoresOf(OBJECTS, noIntrusionSet).get('ap1')?.linkedEntities.map(({ id }) => id)).toEqual(['report']);
   });
 
   it('drops a link marked with a disabled marking, on the link or on its linked entity', () => {
@@ -72,62 +80,56 @@ describe('filterMatrixObjects', () => {
     const redEntity = entity('tool-red', 'Tool', { objectMarking: [TLP_RED] });
     const toRedEntity = rel('uses-tool', 'uses', 'ap1', 'tool-red', { objectMarking: [TLP_CLEAR] });
     const objects = [AP1, INTRUSION_SET, redEntity, USES, redLink, toRedEntity];
-    const result = filterMatrixObjects(objects, filters({ disabledMarkings: ['tlp-red'] }));
-    expect(ids(result)).toEqual(['ap1', 'is-a', 'tool-red', 'uses-1']);
+    expect(keptIds(objects, filters({ disabledMarkings: ['tlp-red'] }))).toEqual(['uses-1']);
   });
 
   it('never filters on the markings or the author of the attack pattern', () => {
     const markedAp = entity('ap-red', 'Attack-Pattern', { objectMarking: [TLP_RED], createdBy: BETA });
     const objects = [markedAp, INTRUSION_SET, rel('uses-2', 'uses', 'is-a', 'ap-red', { objectMarking: [TLP_CLEAR], createdBy: ACME })];
-    const result = filterMatrixObjects(objects, filters({ disabledMarkings: ['tlp-red'], disabledCreators: ['beta'] }));
-    expect(result).toEqual(objects);
+    expect(keptIds(objects, filters({ disabledMarkings: ['tlp-red'], disabledCreators: ['beta'] }))).toEqual(['uses-2']);
   });
 
   it('drops a link whose author, or whose linked entity author, is disabled', () => {
     const byBeta = rel('uses-beta', 'uses', 'is-a', 'ap1', { objectMarking: [TLP_CLEAR], createdBy: BETA });
     const objects = [AP1, INTRUSION_SET, USES, byBeta];
-    expect(ids(filterMatrixObjects(objects, filters({ disabledCreators: ['beta'] })))).toEqual(['ap1', 'is-a', 'uses-1']);
+    expect(keptIds(objects, filters({ disabledCreators: ['beta'] }))).toEqual(['uses-1']);
     // ACME wrote the intrusion set: both links to it go.
-    expect(ids(filterMatrixObjects(objects, filters({ disabledCreators: ['acme'] })))).toEqual(['ap1', 'is-a']);
+    expect(keptIds(objects, filters({ disabledCreators: ['acme'] }))).toEqual([]);
   });
 
   it('gives a contains link the markings and author of its container', () => {
-    expect(ids(filterMatrixObjects(OBJECTS, filters({ disabledCreators: ['beta'] }))))
-      .toEqual(['ap1', 'is-a', 'report', 'uses-1']);
+    expect(keptIds(OBJECTS, filters({ disabledCreators: ['beta'] }))).toEqual(['uses-1']);
     const redReport = entity('report', 'Report', { objectMarking: [TLP_RED], createdBy: BETA });
     const objects = [AP1, INTRUSION_SET, redReport, USES, CONTAINS];
-    expect(ids(filterMatrixObjects(objects, filters({ disabledMarkings: ['tlp-red'] }))))
-      .toEqual(['ap1', 'is-a', 'report', 'uses-1']);
+    expect(keptIds(objects, filters({ disabledMarkings: ['tlp-red'] }))).toEqual(['uses-1']);
   });
 
   it('puts a link without marking or author under None', () => {
     // A contains link from a container with no marking and no author.
     const bareReport = entity('report', 'Report');
     const objects = [AP1, INTRUSION_SET, bareReport, USES, CONTAINS];
-    expect(ids(filterMatrixObjects(objects, filters({ disabledMarkings: [NO_MARKING_ID] }))))
-      .toEqual(['ap1', 'is-a', 'report', 'uses-1']);
-    expect(ids(filterMatrixObjects(objects, filters({ disabledCreators: [NO_AUTHOR_ID] }))))
-      .toEqual(['ap1', 'is-a', 'report', 'uses-1']);
+    expect(keptIds(objects, filters({ disabledMarkings: [NO_MARKING_ID] }))).toEqual(['uses-1']);
+    expect(keptIds(objects, filters({ disabledCreators: [NO_AUTHOR_ID] }))).toEqual(['uses-1']);
     // The intrusion set link and its entity are marked and authored: "None" leaves them alone.
-    expect(analyseTechniqueUsage(filterMatrixObjects(objects, filters({ disabledMarkings: [NO_MARKING_ID] }))).get('ap1')?.score).toBe(1);
+    expect(scoresOf(objects, filters({ disabledMarkings: [NO_MARKING_ID] })).get('ap1')?.score).toBe(1);
   });
 
   it('drops the links dated outside the time range, a contains link dated by its created_at', () => {
     const beforeJune = filters({ timeRange: ['2024-01-01T00:00:00.000Z', '2024-02-01T00:00:00.000Z'] });
-    expect(ids(filterMatrixObjects(OBJECTS, beforeJune))).toEqual(['ap1', 'is-a', 'report', 'uses-1']);
+    expect(keptIds(OBJECTS, beforeJune)).toEqual(['uses-1']);
     const june = filters({ timeRange: ['2024-05-01T00:00:00.000Z', '2024-07-01T00:00:00.000Z'] });
-    expect(ids(filterMatrixObjects(OBJECTS, june))).toEqual(['ap1', 'is-a', 'report', 'contains-1']);
+    expect(keptIds(OBJECTS, june)).toEqual(['contains-1']);
   });
 
   it('keeps an undated link under a time range', () => {
     const undated = rel('uses-undated', 'uses', 'is-a', 'ap1', { objectMarking: [TLP_CLEAR], createdBy: ACME });
     const objects = [AP1, INTRUSION_SET, undated];
-    const result = filterMatrixObjects(objects, filters({ timeRange: ['2024-01-01T00:00:00.000Z', '2024-02-01T00:00:00.000Z'] }));
-    expect(result).toEqual(objects);
-    expect(analyseTechniqueUsage(result).get('ap1')?.score).toBe(1);
+    const january = filters({ timeRange: ['2024-01-01T00:00:00.000Z', '2024-02-01T00:00:00.000Z'] });
+    expect(keptIds(objects, january)).toEqual(['uses-undated']);
+    expect(scoresOf(objects, january).get('ap1')?.score).toBe(1);
   });
 
-  it('never drops an entity, so the matrix still places every attack pattern', () => {
+  it('scores nothing once every link is filtered out', () => {
     const everything = filters({
       disabledEntityTypes: ['Intrusion-Set', 'Report'],
       disabledRelationshipTypes: ['uses', 'indicates', 'object'],
@@ -135,25 +137,15 @@ describe('filterMatrixObjects', () => {
       disabledCreators: ['acme', 'beta', NO_AUTHOR_ID],
       timeRange: ['2030-01-01T00:00:00.000Z', '2030-02-01T00:00:00.000Z'],
     });
-    const result = filterMatrixObjects(OBJECTS, everything);
-    expect(ids(result)).toEqual(['ap1', 'is-a', 'report']);
-    expect(analyseTechniqueUsage(result).size).toBe(0);
+    expect(keptIds(OBJECTS, everything)).toEqual([]);
+    expect(scoresOf(OBJECTS, everything).size).toBe(0);
   });
 
   it('drops a uses between two attack patterns as soon as one of its two links is dropped', () => {
     const redAp = entity('ap-red', 'Attack-Pattern', { objectMarking: [TLP_RED] });
     const objects = [AP1, redAp, rel('ap-uses-ap', 'uses', 'ap1', 'ap-red', { objectMarking: [TLP_CLEAR] })];
-    expect(analyseTechniqueUsage(objects).size).toBe(2);
-    const result = filterMatrixObjects(objects, filters({ disabledMarkings: ['tlp-red'] }));
-    expect(ids(result)).toEqual(['ap1', 'ap-red']);
-  });
-
-  it('keeps the relationships that score nothing', () => {
-    const tool = entity('tool', 'Tool');
-    const other = rel('related', 'related-to', 'is-a', 'tool', { objectMarking: [TLP_RED] });
-    const objects = [AP1, INTRUSION_SET, tool, USES, other];
-    expect(ids(filterMatrixObjects(objects, filters({ disabledMarkings: ['tlp-red'], disabledRelationshipTypes: ['uses'] }))))
-      .toEqual(['ap1', 'is-a', 'tool', 'related']);
+    expect(scoresOf(objects).size).toBe(2);
+    expect(keptIds(objects, filters({ disabledMarkings: ['tlp-red'] }))).toEqual([]);
   });
 });
 
@@ -184,7 +176,7 @@ describe('getMatrixFilterOptions', () => {
       rel('ind-1', 'indicates', 'ind', 'ap1', { objectMarking: [TLP_RED], createdBy: ACME, start_time: '2024-03-01T00:00:00.000Z' }),
       rel('related', 'related-to', 'malware', 'ap1', { objectMarking: [{ id: 'pap', definition: 'PAP:RED' }] }),
     ];
-    const options = getMatrixFilterOptions(objects, 'None');
+    const options = getMatrixFilterOptions(getScoringLinks(objects), 'None');
     expect(options.entityTypes).toEqual(['Indicator', 'Intrusion-Set', 'Report']);
     expect(options.relationshipTypes).toEqual(['uses', 'indicates', 'object']);
     expect(options.markings).toEqual([TLP_CLEAR, TLP_RED]);
@@ -209,7 +201,7 @@ describe('getMatrixFilterOptions', () => {
       rel('ap-uses-ap', 'uses', 'ap1', 'ap2', { objectMarking: [{ id: 'tlp-clear', definition: 'Renamed' }], createdBy: { id: 'acme', name: 'Renamed' }, start_time: '2024-01-01T00:00:00.000Z' }),
       rel('last', 'uses', 'is-a', 'ap2', { objectMarking: [TLP_CLEAR], createdBy: ACME, start_time: '2024-02-01T00:00:00.000Z' }),
     ];
-    const options = getMatrixFilterOptions(objects, 'None');
+    const options = getMatrixFilterOptions(getScoringLinks(objects), 'None');
     expect(options.markings).toEqual([{ id: NO_MARKING_ID, definition: 'None' }, TLP_CLEAR]);
     expect(options.authors).toEqual([ACME, { id: NO_AUTHOR_ID, name: 'None' }]);
     expect(options.datedLinks.map(({ defaultDate }) => defaultDate.toISOString())).toEqual([
@@ -221,14 +213,14 @@ describe('getMatrixFilterOptions', () => {
 
   it('labels the None entries with the given label', () => {
     const objects = [AP1, entity('report', 'Report'), CONTAINS];
-    const options = getMatrixFilterOptions(objects, 'Aucun');
+    const options = getMatrixFilterOptions(getScoringLinks(objects), 'Aucun');
     expect(options.relationshipTypes).toEqual(['object']);
     expect(options.markings).toEqual([{ id: NO_MARKING_ID, definition: 'Aucun' }]);
     expect(options.authors).toEqual([{ id: NO_AUTHOR_ID, name: 'Aucun' }]);
   });
 
   it('lists nothing without scoring links', () => {
-    expect(getMatrixFilterOptions([AP1, INTRUSION_SET], 'None')).toEqual({
+    expect(getMatrixFilterOptions(getScoringLinks([AP1, INTRUSION_SET]), 'None')).toEqual({
       entityTypes: [],
       relationshipTypes: [],
       markings: [],

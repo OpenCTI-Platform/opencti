@@ -7,8 +7,6 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import type { GraphToolbarOption } from '../../../../../components/graph/components/useGraphToolbarActions';
 import prepareMatrixCapture from './prepareMatrixCapture';
 
-export { EXPORT_ONLY_ATTRIBUTE } from './prepareMatrixCapture';
-
 // Lets the page re-render with the export theme before the capture, as the export buttons do.
 const RENDER_DELAY = 1000;
 

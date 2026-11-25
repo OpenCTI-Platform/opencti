@@ -7,6 +7,7 @@ import ToolbarShell, { type ToolbarAction, type ToolbarSlot } from '../../../../
 import { GroupDivider } from '../../../../../components/graph/components/ToolbarParts';
 import GraphToolbarItem from '../../../../../components/graph/components/GraphToolbarItem';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from '../../../../../components/graph/utils/graphFraming';
+import { TOOLBAR_GAP_PX } from '../../../../../components/graph/utils/graphToolbarOverflow';
 import { useFormatter } from '../../../../../components/i18n';
 import useGranted, { KNOWLEDGE_KNFRONTENDEXPORT } from '../../../../../utils/hooks/useGranted';
 import { INVESTIGATION_MATRIX_EXPORT_ID } from '../InvestigationViewSwitcher';
@@ -95,11 +96,11 @@ const InvestigationMatrixToolbar = ({
       group: 'posture',
       priority: 20,
       // The field and the toolbar gap after it, until measured.
-      width: 320,
+      width: POSTURE_WIDTH + TOOLBAR_GAP_PX,
       label: postureLabel,
       icon: <SecurityOutlined {...ICON} />,
+      // The same field in the row and, by default, in the "More actions" submenu.
       render: postureSelect,
-      submenu: postureSelect,
     },
   ];
   if (canExport) {

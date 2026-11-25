@@ -3,19 +3,13 @@ import { AccountBalanceOutlined, CenterFocusStrongOutlined, DateRangeOutlined, F
 import type { ToolbarAction } from '../../../../../components/graph/ToolbarShell';
 import { countTimeRangeFilters, type GraphTimeRange } from '../../../../../components/graph/utils/graphTimeRange';
 import { useFormatter } from '../../../../../components/i18n';
-import { jsDate } from '../../../../../utils/Time';
-import { hasActiveMatrixFilters, type InvestigationMatrixFilters, type MatrixFilterOptions, type MatrixRelationshipType } from './matrixFilters';
+import { hasActiveMatrixFilters, type InvestigationMatrixFilters, type MatrixFilterOptions, matrixFiltersInterval, type MatrixRelationshipType } from './matrixFilters';
 import type { MatrixToolbarGroup } from './InvestigationMatrixToolbar';
 
 const ICON = { fontSize: 'medium' } as const;
 
 const toggle = <T extends string>(list: T[], item: T): T[] => {
   return list.includes(item) ? list.filter((value) => value !== item) : [...list, item];
-};
-
-/** The stored range as the time range panel reads it; undefined for the whole range. */
-export const matrixTimeRangeInterval = (filters: InvestigationMatrixFilters): [Date, Date] | undefined => {
-  return filters.timeRange ? [jsDate(filters.timeRange[0]), jsDate(filters.timeRange[1])] : undefined;
 };
 
 /**
@@ -93,7 +87,7 @@ export const useInvestigationMatrixFilterActions = ({
       description: t_i18n('Count only the relationships dated within the range you set.'),
       icon: <DateRangeOutlined {...ICON} />,
       pressed: timeRangeOpen,
-      badge: countTimeRangeFilters(timeRange.interval, matrixTimeRangeInterval(filters)),
+      badge: countTimeRangeFilters(timeRange.interval, matrixFiltersInterval(filters)),
       onSelect: onToggleTimeRange,
     },
     {
