@@ -116,6 +116,20 @@ export const resolvePublicUser = async (context: AuthContext, sharing: PublicSha
   return SYSTEM_USER;
 };
 
+/**
+ * Refuses an edit that sets a sharing setting more than once.
+ * The middleware compares each input with the stored value, not with the previous input: the value it stores
+ * for a repeated key is not the last one (a restoring input is dropped as unchanged), so the edit checks could not trust it.
+ */
+export const assertSingleSharingInputs = (entityType: string, input: EditInput[]): void => {
+  const { publicField, userIdField } = getSharingConfig(entityType);
+  [publicField, userIdField].forEach((field) => {
+    if (input.filter((item) => item.key === field).length > 1) {
+      throw FunctionalError(`${field} can only be set once per edit`);
+    }
+  });
+};
+
 const isTrueValue = (value: unknown) => value === true || value === 'true';
 
 /**
@@ -128,9 +142,8 @@ export const isPublicUserMissingAfterEdit = async (
   loadSharing: () => Promise<PublicSharingEntity | undefined>,
 ): Promise<boolean> => {
   const { publicField, userIdField } = getSharingConfig(entityType);
-  // A patch can carry several inputs for one key and the last one wins: check the value that is stored
-  const publicItem = input.findLast((item) => item.key === publicField);
-  const userIdItem = input.findLast((item) => item.key === userIdField);
+  const publicItem = input.find((item) => item.key === publicField);
+  const userIdItem = input.find((item) => item.key === userIdField);
   const setsPublic = isTrueValue(publicItem?.value?.[0]);
   if (!setsPublic && !userIdItem) {
     return false;

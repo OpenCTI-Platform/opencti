@@ -279,17 +279,25 @@ describe('streamCollectionEditField validation', () => {
     await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
   });
 
-  it('should throw when a second input clears stream_public_user_id of a public collection', async () => {
+  // The middleware compares each input with the stored value: a restoring input is dropped as unchanged and the clear is kept
+  it('should refuse to clear then restore stream_public_user_id in one edit', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', stream_public: true, stream_public_user_id: VALID_USER_ID } as any);
-    const input = [{ key: 'stream_public_user_id', value: [VALID_USER_ID] }, { key: 'stream_public_user_id', value: [null] }];
-    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+    const input = [{ key: 'stream_public_user_id', value: [null] }, { key: 'stream_public_user_id', value: [VALID_USER_ID] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('stream_public_user_id can only be set once per edit');
     expect(Middleware.updateAttribute).not.toHaveBeenCalled();
   });
 
-  it('should throw when a second input makes public a collection whose stream_public_user_id is cleared', async () => {
+  it('should refuse to set then clear stream_public_user_id in one edit', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', stream_public: true, stream_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'stream_public_user_id', value: [VALID_USER_ID] }, { key: 'stream_public_user_id', value: [null] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('stream_public_user_id can only be set once per edit');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should refuse to set stream_public twice in one edit', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', stream_public: true, stream_public_user_id: VALID_USER_ID } as any);
     const input = [{ key: 'stream_public', value: ['false'] }, { key: 'stream_public_user_id', value: [''] }, { key: 'stream_public', value: ['true'] }];
-    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('stream_public can only be set once per edit');
     expect(Middleware.updateAttribute).not.toHaveBeenCalled();
   });
 
@@ -420,17 +428,25 @@ describe('taxiiCollectionEditField validation', () => {
     await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
   });
 
-  it('should throw when a second input clears taxii_public_user_id of a public collection', async () => {
+  // The middleware compares each input with the stored value: a restoring input is dropped as unchanged and the clear is kept
+  it('should refuse to clear then restore taxii_public_user_id in one edit', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as any);
-    const input = [{ key: 'taxii_public_user_id', value: [VALID_USER_ID] }, { key: 'taxii_public_user_id', value: [null] }];
-    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+    const input = [{ key: 'taxii_public_user_id', value: [null] }, { key: 'taxii_public_user_id', value: [VALID_USER_ID] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('taxii_public_user_id can only be set once per edit');
     expect(Middleware.updateAttribute).not.toHaveBeenCalled();
   });
 
-  it('should throw when a second input makes public a collection whose taxii_public_user_id is cleared', async () => {
+  it('should refuse to set then clear taxii_public_user_id in one edit', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'taxii_public_user_id', value: [VALID_USER_ID] }, { key: 'taxii_public_user_id', value: [null] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('taxii_public_user_id can only be set once per edit');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should refuse to set taxii_public twice in one edit', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as any);
     const input = [{ key: 'taxii_public', value: ['false'] }, { key: 'taxii_public_user_id', value: [''] }, { key: 'taxii_public', value: ['true'] }];
-    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('taxii_public can only be set once per edit');
     expect(Middleware.updateAttribute).not.toHaveBeenCalled();
   });
 

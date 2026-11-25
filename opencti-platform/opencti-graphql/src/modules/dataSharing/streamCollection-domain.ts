@@ -10,7 +10,7 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { validateFilterGroupForStreamOriginMatch } from '../../utils/filtering/filtering-stream-origin/stream-origin-filtering';
 import { authorizedMembers } from '../../schema/attribute-definition';
-import { isPublicUserMissingAfterEdit, validatePublicUserId } from './dataSharing-utils';
+import { assertSingleSharingInputs, isPublicUserMissingAfterEdit, validatePublicUserId } from './dataSharing-utils';
 import { getConsumersForCollection, getLocalConsumerMetrics } from '../../graphql/streamConsumerRegistry';
 import { fetchStreamInfo } from '../../database/stream/stream-handler';
 import { computeProcessingLagMetrics } from '../../utils/consumer-metrics';
@@ -86,8 +86,8 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings');
   }
-  // The last input of a key is the one stored
-  const publicUserIdItem = input.findLast((item) => item.key === 'stream_public_user_id');
+  assertSingleSharingInputs(ENTITY_TYPE_STREAM_COLLECTION, input);
+  const publicUserIdItem = input.find((item) => item.key === 'stream_public_user_id');
   if (publicUserIdItem?.value?.[0]) {
     await validatePublicUserId(context, publicUserIdItem.value[0]);
   }
