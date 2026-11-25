@@ -3,7 +3,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pycti.connector.opencti_callback_executor import CallbackExecutor, ErrorCollector
+from pycti.connector.opencti_callback_executor import (
+    CallbackExecutor,
+    ErrorCollector,
+    _ConnectorRunError,
+)
 
 API_ERROR = {
     "code": "API_UNREACHABLE",
@@ -22,8 +26,8 @@ class InMemoryErrorCollector(ErrorCollector):
         self.errors: List[Dict] = [{"code": "PREVIOUS", "message": "", "criticity": 1}]
         self.reset_count = 0
 
-    def add_errors(self, errors: List[Dict]) -> None:
-        self.errors.extend(errors)
+    def add_errors(self, errors: List[_ConnectorRunError]) -> None:
+        self.errors.extend(error.model_dump() for error in errors)
 
     def reset(self) -> None:
         self.reset_count += 1

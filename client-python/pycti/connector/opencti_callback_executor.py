@@ -7,33 +7,42 @@ run: the errors the callback returns and the exceptions it raises.
 import builtins
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 # The platform only accepts a GraphQL Int (32 bits)
 _GRAPHQL_INT_MIN = -(2**31)
 _GRAPHQL_INT_MAX = 2**31 - 1
+
+# Strict: a bool, a float or a numeric string is rejected; an IntEnum is accepted and dumped as a plain int
+_Criticity = Annotated[
+    int, Field(strict=True, ge=_GRAPHQL_INT_MIN, le=_GRAPHQL_INT_MAX)
+]
+_CRITICITY_ADAPTER = TypeAdapter(_Criticity)
+
+# Same limits as the platform, which truncates too: truncating here keeps each ping small
+CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
+CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
 
 
 # Private for now: returned dicts and add_error are the documented contract, exporting it later stays compatible
 class _ConnectorRunError(BaseModel):
     """Error returned by a connector run"""
 
-    model_config = ConfigDict(strict=True, extra="forbid")
+    model_config = ConfigDict(strict=True, extra="forbid", str_strip_whitespace=True)
 
-    code: str
+    code: str = Field(min_length=1)
     message: str
-    criticity: int = Field(ge=_GRAPHQL_INT_MIN, le=_GRAPHQL_INT_MAX)
+    criticity: _Criticity
 
-
-def _parse_criticity(value) -> int:
-    # bool is an int subclass
-    if isinstance(value, bool) or not isinstance(value, int):
-        raise TypeError(f"criticity must be an integer, got {type(value).__name__}")
-    if not _GRAPHQL_INT_MIN <= value <= _GRAPHQL_INT_MAX:
-        raise ValueError(f"criticity {value} is out of the GraphQL Int range")
-    return value
+    def to_graphql_dict(self) -> Dict:
+        """The error as sent in the ping mutation, code and message truncated."""
+        return {
+            "code": self.code[:CONNECTOR_ERROR_CODE_MAX_LENGTH],
+            "message": self.message[:CONNECTOR_ERROR_MESSAGE_MAX_LENGTH],
+            "criticity": self.criticity,
+        }
 
 
 # Reported for an exception that carries no valid code or criticity, as UnknownError in the connectors SDK
@@ -54,7 +63,7 @@ class _ExceptionConverter:
     def __init__(self, exc: BaseException):
         self.exc = exc
 
-    def to_error_list(self) -> List[Dict]:
+    def to_error_list(self) -> List[_ConnectorRunError]:
         """One error per exception, each exception of an ExceptionGroup included."""
         return [self._to_error(exc) for exc in self._flatten(self.exc)]
 
@@ -68,12 +77,13 @@ class _ExceptionConverter:
         return [exc]
 
     @classmethod
-    def _to_error(cls, exc: BaseException) -> Dict:
-        return {
-            "code": cls._code(exc),
-            "message": cls._message(exc),
-            "criticity": cls._criticity(exc),
-        }
+    def _to_error(cls, exc: BaseException) -> _ConnectorRunError:
+        # Each field is already valid or replaced by its default: this validation cannot fail
+        return _ConnectorRunError(
+            code=cls._code(exc),
+            message=cls._message(exc),
+            criticity=cls._criticity(exc),
+        )
 
     @classmethod
     def _code(cls, exc: BaseException) -> str:
@@ -88,8 +98,10 @@ class _ExceptionConverter:
     def _criticity(cls, exc: BaseException) -> int:
         try:
             # An IntEnum (Criticity of the connectors SDK) is sent as a plain int
-            return int(_parse_criticity(cls._read(lambda: exc.criticity)))
-        except (TypeError, ValueError):
+            return int(
+                _CRITICITY_ADAPTER.validate_python(cls._read(lambda: exc.criticity))
+            )
+        except ValidationError:
             return CONNECTOR_UNKNOWN_ERROR_CRITICITY
 
     @classmethod
@@ -111,8 +123,8 @@ class ErrorCollector(ABC):
     """Where the errors of a connector run go."""
 
     @abstractmethod
-    def add_errors(self, errors: List[Dict]) -> None:
-        """Add valid errors, dicts with ``code``, ``message`` and ``criticity``."""
+    def add_errors(self, errors: List[_ConnectorRunError]) -> None:
+        """Add the errors of a run, already validated."""
 
     @abstractmethod
     def reset(self) -> None:
@@ -174,7 +186,7 @@ class CallbackExecutor:
             # Errors a generator yielded before raising are kept
             return consumed_errors, err
 
-    def _validate(self, result: Any) -> List[Dict]:
+    def _validate(self, result: Any) -> List[_ConnectorRunError]:
         if isinstance(result, Mapping):
             self._logger.warning(
                 "Connector run returned a single error instead of a list, ignored",
@@ -184,12 +196,10 @@ class CallbackExecutor:
         # Other non-list returns (True, a status string...) predate errors reporting and stay silent
         if not self._is_iterable_collection(result):
             return []
-        valid_errors: List[Dict] = []
+        valid_errors: List[_ConnectorRunError] = []
         for error in result:
             try:
-                valid_errors.append(
-                    _ConnectorRunError.model_validate(error).model_dump()
-                )
+                valid_errors.append(_ConnectorRunError.model_validate(error))
             except ValidationError as e:
                 self._logger.warning(
                     "Malformed error response from the connector",

@@ -3,9 +3,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pycti.connector.opencti_connector_helper import (
+from pycti.connector.opencti_callback_executor import (
     CONNECTOR_ERROR_CODE_MAX_LENGTH,
     CONNECTOR_ERROR_MESSAGE_MAX_LENGTH,
+)
+from pycti.connector.opencti_connector_helper import (
     CONNECTOR_ERRORS_MAX_COUNT,
     ConnectorInfo,
     PingAlive,
@@ -36,24 +38,24 @@ def test_errors_from_constructor_are_copied():
     assert info.errors == [API_ERROR]
 
 
-def test_sent_errors_coerce_field_types_of_assigned_errors():
-    info = ConnectorInfo()
-    info.errors = [{"code": 404, "message": None, "criticity": 1}]
-    assert info.all_details["errors"] == [
-        {"code": "404", "message": "", "criticity": 1}
-    ]
-
-
 @pytest.mark.parametrize(
     "code, message, criticity",
     [
         (404, "m", 1),
+        ("   ", "m", 1),
         ("A", None, 1),
         ("A", "m", "2"),
         ("A", "m", True),
         ("A", "m", 2**31),
     ],
-    ids=["int-code", "none-message", "str-criticity", "bool-criticity", "out-of-int"],
+    ids=[
+        "int-code",
+        "blank-code",
+        "none-message",
+        "str-criticity",
+        "bool-criticity",
+        "out-of-int",
+    ],
 )
 def test_add_error_ignores_an_invalid_error_with_a_warning(code, message, criticity):
     logger = MagicMock()
@@ -85,6 +87,9 @@ def test_sent_errors_drop_invalid_entries():
             API_ERROR,
             {"code": None, "message": "no code", "criticity": 0},
             {"code": "   ", "message": "blank code", "criticity": 0},
+            {"code": 404, "message": "integer code", "criticity": 0},
+            {"code": "NO_MESSAGE", "message": None, "criticity": 0},
+            {"code": "EXTRA", "message": "extra key", "criticity": 0, "other": 1},
             {"code": "STRING", "message": "string criticity", "criticity": "HIGH"},
             {"code": "DECIMAL", "message": "decimal criticity", "criticity": 1.5},
             {"code": "BOOLEAN", "message": "boolean criticity", "criticity": True},

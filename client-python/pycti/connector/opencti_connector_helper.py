@@ -57,7 +57,6 @@ from pycti.connector.opencti_callback_executor import (
     CallbackExecutor,
     ErrorCollector,
     _ConnectorRunError,
-    _parse_criticity,
 )
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
@@ -1887,26 +1886,13 @@ class ListenStream(threading.Thread):
 
 
 CONNECTOR_ERRORS_MAX_COUNT = 20
-CONNECTOR_ERROR_CODE_MAX_LENGTH = 256
-CONNECTOR_ERROR_MESSAGE_MAX_LENGTH = 1024
 
 
 def _sanitize_connector_error(error) -> Optional[Dict]:
+    # A malformed error is dropped: it must never make the ping mutation fail
     try:
-        code = error.get("code")
-        if code is None:
-            return None
-        code = str(code).strip()[:CONNECTOR_ERROR_CODE_MAX_LENGTH]
-        if not code:
-            return None
-        message = error.get("message")
-        message = ("" if message is None else str(message).strip())[
-            :CONNECTOR_ERROR_MESSAGE_MAX_LENGTH
-        ]
-        criticity = _parse_criticity(error.get("criticity"))
-        return {"code": code, "message": message, "criticity": criticity}
-    # A malformed error must never make the ping mutation fail.
-    except Exception:  # pylint: disable=broad-except
+        return _ConnectorRunError.model_validate(error).to_graphql_dict()
+    except ValidationError:
         return None
 
 
@@ -2190,8 +2176,12 @@ class ConnectorInfoErrorCollector(ErrorCollector):
     def __init__(self, connector_info: ConnectorInfo):
         self._connector_info = connector_info
 
-    def add_errors(self, errors: List[Dict]) -> None:
-        self._connector_info.errors = [*self._connector_info.errors, *errors]
+    def add_errors(self, errors: List[_ConnectorRunError]) -> None:
+        # ConnectorInfo.errors is public and holds dicts
+        self._connector_info.errors = [
+            *self._connector_info.errors,
+            *(error.model_dump() for error in errors),
+        ]
 
     def reset(self) -> None:
         self._connector_info.clear_errors()
