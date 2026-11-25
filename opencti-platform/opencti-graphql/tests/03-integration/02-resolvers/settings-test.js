@@ -6,7 +6,7 @@ import { createUploadFromTestDataFile, queryAsAdmin, queryAsUserIsExpectedForbid
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { downloadFile, downloadFileRange } from '../../../src/database/raw-file-storage';
-import { USER_EDITOR, USER_SECURITY } from '../../utils/testQuery';
+import { USER_EDITOR, USER_PLATFORM_ADMIN, USER_SECURITY } from '../../utils/testQuery';
 
 const ABOUT_QUERY = gql`
   query about {
@@ -727,5 +727,74 @@ describe('Settings countries source management', () => {
   it('should have no custom countries file after deletion', async () => {
     const queryResult = await queryAsAdmin({ query: COUNTRIES_SETTINGS_QUERY });
     expect(queryResult.data.settings.platform_map_countries_custom_file).toBeNull();
+  });
+});
+
+describe('Settings resolver XTM Hub token visibility', () => {
+  const XTM_HUB_TOKEN = 'xtm-hub-token-visibility-test';
+  const READ_XTM_HUB_TOKEN_QUERY = gql`
+    query settingsXtmHubToken {
+      settings {
+        id
+        xtm_hub_token
+      }
+    }
+  `;
+  const EDIT_XTM_HUB_TOKEN_QUERY = gql`
+    mutation SettingsEditXtmHubToken($id: ID!, $input: [EditInput]!) {
+      settingsEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+          platform_title
+          xtm_hub_token
+        }
+      }
+    }
+  `;
+  let settingsInternalId;
+  let initialToken;
+  let initialTitle;
+
+  beforeAll(async () => {
+    const queryResult = await queryAsAdmin({ query: READ_XTM_HUB_TOKEN_QUERY, variables: {} });
+    settingsInternalId = queryResult.data.settings.id;
+    initialToken = queryResult.data.settings.xtm_hub_token;
+    const titleResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    initialTitle = titleResult.data.settings.platform_title;
+    // Only the token is written: without the registered status, no registration data is added
+    await queryAsAdmin({
+      query: EDIT_XTM_HUB_TOKEN_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'xtm_hub_token', value: [XTM_HUB_TOKEN] }] },
+    });
+  });
+
+  afterAll(async () => {
+    await queryAsAdmin({
+      query: EDIT_XTM_HUB_TOKEN_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'xtm_hub_token', value: initialToken ? [initialToken] : [] }] },
+    });
+  });
+
+  it('should give the token to a user who manages the XTM Hub registration', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_XTM_HUB_TOKEN_QUERY, variables: {} });
+    expect(queryResult.data.settings.xtm_hub_token).toEqual(XTM_HUB_TOKEN);
+  });
+
+  it('should give null, not an error, to a user without the capability', async () => {
+    const editorResult = await queryAsUserWithSuccess(USER_EDITOR, { query: READ_XTM_HUB_TOKEN_QUERY, variables: {} });
+    expect(editorResult.data.settings.id).toEqual(settingsInternalId);
+    expect(editorResult.data.settings.xtm_hub_token).toBeNull();
+    // A settings administrator does not manage the XTM Hub registration either
+    const platformAdminResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, { query: READ_XTM_HUB_TOKEN_QUERY, variables: {} });
+    expect(platformAdminResult.data.settings.xtm_hub_token).toBeNull();
+  });
+
+  it('should hide the token in the settings returned by an edit of a user without the capability', async () => {
+    const editResult = await queryAsUserWithSuccess(USER_PLATFORM_ADMIN, {
+      query: EDIT_XTM_HUB_TOKEN_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_title', value: [initialTitle] }] },
+    });
+    expect(editResult.data.settingsEdit.fieldPatch.platform_title).toEqual(initialTitle);
+    expect(editResult.data.settingsEdit.fieldPatch.xtm_hub_token).toBeNull();
   });
 });

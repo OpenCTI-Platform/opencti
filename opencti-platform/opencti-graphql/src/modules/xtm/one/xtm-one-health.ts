@@ -3,6 +3,7 @@ import { RABBIT_QUEUE_PREFIX } from '../../../database/utils';
 import { getCachedRabbitmqMetrics } from '../../../database/rabbitmq';
 import { getEngineHealth } from '../../../database/engine';
 import { connectors, findRegularlyPingingConnectors, isConnectorStopped } from '../../connector/connector-domain';
+import { withTimeout } from '../../../telemetry/platformHealthMetrics';
 import type { AuthContext, AuthUser } from '../../../types/user';
 
 // The format XTM One reads (XTM-One-Platform/xtm-one dev-docs/platform-health.md, section 5): every key is optional,
@@ -38,9 +39,9 @@ const toCount = (value: unknown) => (typeof value === 'number' && Number.isFinit
 
 const collect = async <T>(part: string, read: () => Promise<T>): Promise<T | undefined> => {
   try {
-    return await read();
+    return await withTimeout(read(), `Timeout collecting ${part}`);
   } catch (error: any) {
-    // A part that cannot be read is left out: the snapshot rides on the registration heartbeat and never delays it.
+    // A part that cannot be read in time is left out: the snapshot rides on the registration heartbeat and never delays it.
     logApp.debug('[XTM One] Health snapshot part not collected', { part, cause: error?.message });
     return undefined;
   }

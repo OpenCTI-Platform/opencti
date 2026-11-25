@@ -202,6 +202,42 @@ export const issueXtmJwt = async (user: { id: string; user_email: string }, targ
   return token;
 };
 
+// -- XTM One user-token exchange ---------------------------------------------
+
+const XTM_ONE_EXCHANGE_TIMEOUT_MS = 5000;
+
+/**
+ * A JWT XTM One signs for the calling user, addressed to another platform registered in XTM One
+ * (`POST {xtm_one_url}/xtm/auth/exchange`, XTM One #952): this platform proves the user with its
+ * own per-user JWT addressed to XTM One, and XTM One answers a token whose subject is the XTM One
+ * account of that user. `undefined` when XTM One is not connected (URL and xtm:xtm_one_token, as
+ * every other XTM One call site: the default configuration names a URL without a token, and the
+ * admin never opted in) or on any refusal or failure, so a caller keeps its behaviour without it.
+ * Never cached here, never logged.
+ */
+export const exchangeXtmOneUserToken = async (user: { id: string; user_email: string }, audience: string): Promise<string | undefined> => {
+  if (!xtmOneUrl || !conf.get('xtm:xtm_one_token')) {
+    return undefined;
+  }
+  try {
+    const callerToken = await issueXtmJwt(user, xtmOneUrl);
+    const httpClient = getHttpClient({
+      baseURL: xtmOneUrl,
+      responseType: 'json',
+      trusted: true,
+      timeout: XTM_ONE_EXCHANGE_TIMEOUT_MS,
+      headers: { Authorization: `Bearer ${callerToken}`, Accept: 'application/json' },
+    });
+    const response = await httpClient.post('/xtm/auth/exchange', { audience }, { maxRedirects: 0 });
+    const token = response.data?.access_token;
+    return typeof token === 'string' && token.length > 0 ? token : undefined;
+  } catch (err: any) {
+    // Never log the request: its headers carry the user's token.
+    logApp.debug('[XTM_AUTH] XTM One user-token exchange refused', { status: err?.status ?? err?.response?.status, code: err?.code });
+    return undefined;
+  }
+};
+
 export const verifyXtmJwt = async (token: string) => {
   try {
     return await jwtVerify(token, resolveKey, { algorithms: ['EdDSA'] });

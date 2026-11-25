@@ -71,18 +71,25 @@ export const findInvestigationEnrichmentWorks = async (
   const investigationFilters = addFilter(args.filters, 'investigation_id', workspace.id);
 
   // 01. Collect the sources of the works of the investigation, reading only that field
-  const works = await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
+  const sourceIdsSet = new Set<string>();
+  await fullEntitiesList<BasicStoreEntity & { event_source_id?: string }>(
     context,
     user,
     [ENTITY_TYPE_WORK],
     {
       indices: [READ_INDEX_HISTORY],
       filters: investigationFilters,
+      orderBy: ['timestamp', 'internal_id'],
       baseData: true,
       baseFields: ['event_source_id'],
+      callback: async (works) => {
+        works.forEach((work) => {
+          if (isNotEmptyField(work.event_source_id)) sourceIdsSet.add(work.event_source_id);
+        });
+      },
     },
   );
-  const sourceIds = [...new Set(works.map((work) => work.event_source_id).filter(isNotEmptyField))];
+  const sourceIds = [...sourceIdsSet];
   if (sourceIds.length === 0) {
     return emptyPaginationResult();
   }
@@ -115,7 +122,8 @@ export const findInvestigationEnrichmentWorks = async (
 
   // 04. Paginate the works of the kept sources only
   const filters = addFilter(investigationFilters, 'event_source_id', allowedSourceIds);
-  return findWorkPaginated(context, user, { ...paginationArgs, filters });
+  const orderBy = [paginationArgs.orderBy ?? 'timestamp', 'internal_id'];
+  return findWorkPaginated(context, user, { ...paginationArgs, orderBy, filters });
 };
 
 type InvestigationWork = BasicStoreBase & { _index: string; investigation_id?: string; investigation_status?: string };

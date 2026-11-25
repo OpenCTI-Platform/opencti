@@ -10,7 +10,9 @@ import { deleteElementById, mergeEntities } from '../../../src/database/middlewa
 import { deleteWork, loadWorkById, reportExpectation, updateExpectationsNumber, updateProcessedTime } from '../../../src/domain/work';
 import { editWorkInvestigationStatus } from '../../../src/modules/workspace/investigation-enrichment';
 import { resetCacheForEntity } from '../../../src/database/cache';
-import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
+import { elBulk, elDeleteInstances, ES_DEFAULT_PAGINATION, ES_MAX_PAGINATION } from '../../../src/database/engine';
+import { INDEX_HISTORY } from '../../../src/database/utils';
 import { ENTITY_TYPE_INTRUSION_SET } from '../../../src/schema/stixDomainObject';
 import { ConnectorType } from '../../../src/generated/graphql';
 import { buildWorkerContext } from '../../utils/workContextHelper';
@@ -225,9 +227,9 @@ describe('Enrichments linked to an investigation', () => {
 
   describe('retrieval', () => {
     const ENRICHMENT_WORKS = gql`
-      query EnrichmentWorks($id: String!, $first: Int, $after: ID, $filters: FilterGroup, $entityIds: [String!]) {
+      query EnrichmentWorks($id: String!, $first: Int, $after: ID, $orderBy: WorksOrdering, $filters: FilterGroup, $entityIds: [String!]) {
         workspace(id: $id) {
-          enrichmentWorks(first: $first, after: $after, filters: $filters, entityIds: $entityIds) {
+          enrichmentWorks(first: $first, after: $after, orderBy: $orderBy, filters: $filters, entityIds: $entityIds) {
             edges { node { id status connector { id } } }
             pageInfo { hasNextPage endCursor globalCount }
           }
@@ -344,6 +346,31 @@ describe('Enrichments linked to an investigation', () => {
       expect(ids.sort()).toEqual([...tagged].sort());
     });
 
+    it('should ignore a work without a source', async () => {
+      const investigationId = await createWorkspace('investigation', 'Enrichment investigation (work without source)', 'edit');
+      dedicatedInvestigationIds.push(investigationId);
+      await addToInvestigation(investigationId, [enriched.id]);
+      const buildWork = (id: string, sourceId?: string) => ({
+        internal_id: id,
+        entity_type: ENTITY_TYPE_WORK,
+        event_type: ConnectorType.InternalEnrichment,
+        event_source_id: sourceId,
+        connector_id: INV_CONNECTOR_A,
+        investigation_id: investigationId,
+        timestamp: new Date().toISOString(),
+        status: 'complete',
+        messages: [],
+        errors: [],
+      });
+      const works: any[] = [buildWork('work_with_source', enriched.standard_id), buildWork('work_without_source')];
+      await elBulk(testContext, { refresh: true, body: works.flatMap((work) => [{ index: { _index: INDEX_HISTORY, _id: work.internal_id } }, work]) });
+      try {
+        expect(await listEnrichmentWorkIds(investigationId)).toEqual(['work_with_source']);
+      } finally {
+        await elDeleteInstances(testContext, works.map((work) => ({ ...work, _index: INDEX_HISTORY })));
+      }
+    });
+
     /**
      * Read the event source of each work of an investigation from the works query, by work id.
      */
@@ -416,6 +443,75 @@ describe('Enrichments linked to an investigation', () => {
       it('should list no work when no given entity can be loaded', async () => {
         expect(await listWorkIdsOfEntities(['unknown-entity'])).toEqual([]);
         expect(await listWorkIdsOfEntities([])).toEqual([]);
+      });
+
+      describe('beyond a page of works', () => {
+        let crowdedId: string;
+        const crowdedWorks: any[] = [];
+
+        beforeAll(async () => {
+          crowdedId = await createWorkspace('investigation', 'Enrichment investigation (crowded)', 'edit');
+          dedicatedInvestigationIds.push(crowdedId);
+          await addToInvestigation(crowdedId, [enriched.id, other.id]);
+          // More works than a page at one timestamp and status; the other entity's work sorts last by id
+          const timestamp = new Date().toISOString();
+          const buildWork = (id: string, sourceId: string) => ({
+            internal_id: id,
+            entity_type: ENTITY_TYPE_WORK,
+            event_type: ConnectorType.InternalEnrichment,
+            event_source_id: sourceId,
+            connector_id: INV_CONNECTOR_A,
+            investigation_id: crowdedId,
+            investigation_status: 'TO_REVIEW',
+            timestamp,
+            status: 'complete',
+            messages: [],
+            errors: [],
+          });
+          crowdedWorks.push(
+            ...Array.from({ length: ES_MAX_PAGINATION }, (_, i) => buildWork(`work_crowded_${i}`, enriched.standard_id)),
+            buildWork('work_crowded_other', other.standard_id),
+          );
+          await elBulk(testContext, { refresh: true, body: crowdedWorks.flatMap((work) => [{ index: { _index: INDEX_HISTORY, _id: work.internal_id } }, work]) });
+        });
+
+        afterAll(async () => {
+          await elDeleteInstances(testContext, crowdedWorks.map((work) => ({ ...work, _index: INDEX_HISTORY })));
+        });
+
+        /**
+         * Read every work of the crowded investigation, page after page.
+         */
+        const pageAllWorkIds = async (orderBy?: string) => {
+          const ids: string[] = [];
+          let after: string | undefined;
+          let hasNextPage = true;
+          while (hasNextPage) {
+            const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: crowdedId, first: ES_DEFAULT_PAGINATION, after, orderBy } });
+            const connection = result.data?.workspace.enrichmentWorks;
+            ids.push(...connection.edges.map((e: any) => e.node.id));
+            hasNextPage = connection.pageInfo.hasNextPage;
+            after = connection.pageInfo.endCursor;
+          }
+          return ids;
+        };
+
+        it('should find the works of an entity beyond the first page of works', async () => {
+          const result = await queryAsAdminWithSuccess({ query: ENRICHMENT_WORKS, variables: { id: crowdedId, first: 10, entityIds: [other.id] } });
+          expect(result.data?.workspace.enrichmentWorks.edges.map((e: any) => e.node.id)).toEqual(['work_crowded_other']);
+        });
+
+        it('should paginate every work exactly once despite equal timestamps', async () => {
+          const ids = await pageAllWorkIds();
+          expect(ids).toHaveLength(crowdedWorks.length);
+          expect(new Set(ids).size).toBe(crowdedWorks.length);
+        });
+
+        it('should paginate every work exactly once in the order asked for', async () => {
+          const ids = await pageAllWorkIds('status');
+          expect(ids).toHaveLength(crowdedWorks.length);
+          expect(new Set(ids).size).toBe(crowdedWorks.length);
+        });
       });
     });
 

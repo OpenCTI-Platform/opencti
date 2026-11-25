@@ -41,9 +41,10 @@ vi.mock('../../../src/database/sessionStore-memory', async (importOriginal) => {
       return fn();
     }
 
-    destroy(sid: string, fn: () => void) {
-      sharedSessions.delete(sid);
-      return fn();
+    // As the real stores, tell whether this call deleted the session
+    destroy(sid: string, fn: (error: unknown, result: unknown) => void) {
+      const deleted = sharedSessions.delete(sid);
+      return fn(null, { sessionId: sid, deleted });
     }
 
     touch(sid: string, sess: unknown, fn: () => void) {
@@ -217,5 +218,101 @@ describe('session: user sessions management', () => {
     await killOtherUserSessions('user-1', undefined);
 
     expect(await findUserSessions('user-1')).toHaveLength(2);
+  });
+});
+
+describe('session: maximum lifetime', () => {
+  const LOGIN_TIME = Date.parse('2026-01-01T08:00:00.000Z');
+  const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+  const sessionUser = { id: 'user-1', session_creation: new Date(LOGIN_TIME).toISOString() };
+
+  afterEach(() => {
+    delete process.env.APP__ENCRYPTION_KEY;
+    delete process.env.APP__SESSION_MANAGER;
+    delete process.env.APP__SESSION_MAX_LIFETIME;
+  });
+
+  it('should have no maximum lifetime by default', async () => {
+    const { getSessionMaxLifetime, isSessionOverMaxLifetime } = await loadSessionModule();
+    expect(getSessionMaxLifetime()).toEqual(0);
+    expect(isSessionOverMaxLifetime(sessionUser, getSessionMaxLifetime(), LOGIN_TIME + 365 * 24 * 60 * 60 * 1000)).toBe(false);
+  });
+
+  it('should read the maximum lifetime from the configuration', async () => {
+    process.env.APP__SESSION_MAX_LIFETIME = String(TWELVE_HOURS);
+    const { getSessionMaxLifetime } = await loadSessionModule();
+    expect(getSessionMaxLifetime()).toEqual(TWELVE_HOURS);
+  });
+
+  it('should refuse a maximum lifetime that is not a whole number of milliseconds in range', async () => {
+    for (const invalidValue of ['-1', '12h', 'twelve hours', '1.5', '2147483648']) {
+      process.env.APP__SESSION_MAX_LIFETIME = invalidValue;
+      const { getSessionMaxLifetime } = await loadSessionModule();
+      expect(() => getSessionMaxLifetime(), invalidValue).toThrowError(/Invalid app:session_max_lifetime/);
+    }
+  });
+
+  it('should refuse a maximum lifetime that the configuration parses into something else than a number', async () => {
+    // Converted to a number, true would be 1 ms and false or [] no limit
+    for (const invalidValue of ['true', 'false', '[]', '{}']) {
+      process.env.APP__SESSION_MAX_LIFETIME = invalidValue;
+      const { getSessionMaxLifetime } = await loadSessionModule();
+      expect(() => getSessionMaxLifetime(), invalidValue).toThrowError(/Invalid app:session_max_lifetime/);
+    }
+  });
+
+  it('should have no maximum lifetime when the configured value is empty', async () => {
+    for (const emptyValue of ['', 'null']) {
+      process.env.APP__SESSION_MAX_LIFETIME = emptyValue;
+      const { getSessionMaxLifetime } = await loadSessionModule();
+      expect(getSessionMaxLifetime(), emptyValue).toEqual(0);
+    }
+  });
+
+  it('should accept the highest maximum lifetime the platform settings can expose', async () => {
+    process.env.APP__SESSION_MAX_LIFETIME = '2147483647';
+    const { getSessionMaxLifetime } = await loadSessionModule();
+    expect(getSessionMaxLifetime()).toEqual(2147483647);
+  });
+
+  it('should keep a session under its maximum lifetime', async () => {
+    const { isSessionOverMaxLifetime } = await loadSessionModule();
+    expect(isSessionOverMaxLifetime(sessionUser, TWELVE_HOURS, LOGIN_TIME + TWELVE_HOURS - 1)).toBe(false);
+  });
+
+  it('should end a session at its maximum lifetime, counted from the login', async () => {
+    const { isSessionOverMaxLifetime } = await loadSessionModule();
+    expect(isSessionOverMaxLifetime(sessionUser, TWELVE_HOURS, LOGIN_TIME + TWELVE_HOURS)).toBe(true);
+    expect(isSessionOverMaxLifetime(sessionUser, TWELVE_HOURS, LOGIN_TIME + TWELVE_HOURS + 1)).toBe(true);
+  });
+
+  it('should end a session without a valid login time when a maximum lifetime is set', async () => {
+    const { isSessionOverMaxLifetime } = await loadSessionModule();
+    expect(isSessionOverMaxLifetime({ id: 'user-1' }, TWELVE_HOURS, LOGIN_TIME)).toBe(true);
+    expect(isSessionOverMaxLifetime({ id: 'user-1', session_creation: 'not a date' }, TWELVE_HOURS, LOGIN_TIME)).toBe(true);
+    expect(isSessionOverMaxLifetime({ id: 'user-1' }, 0, LOGIN_TIME)).toBe(false);
+  });
+});
+
+describe('session: end of a session', () => {
+  afterEach(() => {
+    sharedSessions.clear();
+    delete process.env.APP__ENCRYPTION_KEY;
+    delete process.env.APP__SESSION_MANAGER;
+  });
+
+  it('should tell only the first of concurrent calls that it ended the session', async () => {
+    const { endSessionByRawId } = await loadSessionModule();
+    sharedSessions.set('session-id', JSON.stringify({ user: { id: 'user-1' } }));
+
+    const results = await Promise.all([endSessionByRawId('session-id'), endSessionByRawId('session-id'), endSessionByRawId('session-id')]);
+
+    expect(results.filter((isDeleted) => isDeleted)).toHaveLength(1);
+    expect(sharedSessions.has('session-id')).toBe(false);
+  });
+
+  it('should not tell that it ended a session that does not exist', async () => {
+    const { endSessionByRawId } = await loadSessionModule();
+    expect(await endSessionByRawId('unknown-session-id')).toBe(false);
   });
 });

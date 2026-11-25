@@ -110,7 +110,8 @@ const HistoryDefinition: AttributeDefinition[] = [
       id,
       { name: 'provider', label: 'Provider', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'username', label: 'Username', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-      { name: 'reason', label: 'Reason', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true, featureFlag: SESSION_PRESENCE_FEATURE_FLAG },
+      // Reason of a logout: not behind the session presence flag, as the end of a session over its maximum lifetime gives one as well
+      { name: 'reason', label: 'Reason', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'message', label: 'Message', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'commit', label: 'Commit', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'element_id', label: 'Element ID', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
@@ -257,6 +258,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'xtm_hub_registration_status', label: 'XTM Hub registration status', type: 'string', format: 'enum', values: ['registered', 'unregistered', 'lost_connectivity'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_available_news_feed_types', label: 'XTM Hub available news feed types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: false, isFilterable: false },
     { name: 'xtm_hub_commercial_model', label: 'XTM Hub commercial model', type: 'string', format: 'enum', values: ['saas', 'other'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
+    { name: 'xtm_hub_organization_name', label: 'XTM Hub organization name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'filigran_chatbot_ai_cgu_status', label: 'XTM1 CGU acceptance status', type: 'string', format: 'enum', values: ['pending', 'disabled', 'enabled'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_bootstrap_status', label: 'Platform bootstrap status', type: 'string', format: 'enum', values: ['pending', 'completed'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false, featureFlag: CONFIG_PRESET_FEATURE_FLAG },
     { name: 'platform_ai_enabled', label: 'AI insight activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

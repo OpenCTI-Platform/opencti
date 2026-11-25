@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ── Mocks (must be declared before imports) ─────────────────────────────
 
@@ -13,11 +13,17 @@ vi.mock('../../../../src/database/utils', () => ({
 
 vi.mock('../../../../src/database/rabbitmq', () => ({
   getCachedRabbitmqMetrics: vi.fn(),
+  rabbitMQIsAlive: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/engine', () => ({
   getEngineHealth: vi.fn(),
+  isEngineAlive: vi.fn(),
 }));
+
+vi.mock('../../../../src/database/redis', () => ({ redisGetPlatformUsageMetrics: vi.fn(), redisIsAlive: vi.fn() }));
+vi.mock('../../../../src/database/raw-file-storage', () => ({ isStorageAlive: vi.fn() }));
+vi.mock('../../../../src/config/tracing', () => ({ meterManager: {} }));
 
 vi.mock('../../../../src/modules/connector/connector-domain', () => ({
   connectors: vi.fn(),
@@ -46,6 +52,10 @@ const queues = [
 describe('XTM One health snapshot', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should sum the messages waiting in the push queues and keep their consumers', () => {
@@ -91,6 +101,19 @@ describe('XTM One health snapshot', () => {
       connectors: [{ id: 'c1', name: 'MITRE', active: true, queue_messages: 0 }],
       search_engine: { status: 'green', disk_used_percent: 12 },
     });
+  });
+
+  it('should leave out a part that does not answer in time and still return the others', async () => {
+    vi.useFakeTimers();
+    vi.mocked(getCachedRabbitmqMetrics).mockResolvedValue({ consumers: 3, queues } as any);
+    vi.mocked(connectors).mockResolvedValue([]);
+    vi.mocked(findRegularlyPingingConnectors).mockResolvedValue([]);
+    vi.mocked(getEngineHealth).mockReturnValue(new Promise(() => {}));
+
+    const pending = buildXtmOneHealthSnapshot(context, user);
+    await vi.advanceTimersByTimeAsync(15_000);
+
+    expect(await pending).toEqual({ schema_version: 1, rabbitmq: { queue_messages: 40, consumers: 3 }, connectors: [] });
   });
 
   it('should return the bare format when nothing can be read', async () => {

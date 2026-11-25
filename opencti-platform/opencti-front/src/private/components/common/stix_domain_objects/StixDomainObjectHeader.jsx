@@ -53,6 +53,8 @@ import StixCoreObjectMenuItemUnderEE from '../stix_core_objects/StixCoreObjectMe
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import StixCoreObjectSharingList from '../stix_core_objects/StixCoreObjectSharingList';
+import { XtmEmblem } from '../xtm/counterpart/core/XtmEmblem';
+import { xtmProductsFor } from '../xtm/counterpart/core/xtmProducts';
 import { stixCoreObjectQuickSubscriptionContentQuery } from '../stix_core_objects/stixCoreObjectTriggersUtils';
 
 export const stixDomainObjectMutation = graphql`
@@ -293,6 +295,9 @@ const StixDomainObjectHeader = (props) => {
     enableEnrollPlaybook,
     enableAuthorizedMembers,
     redirectToContent,
+    // id of an object the other XTM products can also hold: one icon-only emblem per product that
+    // holds this entity type (xtmProductsFor), the server reads its key and answers per product
+    xtmCounterpartId,
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
@@ -520,6 +525,9 @@ const StixDomainObjectHeader = (props) => {
         }
         rightActions={(
           <>
+            {xtmCounterpartId && (
+              <XtmEmblem products={xtmProductsFor(stixDomainObject.entity_type ?? entityType)} objectId={xtmCounterpartId} />
+            )}
             {disableSharing !== true && (
               <StixCoreObjectSharing
                 elementId={stixDomainObject.id}

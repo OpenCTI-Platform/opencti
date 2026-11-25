@@ -1,7 +1,8 @@
 import Button from '../../../../components/common/button/Button';
 import { graphql, useFragment } from 'react-relay';
 import { GoToOpenAEVDrawerFragment$key } from './__generated__/GoToOpenAEVDrawerFragment.graphql';
-import { OaevLogo } from '../../../../static/images/logo_oaev';
+import openAevMark from '../../../../static/images/logo_oaev.svg';
+import { XtmMark } from '../../common/xtm/counterpart/core/XtmMark';
 import { useFormatter } from '../../../../components/i18n';
 import { useState } from 'react';
 import Drawer from '../../common/drawer/Drawer';
@@ -41,7 +42,7 @@ const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
   return (
     <>
       <Button
-        startIcon={<OaevLogo />}
+        startIcon={<XtmMark src={openAevMark} />}
         onClick={() => setOpen(true)}
         variant="tertiary"
         size="small"

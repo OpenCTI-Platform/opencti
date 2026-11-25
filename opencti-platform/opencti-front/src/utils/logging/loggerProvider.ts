@@ -6,6 +6,7 @@ import { DedupLogRecordProcessor, RECORDS_SUPPRESSED_EVENT_NAME } from './DedupL
 import type { SuppressedRecords } from './DedupLogRecordProcessor';
 import { GraphQLLogRecordExporter } from './GraphQLLogRecordExporter';
 import { SEVERITY_NUMBERS, logger } from './logger';
+import { isReloadingForStaleChunk } from '../staleChunkReload';
 
 let provider: LoggerProvider | undefined;
 let dropReported = false;
@@ -68,6 +69,10 @@ const onUncaughtError = (event: ErrorEvent) => {
 };
 
 const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+  // The page reloads to the new build: not an error worth reporting
+  if (isReloadingForStaleChunk(event.reason)) {
+    return;
+  }
   logger.error('Unhandled promise rejection', {
     eventName: 'opencti.frontend.unhandled_rejection',
     error: event.reason,
@@ -100,4 +105,15 @@ export const initLogger = (isDev: boolean = import.meta.env.DEV): LoggerProvider
   window.addEventListener('unhandledrejection', onUnhandledRejection);
   document.addEventListener('visibilitychange', onPageHidden);
   return provider;
+};
+
+// Undoes initLogger, so a test leaves no global provider or listener to the next one
+export const resetLoggerForTests = async () => {
+  window.removeEventListener('error', onUncaughtError);
+  window.removeEventListener('unhandledrejection', onUnhandledRejection);
+  document.removeEventListener('visibilitychange', onPageHidden);
+  const current = provider;
+  provider = undefined;
+  logs.disable();
+  await current?.shutdown();
 };

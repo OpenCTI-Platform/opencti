@@ -7,6 +7,7 @@ import { shutdownModules, startModules } from './managers';
 import { initLockFork } from './lock/master-lock';
 import { checkSystemDependencies } from './boot-utils';
 import { checkDefaultCredentials } from './config/default-credentials';
+import { getSessionMaxLifetime } from './database/session';
 import { checkSmtpSecurity } from './database/smtp';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
@@ -53,6 +54,12 @@ const doPlatformStart = async () => {
     } catch (outboundRequestsError) {
       logApp.error('[OPENCTI] Outbound requests configuration is invalid', { cause: outboundRequestsError });
       throw outboundRequestsError;
+    }
+    try {
+      getSessionMaxLifetime();
+    } catch (sessionConfigurationError) {
+      logApp.error('[OPENCTI] Session configuration is invalid', { cause: sessionConfigurationError });
+      throw sessionConfigurationError;
     }
     // Check all dependencies access
     try {

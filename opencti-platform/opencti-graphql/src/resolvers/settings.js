@@ -37,9 +37,11 @@ import { isEmailRewriteAllowed, smtpConfiguredEmail } from '../database/smtp';
 import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider/providers-configuration';
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
-import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout';
+import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout-defaults';
 import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
 import { isApiBasicAuthEnabled } from '../modules/user/user-basic-auth';
+import { readXtmHubTokenFor } from '../utils/settings.helper';
+import { getSessionMaxLifetime } from '../database/session';
 
 const settingsResolvers = {
   Query: {
@@ -55,6 +57,7 @@ const settingsResolvers = {
     platform_type: () => (IS_LTS_PLATFORM ? PlatformType.Lts : PlatformType.Standard),
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
+    platform_session_max_lifetime: () => getSessionMaxLifetime(),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     platform_critical_alerts: (_, __, context) => getCriticalAlerts(context, context.user),
     platform_protected_sensitive_config: (_, __, context) => getProtectedSensitiveConfig(context, context.user),
@@ -65,6 +68,7 @@ const settingsResolvers = {
     platform_session_presence_enabled: (settings) => settings.platform_session_presence_enabled ?? false,
     platform_session_presence_supported: () => isSessionPresenceSupported(),
     platform_email: (settings) => smtpConfiguredEmail(settings),
+    xtm_hub_token: (settings, __, context) => readXtmHubTokenFor(context.user, settings),
     platform_email_configurable: () => isEmailRewriteAllowed(),
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
     password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,

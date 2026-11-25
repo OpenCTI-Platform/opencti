@@ -1,6 +1,7 @@
 import { ChangeEvent, KeyboardEvent, useState } from 'react';
 import { Input } from '@filigran/design-system';
 import { useFormatter } from '../../../i18n';
+import { isImeComposing } from '../../../../utils/domEvent';
 import { toVariableToken } from '../../dashboardVariablesResolution';
 import type { ValueInputProps } from '../DashboardVariableValueInput';
 
@@ -45,7 +46,7 @@ const TextValueInput = ({ variable, value, onChange, disabled, label, commitOn, 
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') commit();
+    if (event.key === 'Enter' && !isImeComposing(event)) commit();
   };
 
   return (

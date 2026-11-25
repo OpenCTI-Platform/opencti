@@ -13,12 +13,12 @@ const MAX_COPIES = 100;
 export const freeConfigImportName = async (
   name: string,
   isTaken: (candidate: string) => Promise<boolean>,
-  { maxLength }: { maxLength?: number } = {},
+  { maxLength, maxCopies = MAX_COPIES }: { maxLength?: number; maxCopies?: number } = {},
 ) => {
   if (!(await isTaken(name))) {
     return name;
   }
-  for (let copy = 1; copy <= MAX_COPIES; copy += 1) {
+  for (let copy = 1; copy <= maxCopies; copy += 1) {
     const suffix = ` (${copy})`;
     const base = maxLength ? name.slice(0, maxLength - suffix.length) : name;
     const candidate = `${base}${suffix}`;
