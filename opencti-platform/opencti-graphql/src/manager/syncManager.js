@@ -297,10 +297,21 @@ const stageSyncFile = async (request, syncFile) => {
   return storageKey;
 };
 
+// An error status carries the unread body stream, which holds the connection until the fetch timeout unless destroyed.
+const fetchSyncFileStream = async (streamClient, fetchUri) => {
+  try {
+    const response = await streamClient.get(fetchUri);
+    return response;
+  } catch (fetchError) {
+    fetchError?.response?.data?.destroy?.();
+    throw fetchError;
+  }
+};
+
 const fetchSyncFileInlineOrStaged = async (stagingRequest) => {
   const { request, entityFile, fetchUri } = stagingRequest;
   const { streamClient } = request.fileStaging;
-  const response = await streamClient.get(fetchUri);
+  const response = await fetchSyncFileStream(streamClient, fetchUri);
   const syncFile = await readSyncFileUnderThreshold(response.data, response.headers);
   if (syncFile.data) {
     inlineSyncFile(entityFile, syncFile.data);
@@ -386,7 +397,7 @@ export const transformDataWithReverseIdAndFilesData = async (request) => {
     const entityFile = entityFiles[index];
     const { uri: fileUri } = entityFile;
     if (fileStaging) {
-      // Only this platform may set a staged key, never the sending platform.
+      // Drops a staged key the sending platform put on an extension file, only this platform sets them there.
       delete entityFile.x_opencti_storage_key;
     }
     try {
@@ -398,6 +409,8 @@ export const transformDataWithReverseIdAndFilesData = async (request) => {
       if (fileStaging) {
         const storageKey = await resolveStagedFileKey({ request, entityFile, fetchUri, index });
         if (storageKey) {
+          // A previous attempt may have inlined the file, and pycti reads data before the key.
+          delete entityFile.data;
           entityFile.x_opencti_storage_key = storageKey;
         }
         continue;

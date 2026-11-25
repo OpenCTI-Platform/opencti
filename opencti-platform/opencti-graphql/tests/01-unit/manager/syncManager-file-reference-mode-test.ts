@@ -118,6 +118,10 @@ interface StreamResponse {
   headers: StreamResponseHeaders;
 }
 
+interface ErrorWithStreamResponse extends Error {
+  response: StreamResponse;
+}
+
 interface TestHttpClient {
   get: (...args: unknown[]) => unknown;
 }
@@ -330,6 +334,25 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     expect(mockRawUpload).toHaveBeenCalledTimes(1);
     expect(firstKey).toMatch(STAGED_KEY_PATTERN);
     expect(secondKey).toEqual(firstKey);
+  });
+
+  it('drops the inline data of a previous attempt when the retry stages the file', async () => {
+    mockConf({ isReferenceModeEnabled: true });
+    const smallFileBytes = Buffer.from('tiny-pdf-bytes');
+    mockStreamClientGet
+      .mockResolvedValueOnce({ data: Readable.from([smallFileBytes]), headers: { 'content-length': String(smallFileBytes.length) } })
+      .mockResolvedValueOnce(largeFileResponse(Readable.from([Buffer.from('large-pdf-bytes')])));
+    mockRawUpload.mockResolvedValue(undefined);
+    const transform = await loadTransform();
+    const remoteData = buildRemoteFileData(buildReportFile(), 'Report');
+    const fileStaging = buildFileStaging(true);
+
+    await transform(buildRequest(remoteData, fileStaging));
+    const { data } = await transform(buildRequest(remoteData, fileStaging));
+
+    const resultFile = data.extensions[STIX_EXT_OCTI].files[0];
+    expect(resultFile.x_opencti_storage_key).toMatch(STAGED_KEY_PATTERN);
+    expect(resultFile.data).toBeUndefined();
   });
 
   it('uploads a staged file once and pushes the same key again when the first push fails', async () => {
@@ -551,6 +574,21 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     expect(mockRawUpload).toHaveBeenCalledTimes(1);
     expect(mockWait.mock.calls).toEqual([[1000]]);
     expect(mockLogWarn).toHaveBeenCalledWith(expect.stringContaining('Skipping file'), expect.objectContaining({ message: 'Request failed with status code 503' }));
+  });
+
+  it('closes the error response body when the sending platform answers with an error status', async () => {
+    mockConf({ isReferenceModeEnabled: true });
+    const errorBody = Readable.from([Buffer.from('not found')]);
+    const notFoundError = new MockHttpClientError('Request failed with status code 404') as ErrorWithStreamResponse;
+    notFoundError.response = { data: errorBody, headers: {} };
+    mockStreamClientGet.mockRejectedValue(notFoundError);
+    const transform = await loadTransform();
+
+    const { data } = await transform(buildRequest(buildRemoteFileData(buildReportFile(), 'Report'), buildFileStaging(true)));
+
+    expect(errorBody.destroyed).toBe(true);
+    expect(data.extensions[STIX_EXT_OCTI].files[0].x_opencti_storage_key).toBeUndefined();
+    expect(mockLogWarn).toHaveBeenCalledWith(expect.stringContaining('Skipping file'), expect.objectContaining({ message: 'Request failed with status code 404' }));
   });
 
   it('skips the file as today when the sending platform stream breaks during the upload', async () => {
