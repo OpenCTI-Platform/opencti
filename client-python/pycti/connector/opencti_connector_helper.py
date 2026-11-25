@@ -3322,8 +3322,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
 
     def _run_and_collect_errors(
         self, message_callback: Callable[[], Optional[List[Dict]]]
-    ) -> None:
-        CallbackExecutor(
+    ) -> bool:
+        """Run the connector and collect its errors.
+
+        :return: True when the run returned or raised no blocking error (criticity 40 or more)
+        :rtype: bool
+        """
+        succeeded = CallbackExecutor(
             ConnectorInfoErrorCollector(self.connector_info),
             self.connector_logger,
             self.metric,
@@ -3334,6 +3339,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 "Errors reported by the connector run",
                 {"errors": self.connector_info.errors},
             )
+        return succeeded
 
     def _schedule_process(
         self,
@@ -3358,10 +3364,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             check_connector_buffering = self.check_connector_buffering()
 
             if not check_connector_buffering:
-                # Start running the connector
-                self._run_and_collect_errors(message_callback)
-                # Lets you know what is the last run of the connector datetime
-                self.last_run_datetime()
+                # Start running the connector, then let you know its datetime if it succeeded
+                if self._run_and_collect_errors(message_callback):
+                    self.last_run_datetime()
 
         except Exception as err:
             self.metric.inc("error_count")
@@ -3397,6 +3402,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         are reported to the platform with the ping. So is an exception the callback
         raises: each one (each exception of an ``ExceptionGroup``) with its ``code``
         and ``criticity`` attributes, or ``other.unknown`` and 50 when it has none.
+        ``last_run_datetime`` is only updated after a run that returned or raised
+        no blocking error, of criticity 40 or more.
 
         :param message_callback: The connector process callback function
         :type message_callback: Callable[[], Optional[List[Dict]]]
@@ -3411,23 +3418,27 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 self.connector_info.run_and_terminate = True
                 check_connector_buffering = self.check_connector_buffering()
 
+                # A run skipped by buffering keeps updating last_run_datetime, as before
+                run_succeeded = True
                 if not check_connector_buffering:
                     # Start running the connector
-                    self._run_and_collect_errors(message_callback)
+                    run_succeeded = self._run_and_collect_errors(message_callback)
 
-                # Lets you know what is the last run of the connector datetime
-                self.last_run_datetime()
+                # Lets you know what is the last run of the connector datetime, if it succeeded
+                if run_succeeded:
+                    self.last_run_datetime()
                 self.connector_logger.info("Closing run and terminate")
                 self.force_ping()
                 sys.exit(0)
             else:
                 # Start running the connector
-                self._run_and_collect_errors(message_callback)
+                run_succeeded = self._run_and_collect_errors(message_callback)
 
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
-                # Lets you know what is the last run of the connector datetime
-                self.last_run_datetime()
+                # Lets you know what is the last run of the connector datetime, if it succeeded
+                if run_succeeded:
+                    self.last_run_datetime()
                 # Lets you know what the next run of the scheduler will be
                 self.next_run_datetime(duration_period)
 

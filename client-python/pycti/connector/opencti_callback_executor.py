@@ -52,6 +52,9 @@ class _ConnectorRunError(BaseModel):
 CONNECTOR_UNKNOWN_ERROR_CODE = "other.unknown"
 CONNECTOR_UNKNOWN_ERROR_CRITICITY = 50
 
+# Same threshold as the platform: from this criticity an error is blocking, and the run failed
+CONNECTOR_ERROR_BLOCKING_CRITICITY = 40
+
 # Built in since Python 3.11 only
 _BASE_EXCEPTION_GROUP = getattr(builtins, "BaseExceptionGroup", None)
 
@@ -169,14 +172,26 @@ class CallbackExecutor:
         self._metric = metric
         self._reset_on_each_run = reset_on_each_run
 
-    def execute(self, callback: Callable[[], Any]) -> None:
+    def execute(self, callback: Callable[[], Any]) -> bool:
+        """Run the callback and report its errors to the error collector.
+
+        :param callback: The connector run
+        :type callback: Callable
+        :return: True when the run succeeded: every error it returned or raised
+            is below ``CONNECTOR_ERROR_BLOCKING_CRITICITY``
+        :rtype: bool
+        """
         # Errors belong to a run: reset before it so those added with add_error during it are kept
         if self._reset_on_each_run:
             self._error_collector.reset()
         result, exception = self._invoke(callback)
-        self._error_collector.add_errors(self._validate(result))
+        errors = self._validate(result)
+        self._error_collector.add_errors(errors)
         if exception is not None:
-            self._report_exception(exception)
+            errors = errors + self._report_exception(exception)
+        return all(
+            error.criticity < CONNECTOR_ERROR_BLOCKING_CRITICITY for error in errors
+        )
 
     @staticmethod
     def _is_iterable_collection(value: Any) -> bool:
@@ -225,6 +240,8 @@ class CallbackExecutor:
                 )
         return valid_errors
 
-    def _report_exception(self, exception: Exception) -> None:
-        self._error_collector.add_errors(_ExceptionConverter(exception).to_error_list())
+    def _report_exception(self, exception: Exception) -> List[_ConnectorRunError]:
+        errors = _ExceptionConverter(exception).to_error_list()
+        self._error_collector.add_errors(errors)
         self._metric.inc("error_count")
+        return errors

@@ -564,3 +564,72 @@ def test_run_and_terminate_sends_generator_exception_on_final_ping():
 
     helper, sent_on_force_ping = _run_and_terminate(process)
     assert sent_on_force_ping[0] == [BAD_VALUE_ERROR, API_ERROR]
+
+
+BLOCKING_ERROR = {"code": "AUTH_FAILED", "message": "Invalid API key", "criticity": 40}
+
+RUN_OUTCOMES = pytest.mark.parametrize(
+    "process, succeeded",
+    [
+        (lambda: None, True),
+        (lambda: [], True),
+        (lambda: [API_ERROR, RATE_ERROR], True),
+        (lambda: [API_ERROR, BLOCKING_ERROR], False),
+        (_raise(ValueError("bad value")), False),
+    ],
+    ids=[
+        "no-result",
+        "no-error",
+        "advisory-errors",
+        "blocking-error",
+        "exception",
+    ],
+)
+
+
+@RUN_OUTCOMES
+def test_first_run_sets_last_run_datetime_only_when_it_succeeds(process, succeeded):
+    helper = _run_raising(process)
+    assert helper.last_run_datetime.called is succeeded
+
+
+@RUN_OUTCOMES
+def test_later_run_sets_last_run_datetime_only_when_it_succeeds(process, succeeded):
+    helper = _build_helper()
+    helper._schedule_process(MagicMock(), process, 60)
+    assert helper.last_run_datetime.called is succeeded
+
+
+@RUN_OUTCOMES
+def test_run_and_terminate_sets_last_run_datetime_only_when_it_succeeds(
+    process, succeeded
+):
+    helper, _ = _run_and_terminate(process)
+    assert helper.last_run_datetime.called is succeeded
+
+
+def test_errors_added_during_the_run_do_not_make_it_fail():
+    helper = _build_helper()
+
+    def process():
+        helper.connector_info.add_error(**BLOCKING_ERROR)
+
+    helper._schedule_process(MagicMock(), process, 60)
+    helper.last_run_datetime.assert_called_once()
+
+
+def test_later_run_skipped_by_buffering_does_not_set_last_run_datetime():
+    helper = _build_helper()
+    helper.check_connector_buffering.return_value = True
+    helper._schedule_process(MagicMock(), MagicMock(), 60)
+    helper.last_run_datetime.assert_not_called()
+
+
+def test_run_and_terminate_skipped_by_buffering_still_sets_last_run_datetime():
+    helper = _build_helper()
+    helper.connect_run_and_terminate = True
+    helper.check_connector_buffering.return_value = True
+    helper.force_ping = MagicMock()
+    with pytest.raises(SystemExit):
+        helper.schedule_process(MagicMock(), duration_period=60)
+    helper.last_run_datetime.assert_called_once()

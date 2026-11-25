@@ -125,3 +125,84 @@ def test_base_exceptions_propagate():
 
     with pytest.raises(KeyboardInterrupt):
         _run(process)
+
+
+def _execute(callback) -> bool:
+    return CallbackExecutor(InMemoryErrorCollector(), MagicMock(), MagicMock()).execute(
+        callback
+    )
+
+
+@pytest.mark.parametrize(
+    "result",
+    [None, [], True, "done", iter([])],
+    ids=["none", "empty-list", "true", "status-string", "empty-generator"],
+)
+def test_run_without_errors_succeeds(result):
+    assert _execute(lambda: result) is True
+
+
+def test_run_returning_only_malformed_errors_succeeds():
+    # Malformed errors are dropped with a warning: nothing is reported
+    assert _execute(lambda: [{"code": "A"}, "not an error"]) is True
+
+
+def test_run_returning_a_single_error_dict_succeeds():
+    # Ignored with a warning, as it is not a list
+    assert _execute(lambda: API_ERROR) is True
+
+
+def _error(criticity: int) -> Dict:
+    return {"code": f"CRITICITY_{criticity}", "message": "", "criticity": criticity}
+
+
+@pytest.mark.parametrize(
+    "criticities, succeeded",
+    [
+        ([0], True),
+        ([39], True),
+        ([40], False),
+        ([0, 39, 3], True),
+        ([0, 50, 3], False),
+    ],
+    ids=["zero", "below-threshold", "threshold", "all-below", "one-blocking"],
+)
+def test_run_returning_errors_fails_from_a_blocking_criticity(criticities, succeeded):
+    assert _execute(lambda: [_error(c) for c in criticities]) is succeeded
+
+
+def test_run_yielding_a_blocking_error_fails():
+    def process():
+        yield _error(40)
+
+    assert _execute(process) is False
+
+
+def test_run_raising_without_criticity_fails():
+    def process():
+        raise ValueError("bad value")
+
+    assert _execute(process) is False
+
+
+@pytest.mark.parametrize(
+    "criticity, succeeded",
+    [(39, True), (40, False)],
+    ids=["below-threshold", "threshold"],
+)
+def test_run_raising_uses_the_criticity_of_the_exception(criticity, succeeded):
+    exc = Exception("advisory")
+    exc.criticity = criticity
+
+    def process():
+        raise exc
+
+    assert _execute(process) is succeeded
+
+
+def test_run_raising_a_blocking_exception_after_advisory_errors_fails():
+    def process():
+        yield _error(0)
+        raise ValueError("bad value")
+
+    assert _execute(process) is False
