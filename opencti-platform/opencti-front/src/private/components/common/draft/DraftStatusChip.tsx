@@ -14,7 +14,8 @@ interface DraftStatusChipProps {
 }
 
 const DraftStatusChip: React.FC<DraftStatusChipProps> = ({ draftStatus, workflowCurrentStatus }) => {
-  if (workflowCurrentStatus) {
+  // A validated draft is read-only: its workflow instance may be a backfill stuck on the initial state
+  if (workflowCurrentStatus && draftStatus === 'open') {
     return <ItemStatus status={workflowCurrentStatus} />;
   }
 
