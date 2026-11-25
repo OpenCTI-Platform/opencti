@@ -89,7 +89,7 @@ export const extractUserAndCollection = async (req, res, id) => {
     throw ForbiddenAccess();
   }
   if (findCollection.taxii_public) {
-    const publicUser = await resolvePublicUser(taxiiContext, findCollection.taxii_public_user_id);
+    const publicUser = await resolvePublicUser(taxiiContext, findCollection);
     const settings = await getEntityFromCache(taxiiContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     taxiiContext.user_inside_platform_organization = isUserInPlatformOrganization(publicUser, settings);
     return { context: taxiiContext, user: publicUser, collection: findCollection };

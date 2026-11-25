@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
 import * as MiddlewareLoader from '../../../../src/database/middleware-loader';
+import * as Engine from '../../../../src/database/engine';
 import { createFeed, editFeed } from '../../../../src/modules/dataSharing/feed-domain';
 import { createStreamCollection, streamCollectionEditField } from '../../../../src/modules/dataSharing/streamCollection-domain';
 import { createTaxiiCollection, taxiiCollectionEditField } from '../../../../src/modules/dataSharing/taxiiCollection-domain';
@@ -124,6 +125,34 @@ describe('editFeed domain validation', () => {
     await expect(editFeed(mockContext, mockUser, 'feed-id', input)).rejects.toThrow('The user configured for this public sharing no longer exists');
   });
 
+  it('should throw when clearing feed_public_user_id of a public feed without sending feed_public', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F', feed_public: true, feed_public_user_id: VALID_USER_ID } as any);
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public_user_id: null, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await expect(editFeed(mockContext, mockUser, 'feed-id', input)).rejects.toThrow('A user must be configured when the feed is public');
+    expect(Engine.elReplace).not.toHaveBeenCalled();
+  });
+
+  it('should succeed when clearing feed_public_user_id while making the feed private', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F', feed_public: true, feed_public_user_id: VALID_USER_ID } as any);
+    const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: false, feed_public_user_id: null, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await editFeed(mockContext, mockUser, 'feed-id', input);
+    expect(Engine.elReplace).toHaveBeenCalled();
+  });
+
+  it('should succeed when editing other fields of a public feed without public user, like the collections', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F', feed_public: true } as any);
+    const input = { name: 'Renamed', separator: ',', feed_types: [], feed_attributes: [], feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await editFeed(mockContext, mockUser, 'feed-id', input);
+    expect(Engine.elReplace).toHaveBeenCalled();
+  });
+
+  it('should succeed when keeping the stored public user of a public feed', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ _index: 'idx', internal_id: 'feed-id', name: 'F', feed_public: true, feed_public_user_id: VALID_USER_ID } as any);
+    const input = { name: 'Renamed', separator: ',', feed_types: [], feed_attributes: [], feed_public: true, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
+    await editFeed(mockContext, mockUser, 'feed-id', input);
+    expect(Engine.elReplace).toHaveBeenCalled();
+  });
+
   it('should throw when feed does not exist', async () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue(undefined as any);
     const input = { name: 'F', separator: ',', feed_types: [], feed_attributes: [], feed_public: false, feed_date_attribute: 'created_at', rolling_time: 60, include_header: false } as FeedAddInput;
@@ -216,6 +245,55 @@ describe('streamCollectionEditField validation', () => {
     await streamCollectionEditField(mockContext, mockUser, 'col-id', input);
     expect(Middleware.updateAttribute).toHaveBeenCalled();
   });
+
+  it('should throw when clearing stream_public_user_id of a collection that is public', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'S', stream_public: true, stream_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'stream_public_user_id', value: [''] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should throw when clearing stream_public_user_id while setting stream_public to true', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'S', stream_public: false, stream_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'stream_public_user_id', value: [''] }, { key: 'stream_public', value: ['true'] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should throw when setting stream_public to the boolean true without any public user', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', stream_public: false } as any);
+    const input = [{ key: 'stream_public', value: [true] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should throw when clearing stream_public_user_id while setting stream_public to the boolean true', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', stream_public: false, stream_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'stream_public_user_id', value: [null] }, { key: 'stream_public', value: [true] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+  });
+
+  it('should throw when removing stream_public_user_id with an empty value of a public collection', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', stream_public: true, stream_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'stream_public_user_id', value: [] }];
+    await expect(streamCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the stream collection is public');
+  });
+
+  it('should proceed when clearing stream_public_user_id while making the collection private', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'S', stream_public: true, stream_public_user_id: VALID_USER_ID } as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'S', id: 'col-id' } } as any);
+    const input = [{ key: 'stream_public', value: ['false'] }, { key: 'stream_public_user_id', value: [''] }];
+    await streamCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+
+  it('should proceed when clearing stream_public_user_id of a private collection', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'S', stream_public: false, stream_public_user_id: VALID_USER_ID } as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'S', id: 'col-id' } } as any);
+    const input = [{ key: 'stream_public_user_id', value: [''] }];
+    await streamCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
 });
 
 // ---------- TaxiiCollection ----------
@@ -291,6 +369,55 @@ describe('taxiiCollectionEditField validation', () => {
     vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public_user_id: VALID_USER_ID } as any);
     vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'T', id: 'col-id' } } as any);
     const input = [{ key: 'taxii_public', value: ['true'] }];
+    await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+
+  it('should throw when clearing taxii_public_user_id of a collection that is public', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'taxii_public_user_id', value: [''] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should throw when clearing taxii_public_user_id while setting taxii_public to true', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public: false, taxii_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'taxii_public_user_id', value: [''] }, { key: 'taxii_public', value: ['true'] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should throw when setting taxii_public to the boolean true without any public user', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', taxii_public: false } as any);
+    const input = [{ key: 'taxii_public', value: [true] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+    expect(Middleware.updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should throw when clearing taxii_public_user_id while setting taxii_public to the boolean true', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', taxii_public: false, taxii_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'taxii_public_user_id', value: [null] }, { key: 'taxii_public', value: [true] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+  });
+
+  it('should throw when removing taxii_public_user_id with an empty value of a public collection', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'X', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as any);
+    const input = [{ key: 'taxii_public_user_id', value: [] }];
+    await expect(taxiiCollectionEditField(mockContext, mockUser, 'col-id', input)).rejects.toThrow('A user must be configured when the Taxii collection is public');
+  });
+
+  it('should proceed when clearing taxii_public_user_id while making the collection private', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public: true, taxii_public_user_id: VALID_USER_ID } as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'T', id: 'col-id' } } as any);
+    const input = [{ key: 'taxii_public', value: ['false'] }, { key: 'taxii_public_user_id', value: [''] }];
+    await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
+    expect(Middleware.updateAttribute).toHaveBeenCalled();
+  });
+
+  it('should proceed when clearing taxii_public_user_id of a private collection', async () => {
+    vi.mocked(MiddlewareLoader.storeLoadById).mockResolvedValue({ id: 'col-id', name: 'T', taxii_public: false, taxii_public_user_id: VALID_USER_ID } as any);
+    vi.mocked(Middleware.updateAttribute).mockResolvedValue({ element: { name: 'T', id: 'col-id' } } as any);
+    const input = [{ key: 'taxii_public_user_id', value: [''] }];
     await taxiiCollectionEditField(mockContext, mockUser, 'col-id', input);
     expect(Middleware.updateAttribute).toHaveBeenCalled();
   });

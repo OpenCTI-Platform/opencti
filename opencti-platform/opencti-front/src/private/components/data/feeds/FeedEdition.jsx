@@ -50,6 +50,7 @@ import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ObjectMembersField from '../../common/form/ObjectMembersField';
 import CreatorField from '../../common/form/CreatorField';
+import PublicSharingUserMissingAlert from '../PublicSharingUserMissingAlert';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
@@ -406,6 +407,7 @@ const FeedEditionContainer = (props) => {
                           onChange={(name, value) => setFieldValue(name, value)}
                         />
                       )}
+                      {values.feed_public && feed.feed_public && !feed.feed_public_user_id && <PublicSharingUserMissingAlert />}
                     </Alert>
                     <Field
                       component={TextField}
@@ -783,6 +785,7 @@ const FeedEditionFragment = createFragmentContainer(FeedEditionContainer, {
         }
       }
       feed_public
+      feed_public_user_id
       feed_public_user {
         id
         entity_type

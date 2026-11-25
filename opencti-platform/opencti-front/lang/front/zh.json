@@ -7004,5 +7004,7 @@
   "Not found across the XTM Platform": "在 XTM 平台中未找到",
   "Found": "已找到",
   "Not found": "未找到",
-  "Unavailable": "不可用"
+  "Unavailable": "不可用",
+  "No public user is configured": "未配置公开用户",
+  "Depending on the platform configuration, it is served with full access to the platform data, ignoring markings and organizations, or it is refused. A user must be selected to share it.": "根据平台配置，它将以对平台数据的完全访问权限提供（忽略标记和组织），或被拒绝。必须选择一个用户才能共享。"
 }

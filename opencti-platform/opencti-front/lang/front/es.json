@@ -7004,5 +7004,7 @@
   "Not found across the XTM Platform": "No encontrado en la plataforma XTM",
   "Found": "Encontrado",
   "Not found": "No encontrado",
-  "Unavailable": "No disponible"
+  "Unavailable": "No disponible",
+  "No public user is configured": "No hay ningún usuario público configurado",
+  "Depending on the platform configuration, it is served with full access to the platform data, ignoring markings and organizations, or it is refused. A user must be selected to share it.": "Según la configuración de la plataforma, se sirve con acceso completo a los datos de la plataforma, sin tener en cuenta los marcados ni las organizaciones, o se rechaza. Se debe seleccionar un usuario para compartirlo."
 }
