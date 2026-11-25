@@ -55,14 +55,26 @@ export const decideEngineClient = (info: EngineInfo): EngineClient => {
   return major >= 9 ? 'elasticsearch9' : 'elasticsearch8';
 };
 
-const authorizationHeader = (auth: EngineConnection['auth'], url: URL): string | undefined => {
+// The user and password of the first URL holding both, which the Elastic and OpenSearch clients use over the configured ones (their getAuth)
+const findUrlCredentials = (nodes: string[]): { username: string; password: string } | undefined => {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const { username, password } = new URL(nodes[index]);
+    if (username !== '' && password !== '') {
+      return { username: decodeURIComponent(username), password: decodeURIComponent(password) };
+    }
+  }
+  return undefined;
+};
+
+const authorizationHeader = (auth: EngineConnection['auth'], nodes: string[], url: URL): string | undefined => {
   if (auth.apiKey) {
     const key = typeof auth.apiKey === 'string' ? auth.apiKey : Buffer.from(`${auth.apiKey.id}:${auth.apiKey.api_key}`).toString('base64');
     return `ApiKey ${key}`;
   }
   // Credentials may also be written in the URL, which the Elastic and OpenSearch clients accept
-  const username = auth.username || decodeURIComponent(url.username);
-  const password = auth.password || decodeURIComponent(url.password);
+  const urlCredentials = findUrlCredentials(nodes);
+  const username = urlCredentials?.username ?? (auth.username || decodeURIComponent(url.username));
+  const password = urlCredentials?.password ?? (auth.password || decodeURIComponent(url.password));
   if (username) {
     return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
   }
@@ -71,9 +83,9 @@ const authorizationHeader = (auth: EngineConnection['auth'], url: URL): string |
 
 // GET / on the engine, with the same TLS, credentials, proxy and timeout as the clients
 export const probeEngine = async (connection: EngineConnection): Promise<EngineInfo> => {
-  const node = Array.isArray(connection.url) ? connection.url[0] : connection.url;
-  const url = new URL(node);
-  const authorization = authorizationHeader(connection.auth, url);
+  const nodes = Array.isArray(connection.url) ? connection.url : [connection.url];
+  const url = new URL(nodes[0]);
+  const authorization = authorizationHeader(connection.auth, nodes, url);
   url.username = '';
   url.password = '';
   const tls = { ca: connection.ca ?? undefined, rejectUnauthorized: connection.rejectUnauthorized };
