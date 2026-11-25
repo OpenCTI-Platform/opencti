@@ -1,9 +1,12 @@
 import { logApp } from '../../../config/conf';
 import { RABBIT_QUEUE_PREFIX } from '../../../database/utils';
 import { getCachedRabbitmqMetrics } from '../../../database/rabbitmq';
-import { getEngineHealth } from '../../../database/engine';
-import { connectors, findRegularlyPingingConnectors, isConnectorStopped } from '../../connector/connector-domain';
-import { withTimeout } from '../../../telemetry/platformHealthMetrics';
+import { getEntitiesListFromCache } from '../../../database/cache';
+import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
+import { getPlatformUsageMetrics, withTimeout } from '../../../telemetry/platformHealthMetrics';
+import { isConnectorStopped, refreshConnectorsLiveness } from '../../connector/connector-domain';
+import type { CachedConnector } from '../../connector/connector-types';
+import type { IngestionHealthFields } from '../../ingestionHealth/ingestionHealth-types';
 import type { AuthContext, AuthUser } from '../../../types/user';
 
 // The format XTM One reads (XTM-One-Platform/xtm-one dev-docs/platform-health.md, section 5): every key is optional,
@@ -11,12 +14,11 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 export const XTM_ONE_HEALTH_SCHEMA_VERSION = 1;
 // XTM One keeps 500 connectors at most.
 const MAX_CONNECTORS = 500;
-const SEARCH_STATUSES = ['green', 'yellow', 'red'];
 
 export interface XtmOneHealthConnector {
   id: string;
   name: string;
-  // Expected to report: not stopped on purpose and pinging continuously, so a silent one is a stale one.
+  // Expected to report: not stopped and followed by the ingestion health manager, so a silent one is a stale one.
   active: boolean;
   updated_at?: string;
   queue_messages: number;
@@ -55,11 +57,9 @@ export const buildRabbitmqHealth = (stats: { consumers?: number; queues?: Rabbit
   };
 };
 
-export const buildConnectorsHealth = (
-  registeredConnectors: any[],
-  pingingIds: Set<string>,
-  queues: RabbitmqQueue[],
-): XtmOneHealthConnector[] => {
+type SnapshotConnector = CachedConnector & IngestionHealthFields & { last_seen_at?: string | null };
+
+export const buildConnectorsHealth = (registeredConnectors: SnapshotConnector[], queues: RabbitmqQueue[]): XtmOneHealthConnector[] => {
   const messagesByQueue = new Map(queues.map((queue) => [queue.name, toCount(queue.messages)]));
   return registeredConnectors
     .filter((connector) => connector && !connector.built_in && connector.id)
@@ -68,7 +68,8 @@ export const buildConnectorsHealth = (
       const entry: XtmOneHealthConnector = {
         id: connector.id,
         name: connector.title || connector.name || connector.id,
-        active: !isConnectorStopped(connector) && pingingIds.has(connector.internal_id),
+        // The ingestion health manager clears the health of a stopped connector at its next run
+        active: !isConnectorStopped(connector) && !!connector.ingestion_health,
         queue_messages: (messagesByQueue.get(`${RABBIT_QUEUE_PREFIX}push_${connector.id}`) ?? 0)
           + (messagesByQueue.get(`${RABBIT_QUEUE_PREFIX}listen_${connector.id}`) ?? 0),
       };
@@ -77,21 +78,6 @@ export const buildConnectorsHealth = (
       }
       return entry;
     });
-};
-
-export const buildSearchEngineHealth = (health: { status?: string; allocation?: Array<Record<string, unknown>> }) => {
-  const engineHealth: { status?: string; disk_used_percent?: number } = {};
-  if (health.status && SEARCH_STATUSES.includes(health.status)) {
-    engineHealth.status = health.status;
-  }
-  // The fullest data node decides: the engine stops writing on a node past its flood stage watermark.
-  const percents = (health.allocation ?? [])
-    .map((node) => Number(node['disk.percent']))
-    .filter((percent) => Number.isFinite(percent));
-  if (percents.length > 0) {
-    engineHealth.disk_used_percent = Math.min(100, Math.max(...percents));
-  }
-  return engineHealth;
 };
 
 /**
@@ -105,22 +91,19 @@ export const buildXtmOneHealthSnapshot = async (context: AuthContext, user: Auth
     snapshot.rabbitmq = buildRabbitmqHealth(stats);
   }
   const connectorsHealth = await collect('connectors', async () => {
-    const [registeredConnectors, pingingConnectors] = await Promise.all([
-      connectors(context, user),
-      findRegularlyPingingConnectors(context, user),
-    ]);
-    const pingingIds = new Set(pingingConnectors.map((connector) => connector.internal_id));
-    return buildConnectorsHealth(registeredConnectors, pingingIds, stats?.queues ?? []);
+    const cachedConnectors = await getEntitiesListFromCache<SnapshotConnector>(context, user, ENTITY_TYPE_CONNECTOR);
+    return buildConnectorsHealth(await refreshConnectorsLiveness(cachedConnectors), stats?.queues ?? []);
   });
   if (connectorsHealth) {
     snapshot.connectors = connectorsHealth;
   }
-  const engineHealth = await collect('search_engine', getEngineHealth);
-  if (engineHealth) {
-    const searchEngine = buildSearchEngineHealth(engineHealth);
-    if (Object.keys(searchEngine).length > 0) {
-      snapshot.search_engine = searchEngine;
-    }
+  // The search engine health /health exposes, collected by the platform usage metrics manager
+  const { es_status, es_disk_used_percent } = getPlatformUsageMetrics();
+  if (es_status !== null || es_disk_used_percent !== null) {
+    snapshot.search_engine = {
+      ...(es_status !== null ? { status: es_status } : {}),
+      ...(es_disk_used_percent !== null ? { disk_used_percent: es_disk_used_percent } : {}),
+    };
   }
   return snapshot;
 };

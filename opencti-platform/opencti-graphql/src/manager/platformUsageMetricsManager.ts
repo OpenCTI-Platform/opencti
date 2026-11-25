@@ -1,13 +1,20 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { getEngineUsedSize } from '../database/engine';
+import { getEngineClusterStatus, getEngineDiskAllocation, getEngineUsedSize } from '../database/engine';
 import { getQueueConsumersByType } from '../database/rabbitmq';
 import { getIndexedFilesUsedSize } from '../modules/internal/document/document-domain';
 import { redisGetPlatformUsageMetrics, redisSetPlatformUsageMetrics } from '../database/redis';
 import { executionContext, SYSTEM_USER } from '../utils/access';
-import { DEFAULT_USAGE_METRICS_INTERVAL_MS, parseCachedUsageMetrics, type PlatformUsageMetrics, withTimeout } from '../telemetry/platformHealthMetrics';
+import {
+  DEFAULT_USAGE_METRICS_INTERVAL_MS,
+  ENGINE_STATUSES,
+  type EngineStatus,
+  parseCachedUsageMetrics,
+  type PlatformUsageMetrics,
+  withTimeout,
+} from '../telemetry/platformHealthMetrics';
 
-const PLATFORM_USAGE_METRICS_MANAGER_ENABLED = booleanConf('platform_usage_metrics_manager:enabled', false);
+const PLATFORM_USAGE_METRICS_MANAGER_ENABLED = booleanConf('platform_usage_metrics_manager:enabled', true);
 const PLATFORM_USAGE_METRICS_MANAGER_KEY = conf.get('platform_usage_metrics_manager:lock_key') || 'platform_usage_metrics_manager_lock';
 // Shares the same config key as the reading side (platformHealthMetrics' adoptSharedUsageMetrics),
 // "usage_metrics_interval" is the one interval that drives both how often this manager
@@ -22,7 +29,7 @@ const USAGE_METRICS_TTL_SECONDS = Math.max(1, Math.round(SCHEDULE_TIME / 1000));
 const collectUsageMetric = async <K extends keyof PlatformUsageMetrics>(
   metrics: PlatformUsageMetrics,
   name: K,
-  collect: () => Promise<NonNullable<PlatformUsageMetrics[K]>>,
+  collect: () => Promise<PlatformUsageMetrics[K]>,
 ): Promise<void> => {
   try {
     metrics[name] = await withTimeout(collect(), `Timeout collecting ${name}`);
@@ -32,11 +39,24 @@ const collectUsageMetric = async <K extends keyof PlatformUsageMetrics>(
   }
 };
 
-const computeUsageMetrics = async (): Promise<PlatformUsageMetrics> => {
+export const toEngineStatus = (status: string | undefined): EngineStatus | null => {
+  return ENGINE_STATUSES.find((known) => known === status) ?? null;
+};
+
+export const toDiskUsedPercent = (allocation: Array<Record<string, unknown>>): number | null => {
+  const percents = allocation
+    .map((node) => Number(node['disk.percent']))
+    .filter((percent) => Number.isFinite(percent));
+  return percents.length > 0 ? Math.min(100, Math.max(...percents)) : null;
+};
+
+export const computeUsageMetrics = async (): Promise<PlatformUsageMetrics> => {
   const context = executionContext('platform_usage_metrics_manager');
-  const metrics: PlatformUsageMetrics = { es_used_size: null, s3_used_size: null, queue_consumers: null };
+  const metrics: PlatformUsageMetrics = { es_used_size: null, es_status: null, es_disk_used_percent: null, s3_used_size: null, queue_consumers: null };
   await Promise.all([
     collectUsageMetric(metrics, 'es_used_size', () => getEngineUsedSize()),
+    collectUsageMetric(metrics, 'es_status', async () => toEngineStatus(await getEngineClusterStatus())),
+    collectUsageMetric(metrics, 'es_disk_used_percent', async () => toDiskUsedPercent(await getEngineDiskAllocation())),
     // Kept under its historical name: the sum of the indexed file sizes, not a bucket listing.
     collectUsageMetric(metrics, 's3_used_size', () => getIndexedFilesUsedSize(context)),
     collectUsageMetric(metrics, 'queue_consumers', () => getQueueConsumersByType(context, SYSTEM_USER)),

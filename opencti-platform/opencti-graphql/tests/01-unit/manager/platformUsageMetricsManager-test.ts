@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { platformUsageMetricsHandler } from '../../../src/manager/platformUsageMetricsManager';
+import { platformUsageMetricsHandler, toDiskUsedPercent, toEngineStatus } from '../../../src/manager/platformUsageMetricsManager';
 import { redisGetPlatformUsageMetrics, redisSetPlatformUsageMetrics } from '../../../src/database/redis';
-import { getEngineUsedSize } from '../../../src/database/engine';
+import { getEngineClusterStatus, getEngineDiskAllocation, getEngineUsedSize } from '../../../src/database/engine';
 import { getQueueConsumersByType } from '../../../src/database/rabbitmq';
 import { getIndexedFilesUsedSize } from '../../../src/modules/internal/document/document-domain';
 
@@ -10,17 +10,19 @@ vi.mock('../../../src/database/redis', () => ({
   redisSetPlatformUsageMetrics: vi.fn(),
   redisIsAlive: vi.fn(),
 }));
-vi.mock('../../../src/database/engine', () => ({ getEngineUsedSize: vi.fn(), isEngineAlive: vi.fn() }));
+vi.mock('../../../src/database/engine', () => ({ getEngineUsedSize: vi.fn(), getEngineClusterStatus: vi.fn(), getEngineDiskAllocation: vi.fn(), isEngineAlive: vi.fn() }));
 vi.mock('../../../src/database/raw-file-storage', () => ({ isStorageAlive: vi.fn() }));
 vi.mock('../../../src/database/rabbitmq', () => ({ getQueueConsumersByType: vi.fn(), rabbitMQIsAlive: vi.fn() }));
 vi.mock('../../../src/modules/internal/document/document-domain', () => ({ getIndexedFilesUsedSize: vi.fn() }));
 
 describe('platformUsageMetricsManager: platformUsageMetricsHandler function', () => {
-  const collected = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
+  const collected = { es_used_size: 10, es_status: 'green', es_disk_used_percent: 87, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
 
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(getEngineUsedSize).mockResolvedValue(collected.es_used_size);
+    vi.mocked(getEngineClusterStatus).mockResolvedValue('green');
+    vi.mocked(getEngineDiskAllocation).mockResolvedValue([{ 'disk.percent': '40' }, { 'disk.percent': '87' }, { node: 'UNASSIGNED' }]);
     vi.mocked(getIndexedFilesUsedSize).mockResolvedValue(collected.s3_used_size);
     vi.mocked(getQueueConsumersByType).mockResolvedValue(collected.queue_consumers);
   });
@@ -53,10 +55,32 @@ describe('platformUsageMetricsManager: platformUsageMetricsHandler function', ()
     expect(redisSetPlatformUsageMetrics).toHaveBeenCalledWith({ ...collected, es_used_size: null }, 300);
   });
 
+  it('should publish the search engine status and disk usage apart, each null when it cannot be read', async () => {
+    vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
+    vi.mocked(getEngineDiskAllocation).mockRejectedValue(new Error('ElasticSearch seems down'));
+
+    await platformUsageMetricsHandler();
+
+    expect(redisSetPlatformUsageMetrics).toHaveBeenCalledWith({ ...collected, es_disk_used_percent: null }, 300);
+  });
+
   it('should propagate the error and not publish when sharing the collected value fails', async () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
     vi.mocked(redisSetPlatformUsageMetrics).mockRejectedValue(new Error('Redis seems down'));
 
     await expect(platformUsageMetricsHandler()).rejects.toThrow('Redis seems down');
+  });
+});
+
+describe('platformUsageMetricsManager: search engine health', () => {
+  it('should keep a known search engine status only', () => {
+    expect(toEngineStatus('yellow')).toBe('yellow');
+    expect(toEngineStatus('unknown')).toBeNull();
+    expect(toEngineStatus(undefined)).toBeNull();
+  });
+
+  it('should report the disk usage of the fullest data node', () => {
+    expect(toDiskUsedPercent([{ 'disk.percent': '40' }, { 'disk.percent': '87' }, { node: 'UNASSIGNED' }])).toBe(87);
+    expect(toDiskUsedPercent([{ node: 'UNASSIGNED' }])).toBeNull();
   });
 });

@@ -15,8 +15,14 @@ export interface DependencyStatus {
   checkedAt: number | null;
 }
 
+export const ENGINE_STATUSES = ['green', 'yellow', 'red'] as const;
+export type EngineStatus = typeof ENGINE_STATUSES[number];
+
 export interface PlatformUsageMetrics {
   es_used_size: number | null;
+  es_status: EngineStatus | null;
+  // The fullest data node: the engine stops writing on a node past its flood stage watermark
+  es_disk_used_percent: number | null;
   s3_used_size: number | null;
   queue_consumers: Record<string, number> | null;
 }
@@ -40,7 +46,13 @@ const buildInitialStatuses = (): Record<HealthDependency, DependencyStatus> => {
   }, {} as Record<HealthDependency, DependencyStatus>);
 };
 
-const buildInitialUsageMetrics = (): PlatformUsageMetrics => ({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+const buildInitialUsageMetrics = (): PlatformUsageMetrics => ({
+  es_used_size: null,
+  es_status: null,
+  es_disk_used_percent: null,
+  s3_used_size: null,
+  queue_consumers: null,
+});
 
 let dependencyStatuses = buildInitialStatuses();
 let usageMetrics: PlatformUsageMetrics = buildInitialUsageMetrics();
@@ -91,6 +103,7 @@ export const refreshDependencyStatus = async (): Promise<void> => {
 };
 
 const isNullableNumber = (value: unknown): value is number | null => value === null || typeof value === 'number';
+const isNullableEngineStatus = (value: unknown): value is EngineStatus | null => value === null || ENGINE_STATUSES.includes(value as EngineStatus);
 
 // Redis holds whatever the node that won the last collection wrote, so the payload is
 // validated before being adopted rather than trusted to still match the current shape.
@@ -98,14 +111,15 @@ export const parseCachedUsageMetrics = (cached: unknown): PlatformUsageMetrics |
   if (cached === null || typeof cached !== 'object') {
     return null;
   }
-  const { es_used_size, s3_used_size, queue_consumers } = cached as Record<keyof PlatformUsageMetrics, unknown>;
-  if (!isNullableNumber(es_used_size) || !isNullableNumber(s3_used_size)) {
+  // A value published by a node of a previous version has no search engine health: read as not collected
+  const { es_used_size, es_status = null, es_disk_used_percent = null, s3_used_size, queue_consumers } = cached as Record<keyof PlatformUsageMetrics, unknown>;
+  if (!isNullableNumber(es_used_size) || !isNullableNumber(es_disk_used_percent) || !isNullableNumber(s3_used_size) || !isNullableEngineStatus(es_status)) {
     return null;
   }
   if (queue_consumers !== null && (typeof queue_consumers !== 'object' || !Object.values(queue_consumers as object).every((count) => typeof count === 'number'))) {
     return null;
   }
-  return { es_used_size, s3_used_size, queue_consumers: queue_consumers as Record<string, number> | null };
+  return { es_used_size, es_status, es_disk_used_percent, s3_used_size, queue_consumers: queue_consumers as Record<string, number> | null };
 };
 
 // Collection (full bucket scan, engine stats) is expensive and cluster wide, so it's owned by
@@ -175,9 +189,11 @@ export const getPlatformHealthStatus = (): PlatformHealthStatus => {
 };
 
 export const getPlatformUsageMetrics = (): PlatformUsageMetrics => {
-  const { es_used_size, s3_used_size, queue_consumers } = usageMetrics;
+  const { es_used_size, es_status, es_disk_used_percent, s3_used_size, queue_consumers } = usageMetrics;
   return {
     es_used_size,
+    es_status,
+    es_disk_used_percent,
     s3_used_size,
     queue_consumers: queue_consumers === null ? null : { ...queue_consumers },
   };
