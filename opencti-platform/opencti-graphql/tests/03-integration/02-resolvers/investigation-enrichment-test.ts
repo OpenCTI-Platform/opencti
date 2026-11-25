@@ -722,10 +722,22 @@ describe('Enrichments linked to an investigation', () => {
       expect(await exists(workId)).toBe(true);
     });
 
-    it('should refuse a connector manager who is not a member, through GraphQL', async () => {
+    it('should refuse a connector manager who cannot update investigations, through GraphQL', async () => {
       const workId = await startEnrichment(editableInvestigationId);
       await queryAsUserIsExpectedForbidden(USER_CONNECTOR, { query: DELETE_WORK, variables: { id: workId } });
       expect(await exists(workId)).toBe(true);
+    });
+
+    it('should refuse a user with both capabilities who is not a member, as for an unknown investigation', async () => {
+      const notSharedId = await createWorkspace('investigation', 'Enrichment investigation (not shared)');
+      try {
+        const workId = await startEnrichment(notSharedId);
+        expect(analyst.capabilities.map((c: any) => c.name)).toEqual(expect.arrayContaining(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNENRICHMENT']));
+        await expect(deleteWork(testContext, analyst, workId)).rejects.toThrow('Investigation not found');
+        expect(await exists(workId)).toBe(true);
+      } finally {
+        await queryAsAdmin({ query: DELETE_WORKSPACE, variables: { id: notSharedId } });
+      }
     });
 
     it('should let a connector manager delete a work outside any investigation, through GraphQL', async () => {
