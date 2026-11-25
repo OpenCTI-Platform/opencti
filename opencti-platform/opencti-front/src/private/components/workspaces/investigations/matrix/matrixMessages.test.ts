@@ -13,7 +13,7 @@ import ru from '../../../../../../lang/front/ru.json';
 import zh from '../../../../../../lang/front/zh.json';
 
 const LINKED = '{label}, linked to {count, plural, one {# entity} other {# entities}}';
-const UNPLACED = '{count, plural, one {# attack pattern in this investigation isn\'t shown in this kill chain} other {# attack patterns in this investigation aren\'t shown in this kill chain}}';
+const UNPLACED = '{count, plural, one {# attack pattern not shown} other {# attack patterns not shown}}';
 
 const LANGUAGES: [string, Record<string, string>][] = [
   ['de-de', de], ['en-us', en], ['es-es', es], ['fr-fr', fr], ['it-it', it_],
@@ -46,8 +46,8 @@ describe('matrix count messages', () => {
     const format = formatter('en-us', en);
     expect(format(LINKED, 3)).toBe('T1059 - X, linked to 3 entities');
     expect(format(LINKED, 1)).toBe('T1059 - X, linked to 1 entity');
-    expect(format(UNPLACED, 4)).toBe('4 attack patterns in this investigation aren\'t shown in this kill chain');
-    expect(format(UNPLACED, 1)).toBe('1 attack pattern in this investigation isn\'t shown in this kill chain');
+    expect(format(UNPLACED, 4)).toBe('4 attack patterns not shown');
+    expect(format(UNPLACED, 1)).toBe('1 attack pattern not shown');
   });
 
   it('uses the Russian one, few and many forms', () => {
@@ -56,5 +56,8 @@ describe('matrix count messages', () => {
     expect(format(LINKED, 3)).toBe('T1059 - X, 3 связанные сущности');
     expect(format(LINKED, 5)).toBe('T1059 - X, 5 связанных сущностей');
     expect(format(LINKED, 21)).toBe('T1059 - X, 21 связанная сущность');
+    expect(format(UNPLACED, 1)).toBe('1 шаблон атаки не показан');
+    expect(format(UNPLACED, 3)).toBe('3 шаблона атак не показаны');
+    expect(format(UNPLACED, 5)).toBe('5 шаблонов атак не показаны');
   });
 });

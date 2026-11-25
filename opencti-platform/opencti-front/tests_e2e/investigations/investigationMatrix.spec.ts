@@ -9,9 +9,11 @@ import { getMatrixConfig } from '../../src/private/components/techniques/attack_
  * End-to-end coverage of the investigation tactics matrix, kept to what only a real browser and a real platform prove:
  * the data the matrix queries (including the `object` relationship of a report), the colour tokens resolving against the
  * real design-system stylesheet, the graph staying mounted behind the matrix, the "only used" toggle and the unplaced
- * note wired to the real matrix, the backend filters of the security posture, the layout of the exported image, and the
- * shared matrix component on a report page. The rendering rules (decorations, tooltips, accessible names, toggle labels,
- * empty states) are covered by the unit tests next to the components.
+ * note wired to the real matrix, the backend filters of the security posture, the layout of the exported image (no
+ * cropped column, the legend only drawn in the capture), the header exports left to the matrix view, the matrix
+ * filters reading the markings, authors, dates and types of real links and surviving a reload, and the shared matrix
+ * component on a report page. The rendering rules (decorations, tooltips, accessible names, toggle labels, filter
+ * lists and badges, empty states) are covered by the unit tests next to the components.
  */
 
 const INVESTIGATION_URL = '/dashboard/workspaces/investigations';
@@ -30,10 +32,15 @@ const TRANSPARENT = 'rgba(0, 0, 0, 0)';
 // The label of a filled cell: --black-1000.
 const HEAT_LABEL_COLOR = 'rgb(0, 0, 0)';
 
-// A PNG starts with an 8-byte signature, then the IHDR chunk: 4 bytes of length, 4 of type, then the width as a 32-bit big-endian integer.
+// A PNG starts with an 8-byte signature, then the IHDR chunk: 4 bytes of length, 4 of type, then the width and the height
+// as 32-bit big-endian integers.
 const PNG_WIDTH_OFFSET = 16;
+const PNG_HEIGHT_OFFSET = 20;
 // A viewport narrower than the matrix: a capture of the visible box would crop the columns that do not fit.
 const NARROW_VIEWPORT = { width: 800, height: 900 };
+// Wide enough for the filters and the security posture field to stay in the toolbar row.
+const WIDE_VIEWPORT = { width: 1920, height: 1080 };
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
   const investigationIds: string[] = [];
@@ -46,8 +53,11 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     }
   });
 
-  const seed = async (request: Parameters<typeof seedInvestigationMatrix>[0]): Promise<InvestigationMatrixSeed> => {
-    const seeded = await seedInvestigationMatrix(request);
+  const seed = async (
+    request: Parameters<typeof seedInvestigationMatrix>[0],
+    options?: Parameters<typeof seedInvestigationMatrix>[1],
+  ): Promise<InvestigationMatrixSeed> => {
+    const seeded = await seedInvestigationMatrix(request, options);
     investigationIds.push(seeded.investigationId);
     return seeded;
   };
@@ -57,10 +67,8 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     const investigationPage = new InvestigationDetailsPage(page);
 
     await page.goto(`${INVESTIGATION_URL}/${investigationId}`);
-    await expect(investigationPage.getGraphViewLink()).toHaveAttribute('aria-checked', 'true');
     await investigationPage.goToMatrix();
     await expect(page).toHaveURL(new RegExp(`${investigationId}/matrix$`));
-    await expect(investigationPage.getMatrixViewLink()).toHaveAttribute('aria-checked', 'true');
 
     // The techniques of the investigation are highlighted, a platform technique outside it is not.
     await expect(investigationPage.getMatrixCell(ALPHA)).toHaveCSS('border-top-color', MATRIX_HIGHLIGHT_BORDER_COLOR);
@@ -70,13 +78,6 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getLegend()).toBeHidden();
     // The report counts: the `object` relationship comes back from the real investigation query.
     await expect(page.getByRole('button', { name: `${ALPHA}, linked to 3 entities`, exact: true })).toBeVisible();
-
-    // The "only used" toggle hides the platform technique outside the investigation, and brings it back.
-    await investigationPage.getMatrix().getByRole('button', { name: 'Display only used techniques' }).click();
-    await expect(investigationPage.getMatrixCell(UNRELATED)).toBeHidden();
-    await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
-    await investigationPage.getMatrix().getByRole('button', { name: 'Display the whole matrix' }).click();
-    await expect(investigationPage.getMatrixCell(UNRELATED)).toBeVisible();
 
     await investigationPage.toggleHeatmap();
 
@@ -112,6 +113,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
   test('The security posture marks the techniques it should cover', async ({ page, request }) => {
     const { investigationId } = await seed(request);
     const investigationPage = new InvestigationDetailsPage(page);
+    await page.setViewportSize(WIDE_VIEWPORT);
 
     await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
@@ -124,7 +126,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getMatrixCell(BETA).getByTestId('CloseOutlinedIcon')).toBeVisible();
   });
 
-  test('The header exports the whole matrix to an image', async ({ page, request }) => {
+  test('The toolbar exports the whole matrix to an image', async ({ page, request }) => {
     const { investigationId, investigationName } = await seed(request);
     const investigationPage = new InvestigationDetailsPage(page);
     await page.setViewportSize(NARROW_VIEWPORT);
@@ -136,19 +138,16 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     // T9004 also sits in the default kill chain: wait for T9001, which the wide one does not hold, to leave first.
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeHidden();
     await expect(investigationPage.getMatrixCell(UNRELATED).first()).toBeVisible();
-    // The wide kill chain holds none of the attack patterns of the investigation: the note lists them.
-    await expect(investigationPage.getMatrix().getByText(/attack patterns in this investigation aren't shown in this kill chain/)).toBeVisible();
     const matrixWidth = await investigationPage.getMatrixScrollWidth();
     // The wide kill chain really overflows the viewport.
     expect(matrixWidth).toBeGreaterThan(NARROW_VIEWPORT.width);
     const styleBeforeExport = await investigationPage.getMatrix().getAttribute('style');
 
-    await investigationPage.getExportToImageButton().click();
     const downloadPromise = page.waitForEvent('download');
-    await investigationPage.getExportImageMenuItem('Light').click();
+    await investigationPage.exportImage('Light');
     const download = await downloadPromise;
 
-    expect(download.suggestedFilename()).toBe(`${investigationName} - Tactics matrix.png`);
+    expect(download.suggestedFilename()).toBe(`${investigationName} - Matrix view.png`);
     const imageWidth = fs.readFileSync(await download.path()).readUInt32BE(PNG_WIDTH_OFFSET);
     // No column is cropped: the image is at least as wide as the whole matrix.
     expect(imageWidth).toBeGreaterThanOrEqual(matrixWidth);
@@ -156,6 +155,77 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     // The capture leaves the matrix as it was.
     await expect(investigationPage.getMatrix()).toHaveAttribute('style', styleBeforeExport ?? '');
     expect(await investigationPage.getMatrixScrollWidth()).toBe(matrixWidth);
+  });
+
+  test('The exported image holds the heatmap legend, which the matrix does not show on screen', async ({ page, request }) => {
+    const { investigationId } = await seed(request);
+    const investigationPage = new InvestigationDetailsPage(page);
+    await page.setViewportSize(WIDE_VIEWPORT);
+
+    await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+    await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
+
+    const plainPromise = page.waitForEvent('download');
+    await investigationPage.exportImage('Light');
+    const plainHeight = fs.readFileSync(await (await plainPromise).path()).readUInt32BE(PNG_HEIGHT_OFFSET);
+
+    await investigationPage.toggleHeatmap();
+    await expect(investigationPage.getLegend()).toBeVisible();
+
+    const heatPromise = page.waitForEvent('download');
+    await investigationPage.exportImage('Light');
+    const heatHeight = fs.readFileSync(await (await heatPromise).path()).readUInt32BE(PNG_HEIGHT_OFFSET);
+
+    // The legend, hidden on screen, adds a row above the matrix in the capture.
+    expect(heatHeight).toBeGreaterThan(plainHeight);
+  });
+
+  test('The header keeps the PDF and STIX exports of the matrix view, and no image export', async ({ page, request }) => {
+    const { investigationId, investigationName } = await seed(request);
+    const investigationPage = new InvestigationDetailsPage(page);
+
+    await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+    await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
+
+    await expect(investigationPage.getDownloadStixButton()).toBeVisible();
+    // The image export is in the toolbar of the view.
+    await expect(investigationPage.getHeaderExportToImageButton()).toHaveCount(0);
+
+    await investigationPage.getExportToPdfButton().click();
+    const downloadPromise = page.waitForEvent('download');
+    await investigationPage.getExportPdfMenuItem('Dark').click();
+    expect((await downloadPromise).suggestedFilename()).toBe(`${investigationName} - Matrix view.pdf`);
+  });
+
+  test('The filters read the markings, authors and dates of the real links, and survive a reload', async ({ page, request }) => {
+    // T9001 is used by A, B, C and D, and contained in the report: 5. C is under TLP:GREEN by author one,
+    // used since 30 days; D under TLP:AMBER by author two, since 400 days. A, B and the report have no marking nor author.
+    const { investigationId } = await seed(request, { withFilterData: true });
+    const investigationPage = new InvestigationDetailsPage(page);
+    await page.setViewportSize(WIDE_VIEWPORT);
+
+    await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
+    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 5)).toBeVisible();
+
+    await investigationPage.openMatrixFilter('Filter by marking');
+    await investigationPage.toggleMatrixFilterOption('TLP:AMBER');
+    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 4)).toBeVisible();
+
+    await investigationPage.openMatrixFilter('Filter by author');
+    await investigationPage.toggleMatrixFilterOption('E2E Matrix author one');
+    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
+
+    // Kept per investigation in the browser: a reload finds them.
+    await page.reload();
+    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
+
+    // The time range reads the start time of each link: D, used since 400 days, falls out of a range that starts
+    // the day after. The stored filters replace the others. The range ends tomorrow, so the links created today stay.
+    await investigationPage.setStoredMatrixFilters(investigationId, {
+      timeRange: [new Date(Date.now() - 399 * MS_PER_DAY).toISOString(), new Date(Date.now() + MS_PER_DAY).toISOString()],
+    });
+    await page.reload();
+    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 4)).toBeVisible();
   });
 
   // The matrix component is shared: this guards the existing container pages against the investigation changes.

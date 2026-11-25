@@ -1,6 +1,6 @@
 import { useLayoutEffect, useState } from 'react';
 import { useGraphContext } from '../GraphContext';
-import { isNotEmptyField } from '../../../utils/utils';
+import { isOutsideTimeRange } from './graphTimeRange';
 
 /**
  * Sets the `disabled` flag of every node and link from the filters of the graph state. The graph
@@ -36,12 +36,7 @@ const useGraphFilter = (): object => {
     graphData?.links.forEach((link) => {
       link.disabled = disabledCreators.includes(link.createdBy.id)
         || link.markedBy.some((marking) => disabledMarkings.includes(marking.id))
-        || (isNotEmptyField(link.defaultDate)
-          && !!selectedTimeRangeInterval
-          && ((isNotEmptyField(link.start_time) && link.start_time < selectedTimeRangeInterval[0])
-            || (isNotEmptyField(link.stop_time) && link.stop_time > selectedTimeRangeInterval[1])
-            || link.defaultDate < selectedTimeRangeInterval[0]
-            || link.defaultDate > selectedTimeRangeInterval[1]));
+        || (!!selectedTimeRangeInterval && isOutsideTimeRange(link.defaultDate, selectedTimeRangeInterval));
       if (link.disabled) {
         targets.push(link.target_id);
       }

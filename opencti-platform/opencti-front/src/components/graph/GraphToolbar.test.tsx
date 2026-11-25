@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import { GraphProvider } from './GraphContext';
 import { type GraphViewActions, GraphViewContext } from './GraphViewContext';
@@ -206,6 +206,75 @@ describe('GraphToolbar', () => {
     expect(vertical()).toHaveAccessibleDescription('The graph has a cycle: use this layout in 2D mode');
     expect(screen.getByRole('button', { name: 'Hierarchical layout (left to right)' })).toHaveAttribute('aria-disabled', 'true');
     await user.click(screen.getByRole('button', { name: '3D mode' }));
+  });
+});
+
+describe('GraphToolbarItem', () => {
+  const tooltip = () => screen.findByRole('tooltip');
+
+  it('shows what the tool does under its name, and only the reason once disabled', async () => {
+    const { user, rerender } = testRender(
+      <GraphToolbarItem title="Time range" shortcut="T" description="Count only the relationships dated within the range you set." Icon={<span />} />,
+    );
+    await user.hover(screen.getByRole('button', { name: 'Time range' }));
+    const enabled = await tooltip();
+    expect(enabled).toHaveTextContent('Time range (T)Count only the relationships dated within the range you set.');
+    await user.unhover(screen.getByRole('button', { name: 'Time range' }));
+
+    rerender(
+      <GraphToolbarItem
+        title="Time range"
+        shortcut="T"
+        description="Count only the relationships dated within the range you set."
+        disabledReason="No relationship in this graph"
+        Icon={<span />}
+      />,
+    );
+    await user.hover(screen.getByRole('button', { name: 'Time range' }));
+    const disabled = await tooltip();
+    expect(disabled).toHaveTextContent('Time range (T)No relationship in this graph');
+    expect(disabled).not.toHaveTextContent('Count only the relationships');
+  });
+
+  // The badge must not take the tooltip trigger: its count bubble lets no pointer or focus event through.
+  it.each([
+    ['an action', undefined],
+    ['a menu', <span key="menu">Choices</span>],
+  ])('keeps its tooltip on hover and on focus when badged, as %s, the count still announced', async (_, menu) => {
+    const { user } = testRender(
+      <>
+        <button type="button">Before</button>
+        <GraphToolbarItem title="Filter by type" description="Choose which types count." badge={2} menu={menu} Icon={<span />} />
+      </>,
+    );
+    const tool = screen.getByRole('button', { name: 'Filter by type' });
+    expect(tool).toHaveAccessibleDescription('2 in use');
+
+    await user.hover(tool);
+    expect(await tooltip()).toHaveTextContent('Filter by typeChoose which types count.');
+    expect(tool).toHaveAccessibleDescription(expect.stringContaining('2 in use'));
+    expect(tool).toHaveAccessibleDescription(expect.stringContaining('Choose which types count.'));
+    await user.unhover(tool);
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('tooltip')).toBeNull());
+
+    screen.getByRole('button', { name: 'Before' }).focus();
+    await user.tab();
+    expect(tool).toHaveFocus();
+    expect(await tooltip()).toHaveTextContent('Filter by typeChoose which types count.');
+    expect(tool).toHaveAccessibleDescription(expect.stringContaining('2 in use'));
+  });
+
+  it('keeps a disabled badged tool reachable, saying why, the count still on it', async () => {
+    const { user } = testRender(
+      <GraphToolbarItem title="Filter by marking" description="Keep markings." disabledReason="No marking in this graph" badge={1} Icon={<span />} />,
+    );
+    const tool = screen.getByRole('button', { name: 'Filter by marking' });
+    expect(tool).toHaveAttribute('aria-disabled', 'true');
+    expect(tool).toHaveAccessibleDescription(expect.stringContaining('No marking in this graph'));
+    expect(tool).toHaveAccessibleDescription(expect.stringContaining('1 in use'));
+    await user.hover(tool);
+    expect(await tooltip()).toHaveTextContent('Filter by markingNo marking in this graph');
   });
 });
 

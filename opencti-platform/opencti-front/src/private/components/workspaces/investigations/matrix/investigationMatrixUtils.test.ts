@@ -1,14 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  formatAttackPatternLabel,
   getInvestigationAttackPatterns,
   getKillChainTechniqueIds,
   getUnplacedAttackPatterns,
-  hasActiveGraphFilters,
   MatrixPhase,
   pickDefaultKillChain,
 } from './investigationMatrixUtils';
 import { ObjectToParse } from '../../../../../components/graph/utils/useGraphParser';
-import { GraphState } from '../../../../../components/graph/graph.types';
 
 const object = (id: string, entity_type: string, name?: string) => (
   { id, entity_type, name, parent_types: [] } as unknown as ObjectToParse
@@ -30,13 +29,6 @@ const phase = (kill_chain_name: string, attackPatterns: { id: string; subs?: str
   })),
 }) as unknown as MatrixPhase;
 
-const DEFAULT_GRAPH_STATE = {
-  disabledEntityTypes: [],
-  disabledCreators: [],
-  disabledMarkings: [],
-  selectedTimeRangeInterval: undefined,
-} as unknown as GraphState;
-
 describe('getInvestigationAttackPatterns', () => {
   it('keeps only attack patterns, with their main representative as name', () => {
     const result = getInvestigationAttackPatterns([
@@ -45,6 +37,23 @@ describe('getInvestigationAttackPatterns', () => {
       object('rel-1', 'uses'),
     ]);
     expect(result).toEqual([{ id: 'ap-1', name: 'Alpha' }]);
+  });
+
+  it('keeps the T-code of an attack pattern', () => {
+    const result = getInvestigationAttackPatterns([
+      { ...object('ap-2', 'Attack-Pattern', 'Phishing'), x_mitre_id: 'T1566' } as ObjectToParse,
+    ]);
+    expect(result).toEqual([{ id: 'ap-2', name: 'Phishing', x_mitre_id: 'T1566' }]);
+  });
+});
+
+describe('formatAttackPatternLabel', () => {
+  it('labels an attack pattern with its T-code and name', () => {
+    expect(formatAttackPatternLabel({ id: 'a', name: 'Phishing', x_mitre_id: 'T1566' })).toBe('T1566 - Phishing');
+  });
+
+  it('labels an attack pattern without T-code by its name', () => {
+    expect(formatAttackPatternLabel({ id: 'a', name: 'Custom' })).toBe('Custom');
   });
 });
 
@@ -77,21 +86,5 @@ describe('getUnplacedAttackPatterns', () => {
     const placed = { id: 'ap-1', name: 'Placed' };
     const revoked = { id: 'ap-revoked', name: 'Revoked' };
     expect(getUnplacedAttackPatterns([placed, revoked], new Set(['ap-1']))).toEqual([revoked]);
-  });
-});
-
-describe('hasActiveGraphFilters', () => {
-  it('is false for the default state', () => {
-    expect(hasActiveGraphFilters(DEFAULT_GRAPH_STATE)).toBe(false);
-  });
-
-  it.each([
-    ['disabled entity types', { disabledEntityTypes: ['Report'] }],
-    ['disabled creators', { disabledCreators: ['creator-1'] }],
-    ['disabled markings', { disabledMarkings: ['marking-1'] }],
-    ['disabled relationship types', { disabledRelationshipTypes: ['uses'] }],
-    ['a selected time range', { selectedTimeRangeInterval: [new Date(0), new Date(1)] }],
-  ])('is true with %s', (_label, filter) => {
-    expect(hasActiveGraphFilters({ ...DEFAULT_GRAPH_STATE, ...filter } as GraphState)).toBe(true);
   });
 });

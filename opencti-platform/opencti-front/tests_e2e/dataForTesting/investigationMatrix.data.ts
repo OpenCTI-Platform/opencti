@@ -71,13 +71,22 @@ const addSecurityPlatform = async (request: APIRequestContext, name: string): Pr
   return data.securityPlatformAdd.id;
 };
 
-const addRelation = async (request: APIRequestContext, type: string, fromId: string, toId: string): Promise<string> => {
+interface RelationExtra {
+  start_time?: string;
+  createdBy?: string;
+  objectMarking?: string[];
+}
+
+const addRelation = async (request: APIRequestContext, type: string, fromId: string, toId: string, extra: RelationExtra = {}): Promise<string> => {
   const data = await graphqlRequest<{ stixCoreRelationshipAdd: { id: string } }>(request, `
     mutation {
       stixCoreRelationshipAdd(input: {
         relationship_type: ${quote(type)},
         fromId: ${quote(fromId)},
-        toId: ${quote(toId)}
+        toId: ${quote(toId)}${extra.start_time ? `,
+        start_time: ${quote(extra.start_time)}` : ''}${extra.createdBy ? `,
+        createdBy: ${quote(extra.createdBy)}` : ''}${extra.objectMarking ? `,
+        objectMarking: [${extra.objectMarking.map(quote).join(', ')}]` : ''}
       }) { id }
     }
   `, `Create ${type} relationship`);
@@ -110,6 +119,67 @@ const getContainsRelationId = async (request: APIRequestContext, containerId: st
   const relation = data.stixRefRelationships.edges[0];
   if (!relation) throw new Error(`Report ${containerId} does not contain ${objectId}`);
   return relation.node.id;
+};
+
+const addOrganization = async (request: APIRequestContext, name: string): Promise<string> => {
+  const data = await graphqlRequest<{ organizationAdd: { id: string } }>(request, `
+    mutation {
+      organizationAdd(input: { name: ${quote(name)} }) { id }
+    }
+  `, `Create organization ${name}`);
+  return data.organizationAdd.id;
+};
+
+/** The id of a marking definition the platform ships with, such as `TLP:GREEN`. */
+const getMarkingId = async (request: APIRequestContext, definition: string): Promise<string> => {
+  // Filtered on the server: a client-side search of a first page could miss it among many markings.
+  const data = await graphqlRequest<{ markingDefinitions: { edges: { node: { id: string; definition: string } }[] } }>(request, `
+    query {
+      markingDefinitions(
+        first: 1
+        filters: { mode: and, filters: [{ key: "definition", values: [${quote(definition)}], operator: eq }], filterGroups: [] }
+      ) { edges { node { id definition } } }
+    }
+  `, `Read the marking definition ${definition}`);
+  const marking = data.markingDefinitions.edges[0];
+  if (!marking) throw new Error(`Marking definition ${definition} not found`);
+  return marking.node.id;
+};
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Midnight UTC, `days` ago: the same value all day, so that seeding twice upserts the same relationship. */
+const daysAgo = (days: number): string => {
+  const midnight = Math.floor((Date.now() - days * MS_PER_DAY) / MS_PER_DAY) * MS_PER_DAY;
+  return new Date(midnight).toISOString();
+};
+
+/**
+ * The knowledge of the filter scenarios, which come on top of A and B:
+ * - intrusion set C uses `attackPatternId` since 30 days, under `TLP:GREEN`, authored by `E2E Matrix author one`
+ * - intrusion set D uses it since 400 days, under `TLP:AMBER`, authored by `E2E Matrix author two`
+ * The marking and the author are those of the `uses` relationship, which the marking and author filters read.
+ * Returns the ids the investigation holds: both intrusion sets and both relationships.
+ */
+const seedFilterKnowledge = async (request: APIRequestContext, attackPatternId: string): Promise<string[]> => {
+  const [greenId, amberId] = [await getMarkingId(request, 'TLP:GREEN'), await getMarkingId(request, 'TLP:AMBER')];
+  const [authorOneId, authorTwoId] = [
+    await addOrganization(request, 'E2E Matrix author one'),
+    await addOrganization(request, 'E2E Matrix author two'),
+  ];
+  const intrusionSetCId = await addIntrusionSet(request, 'E2E Matrix IS C');
+  const intrusionSetDId = await addIntrusionSet(request, 'E2E Matrix IS D');
+  const relationCId = await addRelation(request, 'uses', intrusionSetCId, attackPatternId, {
+    start_time: daysAgo(30),
+    createdBy: authorOneId,
+    objectMarking: [greenId],
+  });
+  const relationDId = await addRelation(request, 'uses', intrusionSetDId, attackPatternId, {
+    start_time: daysAgo(400),
+    createdBy: authorTwoId,
+    objectMarking: [amberId],
+  });
+  return [intrusionSetCId, intrusionSetDId, relationCId, relationDId];
 };
 
 const addInvestigation = async (request: APIRequestContext, name: string, entityIds: string[]): Promise<string> => {
@@ -192,11 +262,17 @@ const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledg
  * The investigation also holds report "E2E Matrix report", which contains T9001, and that `object` relationship:
  * the container scoring rule reads it from the real query.
  * Scores: T9001 = 3 (A, B and the report), T9002 = 1 (A), T9003 unscored. T9003.001 is in the investigation too, unscored.
+ * With `withFilterData`, the investigation also holds intrusion sets C and D, which use T9001 under another date,
+ * marking and author each (see `seedFilterKnowledge`): T9001 then scores 5.
  * Each call creates a new investigation.
  */
-export const seedInvestigationMatrix = async (request: APIRequestContext): Promise<InvestigationMatrixSeed> => {
+export const seedInvestigationMatrix = async (
+  request: APIRequestContext,
+  { withFilterData = false }: { withFilterData?: boolean } = {},
+): Promise<InvestigationMatrixSeed> => {
   const knowledge = await seedKnowledge(request);
   const { attackPatterns, intrusionSets } = knowledge;
+  const filterIds = withFilterData ? await seedFilterKnowledge(request, attackPatterns.T9001) : [];
   const reportId = await addReport(request, 'E2E Matrix report', [attackPatterns.T9001]);
   const reportContainsRelationId = await getContainsRelationId(request, reportId, attackPatterns.T9001);
 
@@ -212,6 +288,7 @@ export const seedInvestigationMatrix = async (request: APIRequestContext): Promi
     ...knowledge.usesRelationIds,
     reportId,
     reportContainsRelationId,
+    ...filterIds,
   ]);
 
   return {
