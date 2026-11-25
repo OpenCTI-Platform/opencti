@@ -3,7 +3,8 @@ import { ImageOutlined, LocalFireDepartmentOutlined, SecurityOutlined } from '@m
 import { Icon, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import EntitySelect, { EntityOption } from '@components/common/form/EntitySelect';
 import { formatNameList } from '@components/techniques/attack_patterns/attack_patterns_matrix/attackPatternsMatrixCellDecoration';
-import ToolbarShell, { GroupDivider, type ToolbarAction, type ToolbarSlot } from '../../../../../components/graph/ToolbarShell';
+import ToolbarShell, { type ToolbarAction, type ToolbarSlot } from '../../../../../components/graph/ToolbarShell';
+import { GroupDivider } from '../../../../../components/graph/components/ToolbarParts';
 import GraphToolbarItem from '../../../../../components/graph/components/GraphToolbarItem';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from '../../../../../components/graph/utils/graphFraming';
 import { useFormatter } from '../../../../../components/i18n';
