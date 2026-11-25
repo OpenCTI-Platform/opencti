@@ -126,7 +126,9 @@ export const testUpdatedCounter: Record<string, number> = {};
 testUpdatedCounter['marking-definition'] = 5;
 testUpdatedCounter.relationship = 9;
 testUpdatedCounter.campaign = 7;
-testUpdatedCounter.identity = 33;
+// 5 by user-test: an organization administrator added then removed by the deletion of the user (2),
+// two administrators added then removed concurrently (3)
+testUpdatedCounter.identity = 38;
 // 1 by ingestionDeduplication-domain-test (an edit in the platform), 1 by upsert-limit-dates-test (real dates upserted)
 testUpdatedCounter.malware = 25; // and 1 org sharing by the request access workflow tests
 testUpdatedCounter.file = 27;
