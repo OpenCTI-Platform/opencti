@@ -209,9 +209,14 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     // clear of the details panel the selection opens.
     await graph.arrangeInMiddle([fixture.domain.id, fixture.ipv4.id]);
     await graph.waitForGraph(5);
-    await graph.clickNode(fixture.domain.id);
-    await graph.clickNode(fixture.ipv4.id, ['Shift']);
-    await expect(graph.getSelectionSummary(2)).toBeVisible();
+    // A click the canvas does not register leaves the selection one short and nothing clicks again:
+    // the pair is selected again from an empty selection until both are, so the count below holds.
+    await expect(async () => {
+      await graph.clickBackground();
+      await graph.clickNode(fixture.domain.id);
+      await graph.clickNode(fixture.ipv4.id, ['Shift']);
+      await expect(graph.getSelectionSummary(2)).toBeVisible({ timeout: 3000 });
+    }).toPass({ timeout: 30000 });
     await expect(graph.getToolbarButton('Create a relationship')).toBeEnabled();
     await expect(graph.getToolbarButton('Create a sighting')).toBeEnabled();
     await graph.getToolbarButton('Create a relationship').click();
