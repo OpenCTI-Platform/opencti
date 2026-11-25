@@ -48,7 +48,8 @@ const useMatrixScores = ({ links, filters, attackPatterns, techniqueIds, techniq
     () => (hasScores
       ? buildCellDecorations({ usage, scale: heatScale, techniques, investigationIds, heatmapOn, t: t_i18n })
       : undefined),
-    [hasScores, usage, heatScale, techniques, investigationIds, heatmapOn, t_i18n],
+    // Not on the translate function, which is a new one on each render.
+    [hasScores, usage, heatScale, techniques, investigationIds, heatmapOn],
   );
 
   return { hasScores, heatmapOn, heatMax: heatScale.max, heatmapDisabledReason, cellDecorations };

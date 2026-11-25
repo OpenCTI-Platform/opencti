@@ -324,6 +324,16 @@ describe('InvestigationMatrix', () => {
       expect(screen.getByRole('img', { name: 'Technique usage scale, 1 to 2' })).toBeInTheDocument();
     });
 
+    it('hides the techniques outside the investigation with "only used"', async () => {
+      const phases = [phase('mitre-attack', 'execution', [technique(PLACED_ID, 'Placed', 'T1001'), technique('attack-pattern--outside', 'Outside', 'T1999')])];
+      const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases });
+      expect(await screen.findByText('T1999 - Outside')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Display only used techniques' }));
+      expect(screen.queryByText('T1999 - Outside')).toBeNull();
+      expect(screen.getByText('T1001 - Placed')).toBeInTheDocument();
+    });
+
     it('keeps the heatmap and "only used" choices after a switch to the graph view and back', async () => {
       const { user } = await renderMatrix({ rawObjects: SCORED_OBJECTS, phases: HEAT_PHASES });
       await screen.findByText('T1001 - Placed');

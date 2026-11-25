@@ -24,9 +24,9 @@ export const DEFAULT_INVESTIGATION_MATRIX_SETTINGS: InvestigationMatrixSettings 
 };
 
 /**
- * The matrix settings of one investigation. The graph component is reused when the user opens another
- * investigation: that one starts from the defaults instead of inheriting the previous kill chain, heatmap
- * or security platforms.
+ * The matrix settings of one investigation. The investigation graph is mounted again for each investigation
+ * (keyed by its id); the id check also keeps the kill chain, heatmap and security platforms of one investigation
+ * away from another if it ever is not.
  */
 export const useInvestigationMatrixSettings = (
   investigationId: string,
@@ -99,14 +99,15 @@ const writeMatrixFilters = (investigationId: string, filters: InvestigationMatri
 export const useInvestigationMatrixFilters = (
   investigationId: string,
 ): [InvestigationMatrixFilters, (change: Partial<InvestigationMatrixFilters>) => void, () => void] => {
-  const [filters, setFilters] = useState(() => readMatrixFilters(investigationId));
+  // The id the filters were read for: they are only ever written back under it.
+  const [{ id, filters }, setState] = useState(() => ({ id: investigationId, filters: readMatrixFilters(investigationId) }));
   useEffect(() => {
     // No filter in use: nothing stored, so that a cleared investigation leaves no entry behind.
-    writeMatrixFilters(investigationId, hasActiveMatrixFilters(filters) ? filters : undefined);
-  }, [investigationId, filters]);
+    writeMatrixFilters(id, hasActiveMatrixFilters(filters) ? filters : undefined);
+  }, [id, filters]);
   const change = useCallback((update: Partial<InvestigationMatrixFilters>) => {
-    setFilters((current) => ({ ...current, ...update }));
+    setState((current) => ({ ...current, filters: { ...current.filters, ...update } }));
   }, []);
-  const clear = useCallback(() => setFilters(DEFAULT_MATRIX_FILTERS), []);
+  const clear = useCallback(() => setState((current) => ({ ...current, filters: DEFAULT_MATRIX_FILTERS })), []);
   return [filters, change, clear];
 };

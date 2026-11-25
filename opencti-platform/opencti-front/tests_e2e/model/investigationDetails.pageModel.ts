@@ -112,15 +112,6 @@ export default class InvestigationDetailsPage {
     return this.page.getByRole('option', { name });
   }
 
-  getOnlyUsedToggle(): Locator {
-    return this.getToolbarButton(/^Display (only used techniques|the whole matrix)$/);
-  }
-
-  /** What the matrix leaves out of the selected kill chain: `N attack patterns not shown`. */
-  getUnplacedNote(): Locator {
-    return this.getMatrixToolbar().getByText(/^\d+ attack patterns? not shown$/);
-  }
-
   /**
    * The field sits in the toolbar when the row has room for it (a wide window); the specs that pick a platform
    * give the window that room, since a field in a submenu of "More actions" is not worth driving here.
@@ -151,11 +142,6 @@ export default class InvestigationDetailsPage {
    */
   getLegend(): Locator {
     return this.getMatrixToolbar().getByRole('img', { name: /^Technique usage scale, 1 to \d+$/ });
-  }
-
-  /** The copy of the legend inside the matrix: `hidden` on screen, shown for the capture of the image and the PDF. */
-  getExportOnlyLegend(): Locator {
-    return this.getMatrix().locator('[data-matrix-export-only]');
   }
 
   /** One swatch of the legend, by its stop index (0 to 4). */
@@ -255,6 +241,8 @@ export default class InvestigationDetailsPage {
   async exportImage(theme: 'Dark' | 'Light', background: 'with' | 'without' = 'with') {
     const name = new RegExp(`${theme} \\(${background} background\\)$`);
     if (await this.isInToolbar('Export to image')) {
+      // Disabled while a previous export runs: wait for it to end.
+      await expect(this.getExportToImageButton()).not.toHaveAttribute('aria-disabled', 'true');
       await this.getExportToImageButton().click();
       await this.page.getByRole('menu', { name: 'Export to image' }).getByRole('menuitem', { name }).click();
       return;

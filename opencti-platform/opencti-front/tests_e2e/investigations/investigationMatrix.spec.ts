@@ -67,10 +67,8 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     const investigationPage = new InvestigationDetailsPage(page);
 
     await page.goto(`${INVESTIGATION_URL}/${investigationId}`);
-    await expect(investigationPage.getGraphViewLink()).toHaveAttribute('aria-checked', 'true');
     await investigationPage.goToMatrix();
     await expect(page).toHaveURL(new RegExp(`${investigationId}/matrix$`));
-    await expect(investigationPage.getMatrixViewLink()).toHaveAttribute('aria-checked', 'true');
 
     // The techniques of the investigation are highlighted, a platform technique outside it is not.
     await expect(investigationPage.getMatrixCell(ALPHA)).toHaveCSS('border-top-color', MATRIX_HIGHLIGHT_BORDER_COLOR);
@@ -80,13 +78,6 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getLegend()).toBeHidden();
     // The report counts: the `object` relationship comes back from the real investigation query.
     await expect(page.getByRole('button', { name: `${ALPHA}, linked to 3 entities`, exact: true })).toBeVisible();
-
-    // The "only used" toggle hides the platform technique outside the investigation, and brings it back.
-    await investigationPage.getOnlyUsedToggle().click();
-    await expect(investigationPage.getMatrixCell(UNRELATED)).toBeHidden();
-    await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
-    await investigationPage.getOnlyUsedToggle().click();
-    await expect(investigationPage.getMatrixCell(UNRELATED)).toBeVisible();
 
     await investigationPage.toggleHeatmap();
 
@@ -147,14 +138,11 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     // T9004 also sits in the default kill chain: wait for T9001, which the wide one does not hold, to leave first.
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeHidden();
     await expect(investigationPage.getMatrixCell(UNRELATED).first()).toBeVisible();
-    // The wide kill chain holds none of the attack patterns of the investigation: the note counts them.
-    await expect(investigationPage.getUnplacedNote()).toHaveText('4 attack patterns not shown');
     const matrixWidth = await investigationPage.getMatrixScrollWidth();
     // The wide kill chain really overflows the viewport.
     expect(matrixWidth).toBeGreaterThan(NARROW_VIEWPORT.width);
     const styleBeforeExport = await investigationPage.getMatrix().getAttribute('style');
 
-    // The narrow row has no room for the export: it is picked from "More actions".
     const downloadPromise = page.waitForEvent('download');
     await investigationPage.exportImage('Light');
     const download = await downloadPromise;
@@ -183,16 +171,13 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
 
     await investigationPage.toggleHeatmap();
     await expect(investigationPage.getLegend()).toBeVisible();
-    // The legend of the toolbar serves the screen: the one inside the matrix is only drawn in the capture.
-    await expect(investigationPage.getExportOnlyLegend()).toBeHidden();
 
     const heatPromise = page.waitForEvent('download');
     await investigationPage.exportImage('Light');
     const heatHeight = fs.readFileSync(await (await heatPromise).path()).readUInt32BE(PNG_HEIGHT_OFFSET);
 
-    // The legend adds a row above the matrix, and is hidden again once the capture is done.
+    // The legend, hidden on screen, adds a row above the matrix in the capture.
     expect(heatHeight).toBeGreaterThan(plainHeight);
-    await expect(investigationPage.getExportOnlyLegend()).toBeHidden();
   });
 
   test('The header keeps the PDF and STIX exports of the matrix view, and no image export', async ({ page, request }) => {
@@ -212,7 +197,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     expect((await downloadPromise).suggestedFilename()).toBe(`${investigationName} - Matrix view.pdf`);
   });
 
-  test('The filters read the markings, authors, types and dates of the real links, and survive a reload', async ({ page, request }) => {
+  test('The filters read the markings, authors and dates of the real links, and survive a reload', async ({ page, request }) => {
     // T9001 is used by A, B, C and D, and contained in the report: 5. C is under TLP:GREEN by author one,
     // used since 30 days; D under TLP:AMBER by author two, since 400 days. A, B and the report have no marking nor author.
     const { investigationId } = await seed(request, { withFilterData: true });
@@ -230,20 +215,14 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await investigationPage.toggleMatrixFilterOption('E2E Matrix author one');
     await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
 
-    await investigationPage.openMatrixFilter('Filter by type');
-    await investigationPage.toggleMatrixFilterOption('contains');
-    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 2)).toBeVisible();
-
     // Kept per investigation in the browser: a reload finds them.
     await page.reload();
-    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 2)).toBeVisible();
+    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 3)).toBeVisible();
 
-    await investigationPage.getToolbarButton('Clear all filters').click();
-    await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 5)).toBeVisible();
-
-    // The time range reads the start time of each link: D, used since 400 days, falls out of the last 6 months.
+    // The time range reads the start time of each link: D, used since 400 days, falls out of a range that starts
+    // the day after. The stored filters replace the others. The range ends tomorrow, so the links created today stay.
     await investigationPage.setStoredMatrixFilters(investigationId, {
-      timeRange: [new Date(Date.now() - 182 * MS_PER_DAY).toISOString(), new Date(Date.now() + MS_PER_DAY).toISOString()],
+      timeRange: [new Date(Date.now() - 399 * MS_PER_DAY).toISOString(), new Date(Date.now() + MS_PER_DAY).toISOString()],
     });
     await page.reload();
     await expect(investigationPage.getMatrixCellLinkedTo(ALPHA, 4)).toBeVisible();

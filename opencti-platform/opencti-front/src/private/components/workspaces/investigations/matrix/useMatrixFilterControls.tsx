@@ -20,7 +20,9 @@ interface MatrixFilterControlsInput {
 const useMatrixFilterControls = ({ links, filters, onFiltersChange, onFiltersClear }: MatrixFilterControlsInput) => {
   const { t_i18n } = useFormatter();
   const [timeRangeOpen, setTimeRangeOpen] = useState(false);
-  const options = useMemo(() => getMatrixFilterOptions(links, t_i18n('None')), [links, t_i18n]);
+  // The label string, not the translate function, which is a new one on each render: the options follow a language switch only.
+  const noneLabel = t_i18n('None');
+  const options = useMemo(() => getMatrixFilterOptions(links, noneLabel), [links, noneLabel]);
   // Computed once for the panel and the badge: without any dated link, the range is set from now.
   const timeRange = useMemo<GraphTimeRange>(() => {
     const interval = computeTimeRangeInterval(options.datedLinks);
