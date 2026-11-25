@@ -80,10 +80,6 @@ export default class InvestigationDetailsPage {
     return this.page.getByRole('option', { name });
   }
 
-  getOnlyUsedToggle(): Locator {
-    return this.getMatrix().getByRole('button', { name: /^Display (only used techniques|the whole matrix)$/ });
-  }
-
   getSecurityPostureSelect(): Locator {
     return this.getMatrix().getByRole('combobox', { name: 'Compare with my security posture' });
   }
@@ -98,14 +94,6 @@ export default class InvestigationDetailsPage {
 
   getHeatmapToggle(): Locator {
     return this.getMatrix().getByRole('button', { name: 'Displays heat map of attack pattern use' });
-  }
-
-  /**
-   * The focusable wrapper of the heatmap toggle. When the toggle is disabled it takes no pointer event,
-   * so its tooltip is opened through this element.
-   */
-  getHeatmapToggleWrapper(): Locator {
-    return this.getHeatmapToggle().locator('xpath=..');
   }
 
   async toggleHeatmap() {
@@ -132,21 +120,6 @@ export default class InvestigationDetailsPage {
     return this.getMatrixCell(label)
       .locator('xpath=ancestor::span[contains(@class, "MuiBadge-root")][1]')
       .locator('.MuiBadge-badge');
-  }
-
-  getTooltip(): Locator {
-    return this.page.getByRole('tooltip');
-  }
-
-  /**
-   * A parent technique with sub-techniques is an accordion: its border is on the accordion, not on the cell button.
-   */
-  getAccordionOfCell(label: string): Locator {
-    return this.getMatrixCell(label).locator('xpath=ancestor::div[contains(@class, "MuiAccordion-root")][1]');
-  }
-
-  getExpandButton(label: string): Locator {
-    return this.getMatrixCell(label).getByRole('button', { name: 'Expand' });
   }
 
   /**
@@ -178,23 +151,7 @@ export default class InvestigationDetailsPage {
     return this.page.getByRole('button', { name: 'Export to image' });
   }
 
-  getExportToPdfButton(): Locator {
-    return this.page.getByRole('button', { name: 'Export to PDF' });
-  }
-
   getExportImageMenuItem(theme: 'Dark' | 'Light'): Locator {
     return this.page.getByRole('menuitem', { name: `${theme} (with background)` });
-  }
-
-  getExportPdfMenuItem(theme: 'Dark' | 'Light'): Locator {
-    return this.page.getByRole('menuitem', { name: theme });
-  }
-
-  getUnplacedNote() {
-    return this.getMatrix().getByText(/attack patterns? in this investigation (isn't|aren't) shown in this kill chain/);
-  }
-
-  getEmptyMatrixText() {
-    return this.getMatrix().getByText('Add attack patterns to the graph view to visualise them here');
   }
 }
