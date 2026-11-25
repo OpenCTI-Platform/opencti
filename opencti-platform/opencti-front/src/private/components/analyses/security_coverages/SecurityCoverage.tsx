@@ -1,5 +1,5 @@
-import React, { Suspense, useEffect, useState, useTransition } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import React, { Suspense, useEffect, useMemo, useState, useTransition } from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader, useSubscription } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
@@ -18,6 +18,7 @@ import SecurityCoverageTestedEntitiesChart from './SecurityCoverageTestedEntitie
 import SecurityCoverageMainInfo from './SecurityCoverageMainInfo';
 import SecurityCoverageResultSelector from './SecurityCoverageResultSelector';
 import { SecurityCoverageScopedQuery } from './__generated__/SecurityCoverageScopedQuery.graphql';
+import { SecurityCoverageScopedSubscription } from './__generated__/SecurityCoverageScopedSubscription.graphql';
 import { buildResultOptions, buildResultScopeVariables, resolveSelectedResult } from './securityCoverageResultScope';
 
 const securityCoverageKillChainsQuery = graphql`
@@ -29,6 +30,19 @@ const securityCoverageKillChainsQuery = graphql`
 // Widgets whose data depends on the selected security coverage result.
 const securityCoverageScopedQuery = graphql`
   query SecurityCoverageScopedQuery($id: String!, $filters: FilterGroup, $fromId: [String!]) {
+    securityCoverage(id: $id) {
+      id
+      ...SecurityCoverageTestedEntitiesChart_securityCoverage @arguments(fromId: $fromId)
+      ...SecurityCoverageDetails_securityCoverage @arguments(vulnerabilityFilters: $filters)
+      ...SecurityCoverageAttackPatternsFragment @arguments(filters: $filters)
+    }
+  }
+`;
+
+// Same widgets and arguments as the scoped query: Relay stores the pushed data under the same keys,
+// so the widgets of the selected result update on the events the coverage subscription already receives.
+const securityCoverageScopedSubscription = graphql`
+  subscription SecurityCoverageScopedSubscription($id: ID!, $filters: FilterGroup, $fromId: [String!]) {
     securityCoverage(id: $id) {
       id
       ...SecurityCoverageTestedEntitiesChart_securityCoverage @arguments(fromId: $fromId)
@@ -155,6 +169,24 @@ const SecurityCoverageScopedWidget = ({
   );
 };
 
+interface SecurityCoverageScopedSubscriberProps {
+  securityCoverageId: string;
+  securityCoverageResultId: string;
+}
+
+// Mounted only while a result is displayed: "All results" needs no extra subscription.
+const SecurityCoverageScopedSubscriber = ({
+  securityCoverageId,
+  securityCoverageResultId,
+}: SecurityCoverageScopedSubscriberProps) => {
+  const subscriptionConfig = useMemo(() => ({
+    subscription: securityCoverageScopedSubscription,
+    variables: buildResultScopeVariables(securityCoverageId, securityCoverageResultId),
+  }), [securityCoverageId, securityCoverageResultId]);
+  useSubscription<SecurityCoverageScopedSubscription>(subscriptionConfig);
+  return null;
+};
+
 interface SecurityCoverageComponentProps {
   data: SecurityCoverage_securityCoverage$key;
   killChainsQueryRef: PreloadedQuery<SecurityCoverageKillChainsQuery>;
@@ -209,6 +241,9 @@ const SecurityCoverageComponent = ({
   const widgetSx = { opacity: isPending ? 0.6 : 1, pointerEvents: isPending ? 'none' : 'auto' };
   return (
     <>
+      {displayedResultId && (
+        <SecurityCoverageScopedSubscriber securityCoverageId={securityCoverage.id} securityCoverageResultId={displayedResultId} />
+      )}
       <Stack direction="row" sx={{ justifyContent: 'flex-end', marginBottom: 2 }}>
         <SecurityCoverageResultSelector
           options={buildResultOptions(securityCoverageResults)}
