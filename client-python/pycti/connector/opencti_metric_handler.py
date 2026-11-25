@@ -4,16 +4,16 @@ This module provides Prometheus metrics support for OpenCTI connectors,
 allowing monitoring of connector performance and health.
 """
 
-from typing import Type, Union
+from typing import List, Type, Union
 
-from prometheus_client import Counter, Enum, start_http_server
+from prometheus_client import Counter, Enum, Info, start_http_server
 
 
 class OpenCTIMetricHandler:
     """Handler for Prometheus metrics in OpenCTI connectors.
 
     This class manages Prometheus metrics for monitoring connector behavior,
-    including bundle sends, records processed, run counts, API pings, and errors.
+    including general info, bundle sends, records processed, run counts, API pings, and errors.
 
     When activated, it starts an HTTP server to expose metrics for scraping
     by Prometheus or compatible monitoring systems.
@@ -117,10 +117,16 @@ class OpenCTIMetricHandler:
                     namespace=namespace,
                     subsystem=subsystem,
                 ),
+                "identity": Info(
+                    "identity",
+                    "Identity and configuration of the connector",
+                    namespace=namespace,
+                    subsystem=subsystem,
+                ),
             }
 
     def _metric_exists(
-        self, name: str, expected_type: Union[Type[Counter], Type[Enum]]
+        self, name: str, expected_type: Union[Type[Counter], Type[Enum], Type[Info]]
     ) -> bool:
         """Check if a metric exists and has the expected type.
 
@@ -129,8 +135,8 @@ class OpenCTIMetricHandler:
 
         :param name: Name of the metric to validate
         :type name: str
-        :param expected_type: Expected Prometheus metric type (Counter or Enum)
-        :type expected_type: Union[Type[Counter], Type[Enum]]
+        :param expected_type: Expected Prometheus metric type (Counter, Enum or Info)
+        :type expected_type: Union[Type[Counter], Type[Enum], Type[Info]]
 
         :return: True if metric exists and has correct type, False otherwise
         :rtype: bool
@@ -198,3 +204,48 @@ class OpenCTIMetricHandler:
         if self.activated:
             if self._metric_exists(name, Enum):
                 self._metrics[name].state(state)
+
+    def set_info(
+        self,
+        connector_id: str,
+        connector_name: str,
+        connector_type: str,
+        connector_scope: Union[str, List[str]],
+        name: str = "identity",
+    ) -> None:
+        """Set the labels of an Info metric describing the connector.
+
+        Exposes the connector identity as an Info metric so that other metrics
+        (e.g. RabbitMQ queue metrics) can be joined on the connector id.
+        If metrics are not activated or the metric does not exist,
+        this method does nothing.
+
+        :param connector_id: Id of the connector
+        :type connector_id: str
+        :param connector_name: Name of the connector
+        :type connector_name: str
+        :param connector_type: Type of the connector
+        :type connector_type: str
+        :param connector_scope: Scope of the connector, either as a comma-separated
+            string or as a list (joined with commas in the label)
+        :type connector_scope: str or list[str]
+        :param name: Name of the Info metric to update (default: "identity")
+        :type name: str
+
+        Example:
+            >>> handler.set_info("my-id", "My connector", "EXTERNAL_IMPORT", "report")
+        """
+        if self.activated:
+            if self._metric_exists(name, Info):
+                # Prometheus label values must be strings: a list scope would
+                # make every scrape of /metrics fail
+                if isinstance(connector_scope, list):
+                    connector_scope = ",".join(str(s) for s in connector_scope)
+                self._metrics[name].info(
+                    {
+                        "id": connector_id,
+                        "name": connector_name,
+                        "type": connector_type,
+                        "scope": connector_scope,
+                    }
+                )

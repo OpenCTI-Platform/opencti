@@ -3207,3 +3207,27 @@ to standard in a later release.
 **Removal test.** At a release where an unset `pastel_colours` resolves to
 `false`, or at a library pin whose RULE-07 allows the exception, close this
 entry.
+
+---
+
+## 86. No hover card, so the XTM counterpart preview is a Tooltip laid out as a card
+
+**Where.** `common/xtm/counterpart/core/XtmPivotPreview.tsx`, the preview the
+XTM row marks open on hover and keyboard focus (#20153).
+
+**Needed.** A small anchored card that opens on hover and on keyboard focus,
+holds structured content (a mark, a title, a few facts, one line of action) and
+stays readable by a screen reader, as a hover card.
+
+**Today.** The library offers `Tooltip` (plain content, closes on leave) and
+`Popover` (opens on click). Neither opens on hover with rich content.
+
+**Consequence.** The preview is the content of the FDS `Tooltip`, laid out as
+a card with `Box` and `Chip`. The same choice is made in OpenAEV and OpenCRQ.
+
+**Ask.** A `HoverCard` (open on hover and focus, delay props, rich content,
+the tooltip's positioning and portal).
+
+**Removal test.** At a library pin that ships a hover card, the preview
+renders inside it, opens on hover and on keyboard focus, and the row-mark tests
+still pass.

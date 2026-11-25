@@ -193,19 +193,34 @@ describe('GraphQL security', () => {
 
   describe('introspection', () => {
     it.each([
-      ['__schema', '{ __schema { queryType { name } } }'],
-      ['__type', '{ __type(name: "Node") { fields { name } } }'],
-      ['__type in a fragment', '{ ...Introspection } fragment Introspection on Query { __type(name: "Node") { name } }'],
-    ])('should reject %s when introspection is disabled', async (_, query) => {
-      const apolloServer = await loadApolloServer({ playgroundEnabled: true, introspectionDisabled: true });
+      ['__schema', '{ __schema { queryType { name } } }', false],
+      ['__schema in a fragment', '{ ...Introspection } fragment Introspection on Query { __schema { queryType { name } } }', false],
+      ['__schema after __type', '{ __type(name: "Node") { name } __schema { queryType { name } } }', false],
+      ['__type when secure by default', '{ __type(name: "Node") { fields { name } } }', true],
+      ['__type in a fragment when secure by default', '{ ...Introspection } fragment Introspection on Query { __type(name: "Node") { name } }', true],
+    ])('should reject %s when introspection is disabled', async (_, query, secureByDefault) => {
+      const apolloServer = await loadApolloServer({ playgroundEnabled: true, introspectionDisabled: true, secureByDefault });
       const result = await execute(apolloServer, query);
       expect(result.errors?.[0].message).toEqual('GraphQL introspection not authorized!');
     });
 
-    it('should reject __type when the playground is disabled', async () => {
-      const apolloServer = await loadApolloServer({ playgroundEnabled: false, introspectionDisabled: false });
+    it('should reject __type when the playground is disabled and secure by default', async () => {
+      const apolloServer = await loadApolloServer({ playgroundEnabled: false, introspectionDisabled: false, secureByDefault: true });
       const result = await execute(apolloServer, '{ __type(name: "Node") { name } }');
       expect(result.errors?.[0].message).toEqual('GraphQL introspection not authorized!');
+    });
+
+    it('should accept __type from an authenticated user when introspection is disabled and not secure by default', async () => {
+      const apolloServer = await loadApolloServer({ playgroundEnabled: false, introspectionDisabled: true, secureByDefault: false });
+      const result = await execute(apolloServer, '{ __type(name: "Node") { fields { name } } }');
+      expect(result.errors).toBeUndefined();
+      expect(result.data).toEqual({ __type: { fields: [{ name: 'name' }, { name: 'parent' }] } });
+    });
+
+    it('should require an authenticated user for __type when not secure by default', async () => {
+      const apolloServer = await loadApolloServer({ playgroundEnabled: false, introspectionDisabled: true, secureByDefault: false });
+      const result = await execute(apolloServer, '{ __type(name: "Node") { name } }', undefined, null);
+      expect(result.errors?.[0].extensions?.code).toEqual('AUTH_REQUIRED');
     });
 
     it('should accept __type when introspection is enabled', async () => {
@@ -274,8 +289,21 @@ describe('GraphQL security', () => {
 
     it('should reject introspection when disabled', async () => {
       const { options } = await loadSubscriptionServer({ playgroundEnabled: true, introspectionDisabled: true });
+      const { errors } = await subscribe(options, '{ __schema { queryType { name } } }');
+      expect(errors?.[0].message).toEqual('GraphQL introspection not authorized!');
+    });
+
+    it('should reject __type when introspection is disabled and secure by default', async () => {
+      const { options } = await loadSubscriptionServer({ playgroundEnabled: true, introspectionDisabled: true, secureByDefault: true });
       const { errors } = await subscribe(options, '{ __type(name: "Node") { name } }');
       expect(errors?.[0].message).toEqual('GraphQL introspection not authorized!');
+    });
+
+    it('should accept __type when introspection is disabled and not secure by default', async () => {
+      const { options } = await loadSubscriptionServer({ playgroundEnabled: true, introspectionDisabled: true, secureByDefault: false });
+      const { execArgs, errors } = await subscribe(options, '{ __type(name: "Node") { name } }');
+      expect(errors).toBeUndefined();
+      expect(execArgs).toMatchObject({ contextValue: { user: { id: 'user' } } });
     });
 
     it('should reject queries and mutations when secure by default', async () => {

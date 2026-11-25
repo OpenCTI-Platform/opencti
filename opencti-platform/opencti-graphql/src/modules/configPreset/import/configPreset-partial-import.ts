@@ -70,10 +70,35 @@ const readUploadedBundle = async (file: Promise<FileUploadData>): Promise<{ bund
   return { bundle: await readConfigPresetBundle(zip), fileName: filename };
 };
 
+// The bundle without the items of the family that are out of the scope: a screen that is about one value (the entity type of its custom views)
+// neither shows nor imports the others. An id of an item out of the scope is then unknown, as any other id the bundle does not have.
+// The key is the one the family declares, looked up in the configuration of the item as its own property only (the configuration comes from the
+// bundle). The values are compared trimmed, as the import schema of the family trims them.
+const scopeBundle = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, scope: string | null | undefined): ConfigPresetBundle => {
+  if (scope === null || scope === undefined) {
+    return bundle;
+  }
+  const { scopeKey } = family;
+  if (!scopeKey) {
+    throw FunctionalError('This configuration type cannot be scoped', { type: family.id });
+  }
+  const isInScope = ({ configuration }: ConfigPresetBundleItem) => {
+    const value = Object.hasOwn(configuration, scopeKey) ? configuration[scopeKey] : undefined;
+    return typeof value === 'string' && value.trim() === scope.trim();
+  };
+  return { ...bundle, items: bundle.items.filter((item) => item.type !== family.id || isInScope(item)) };
+};
+
 // The items of the family to import: the given ones (every one of the bundle when ids is null), then the items of the same family they
 // depend on, dependencies first. The items are picked as by the wizard: an unknown id fails the import.
-export const resolveConfigPresetPartialImportItems = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, ids: string[] | null): ConfigPresetBundleItem[] => {
-  return resolveBundleDependencies(bundle, pickConfigPresetTypeItems(bundle, family.id, ids)).filter((item) => item.type === family.id);
+export const resolveConfigPresetPartialImportItems = (
+  bundle: ConfigPresetBundle,
+  family: ConfigPresetFamilyDefinition,
+  ids: string[] | null,
+  scope?: string | null,
+): ConfigPresetBundleItem[] => {
+  const scoped = scopeBundle(bundle, family, scope);
+  return resolveBundleDependencies(scoped, pickConfigPresetTypeItems(scoped, family.id, ids)).filter((item) => item.type === family.id);
 };
 
 // The modes given by the user, checked against the type as by the wizard. An item that has none takes the default of the partial import,
@@ -90,11 +115,12 @@ export const configPresetPartialImportPreview = async (
   user: AuthUser,
   file: Promise<FileUploadData>,
   type: string,
+  scope?: string | null,
 ): Promise<ConfigPresetPartialImportPreview> => {
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
   const { bundle } = await readUploadedBundle(file);
-  const items = resolveConfigPresetPartialImportItems(bundle, family, null);
+  const items = resolveConfigPresetPartialImportItems(bundle, family, null, scope);
   const availability = await getConfigPresetFamiliesAvailability(context, items);
   const results = await computeConfigPresetItems(context, user, items, { availability, defaultMode: getConfigPresetPartialImportDefaultMode(family) });
   return {
@@ -119,6 +145,7 @@ export const configPresetPartialImport = async (
   itemModes: ConfigPresetItemModeInput[],
   itemCredentials: ConfigPresetItemCredentialsInput[] = [],
   itemServiceAccounts: ConfigPresetItemServiceAccountInput[] = [],
+  scope?: string | null,
 ): Promise<ConfigPresetPartialImportOutput> => {
   checkConfigPresetImportAccess(context, user);
   const family = findImportableFamily(type);
@@ -126,7 +153,7 @@ export const configPresetPartialImport = async (
   const importContext: AuthContext = { ...context, requestAbortSignal: undefined };
   return withConfigPresetImportLock(importContext, async (lock) => {
     const { bundle, fileName } = await readUploadedBundle(file);
-    const items = resolveConfigPresetPartialImportItems(bundle, family, ids);
+    const items = resolveConfigPresetPartialImportItems(bundle, family, ids, scope);
     if (items.length === 0) {
       throw FunctionalError('Select at least one configuration item to import');
     }

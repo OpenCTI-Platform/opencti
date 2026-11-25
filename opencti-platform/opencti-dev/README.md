@@ -30,13 +30,13 @@ In `development.json` configuration:
   "smtp": {
     "hostname": "localhost",
     "use_ssl": false,
-    "rejectUnauthorized": false,
+    "reject_unauthorized": false,
     "port": 1025
   }
 }
 ```
 
-- You can see email at [http://localhost:1025](http://localhost:1025)
+- SMTP is on port 1025, you can see the emails at [http://localhost:1080](http://localhost:1080)
 
 ### Opensearch + opensearch dashboard instead of elasticsearch + kibana
 

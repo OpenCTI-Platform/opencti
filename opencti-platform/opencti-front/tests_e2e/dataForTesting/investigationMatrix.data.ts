@@ -3,9 +3,7 @@ import { graphqlRequest } from './graphql.data';
 
 /** Kill chain of the seeded techniques. Its phase holds every seeded attack pattern. */
 export const E2E_KILL_CHAIN = 'mitre-attack';
-/** A second kill chain holding only the unrelated technique: switching to it leaves the investigation's attack patterns unplaced. */
-export const E2E_OTHER_KILL_CHAIN = 'e2e-other-chain';
-/** A third kill chain with many phases, hence a matrix much wider than a small viewport. Only the unrelated technique sits in it. */
+/** A second kill chain with many phases, hence a matrix much wider than a small viewport. Only the unrelated technique sits in it. */
 export const E2E_WIDE_KILL_CHAIN = 'e2e-wide-chain';
 const WIDE_KILL_CHAIN_PHASE_COUNT = 8;
 
@@ -23,6 +21,8 @@ export interface InvestigationMatrixSeed {
    * It is the "unrelated platform technique" of the highlight tests.
    */
   unrelatedAttackPatternId: string;
+  /** Report "E2E Matrix report", which contains T9001. It is in the investigation too. */
+  reportId: string;
 }
 
 const quote = (value: string) => JSON.stringify(value);
@@ -142,21 +142,18 @@ interface SeededKnowledge {
   subtechniqueRelationId: string;
   /** `uses` relationships: A uses T9001, B uses T9001, A uses T9002. */
   usesRelationIds: string[];
-  /** A uses T9003.001. In no investigation unless a seed asks for it. */
-  subtechniqueUseRelationId: string;
 }
 
 /**
  * Upserts the knowledge of the matrix scenarios:
  * - attack patterns T9001, T9002, T9003 and its sub-technique T9003.001 in `mitre-attack`/`e2e-execution`
  * - T9004, in every seeded kill chain and in no investigation
- * - intrusion sets A and B: A uses T9001, T9002 and T9003.001, B uses T9001
+ * - intrusion sets A and B: A uses T9001 and T9002, B uses T9001
  * - a security platform that should cover T9001
  * Entities are upserted by their standard id, so seeding twice is harmless.
  */
 const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledge> => {
   const executionPhaseId = await addKillChainPhase(request, E2E_KILL_CHAIN, 'e2e-execution', 1);
-  const otherPhaseId = await addKillChainPhase(request, E2E_OTHER_KILL_CHAIN, 'e2e-other', 1);
   const widePhaseIds: string[] = [];
   for (let order = 1; order <= WIDE_KILL_CHAIN_PHASE_COUNT; order += 1) {
     widePhaseIds.push(await addKillChainPhase(request, E2E_WIDE_KILL_CHAIN, `e2e-wide-${order}`, order));
@@ -166,7 +163,7 @@ const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledg
   const betaId = await addAttackPattern(request, 'E2E Beta', 'T9002', [executionPhaseId]);
   const gammaId = await addAttackPattern(request, 'E2E Gamma', 'T9003', [executionPhaseId]);
   const gammaSubId = await addAttackPattern(request, 'E2E Gamma sub', 'T9003.001', [executionPhaseId]);
-  const unrelatedId = await addAttackPattern(request, 'E2E Unrelated', 'T9004', [executionPhaseId, otherPhaseId, ...widePhaseIds]);
+  const unrelatedId = await addAttackPattern(request, 'E2E Unrelated', 'T9004', [executionPhaseId, ...widePhaseIds]);
   const subtechniqueRelationId = await addRelation(request, 'subtechnique-of', gammaSubId, gammaId);
 
   const intrusionSetAId = await addIntrusionSet(request, 'E2E Matrix A');
@@ -176,7 +173,6 @@ const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledg
     await addRelation(request, 'uses', intrusionSetBId, alphaId),
     await addRelation(request, 'uses', intrusionSetAId, betaId),
   ];
-  const subtechniqueUseRelationId = await addRelation(request, 'uses', intrusionSetAId, gammaSubId);
 
   const securityPlatformId = await addSecurityPlatform(request, 'E2E Matrix platform');
   await addRelation(request, 'should-cover', securityPlatformId, alphaId);
@@ -188,30 +184,21 @@ const seedKnowledge = async (request: APIRequestContext): Promise<SeededKnowledg
     unrelatedAttackPatternId: unrelatedId,
     subtechniqueRelationId,
     usesRelationIds,
-    subtechniqueUseRelationId,
   };
 };
 
 /**
  * Seeds the knowledge of the matrix scenarios and an investigation holding it.
- * Scores: T9001 = 2 (A and B), T9002 = 1 (A), T9003 unscored. T9003.001 is in the investigation too, unscored.
- * With `withSubtechniqueUse`, the investigation also holds `A uses T9003.001`: T9003.001 scores 1 and T9003 stays unscored.
- * With `withReport`, the investigation also holds the report that contains T9002, and that `object` relationship:
- * T9002 scores 2 (A and the report).
+ * The investigation also holds report "E2E Matrix report", which contains T9001, and that `object` relationship:
+ * the container scoring rule reads it from the real query.
+ * Scores: T9001 = 3 (A, B and the report), T9002 = 1 (A), T9003 unscored. T9003.001 is in the investigation too, unscored.
  * Each call creates a new investigation.
  */
-export const seedInvestigationMatrix = async (
-  request: APIRequestContext,
-  { withSubtechniqueUse = false, withReport = false }: { withSubtechniqueUse?: boolean; withReport?: boolean } = {},
-): Promise<InvestigationMatrixSeed> => {
+export const seedInvestigationMatrix = async (request: APIRequestContext): Promise<InvestigationMatrixSeed> => {
   const knowledge = await seedKnowledge(request);
   const { attackPatterns, intrusionSets } = knowledge;
-  // Report "E2E Matrix report" contains T9002. Seeded only on demand, so other scenarios see no report.
-  const reportIds: string[] = [];
-  if (withReport) {
-    const reportId = await addReport(request, 'E2E Matrix report', [attackPatterns.T9002]);
-    reportIds.push(reportId, await getContainsRelationId(request, reportId, attackPatterns.T9002));
-  }
+  const reportId = await addReport(request, 'E2E Matrix report', [attackPatterns.T9001]);
+  const reportContainsRelationId = await getContainsRelationId(request, reportId, attackPatterns.T9001);
 
   const investigationName = `E2E matrix ${Date.now()}`;
   const investigationId = await addInvestigation(request, investigationName, [
@@ -223,8 +210,8 @@ export const seedInvestigationMatrix = async (
     intrusionSets.B,
     knowledge.subtechniqueRelationId,
     ...knowledge.usesRelationIds,
-    ...(withSubtechniqueUse ? [knowledge.subtechniqueUseRelationId] : []),
-    ...reportIds,
+    reportId,
+    reportContainsRelationId,
   ]);
 
   return {
@@ -234,17 +221,6 @@ export const seedInvestigationMatrix = async (
     intrusionSets,
     securityPlatformId: knowledge.securityPlatformId,
     unrelatedAttackPatternId: knowledge.unrelatedAttackPatternId,
+    reportId,
   };
-};
-
-/** An investigation that holds attack patterns, with no entity linked to any of them: nothing is scored. */
-export const seedInvestigationWithoutScores = async (request: APIRequestContext): Promise<string> => {
-  const { attackPatterns } = await seedKnowledge(request);
-  return addInvestigation(request, `E2E matrix unscored ${Date.now()}`, [attackPatterns.T9001, attackPatterns.T9002]);
-};
-
-/** An investigation that holds a single intrusion set and no attack pattern. */
-export const seedInvestigationWithoutAttackPatterns = async (request: APIRequestContext): Promise<string> => {
-  const intrusionSetId = await addIntrusionSet(request, 'E2E Matrix A');
-  return addInvestigation(request, `E2E matrix empty ${Date.now()}`, [intrusionSetId]);
 };

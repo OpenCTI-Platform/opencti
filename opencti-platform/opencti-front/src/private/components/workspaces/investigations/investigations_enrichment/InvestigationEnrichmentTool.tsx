@@ -16,12 +16,14 @@ import InvestigationEnrichmentMenuAction from './InvestigationEnrichmentMenuActi
 import useInvestigationEnrichmentRights from './useInvestigationEnrichmentRights';
 import { TabList } from './InvestigationEnrichmentDrawerTabs';
 
+const ENRICHMENT_WORKS_PAGE_SIZE = 5000;
+
 const investigationQuery = graphql`
-  query InvestigationEnrichmentToolQuery($id: String!, $entityIds: [String!]) {
+  query InvestigationEnrichmentToolQuery($id: String!, $first: Int, $entityIds: [String!]) {
     workspace(id: $id) {
       id
       currentUserAccessRight
-      enrichmentWorks(entityIds: $entityIds) {
+      enrichmentWorks(first: $first, entityIds: $entityIds) {
         edges {
           node {
             id
@@ -202,6 +204,7 @@ const InvestigationEnrichmentTool = ({
   const refetch = () => {
     const variables = {
       id: entity.id,
+      first: ENRICHMENT_WORKS_PAGE_SIZE,
       entityIds: selectionIds.length > 0 ? selectionIds : undefined,
     };
     const load = () => loadQuery(variables, { fetchPolicy: 'network-only' });

@@ -75,7 +75,7 @@ describe('XTM hub', () => {
       };
 
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'not_found', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'not_found', commercialModel: null, organizationName: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -93,6 +93,7 @@ describe('XTM hub', () => {
           { key: 'xtm_hub_registration_date', value: [] },
           { key: 'xtm_hub_last_connectivity_check', value: [] },
           { key: 'xtm_hub_commercial_model', value: [] },
+          { key: 'xtm_hub_organization_name', value: [] },
         ],
       );
     });
@@ -104,7 +105,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -126,7 +127,7 @@ describe('XTM hub', () => {
         xtm_hub_should_send_connectivity_email: false,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null, organizationName: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -155,7 +156,7 @@ describe('XTM hub', () => {
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
       vi.spyOn(licensing, 'getEnterpriseEditionInfo').mockReturnValue({ license_validated: licenseValidated } as PlatformEe);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null, organizationName: null });
 
       await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -170,7 +171,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
 
       await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -190,7 +191,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -212,7 +213,7 @@ describe('XTM hub', () => {
         xtm_hub_should_send_connectivity_email: true,
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
+      xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null, organizationName: null });
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -235,7 +236,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: 'saas' });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: 'saas', organizationName: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -263,7 +264,59 @@ describe('XTM hub', () => {
           xtm_hub_commercial_model: XtmHubCommercialModel.Saas,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel, organizationName: null });
+
+        await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(updateAttributeSpy).toHaveBeenCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }],
+        );
+      });
+    });
+
+    describe('organization name', () => {
+      it('should store the organization name returned by the hub when it changes', async () => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+          xtm_hub_should_send_connectivity_email: true,
+          xtm_hub_organization_name: 'Former organization',
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null, organizationName: 'Filigran' });
+
+        await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(updateAttributeSpy).toHaveBeenCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          [
+            { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
+            { key: 'xtm_hub_organization_name', value: ['Filigran'] },
+          ],
+        );
+      });
+
+      it.each([
+        { case: 'the hub returns the same organization name', organizationName: 'Filigran' },
+        { case: 'the hub returns no organization name', organizationName: null },
+      ])('should keep the stored organization name when $case', async ({ organizationName }) => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+          xtm_hub_should_send_connectivity_email: true,
+          xtm_hub_organization_name: 'Filigran',
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null, organizationName });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -287,7 +340,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -310,7 +363,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -326,7 +379,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: false,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -340,7 +393,7 @@ describe('XTM hub', () => {
           xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'active', commercialModel: null, organizationName: null });
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -356,7 +409,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true,
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null });
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
         vi.spyOn(conf, 'booleanConf').mockReturnValue(false);
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);

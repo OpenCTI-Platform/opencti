@@ -657,6 +657,10 @@ export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
 // (use isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG) to check activation)
 export const SESSION_PRESENCE_FEATURE_FLAG = 'SESSION_PRESENCE';
 
+// XTM counterparts: the XTM emblem, its surface and the list-row marks, and every counterpart call to another product
+// (use isFeatureEnabled(XTM_COUNTERPARTS_FEATURE_FLAG) to check activation)
+export const XTM_COUNTERPARTS_FEATURE_FLAG = 'XTM_COUNTERPARTS';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;

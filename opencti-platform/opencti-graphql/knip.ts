@@ -1,9 +1,10 @@
 import { defineConfig } from 'knip/config';
-import { BUILD_ENTRY_POINTS } from './builder/entry-points.ts';
+import { BUILD_ENTRY_POINTS, BUILD_INJECTED_MODULES } from './builder/entry-points.ts';
 
 export default defineConfig({
   entry: [
     ...BUILD_ENTRY_POINTS,
+    ...BUILD_INJECTED_MODULES,
     'tests/**/*-test.{ts,js}',
     'vitest.config*.ts',
     // Spawned as its own process by builder/dev/watch.ts, which knip cannot follow.

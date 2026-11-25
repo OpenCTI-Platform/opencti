@@ -154,6 +154,7 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
             <StixDomainObjectHeader
               entityType="Incident"
               stixDomainObject={incident}
+              xtmCounterpartId={incident.id}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IncidentEdition incidentId={incident.id} />
