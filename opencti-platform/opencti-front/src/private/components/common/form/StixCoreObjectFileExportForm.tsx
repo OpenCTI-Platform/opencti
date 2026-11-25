@@ -6,7 +6,7 @@ import FiligranIcon from '@components/common/FiligranIcon';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import { BUILT_IN_FROM_TEMPLATE, BUILT_IN_HTML_TO_PDF } from '@components/common/stix_core_objects/StixCoreObjectFileExport';
 import { AbcOutlined, DataObjectOutlined, HtmlOutlined, NumbersOutlined } from '@mui/icons-material';
-import { Stack } from '@mui/material';
+import GenerateExportTitle from '@components/common/GenerateExportTitle';
 import CardContent from '@mui/material/CardContent';
 import DialogActions from '@mui/material/DialogActions';
 import Grid from '@mui/material/Grid';
@@ -14,12 +14,11 @@ import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import StepLabel from '@mui/material/StepLabel';
 import Stepper from '@mui/material/Stepper';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import { FileExportOutline, FilePdfBox, InformationOutline, LanguageMarkdownOutline } from 'mdi-material-ui';
+import { FileExportOutline, FilePdfBox, LanguageMarkdownOutline } from 'mdi-material-ui';
 import React, { useEffect, useRef, useState } from 'react';
 import * as Yup from 'yup';
 import ComboboxField from '../../../../components/ComboboxField';
@@ -383,22 +382,7 @@ const StixCoreObjectFileExportForm = ({
               onClose();
             }}
             data-testid="StixCoreObjectFileExportDialog"
-            title={(
-              <Stack
-                direction="row"
-                sx={{
-                  alignItems: 'center',
-                  gap: 1,
-                }}
-              >
-                <Typography variant="h2" sx={{ margin: '0px!important' }}>
-                  {t_i18n('Generate an export')}
-                </Typography>
-                <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                  <InformationOutline fontSize="small" color="primary" />
-                </Tooltip>
-              </Stack>
-            )}
+            title={<GenerateExportTitle />}
             size="large"
           >
             <Form>

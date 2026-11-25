@@ -725,6 +725,17 @@
       ]
     },
     {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "export dialogs: the content max markings help next to the shared 'Generate an export' title (the MUI tooltip theme lowercased the multi-sentence text).",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/common/GenerateExportTitle.tsx"
+      ]
+    },
+    {
       "component": "Text",
       "importFrom": "@filigran/design-system",
       "guards": [

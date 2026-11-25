@@ -110,7 +110,6 @@ const StixCoreObjectsExportCreation = ({
       {({ selectedIds, excludedRelationshipsCount = 0 }) => {
         // An empty selection exports everything: when only relationships are selected, there is nothing to export.
         const hasNothingToExport = excludedRelationshipsCount > 0 && selectedIds.length === 0;
-        const markingsMessage = t_i18n('The content max markings can\'t exceed your max shareable markings. If none are selected, your max shareable markings are used. Entities above this limit are excluded from the export.');
         return (
           <Formik
             enableReinitialize={true}
@@ -134,7 +133,7 @@ const StixCoreObjectsExportCreation = ({
                     setOpen(false);
                   }}
                   data-testid="StixCoreObjectsExportCreationDialog"
-                  title={t_i18n('Generate an export')}
+                  title={<GenerateExportTitle />}
                 >
                   {excludedRelationshipsCount > 0 && (
                     <Alert

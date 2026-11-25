@@ -6963,7 +6963,6 @@
   "Your filter group cannot be modified yet:": "Ваша группа фильтров пока не может быть изменена:",
   "Your inline CSV mapper was successfully saved.": "Ваш встроенный CSV-маппер был успешно сохранен.",
   "Your local storage contains the latest filters and searches used in most views of the platform. Clearing local storage might help to load a page crashing because of some filtering, searching or sorting issue.": "В вашем локальном хранилище содержатся последние фильтры и поисковые запросы, используемые в большинстве представлений платформы. Очистка локального хранилища может помочь загрузить страницу, сбой которой произошел из-за проблем с фильтрацией, поиском или сортировкой.",
-  "Your max shareable markings will be applied to the content max markings": "Ваши максимальные отметки, которыми можно поделиться, будут применены к максимальным отметкам содержимого",
   "Your message": "Ваше сообщение",
   "Your OpenCTI Enterprise Edition free trial is active: ": "Ваша бесплатная пробная версия OpenCTI Enterprise Edition активна:",
   "Your OpenCTI license is expired": "Срок действия вашей лицензии OpenCTI истек",
