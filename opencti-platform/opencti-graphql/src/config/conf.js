@@ -656,6 +656,10 @@ export const INGESTION_DEDUPLICATION_FEATURE_FLAG = 'INGESTION_DEDUPLICATION';
 // (use isFeatureEnabled(SESSION_PRESENCE_FEATURE_FLAG) to check activation)
 export const SESSION_PRESENCE_FEATURE_FLAG = 'SESSION_PRESENCE';
 
+// Last successful logins of a user, read from the activity log and shown in the user profile
+// (use isFeatureEnabled(LOGIN_HISTORY_FEATURE_FLAG) to check activation)
+export const LOGIN_HISTORY_FEATURE_FLAG = 'LOGIN_HISTORY';
+
 // XTM counterparts: the XTM emblem, its surface and the list-row marks, and every counterpart call to another product
 // (use isFeatureEnabled(XTM_COUNTERPARTS_FEATURE_FLAG) to check activation)
 export const XTM_COUNTERPARTS_FEATURE_FLAG = 'XTM_COUNTERPARTS';

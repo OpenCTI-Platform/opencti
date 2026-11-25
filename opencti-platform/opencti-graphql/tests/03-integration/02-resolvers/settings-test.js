@@ -448,6 +448,72 @@ const REMOVE_MESSAGE_QUERY = gql`
   }
 `;
 
+const EDIT_LOGIN_HISTORY_QUERY = gql`
+  mutation SettingsLoginHistoryEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        platform_login_history_count
+      }
+    }
+  }
+`;
+
+const ME_LOGIN_HISTORY_QUERY = gql`
+  query meLoginHistory {
+    me {
+      id
+      login_history {
+        id
+        timestamp
+        provider
+      }
+    }
+  }
+`;
+
+describe('Settings resolver login history', () => {
+  let settingsInternalId;
+  const editLoginHistoryCount = (value) => queryAsAdmin({
+    query: EDIT_LOGIN_HISTORY_QUERY,
+    variables: { id: settingsInternalId, input: [{ key: 'platform_login_history_count', value: [value] }] },
+  });
+
+  beforeAll(async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    settingsInternalId = queryResult.data.settings.id;
+  });
+
+  afterAll(async () => {
+    await editLoginHistoryCount('0');
+  });
+
+  it('should update the login history count', async () => {
+    const queryResult = await editLoginHistoryCount('5');
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_login_history_count).toEqual(5);
+  });
+
+  it('should reject a login history count out of range', async () => {
+    const queryResult = await editLoginHistoryCount('51');
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toContain('between 0 and 50');
+  });
+
+  it('should reject a login history count edited by a user without the capability', async () => {
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, {
+      query: EDIT_LOGIN_HISTORY_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_login_history_count', value: ['3'] }] },
+    });
+  });
+
+  it('should give a user their own login history', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_EDITOR, { query: ME_LOGIN_HISTORY_QUERY, variables: {} });
+    const { login_history } = queryResult.data.me;
+    expect(Array.isArray(login_history)).toBe(true);
+    expect(login_history.length).toBeLessThanOrEqual(5);
+  });
+});
+
 describe('Settings resolver messages behavior', () => {
   it('should edit messages', async () => {
     // -- PREPARE -

@@ -825,6 +825,7 @@
   "Notifiers": "알림",
   "Number": "숫자",
   "Number observed": "관찰된 수",
+  "Number of last logins shown in the user profile": "사용자 프로필에 표시할 최근 로그인 수",
   "Number of nodes in cluster": "클러스터 내 노드 수",
   "Number of sub-keys": "하위 키 수",
   "Number seen": "확인 횟수",
