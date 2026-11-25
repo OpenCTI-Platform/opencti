@@ -130,7 +130,7 @@ The enrichment runs as a [background task](background-tasks.md) and the panel op
 
 ### Follow enrichments
 
-The **Enrichment** panel lists the enrichments launched from this investigation, grouped by enriched entity, then by connector. While elements are selected, it lists only their enrichments. Three tabs sort them:
+The **Enrichment** panel lists the enrichments launched from this investigation, grouped by enriched entity, then by connector. While elements are selected, it lists only their enrichments. It shows up to 5000 enrichments. Three tabs sort them:
 
 - **To review**: the connector has finished and its results wait for your review.
 - **In progress**: the connector is still running.
