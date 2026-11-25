@@ -166,6 +166,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
             <StixDomainObjectHeader
               entityType="System"
               stixDomainObject={system}
+              xtmCounterpartId={system.id}
               isOpenctiAlias={true}
               enableQuickSubscription={true}
               enableEnricher={true}

@@ -1,5 +1,6 @@
 import { readdir, stat, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { extractFrontendKeys, extractMenuKeys, menuDataFilePattern } from './i18n-patterns.ts';
 
 const srcDirectoryFrontend = 'src';
 const srcDirectoryBackend = '../opencti-graphql/src';
@@ -7,7 +8,6 @@ const englishTranslationFileFrontend = 'lang/front/en.json';
 const englishTranslationFileBackend = 'lang/back/en.json';
 const jsxTsxFileExtensions = ['.jsx', '.tsx'];
 const jsTsFileExtensions = ['.js', '.ts'];
-const frontendSearchPattern = /t_i18n\('([^']+)'\)/g;
 const backendSearchPattern = /label: '([^']+)'/g;
 const frontendExtractedValues: Record<string, string> = {};
 const backendExtractedValues: Record<string, string> = {};
@@ -23,12 +23,11 @@ const extractI18nValuesFrontend = async (directory: string) => {
 
       if (stats.isDirectory()) {
         await extractI18nValuesFrontend(filePath); // Recursively call the function for directories
-      } else if (stats.isFile() && jsxTsxFileExtensions.includes(path.extname(filePath))) {
+      } else if (stats.isFile() && (jsxTsxFileExtensions.includes(path.extname(filePath)) || menuDataFilePattern.test(filePath))) {
         const data = await readFile(filePath, 'utf8');
-        for (const [, value] of data.matchAll(frontendSearchPattern)) {
-          if (value) {
-            frontendExtractedValues[value] = value;
-          }
+        const keys = menuDataFilePattern.test(filePath) ? [...extractMenuKeys(data), ...extractFrontendKeys(data)] : extractFrontendKeys(data);
+        for (const value of keys) {
+          frontendExtractedValues[value] = value;
         }
       }
     }

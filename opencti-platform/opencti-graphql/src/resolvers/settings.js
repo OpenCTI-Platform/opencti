@@ -41,6 +41,7 @@ import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout-defaul
 import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
 import { isApiBasicAuthEnabled } from '../modules/user/user-basic-auth';
 import { readXtmHubTokenFor } from '../utils/settings.helper';
+import { getSessionMaxLifetime } from '../database/session';
 
 const settingsResolvers = {
   Query: {
@@ -56,6 +57,7 @@ const settingsResolvers = {
     platform_type: () => (IS_LTS_PLATFORM ? PlatformType.Lts : PlatformType.Standard),
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
+    platform_session_max_lifetime: () => getSessionMaxLifetime(),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     platform_critical_alerts: (_, __, context) => getCriticalAlerts(context, context.user),
     platform_protected_sensitive_config: (_, __, context) => getProtectedSensitiveConfig(context, context.user),

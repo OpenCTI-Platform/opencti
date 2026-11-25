@@ -11,15 +11,20 @@ import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import TitleMainEntity from '../../../../components/common/typography/TitleMainEntity';
+import { XtmEmblem } from '../../common/xtm/counterpart/core/XtmEmblem';
+import { xtmProductsFor } from '../../common/xtm/counterpart/core/xtmProducts';
 
 interface StixSightingRelationshipHeaderProps {
   headerName?: string;
+  // The sighting: OpenAEV knows it when an alert of a simulation inject answered it.
+  sightingId?: string;
   onOpenDelete: () => void;
   onOpenEdit: () => void;
 }
 
 const StixSightingRelationshipHeader = ({
   headerName,
+  sightingId,
   onOpenDelete,
   onOpenEdit,
 }: StixSightingRelationshipHeaderProps) => {
@@ -53,6 +58,7 @@ const StixSightingRelationshipHeader = ({
           gap: 1,
         }}
       >
+        {sightingId && <XtmEmblem products={xtmProductsFor('stix-sighting-relationship')} objectId={sightingId} />}
         {canDelete && (
           <PopoverMenu>
             {({ closeMenu }) => (

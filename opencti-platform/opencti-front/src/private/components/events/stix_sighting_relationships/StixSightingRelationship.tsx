@@ -84,6 +84,7 @@ const StixSightingRelationship: FunctionComponent<
                 />
                 <StixSightingRelationshipHeader
                   headerName={headerName}
+                  sightingId={sightingId}
                   onOpenEdit={handleOpenEdit}
                   onOpenDelete={handleOpenDelete}
                 />

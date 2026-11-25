@@ -49,7 +49,7 @@ import {
   storeLoadById,
 } from '../../database/middleware-loader';
 import { delEditContext, notify, publishCacheResetEvent, setEditContext } from '../../database/redis';
-import { killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
+import { endSessionByRawId, isSessionOverMaxLifetime, killOtherUserSessions, killUserSessions, killUserSessionsOverLimit } from '../../database/session';
 import {
   buildPagination,
   isEmptyField,
@@ -2703,7 +2703,74 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 };
 
 export const JWT_TOKEN_PREFIX = 'ey';
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string } } };
+type SessionEndRequest = { sessionID?: string; session?: { user?: unknown; regenerate?: (callback: (err?: unknown) => void) => void } };
+type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string } } };
+
+// The ended session must not stay on the request: the end of the request would save it again.
+// The request gets a new empty session instead, as the rest of the request may still use one: a login
+// mutation sent with the cookie of the ended session binds the user to the session of its request.
+// req.session.regenerate() is the public API of express-session for this: it deletes the session from the store
+// (already done, so a no-op) and gives the request a new one, neither saved nor sent as a cookie unless something
+// is put in it (saveUninitialized: false). Without it, or when it fails, the session is only removed from the
+// request, as req.session.destroy() does.
+const renewRequestSession = async (req: SessionEndRequest) => {
+  const { session } = req;
+  if (session?.regenerate) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        session.regenerate!((err) => (err ? reject(err) : resolve()));
+      });
+      return;
+    } catch (err) {
+      logApp.warn('Fail to give a new session to a request whose session is over its maximum lifetime', { cause: err });
+    }
+  }
+  delete req.session;
+};
+
+// End a session that reached its maximum lifetime (app:session_max_lifetime): the session is deleted,
+// so its user must log in again, and the logout is recorded in the activity log.
+// Several requests of the same session can reach it at once, possibly on several nodes (a page sends its
+// queries in parallel): each one ends the session, but only the one that actually deleted it records the logout.
+const endSessionOverMaxLifetime = async (req: SessionEndRequest, user: AuthUser) => {
+  const { sessionID } = req;
+  let isDeletedByThisRequest = false;
+  if (sessionID) {
+    try {
+      isDeletedByThisRequest = await endSessionByRawId(sessionID);
+    } catch (err) {
+      logApp.error('Fail to delete a session over its maximum lifetime', { cause: err, user_id: user.id });
+    }
+  }
+  await renewRequestSession(req);
+  if (isDeletedByThisRequest) {
+    await publishUserAction({
+      user,
+      event_type: 'authentication',
+      event_access: 'administration',
+      event_scope: 'logout',
+      context_data: { reason: 'max_lifetime' },
+    });
+  }
+};
+
+// A stream is authenticated once, when it opens, then serves events for a long time: the maximum lifetime of
+// its session is checked again before each batch of events. Only a stream authenticated by its session is
+// concerned: a bearer token is used before the session cookie the request may also carry (as in
+// authenticateUserFromRequest), so an unrelated session must not close a stream authenticated by a token.
+// When the session is over its maximum lifetime, it is ended and the logout recorded, as for any other request.
+// Returns true when the stream must be closed.
+export const endStreamSessionOverMaxLifetime = async (context: AuthContext, req: SessionAuthRequest & SessionEndRequest) => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser || extractTokenFromBearer(req.headers.authorization) || !isSessionOverMaxLifetime(sessionUser)) {
+    return false;
+  }
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const logged = platformUsers.get(sessionUser.id);
+  await endSessionOverMaxLifetime(req, userWithOrigin(req, { ...sessionUser, ...logged }) as AuthUser);
+  return true;
+};
+
 // This method can only be used in createAuthenticatedContext
 // If you need to check auth and create context, use directly createAuthenticatedContext method
 export const authenticateUserFromRequest = async (context: AuthContext, req: SessionAuthRequest) => {
@@ -2732,8 +2799,14 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   if (sessionUser) {
     const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(sessionUser.id);
-    const authUser = { ...sessionUser, ...logged };
-    return userWithOrigin(req, authUser);
+    const authUser = userWithOrigin(req, { ...sessionUser, ...logged });
+    // The maximum lifetime is counted from the login: the activity of the user never extends it
+    if (isSessionOverMaxLifetime(sessionUser)) {
+      // The user of the session may no longer be in the cache: the logout is recorded with its session identity
+      await endSessionOverMaxLifetime(req, authUser as AuthUser);
+      return undefined;
+    }
+    return authUser;
   }
   // endregion
   // region Direct authentication

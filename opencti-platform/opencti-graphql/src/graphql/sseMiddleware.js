@@ -66,7 +66,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../http/httpServer-draft';
-import { resolveUserByIdFromCache } from '../modules/user/user-domain';
+import { endStreamSessionOverMaxLifetime, resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
@@ -165,6 +165,10 @@ export const refreshStreamUser = async (req, { isPublicUser = false } = {}) => {
   // Same check as on any other request (locked, disabled or expired account), which matters most for a leaked token
   if (!isPublicUser && !isUserAccountActive(cachedUser)) {
     return { error: 'the account of the user is no longer active' };
+  }
+  // A stream authenticated by a session ends with it, when the session reaches its maximum lifetime
+  if (!isPublicUser && await endStreamSessionOverMaxLifetime(context, req)) {
+    return { error: 'the session of the user reached its maximum lifetime' };
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isInsidePlatformOrganization = isUserInPlatformOrganization(cachedUser, settings);
