@@ -125,10 +125,12 @@ testCreatedCounter.vulnerability = 21;
 // - 10 created and deleted by the has-covered cleanup tests of securityCoverage-utils-test
 // - 2 created and deleted by securityCoverage-results-filters-test and vocabulary-coverage-usages-test, with 3 results (2 + 1)
 // - 2 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
-testCreatedCounter['security-coverage'] = 41;
+// - 1 created and deleted by securityCoverage-domain-test (results restricted by marking)
+testCreatedCounter['security-coverage'] = 42;
 // Includes 10 created and deleted by the has-covered cleanup tests of securityCoverage-utils-test
 // - 3 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
-testCreatedCounter['security-coverage-result'] = 38;
+// - 3 created and deleted by securityCoverage-domain-test (results restricted by marking)
+testCreatedCounter['security-coverage-result'] = 41;
 
 export const testUpdatedCounter: Record<string, number> = {};
 // Counts for:
@@ -314,10 +316,12 @@ testDeletedCounter.imsi = 1;
 // - 10 by the has-covered cleanup tests of securityCoverage-utils-test
 // - 2 by securityCoverage-results-filters-test and vocabulary-coverage-usages-test, with 3 results (2 + 1)
 // - 2 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
-testDeletedCounter['security-coverage'] = 39;
+// - 1 created and deleted by securityCoverage-domain-test (results restricted by marking)
+testDeletedCounter['security-coverage'] = 40;
 // Includes 10 by the has-covered cleanup tests of securityCoverage-utils-test
 // - 3 created and deleted by securityCoverage-domain-test (covered entities scoped to one result)
-testDeletedCounter['security-coverage-result'] = 36;
+// - 3 created and deleted by securityCoverage-domain-test (results restricted by marking)
+testDeletedCounter['security-coverage-result'] = 39;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);

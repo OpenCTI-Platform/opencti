@@ -6,6 +6,7 @@ import {
   findCoveredEntitiesDistribution,
   getSecurityCoverageResultIds,
   listSecurityCoverageResults,
+  loadSecurityCoverageResults,
   securityCoverageDelete,
   securityCoverageStixBundle,
 } from '../../../../src/modules/securityCoverage/securityCoverage-domain';
@@ -15,7 +16,7 @@ import {
   editSecurityCoverageResult,
 } from '../../../../src/modules/securityCoverage/securityCoverageResult/securityCoverageResult-domain';
 import { addAttackPattern } from '../../../../src/domain/attackPattern';
-import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext } from '../../../utils/testQuery';
 import { addReport, reportDeleteWithElements } from '../../../../src/domain/report';
 import { stixDomainObjectDelete } from '../../../../src/domain/stixDomainObject';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
@@ -37,6 +38,10 @@ import { INPUT_OBJECTS } from '../../../../src/schema/general';
 import { addWorkspace, workspaceDelete } from '../../../../src/modules/workspace/workspace-domain';
 import { knowledgeAddFromInvestigation } from '../../../../src/domain/container';
 import { FilterMode } from '../../../../src/generated/graphql';
+import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
+import { executionContext } from '../../../../src/utils/access';
+import { computeLoaders } from '../../../../src/http/httpAuthenticatedContext';
+import type { AuthUser } from '../../../../src/types/user';
 
 describe('SecurityCoverage domain', () => {
   // Creating has-covered relationships from filters spawns a QUERY background task,
@@ -563,6 +568,58 @@ describe('SecurityCoverage domain', () => {
     it('should not widen the scope beyond the coverage when fromId is empty', async () => {
       const args = { field: 'entity_type', operation: 'count', relationship_type: [RELATION_HAS_COVERED], fromId: [] };
       expect(await findCoveredEntitiesDistribution(testContext, ADMIN_USER, scA, args)).toEqual([{ label: 'Attack-Pattern', value: 2 }]);
+    });
+  });
+
+  describe('Function loadSecurityCoverageResults() with results restricted by marking', () => {
+    let securityCoverage: BasicStoreEntitySecurityCoverage;
+    let scrFirst: BasicStoreEntitySecurityCoverageResult;
+    let scrMarked: BasicStoreEntitySecurityCoverageResult;
+    let scrLast: BasicStoreEntitySecurityCoverageResult;
+
+    // The context of a GraphQL resolver, with its batch loaders
+    const resolverContext = (user: AuthUser) => {
+      const context = executionContext('test', user);
+      context.batch = computeLoaders(context, user);
+      return context;
+    };
+
+    beforeAll(async () => {
+      // No external_uri: no SecurityCoverageResult is created automatically
+      const created = await addSecurityCoverage(adminContext, ADMIN_USER, { ...BASE_INPUT(), name: 'sc-restricted' });
+      // A real result named "Restricted" must stay listed: the filtering never relies on the name
+      scrFirst = await addSecurityCoverageResult(adminContext, ADMIN_USER, { resultOf: created.id, name: 'Restricted', external_uri: 'https://first.oaev.test' });
+      scrMarked = await addSecurityCoverageResult(adminContext, ADMIN_USER, {
+        resultOf: created.id,
+        name: 'OAEV Marked',
+        external_uri: 'https://marked.oaev.test',
+        objectMarking: [MARKING_TLP_AMBER],
+      });
+      scrLast = await addSecurityCoverageResult(adminContext, ADMIN_USER, { resultOf: created.id, name: 'OAEV Last', external_uri: 'https://last.oaev.test' });
+      // Reload: the results are read from the result ids of the SecurityCoverage entity
+      securityCoverage = await findById(testContext, ADMIN_USER, created.id);
+    });
+
+    afterAll(async () => {
+      await securityCoverageDelete(testContext, ADMIN_USER, securityCoverage.id);
+    });
+
+    it('should return every result to a user who can access them all, in the order of the result ids', async () => {
+      const resultIds = getSecurityCoverageResultIds(securityCoverage);
+      expect([...resultIds].sort()).toEqual([scrFirst.id, scrMarked.id, scrLast.id].sort());
+      const results = await loadSecurityCoverageResults(resolverContext(ADMIN_USER), ADMIN_USER, securityCoverage);
+      expect(results.map((r) => r.id)).toEqual(resultIds);
+    });
+
+    it('should not return the results of a marking the user cannot access, nor a placeholder for them', async () => {
+      const userWithoutMarking = buildStandardUser([], [], [{ name: 'KNOWLEDGE' }]);
+      const resultIds = getSecurityCoverageResultIds(securityCoverage);
+      const results = await loadSecurityCoverageResults(resolverContext(userWithoutMarking), userWithoutMarking, securityCoverage);
+      // The order of the result ids is kept for the results left
+      expect(results.map((r) => r.id)).toEqual(resultIds.filter((id) => id !== scrMarked.id));
+      expect(results.map((r) => r.id)).not.toContain(scrMarked.id);
+      // The real result named "Restricted" is kept
+      expect(results.map((r) => r.name)).toContain('Restricted');
     });
   });
 });
