@@ -74,7 +74,6 @@ const buildTransformRequest = (remoteData: ReturnType<typeof buildRemoteData>) =
   httpClient: {},
   data: remoteData,
   context: {},
-  fileStaging: { streamClient: {}, stagedKeys: new Map<number, string>(), isStagingEvent: true },
 });
 
 describe('syncManager transformDataWithReverseIdAndFilesData - workflow status remap', () => {

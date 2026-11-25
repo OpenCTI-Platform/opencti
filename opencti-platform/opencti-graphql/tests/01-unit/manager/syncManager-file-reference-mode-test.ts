@@ -138,7 +138,7 @@ interface TransformRequest {
   httpClient: TestHttpClient;
   data: RemoteFileData;
   context: object;
-  fileStaging: TestFileStaging;
+  fileStaging: TestFileStaging | undefined;
 }
 
 interface PushedBundle {
@@ -167,7 +167,7 @@ const buildRemoteFileData = (file: RemoteFile, entityType: string): RemoteFileDa
 
 const buildFileStaging = (isStagingEvent: boolean): TestFileStaging => ({ streamClient, stagedKeys: new Map(), isStagingEvent });
 
-const buildRequest = (data: RemoteFileData, fileStaging: TestFileStaging): TransformRequest => ({
+const buildRequest = (data: RemoteFileData, fileStaging: TestFileStaging | undefined): TransformRequest => ({
   sync,
   httpClient,
   data,
@@ -267,7 +267,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     mockHttpClientGet.mockResolvedValue({ data: Buffer.from('pdf-bytes') });
     const transform = await loadTransform();
 
-    const { data } = await transform(buildRequest(buildRemoteFileData(buildReportFile(), 'Report'), buildFileStaging(true)));
+    const { data } = await transform(buildRequest(buildRemoteFileData(buildReportFile(), 'Report'), undefined));
 
     expect(mockStreamClientGet).not.toHaveBeenCalled();
     expect(mockRawUpload).not.toHaveBeenCalled();
@@ -275,15 +275,15 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     expect(data.extensions[STIX_EXT_OCTI].files[0].x_opencti_storage_key).toBeUndefined();
   });
 
-  it('drops a storage key sent by the sending platform when reference mode is disabled', async () => {
+  it('leaves the file entries as master does when reference mode is disabled', async () => {
     mockConf({ isReferenceModeEnabled: false });
     mockHttpClientGet.mockResolvedValue({ data: Buffer.from('pdf-bytes') });
     const transform = await loadTransform();
     const remoteFile: RemoteFile = { uri: FILE_URI, name: 'report.pdf', x_opencti_storage_key: 'sync/inflight/sync--id-1/0123/content' };
 
-    const { data } = await transform(buildRequest(buildRemoteFileData(remoteFile, 'Report'), buildFileStaging(true)));
+    const { data } = await transform(buildRequest(buildRemoteFileData(remoteFile, 'Report'), undefined));
 
-    expect(data.extensions[STIX_EXT_OCTI].files[0].x_opencti_storage_key).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].files[0].x_opencti_storage_key).toBe('sync/inflight/sync--id-1/0123/content');
   });
 
   it('drops a storage key sent by the sending platform even when the file URI is invalid', async () => {
@@ -352,6 +352,23 @@ describe('syncManager transformDataWithReverseIdAndFilesData - file reference mo
     const [firstPush, secondPush] = mockPushBundleToWorker.mock.calls;
     expect(pushedStorageKey(firstPush)).toMatch(STAGED_KEY_PATTERN);
     expect(pushedStorageKey(secondPush)).toEqual(pushedStorageKey(firstPush));
+  });
+
+  it('creates no file stream client and inlines the file when reference mode is disabled', async () => {
+    mockConf({ isReferenceModeEnabled: false });
+    mockStoreLoadById.mockResolvedValue(sync);
+    mockGetHttpClient.mockReturnValue(buildSyncHttpClient(buildCreateEvent(buildRemoteFileData(buildReportFile(), 'Report'))));
+    mockStreamClientGet.mockResolvedValue({ data: Buffer.from('pdf-bytes'), headers: {} });
+    const syncManager = await import('../../../src/manager/syncManager');
+    const instance = syncManager.syncManagerInstance(sync.internal_id);
+    mockPushBundleToWorker.mockImplementationOnce(async () => instance.stop());
+
+    await instance.start({});
+
+    const fileStreamClientOptions = expect.objectContaining({ responseType: 'stream', timeout: expect.any(Number) });
+    expect(mockGetHttpClient).not.toHaveBeenCalledWith(fileStreamClientOptions);
+    expect(mockRawUpload).not.toHaveBeenCalled();
+    expect(pushedStorageKey(mockPushBundleToWorker.mock.calls[0])).toBeUndefined();
   });
 
   it('inlines a large file as base64 as today for an event that is not a create or an update', async () => {

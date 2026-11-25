@@ -345,8 +345,16 @@ const resolveStagedFileKey = async (stagingRequest) => {
   return storageKey;
 };
 
+// Undefined when file reference mode is off, so the transform keeps the master behaviour.
+const buildEventFileStaging = (fileStreamClient, eventType) => {
+  if (!fileStreamClient) {
+    return undefined;
+  }
+  return { streamClient: fileStreamClient, stagedKeys: new Map(), isStagingEvent: FILE_STAGING_EVENT_TYPES.includes(eventType) };
+};
+
 export const transformDataWithReverseIdAndFilesData = async (request) => {
-  const { sync, httpClient, data, context } = request;
+  const { sync, httpClient, data, context, fileStaging } = request;
   const { uri } = sync;
   const processingData = { ...data };
   const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
@@ -377,15 +385,17 @@ export const transformDataWithReverseIdAndFilesData = async (request) => {
   for (let index = 0; index < entityFiles.length; index += 1) {
     const entityFile = entityFiles[index];
     const { uri: fileUri } = entityFile;
-    // Only this platform may set a staged key, never the sending platform.
-    delete entityFile.x_opencti_storage_key;
+    if (fileStaging) {
+      // Only this platform may set a staged key, never the sending platform.
+      delete entityFile.x_opencti_storage_key;
+    }
     try {
       const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
       if (!fetchUri) {
         logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
         continue;
       }
-      if (ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE) {
+      if (fileStaging) {
         const storageKey = await resolveStagedFileKey({ request, entityFile, fetchUri, index });
         if (storageKey) {
           entityFile.x_opencti_storage_key = storageKey;
@@ -591,7 +601,7 @@ const syncManagerInstance = (syncId) => {
         feature: 'Synchronizer',
       };
       const httpClient = getHttpClient(httpClientOptions);
-      const fileStreamClient = getHttpClient({ ...httpClientOptions, responseType: 'stream' });
+      const fileStreamClient = ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE ? getHttpClient({ ...httpClientOptions, responseType: 'stream' }) : undefined;
       lastState = sync.current_state_date;
       lastEventDate = sync.current_state_date;
       // Reconnection loop: on stream error/close, reconnect from the last saved state.
@@ -636,11 +646,7 @@ const syncManagerInstance = (syncId) => {
             let processed = false;
             let failed = false;
             // Kept across retries so a failed push reuses the staged files instead of uploading them again.
-            const fileStaging = {
-              streamClient: fileStreamClient,
-              stagedKeys: new Map(),
-              isStagingEvent: FILE_STAGING_EVENT_TYPES.includes(eventType),
-            };
+            const fileStaging = buildEventFileStaging(fileStreamClient, eventType);
             while (!processed && running) {
               try {
                 const transformRequest = { sync, httpClient, data: stixData, context: eventContext, fileStaging };

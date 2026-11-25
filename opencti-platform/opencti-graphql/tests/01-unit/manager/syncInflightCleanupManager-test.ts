@@ -69,11 +69,11 @@ describe('sync inflight cleanup manager', () => {
     vi.doUnmock('../../../src/config/conf');
   });
 
-  it('is off with the default configuration', async () => {
+  it('is not registered with the default configuration', async () => {
     vi.doUnmock('../../../src/config/conf');
     await import('../../../src/manager/syncInflightCleanupManager');
 
-    expect(registeredEnabledByConfig()).toBe(false);
+    expect(mockRegisterManager).not.toHaveBeenCalled();
   });
 
   it('follows file reference mode when its own enabled setting is not set', async () => {

@@ -17482,6 +17482,7 @@ export type MeUser = BasicObject & InternalObject & {
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   password_valid_until?: Maybe<Scalars['DateTime']['output']>;
+  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   representative: Representative;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
@@ -38452,6 +38453,7 @@ export type User = BasicObject & InternalObject & {
   otp_qr?: Maybe<Scalars['String']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   password_valid_until?: Maybe<Scalars['DateTime']['output']>;
+  pastel_colours?: Maybe<Scalars['Boolean']['output']>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -50357,6 +50359,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -55929,6 +55932,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   password_valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pastel_colours?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
