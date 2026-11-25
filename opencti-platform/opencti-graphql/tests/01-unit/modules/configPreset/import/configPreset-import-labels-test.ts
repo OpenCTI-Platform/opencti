@@ -1,11 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
+  internalFindByIds: vi.fn(),
+}));
 vi.mock('../../../../../src/modules/label/label-import', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/label/label-import')>()),
   importLabel: vi.fn(),
 }));
 
+import { internalFindByIds } from '../../../../../src/database/middleware-loader';
 import { getLabelStandardId, importLabel } from '../../../../../src/modules/label/label-import';
+import type { BasicStoreEntityLabel } from '../../../../../src/modules/label/label-types';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundleItem, ConfigPresetComputedItem, ConfigPresetImportPlan } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
@@ -33,7 +39,7 @@ describe('Labels import (registry)', () => {
     vi.mocked(importLabel).mockResolvedValue({ status: 'overwritten', exists: true });
     const configuration = { value: 'APT', color: '#ff0000' };
     const result = await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite);
-    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true }, undefined);
     expect(result).toMatchObject({ label: 'APT', translatable: false, status: 'overwritten', exists: true, conflict: true });
   });
 
@@ -74,5 +80,37 @@ describe('Labels import (registry)', () => {
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
     vi.mocked(importLabel).mockResolvedValueOnce({ status: 'failed', code: 'invalid', reason: 'value: Invalid input', exists: false });
     await expect(family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).rejects.toThrow('value: Invalid input');
+  });
+});
+
+describe('Labels import (registry): the labels that exist are read at once', () => {
+  const labelItems = (count: number) => Array.from({ length: count }, (_, i) => item({ value: `label ${i}` }, getLabelStandardId(`label ${i}`)));
+  const stored = (value: string) => ({ id: `internal-${value}`, standard_id: getLabelStandardId(value), value, color: '#ff0000' }) as BasicStoreEntityLabel;
+
+  it('reads them by standard id in slices, never one query per label, and keeps them in the plan', async () => {
+    const items = labelItems(2500);
+    vi.mocked(internalFindByIds).mockImplementation(async (_context, _user, ids) => (ids.includes(items[3].id) ? [stored('label 3')] : []) as never);
+    const slicePlan: ConfigPresetImportPlan = { created: new Set() };
+    await family.importer!.prepare!(context, user, items, slicePlan);
+    expect(internalFindByIds).toHaveBeenCalledTimes(3);
+    const sizes = vi.mocked(internalFindByIds).mock.calls.map(([, , ids]) => ids.length);
+    expect(sizes).toEqual([1000, 1000, 500]);
+    expect(vi.mocked(internalFindByIds).mock.calls[0][3]).toMatchObject({ type: 'Label' });
+    expect([...slicePlan.existingLabels!.keys()]).toEqual([getLabelStandardId('label 3')]);
+  });
+
+  it('completes the labels of an earlier call instead of replacing them', async () => {
+    const slicePlan: ConfigPresetImportPlan = { created: new Set(), existingLabels: new Map([['earlier', stored('earlier')]]) };
+    vi.mocked(internalFindByIds).mockResolvedValue([stored('label 0')] as never);
+    await family.importer!.prepare!(context, user, labelItems(1), slicePlan);
+    expect([...slicePlan.existingLabels!.keys()].sort()).toEqual(['earlier', getLabelStandardId('label 0')].sort());
+  });
+
+  it('computes an item with the labels of the plan', async () => {
+    vi.mocked(importLabel).mockResolvedValue({ status: 'created', exists: false });
+    const existingLabels = new Map<string, BasicStoreEntityLabel>();
+    const configuration = { value: 'APT' };
+    await family.importer!.compute(context, user, item(configuration), { created: new Set(), existingLabels }, ConfigImportMode.Overwrite);
+    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true }, existingLabels);
   });
 });

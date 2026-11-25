@@ -28,13 +28,18 @@ export const importLabel = async (
   user: AuthUser,
   configuration: unknown,
   { mode, dryRun = false }: ConfigImportOptions,
+  // The labels that exist, by standard id, when the caller read them all at once: a label that is not in it does not exist, with no lookup
+  existingLabels?: Map<string, BasicStoreEntityLabel>,
 ): Promise<LabelImportResult> => {
   const parsed = labelImportSchema.safeParse(configuration);
   if (!parsed.success) {
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { value, color } = parsed.data;
-  const existing = await storeLoadById<BasicStoreEntityLabel>(context, user, getLabelStandardId(value), ENTITY_TYPE_LABEL);
+  const standardId = getLabelStandardId(value);
+  const existing = existingLabels
+    ? existingLabels.get(standardId)
+    : await storeLoadById<BasicStoreEntityLabel>(context, user, standardId, ENTITY_TYPE_LABEL);
   if (mode === ConfigImportMode.Copy) {
     return refused('failed', 'copy_unsupported', 'A label has no copy', !!existing, parsed.data);
   }

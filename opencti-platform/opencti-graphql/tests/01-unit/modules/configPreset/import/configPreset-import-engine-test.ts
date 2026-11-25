@@ -25,11 +25,10 @@ vi.mock('../../../../../src/modules/rule/rule-import', async (importOriginal) =>
 }));
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-domain')>()),
-  loadConfigPresetImportZip: vi.fn(),
+  readConfigPresetImportBundle: vi.fn(),
 }));
-vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-bundle', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-bundle')>()),
-  readConfigPresetBundle: vi.fn(),
+vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-cache', () => ({
+  dropConfigPresetImportCache: vi.fn(),
 }));
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-report', () => ({
   writeConfigPresetImportReport: vi.fn(async () => ({ reportId: 'report-id', folder: 'config_preset/history', fileName: 'report.json' })),
@@ -55,7 +54,9 @@ import { importRole, roleStandardId } from '../../../../../src/modules/user/role
 import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_ENGINE_DISABLED_REASON } from '../../../../../src/modules/rule/rule-import';
 import { RULES_DECLARATION } from '../../../../../src/domain/rules';
 import { groupStandardId } from '../../../../../src/modules/user/group-import';
-import { bundleRefused, readConfigPresetBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
+import { bundleRefused } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
+import { readConfigPresetImportBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
+import { dropConfigPresetImportCache } from '../../../../../src/modules/configPreset/import/configPreset-import-cache';
 import { readConfigPresetImportSession } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import type { ConfigPresetBundle, ConfigPresetBundleItem } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
@@ -77,7 +78,7 @@ const groupItem: ConfigPresetBundleItem = {
 
 const withBundle = (items: ConfigPresetBundleItem[]) => {
   const bundle: ConfigPresetBundle = { metadata: { openCTI_version: '7.0.0', generated_at: '2026-11-05T00:00:00.000Z', bundle_name: null }, items, dependencies: {}, ignored: [] };
-  vi.mocked(readConfigPresetBundle).mockResolvedValue(bundle);
+  vi.mocked(readConfigPresetImportBundle).mockResolvedValue(bundle);
 };
 
 // The role imported as COPY, then its group: the role fails, so the group must not get the local role of the same name
@@ -172,5 +173,39 @@ describe('Config preset real import of an item whose status changes between comp
       : { status: 'overwritten', exists: true, reason: 'Write reason', targetId: id, grantsSensitiveRights: false }));
     const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'roles' }], false);
     expect(results.map(({ type, status, reason }) => [type, status, reason])).toEqual([['roles', 'OVERWRITTEN', 'Preview reason']]);
+  });
+});
+
+describe('Config preset import and the bundle kept for the wizard', () => {
+  const selections = [{ type: 'roles', item_modes: [] }];
+
+  beforeEach(() => {
+    vi.mocked(importRole).mockResolvedValue({ status: 'created', exists: false, targetId: roleStandardId('Analyst'), grantsSensitiveRights: false });
+  });
+
+  it('reads the bundle through what the preview kept for a dry run, and reads the zip itself for the import', async () => {
+    withBundle([roleItem(roleStandardId('Analyst'))]);
+    vi.mocked(readConfigPresetImportBundle).mockClear();
+    await configPresetImport(context, user, FILE_ID, selections, true);
+    expect(readConfigPresetImportBundle).toHaveBeenLastCalledWith(expect.anything(), user, FILE_ID, { fresh: false });
+    await configPresetImport(context, user, FILE_ID, selections, false);
+    expect(readConfigPresetImportBundle).toHaveBeenLastCalledWith(expect.anything(), user, FILE_ID, { fresh: true });
+  });
+
+  it('forgets what was kept once the import ran, as the preview says something else after it', async () => {
+    withBundle([roleItem(roleStandardId('Analyst'))]);
+    vi.mocked(dropConfigPresetImportCache).mockClear();
+    await configPresetImport(context, user, FILE_ID, selections, true);
+    expect(dropConfigPresetImportCache).not.toHaveBeenCalled();
+    await configPresetImport(context, user, FILE_ID, selections, false);
+    expect(dropConfigPresetImportCache).toHaveBeenCalledWith(user.id);
+  });
+
+  it('forgets it when the import fails too', async () => {
+    withBundle([roleItem(roleStandardId('Analyst'))]);
+    vi.mocked(readConfigPresetImportBundle).mockRejectedValueOnce(new Error('unreadable'));
+    vi.mocked(dropConfigPresetImportCache).mockClear();
+    await expect(configPresetImport(context, user, FILE_ID, selections, false)).rejects.toThrow('unreadable');
+    expect(dropConfigPresetImportCache).toHaveBeenCalledWith(user.id);
   });
 });

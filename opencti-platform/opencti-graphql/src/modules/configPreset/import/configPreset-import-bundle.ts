@@ -122,8 +122,9 @@ const toBundleAttachment = (path: string, entry: { stream: () => AsyncIterable<B
   };
 };
 
-// Reads a zip in memory, nothing is written to disk and entry names are never used as paths
-export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetBundle> => {
+// Reads a zip in memory, nothing is written to disk and entry names are never used as paths.
+// extractedSize: what the JSON files of the zip counted against the limit of the extracted size, the attachments not yet
+const parseConfigPresetBundle = async (zip: Buffer): Promise<{ bundle: ConfigPresetBundle; extractedSize: number }> => {
   let directory;
   try {
     directory = await unzipper.Open.buffer(zip);
@@ -133,6 +134,7 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
   let metadata: ConfigPresetBundleMetadata | undefined;
   let dependencies: ConfigPresetBundle['dependencies'] = {};
   const items: ConfigPresetBundleItem[] = [];
+  const itemKeys = new Set<string>();
   const ignored: string[] = [];
   // The entries that are not JSON, by path: the attachment an item points to is read when its importer asks for it
   const otherEntries = new Map<string, { stream: () => AsyncIterable<Buffer | string>; uncompressedSize: number }>();
@@ -173,9 +175,12 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
             // A family without importer is reported as not importable
             ignored.push(entry.path);
           } else {
-            if (items.some((item) => item.type === family.id && item.id === parsed.data.id)) {
+            // A set, not a search of the items read so far: for tens of thousands of items that search is most of the time of the read
+            const itemKey = configPresetPlanKey(family.id, parsed.data.id);
+            if (itemKeys.has(itemKey)) {
               throw bundleRefused('The configuration bundle holds the same item twice', { type: parsed.data.type, id: parsed.data.id });
             }
+            itemKeys.add(itemKey);
             items.push({ type: family.id, id: parsed.data.id, path: entry.path, configuration: parsed.data.configuration });
             if (parsed.data.attachment) {
               attachmentPaths.set(entry.path, parsed.data.attachment);
@@ -212,7 +217,67 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
       ignored.push(path);
     }
   });
-  return { metadata, items, dependencies, ignored };
+  return { bundle: { metadata, items, dependencies, ignored }, extractedSize: extracted.size };
+};
+
+export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetBundle> => (await parseConfigPresetBundle(zip)).bundle;
+
+// What is kept of a bundle that was read: its items, its dependencies and what it ignored, as one JSON text. Reading a zip of tens of
+// thousands of files costs seconds (almost all of it in the zip, parsing the JSON of the files costs milliseconds), and a parsed bundle
+// takes about six times the size of its JSON in the heap. The text is a Buffer, out of the heap, that gives the bundle back in a few milliseconds.
+interface ConfigPresetBundleSnapshot extends Omit<ConfigPresetBundle, 'items'> {
+  // The attachment of an item is its path in the zip: it is read from the zip when an importer asks for it, as for a bundle read from a zip
+  items: (Omit<ConfigPresetBundleItem, 'attachment'> & { attachment?: string })[];
+  extracted_size: number;
+}
+
+// zip -> snapshot: the slow half, it reads the whole zip. Run once per upload, then the snapshot is restored on each request.
+export const createConfigPresetBundleSnapshot = async (zip: Buffer): Promise<Buffer> => {
+  const { bundle, extractedSize } = await parseConfigPresetBundle(zip);
+  const snapshot: ConfigPresetBundleSnapshot = {
+    metadata: bundle.metadata,
+    items: bundle.items.map(({ attachment, ...item }) => (attachment ? { ...item, attachment: attachment.path } : item)),
+    dependencies: bundle.dependencies,
+    ignored: bundle.ignored,
+    extracted_size: extractedSize,
+  };
+  return Buffer.from(JSON.stringify(snapshot), 'utf8');
+};
+
+type ZipEntry = { stream: () => AsyncIterable<Buffer | string> };
+
+// snapshot -> bundle: the fast half. A new bundle on each call, with objects that nobody else holds. openZip is called when an attachment is read first, never before: a
+// bundle without attachments (labels, themes) never needs its zip again. The size read counts against the same limit as when the zip was read.
+export const restoreConfigPresetBundle = (snapshot: Buffer, openZip: () => Promise<Buffer>): ConfigPresetBundle => {
+  const { items, extracted_size: extractedSize, ...rest } = JSON.parse(snapshot.toString('utf8')) as ConfigPresetBundleSnapshot;
+  const extracted = { size: extractedSize };
+  let entries: Promise<Map<string, ZipEntry>> | undefined;
+  const openEntries = () => {
+    entries ??= (async () => {
+      let directory;
+      try {
+        directory = await unzipper.Open.buffer(await openZip());
+      } catch (err) {
+        entries = undefined;
+        throw err;
+      }
+      return new Map<string, ZipEntry>(directory.files.map((entry: ZipEntry & { path: string }) => [entry.path, entry]));
+    })();
+    return entries;
+  };
+  const toLazyEntry = (path: string): ZipEntry => ({
+    stream: () => (async function* readEntry() {
+      const entry = (await openEntries()).get(path);
+      if (!entry) {
+        throw bundleRefused('An attachment of the configuration bundle cannot be read', { path });
+      }
+      yield* entry.stream();
+    }()),
+  });
+  return {
+    ...rest,
+    items: items.map(({ attachment, ...item }) => (attachment ? { ...item, attachment: toBundleAttachment(attachment, toLazyEntry(attachment), extracted) } : item)),
+  };
 };
 
 export interface ConfigPresetItemKey {

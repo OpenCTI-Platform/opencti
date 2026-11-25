@@ -1,5 +1,7 @@
 import { FilterMode, FilterOperator, LabelsOrdering, OrderingMode } from '../../../generated/graphql';
+import { internalFindByIds } from '../../../database/middleware-loader';
 import { findAllLabels, findLabelPaginated } from '../../../domain/label';
+import { ENTITY_TYPE_LABEL } from '../../../schema/stixMetaObject';
 import { exportLabel } from '../../label/label-export';
 import { getLabelStandardId, importLabel } from '../../label/label-import';
 import type { BasicStoreEntityLabel } from '../../label/label-types';
@@ -29,8 +31,20 @@ const toLabelItem = (label: BasicStoreEntityLabel): ConfigPresetItemDefinition =
   exporter: async () => exportLabel(label),
 });
 
+// The ids of the lookup are the standard ids of the bundle: one query for a slice of the items, never one per label
+const LABELS_PREPARE_SIZE = 1000;
+
 const labelsImporter: ConfigPresetImporter = {
-  compute: async (context, user, item, _plan, mode) => {
+  prepare: async (context, user, items, plan) => {
+    const existing = plan.existingLabels ?? new Map<string, BasicStoreEntityLabel>();
+    const ids = items.map((item) => item.id);
+    for (let i = 0; i < ids.length; i += LABELS_PREPARE_SIZE) {
+      const labels = await internalFindByIds(context, user, ids.slice(i, i + LABELS_PREPARE_SIZE), { type: ENTITY_TYPE_LABEL }) as unknown as BasicStoreEntityLabel[];
+      labels.forEach((label) => existing.set(label.standard_id, label));
+    }
+    plan.existingLabels = existing;
+  },
+  compute: async (context, user, item, plan, mode) => {
     const value = typeof item.configuration.value === 'string' ? item.configuration.value.trim() : item.id;
     const label = { label: value, translatable: false };
     // The bundle id of a label is its standard id: the one of its value
@@ -38,7 +52,7 @@ const labelsImporter: ConfigPresetImporter = {
     if (mismatch) {
       return mismatch;
     }
-    return toComputedItem(label, await importLabel(context, user, item.configuration, { mode, dryRun: true }));
+    return toComputedItem(label, await importLabel(context, user, item.configuration, { mode, dryRun: true }, plan.existingLabels));
   },
   apply: async (context, user, item, computed, mode) => {
     return toAppliedStatus(await importLabel(context, user, item.configuration, { mode }), computed);

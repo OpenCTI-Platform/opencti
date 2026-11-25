@@ -155,3 +155,33 @@ describe('importLabel', () => {
     expect(labelEditField).not.toHaveBeenCalled();
   });
 });
+
+describe('Label import with the existing labels read at once', () => {
+  const existing = (label: BasicStoreEntityLabel) => new Map([[label.standard_id, label]]);
+  const configuration = { value: 'APT', color: '#00ff00' };
+
+  it('takes a label that is in the map as the one that exists, without looking it up', async () => {
+    const result = await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true }, existing(stored));
+    expect(result).toMatchObject({ status: 'overwritten', exists: true });
+    expect(storeLoadById).not.toHaveBeenCalled();
+  });
+
+  it('takes a label that is not in the map as one that does not exist, without looking it up', async () => {
+    const result = await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true }, new Map());
+    expect(result).toMatchObject({ status: 'created', exists: false });
+    expect(storeLoadById).not.toHaveBeenCalled();
+  });
+
+  it('writes the same as with a lookup: the color of an existing label is edited, a missing label is created', async () => {
+    await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite }, existing(stored));
+    expect(labelEditField).toHaveBeenCalledWith(context, user, stored.id, [{ key: 'color', value: ['#00ff00'] }]);
+    await importLabel(context, user, { value: 'New', color: '#00ff00' }, { mode: ConfigImportMode.Overwrite }, existing(stored));
+    expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'New', color: '#00ff00' });
+    expect(storeLoadById).not.toHaveBeenCalled();
+  });
+
+  it('looks the label up when it is given no map', async () => {
+    await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite, dryRun: true });
+    expect(storeLoadById).toHaveBeenCalledTimes(1);
+  });
+});

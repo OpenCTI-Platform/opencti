@@ -12,11 +12,14 @@ import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetFamilyModes, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
+import { dropConfigPresetImportCache, getConfigPresetImportSnapshot } from './configPreset-import-cache';
 import {
   CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE,
   type ConfigPresetItemKey,
   limitStream,
   readConfigPresetBundle,
+  createConfigPresetBundleSnapshot,
+  restoreConfigPresetBundle,
   readStreamWithLimit,
   resolveBundleDependencies,
 } from './configPreset-import-bundle';
@@ -97,6 +100,8 @@ export const configPresetImportUpload = async (context: AuthContext, user: AuthU
     throw err;
   }
   await deleteOtherUploads(context, user, upload.id);
+  // What was kept of the previous zip is of no use any more
+  dropConfigPresetImportCache(user.id);
   return upload;
 };
 
@@ -115,9 +120,22 @@ export const loadConfigPresetImportZip = async (context: AuthContext, user: Auth
   return readStreamWithLimit(stream, CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE, () => FunctionalError('The configuration bundle is too large', { reason: 'bundle_refused' }));
 };
 
-export const readConfigPresetImportBundle = async (context: AuthContext, user: AuthUser, fileId: string): Promise<ConfigPresetBundle> => {
+// The bundle of an uploaded zip. The preview and the dry runs read it through the snapshot kept for a few minutes (the zip is not read again),
+// the import reads the zip itself (fresh): what it writes is read from the file as it is when it runs, never from what was kept.
+// Hit or miss, the bundle comes from the snapshot: both give the same one.
+export const readConfigPresetImportBundle = async (
+  context: AuthContext,
+  user: AuthUser,
+  fileId: string,
+  { fresh = false }: { fresh?: boolean } = {},
+): Promise<ConfigPresetBundle> => {
   checkConfigPresetImportAccess(context, user);
-  return readConfigPresetBundle(await loadConfigPresetImportZip(context, user, fileId));
+  const openZip = () => loadConfigPresetImportZip(context, user, fileId);
+  if (fresh) {
+    return readConfigPresetBundle(await openZip());
+  }
+  const snapshot = await getConfigPresetImportSnapshot(user.id, fileId, async () => createConfigPresetBundleSnapshot(await openZip()));
+  return restoreConfigPresetBundle(snapshot, openZip);
 };
 
 // Whether the platform can use each family of the items, by family id. Read once for a computation, so that its items and its types agree
@@ -144,6 +162,24 @@ export const computeConfigPresetItem = async (
     return { label: family.label, translatable: true, exists: false, conflict: false, status: 'skipped', reason: CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED };
   }
   return family.importer!.compute(context, user, item, plan, mode);
+};
+
+// Lets the importers that have a prepare read, in one query per family, what their items need: only the families the platform can use
+// (the importer of another one is never called), and only the ones that have items
+export const prepareConfigPresetItems = async (
+  context: AuthContext,
+  user: AuthUser,
+  items: ConfigPresetBundleItem[],
+  plan: ConfigPresetImportPlan,
+  availability: Map<string, boolean>,
+) => {
+  const families = CONFIG_PRESET_FAMILIES.filter((family) => family.importer?.prepare && availability.get(family.id));
+  for (let i = 0; i < families.length; i += 1) {
+    const familyItems = items.filter((item) => item.type === families[i].id);
+    if (familyItems.length > 0) {
+      await families[i].importer!.prepare!(context, user, familyItems, plan);
+    }
+  }
 };
 
 // compute of every item, required dependencies first: reads only, the plan records what would be created
@@ -178,6 +214,7 @@ export const computeConfigPresetItems = async (
     credentials,
     serviceAccounts,
   };
+  await prepareConfigPresetItems(context, user, items, plan, familiesAvailability);
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
@@ -197,6 +234,8 @@ export const buildConfigPresetImportTypes = (
 ): ConfigPresetImportType[] => {
   const defaultThemeId = bundle.items.find((item) => item.type === 'platform')?.configuration.default_theme as { standard_id?: string } | null | undefined;
   const families = CONFIG_PRESET_FAMILIES.filter((family) => results.some(({ item }) => item.type === family.id));
+  // The position of each item of the bundle by its path, read once: a search of the whole bundle for each item is the square of its size
+  const itemIndexByPath = new Map(bundle.items.map((item, index) => [item.path, index]));
   return families.map((family) => ({
     key: family.id,
     label: family.label,
@@ -219,9 +258,10 @@ export const buildConfigPresetImportTypes = (
         isEnabled: computed.isEnabled ?? null,
         credentials: computed.credentials ?? [],
         serviceAccountRequired: computed.serviceAccountRequired ?? false,
-        dependsOn: bundle.items
-          .filter((dependency) => dependencyPaths.includes(dependency.path))
-          .map((dependency) => ({ type: dependency.type, key: dependency.id })),
+        // In the order of the bundle, each dependency once; one that is not in the bundle is not listed
+        dependsOn: [...new Set(dependencyPaths.flatMap((path) => itemIndexByPath.get(path) ?? []))]
+          .sort((a, b) => a - b)
+          .map((index) => ({ type: bundle.items[index].type, key: bundle.items[index].id })),
       };
     }),
   }));

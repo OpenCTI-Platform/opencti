@@ -18,8 +18,9 @@ import {
   reloadConfigPresetImportUser,
   toConfigPresetItemOptions,
 } from './configPreset-import-utils';
-import { computeConfigPresetItem, computeConfigPresetItems, loadConfigPresetImportZip } from './configPreset-import-domain';
-import { readConfigPresetBundle, resolveBundleDependencies } from './configPreset-import-bundle';
+import { computeConfigPresetItem, computeConfigPresetItems, readConfigPresetImportBundle } from './configPreset-import-domain';
+import { resolveBundleDependencies } from './configPreset-import-bundle';
+import { dropConfigPresetImportCache } from './configPreset-import-cache';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
 import { withConfigPresetImportLock } from './configPreset-import-lock';
 import { endConfigPresetImportRunning, findConfigPresetImportRunning, startConfigPresetImportRunning, updateConfigPresetImportRunning } from './configPreset-import-running';
@@ -288,8 +289,9 @@ export const configPresetImport = async (
   const itemOptions = toConfigPresetItemOptions(itemCredentials, itemServiceAccounts);
   // A real import goes on if the browser disconnects: its context is detached from the request
   const engineContext: AuthContext = isDryRun ? context : { ...context, requestAbortSignal: undefined };
+  // A dry run reads the bundle through the snapshot the preview kept, the import reads the zip: it writes what the file holds
   const prepare = async () => {
-    const bundle = await readConfigPresetBundle(await loadConfigPresetImportZip(engineContext, user, fileId));
+    const bundle = await readConfigPresetImportBundle(engineContext, user, fileId, { fresh: !isDryRun });
     return { bundle, items: resolveImportItems(bundle, selections) };
   };
   if (isDryRun) {
@@ -298,7 +300,12 @@ export const configPresetImport = async (
   }
   // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
   return withConfigPresetImportLock(engineContext, async (lock) => {
-    const { bundle, items } = await prepare();
-    return realImport(engineContext, user, lock, fileId, bundle, items, selections, itemOptions);
+    try {
+      const { bundle, items } = await prepare();
+      return await realImport(engineContext, user, lock, fileId, bundle, items, selections, itemOptions);
+    } finally {
+      // What the import wrote changes what the preview says: the next one is computed again
+      dropConfigPresetImportCache(user.id);
+    }
   }, async (ctx) => (await findConfigPresetImportRunning(ctx, user)).running?.name);
 };

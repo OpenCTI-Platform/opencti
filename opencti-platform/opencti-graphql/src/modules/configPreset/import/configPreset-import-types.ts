@@ -2,6 +2,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { ConfigImportMode, type ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
 import type { ConnectorImportLoaded } from '../../connector/connector-import';
+import type { BasicStoreEntityLabel } from '../../label/label-types';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
@@ -83,6 +84,9 @@ export interface ConfigPresetItemOptions {
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`
 export interface ConfigPresetImportPlan {
   created: Set<string>;
+  // The labels that exist among the ones of the items being computed, by standard id, read once for all of them by the labels importer
+  // (prepare): a lookup per label is a round trip per item, tens of thousands of them for a big bundle
+  existingLabels?: Map<string, BasicStoreEntityLabel>;
   // The theme names the earlier items of a dry run would take, which writes nothing: an import reads the platform before each item
   themeNames?: Set<string>;
   // The names that the themes the earlier items of a dry run would rename no longer hold
@@ -139,6 +143,9 @@ export const configPresetTargets = (plan: ConfigPresetImportPlan, type: string) 
 };
 
 export interface ConfigPresetImporter {
+  // Optional, reads only: called once with the items of the family about to be computed, so that the importer reads what they need in one
+  // query instead of one per item, and records it in the plan
+  prepare?: (context: AuthContext, user: AuthUser, items: ConfigPresetBundleItem[], plan: ConfigPresetImportPlan) => Promise<void>;
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
   // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave

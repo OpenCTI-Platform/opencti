@@ -6,6 +6,7 @@ import { lockResources } from '../../../lock/master-lock';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigPresetSelectionInput } from '../../../generated/graphql';
 import { checkConfigPresetImportAccess, getConfigPresetPlatformId } from './configPreset-import-utils';
+import { dropConfigPresetImportCache } from './configPreset-import-cache';
 import { isConfigPresetImportLocked } from './configPreset-import-lock';
 import { readConfigPresetImportRunningRecord } from './configPreset-import-running';
 import {
@@ -171,6 +172,8 @@ export const clearConfigPresetImportSession = async (context: AuthContext, user:
   const session = await readConfigPresetImportSession(context, user);
   const event = session?.status === 'FINISHED' ? 'CLOSE' : 'START_OVER';
   await applyConfigPresetImportEvent(context, user, event, undefined);
+  // The zip is replaced or deleted: what was kept of it is of no use any more
+  dropConfigPresetImportCache(user.id);
   if (deleteFileToo && session) {
     try {
       await deleteFile(context, user, session.file_id, { forceDelete: true });
