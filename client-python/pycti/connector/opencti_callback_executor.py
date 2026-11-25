@@ -7,9 +7,12 @@ run: the errors the callback returns and the exceptions it raises.
 import builtins
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Mapping
-from typing import Annotated, Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+
+# typing.Annotated is Python 3.9+; typing_extensions always comes with pydantic
+from typing_extensions import Annotated
 
 # The platform only accepts a GraphQL Int (32 bits)
 _GRAPHQL_INT_MIN = -(2**31)
@@ -150,6 +153,17 @@ class CallbackExecutor:
         metric,
         reset_on_each_run: bool = True,
     ):
+        """Create the executor.
+
+        :param error_collector: Where the errors of each run go
+        :type error_collector: ErrorCollector
+        :param logger: Logger of the connector
+        :type logger: AppLogger
+        :param metric: Metric handler of the connector, ``error_count`` is incremented on an exception
+        :type metric: OpenCTIMetricHandler
+        :param reset_on_each_run: Whether to reset the error collector before each run
+        :type reset_on_each_run: bool
+        """
         self._error_collector = error_collector
         self._logger = logger
         self._metric = metric
@@ -171,18 +185,22 @@ class CallbackExecutor:
             value, (str, bytes, Mapping)
         )
 
-    @classmethod
-    def _invoke(cls, callback: Callable[[], Any]) -> Tuple[Any, Optional[Exception]]:
+    def _invoke(self, callback: Callable[[], Any]) -> Tuple[Any, Optional[Exception]]:
         consumed_errors: List = []
         try:
             result = callback()
-            if not cls._is_iterable_collection(result):
+            if not self._is_iterable_collection(result):
                 return result, None
             # A generator callback runs while it is consumed: consume it here so its exceptions are caught
             consumed_errors.extend(result)
             return consumed_errors, None
         # A raised exception is reported like a returned error, and the next run is still scheduled
         except Exception as err:  # pylint: disable=broad-except
+            # Logged here: AppLogger.error() attaches the traceback of the exception being handled
+            self._logger.error(
+                "Connector run raised an exception",
+                {"reason": _ExceptionConverter(err).message()},
+            )
             # Errors a generator yielded before raising are kept
             return consumed_errors, err
 
@@ -208,10 +226,5 @@ class CallbackExecutor:
         return valid_errors
 
     def _report_exception(self, exception: Exception) -> None:
-        converter = _ExceptionConverter(exception)
-        self._error_collector.add_errors(converter.to_error_list())
+        self._error_collector.add_errors(_ExceptionConverter(exception).to_error_list())
         self._metric.inc("error_count")
-        self._logger.error(
-            "Connector run raised an exception",
-            {"reason": converter.message()},
-        )

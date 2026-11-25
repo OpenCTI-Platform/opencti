@@ -1,3 +1,4 @@
+import sys
 from typing import Dict, List
 from unittest.mock import MagicMock
 
@@ -91,6 +92,22 @@ def test_raised_exception_is_collected_counted_and_logged():
     logger.error.assert_called_once_with(
         "Connector run raised an exception", {"reason": "ValueError: bad value"}
     )
+
+
+def test_raised_exception_is_logged_while_it_is_handled():
+    # AppLogger.error() logs with exc_info=1: the traceback is the exception being handled when it is called
+    raised = ValueError("bad value")
+    handled_when_logged = []
+    logger = MagicMock()
+    logger.error.side_effect = lambda *args: handled_when_logged.append(
+        sys.exc_info()[1]
+    )
+
+    def process():
+        raise raised
+
+    CallbackExecutor(InMemoryErrorCollector(), logger, MagicMock()).execute(process)
+    assert handled_when_logged == [raised]
 
 
 def test_errors_yielded_before_an_exception_are_kept():
