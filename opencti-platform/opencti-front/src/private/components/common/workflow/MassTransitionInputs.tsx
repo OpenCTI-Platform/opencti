@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Formik } from 'formik';
 import { useFormatter } from '../../../../components/i18n';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
+import useCanBypassMandatoryFields from './useCanBypassMandatoryFields';
 import WorkflowTransitionInputs, {
   buildTransitionInputsSchema,
   EMPTY_TRANSITION_INPUT_VALUES,
@@ -29,7 +29,7 @@ const ReportInputs = ({ values, isValid, onChange }: { values: TransitionInputVa
 // fields and rules of the single-entity transition wizard
 const MassTransitionInputs = ({ requirements, onChange }: MassTransitionInputsProps) => {
   const { t_i18n } = useFormatter();
-  const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
+  const canBypassMandatoryFields = useCanBypassMandatoryFields();
   const schema = buildTransitionInputsSchema(requirements, canBypassMandatoryFields, t_i18n);
   return (
     <Formik<TransitionInputValues> initialValues={EMPTY_TRANSITION_INPUT_VALUES} validationSchema={schema} onSubmit={() => {}}>

@@ -3,7 +3,7 @@ import { useMutation } from 'react-relay';
 import { useNavigate } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useSwitchDraft from '../../drafts/useSwitchDraft';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../../../utils/hooks/useGranted';
+import useCanBypassMandatoryFields from './useCanBypassMandatoryFields';
 import { MESSAGING$, relayErrorHandling } from '../../../../relay/environment';
 import { buildTransitionRuntimeParams, hasTransitionComment, TransitionInputValues } from './WorkflowTransitionInputs';
 import { workflowStatusTriggerMutation, workflowStatusClearMutation } from './WorkflowStatus.graphql';
@@ -37,7 +37,7 @@ export const useTransitionWizard = ({ entityId, entityNavigationId, draftId, isP
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { exitDraft } = useSwitchDraft();
-  const canBypassMandatoryFields = useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS]);
+  const canBypassMandatoryFields = useCanBypassMandatoryFields();
 
   const [wizard, setWizard] = useState<TransitionWizard | null>(null);
   const [submitting, setSubmitting] = useState(false);
