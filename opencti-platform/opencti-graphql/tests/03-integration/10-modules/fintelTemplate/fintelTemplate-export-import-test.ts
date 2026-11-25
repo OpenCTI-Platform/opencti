@@ -219,6 +219,37 @@ describe('Fintel templates: export and import of the real zip', () => {
   });
 });
 
+describe('Fintel templates: a template with the built-in widgets of the platform', () => {
+  const BUILT_IN_NAME = `${PREFIX} built-in widgets`;
+
+  beforeAll(() => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    vi.spyOn(enterpriseEdition, 'isEnterpriseEditionUpToDate').mockResolvedValue(true);
+  });
+
+  afterAll(async () => {
+    await deleteTestTemplates();
+    await queryAsAdmin({ query: gql`mutation FintelTemplateBuiltInClear { configPresetImportSessionClear(delete_file: true) }` });
+    await getClientBase().del(`config_preset_import_session_${ADMIN_USER.id}`);
+    const history = await allFilesForPaths(testContext, ADMIN_USER, ['config_preset/history']);
+    for (let i = 0; i < history.length; i += 1) {
+      await deleteFile(testContext, ADMIN_USER, history[i].id, { forceDelete: true });
+    }
+    vi.restoreAllMocks();
+  });
+
+  it('says a template the platform created with its built-in widgets is up to date when its own export is imported back', async () => {
+    // As the UI creates it: with the built-in widgets, some without filters, some with filters on the instance the template is applied to
+    await addFintelTemplate(testContext, ADMIN_USER, { name: BUILT_IN_NAME, settings_types: ['Report'], default: false });
+    const template = await loadTemplate(BUILT_IN_NAME);
+    expect(template.fintel_template_widgets.length).toBeGreaterThan(1);
+    const { bundle } = await exportBundle([{ type: 'fintelTemplates', items: [template.standard_id] }]);
+    const results = await runImport(bundle, [{ type: 'fintelTemplates' }], false);
+    expect(results.map(({ status, code }) => `${status}:${code}`)).toEqual(['SKIPPED:unchanged']);
+  });
+});
+
 describe('Fintel templates: partial import from the page of an entity type', () => {
   const REPORT_ID = 'finteltemplate--11111111-2222-5333-8444-555555555551';
   const GROUPING_ID = 'finteltemplate--11111111-2222-5333-8444-555555555552';
