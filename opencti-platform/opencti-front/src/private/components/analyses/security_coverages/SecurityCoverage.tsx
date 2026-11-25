@@ -11,6 +11,8 @@ import SecurityCoverageAttackPatterns from './SecurityCoverageAttackPatterns';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { SecurityCoverage_securityCoverage$data, SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
 import { SecurityCoverageKillChainsQuery } from './__generated__/SecurityCoverageKillChainsQuery.graphql';
+import { attackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
+import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SecurityCoverageTestedEntitiesChart from './SecurityCoverageTestedEntitiesChart';
 import SecurityCoverageMainInfo from './SecurityCoverageMainInfo';
@@ -156,11 +158,13 @@ const SecurityCoverageScopedWidget = ({
 interface SecurityCoverageComponentProps {
   data: SecurityCoverage_securityCoverage$key;
   killChainsQueryRef: PreloadedQuery<SecurityCoverageKillChainsQuery>;
+  matrixQueryRef: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const SecurityCoverageComponent = ({
   data,
   killChainsQueryRef,
+  matrixQueryRef,
 }: SecurityCoverageComponentProps) => {
   const securityCoverage = useFragment(securityCoverageFragment, data);
   const dataKillChains = usePreloadedQuery(securityCoverageKillChainsQuery, killChainsQueryRef);
@@ -239,6 +243,7 @@ const SecurityCoverageComponent = ({
                 securityCoverage={widgets}
                 dataKillChains={dataKillChains}
                 isResultScoped={displayedResultId !== null}
+                matrixQueryRef={matrixQueryRef}
               />
             )}
           </SecurityCoverageScopedWidget>
@@ -266,13 +271,16 @@ interface SecurityCoverageProps {
 
 const SecurityCoverage = ({ data }: SecurityCoverageProps) => {
   const killChainsQueryRef = useQueryLoading<SecurityCoverageKillChainsQuery>(securityCoverageKillChainsQuery);
+  // Loaded here, not in the widget: the widget remounts when the overview switches between all results and one result.
+  const matrixQueryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery);
 
   return (
     <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      {killChainsQueryRef && (
+      {killChainsQueryRef && matrixQueryRef && (
         <SecurityCoverageComponent
           data={data}
           killChainsQueryRef={killChainsQueryRef}
+          matrixQueryRef={matrixQueryRef}
         />
       )}
     </Suspense>

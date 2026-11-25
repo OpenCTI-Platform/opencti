@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import { ViewListOutlined, ViewModuleOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { ButtonGroup, ButtonGroupItem, IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useEffect, useMemo, useState } from 'react';
-import { createFragmentContainer, graphql, useFragment } from 'react-relay';
+import { createFragmentContainer, graphql, PreloadedQuery, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 // fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import Tooltip from '@mui/material/Tooltip';
@@ -17,6 +17,7 @@ import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
 import { SecurityCoverageAttackPatternsFragment$data } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
+import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -50,12 +51,14 @@ interface SecurityCoverageAttackPatternsProps {
   securityCoverage: SecurityCoverageAttackPatternsFragment$data;
   dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
   isResultScoped?: boolean;
+  matrixQueryRef?: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const SecurityCoverageAttackPatternsComponent = ({
   securityCoverage,
   dataKillChains,
   isResultScoped = false,
+  matrixQueryRef,
 }: SecurityCoverageAttackPatternsProps) => {
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,6 +206,7 @@ const SecurityCoverageAttackPatternsComponent = ({
             searchTerm={searchTerm}
             selectedKillChain={selectedKillChain}
             isModeOnlyActive={isModeOnlyActive}
+            matrixQueryRef={matrixQueryRef}
           />
         </>
       ) : (

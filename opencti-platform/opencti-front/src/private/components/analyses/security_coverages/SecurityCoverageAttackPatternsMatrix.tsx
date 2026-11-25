@@ -1,9 +1,8 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
-import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import React, { FunctionComponent, useMemo } from 'react';
+import { createFragmentContainer, graphql, PreloadedQuery } from 'react-relay';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
-import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
-import { emptyFilterGroup } from 'src/utils/filters/filtersUtils';
+import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { buildAverageCoverageMap } from './securityCoverageAggregation';
 
 interface SecurityCoverageAttackPatternsMatrixProps {
@@ -11,7 +10,7 @@ interface SecurityCoverageAttackPatternsMatrixProps {
   searchTerm: string;
   selectedKillChain: string;
   isModeOnlyActive: boolean;
-  relay: RelayRefetchProp;
+  matrixQueryRef?: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityCoverageAttackPatternsMatrixProps> = ({
@@ -19,10 +18,8 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
   searchTerm,
   selectedKillChain,
   isModeOnlyActive,
-  relay,
+  matrixQueryRef,
 }) => {
-  const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
-
   const coveredEntities = securityCoverage.attackPatterns?.entities ?? [];
   const attackPatterns = useMemo(() => {
     const seenAttackPatternIds = new Set<string>();
@@ -41,54 +38,24 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
     [coveredEntities],
   );
 
-  const handleAdd = (entity: TargetEntity) => {
-    setTargetEntities([entity]);
-  };
-
-  const handleOnCreate = () => {
-    // Refresh the component to show the new relationship
-    relay.refetch({ id: securityCoverage.id });
-    setTargetEntities([]);
-  };
-
-  const paginationOptions = {
-    count: 25,
-    orderBy: 'created_at',
-    orderMode: 'asc',
-    filters: emptyFilterGroup,
-  };
-
   return (
-    <>
-      <AttackPatternsMatrix
-        attackPatterns={attackPatterns}
-        searchTerm={searchTerm}
-        entityType="Security-Coverage"
-        handleAdd={handleAdd}
-        selectedKillChain={selectedKillChain}
-        attackPatternIdsToOverlap={[]}
-        isModeOnlyActive={isModeOnlyActive}
-        inPaper={true}
-        isCoverage={true}
-        coverageMap={attackPatternsCoverageMap}
-        entityId={securityCoverage.id}
-      />
-      <StixCoreRelationshipCreationFromEntity
-        entityId={securityCoverage.id}
-        targetEntities={targetEntities}
-        allowedRelationshipTypes={['has-covered']}
-        targetStixDomainObjectTypes={['Attack-Pattern']}
-        paginationOptions={paginationOptions}
-        paddingRight={220}
-        onCreate={handleOnCreate}
-        isCoverage={true}
-        openExports={true}
-      />
-    </>
+    <AttackPatternsMatrix
+      attackPatterns={attackPatterns}
+      searchTerm={searchTerm}
+      entityType="Security-Coverage"
+      selectedKillChain={selectedKillChain}
+      attackPatternIdsToOverlap={[]}
+      isModeOnlyActive={isModeOnlyActive}
+      inPaper={true}
+      isCoverage={true}
+      coverageMap={attackPatternsCoverageMap}
+      entityId={securityCoverage.id}
+      queryRef={matrixQueryRef}
+    />
   );
 };
 
-const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
+const SecurityCoverageAttackPatternsMatrix = createFragmentContainer(
   SecurityCoverageAttackPatternsMatrixComponent,
   {
     securityCoverage: graphql`
@@ -131,19 +98,6 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
       }
     `,
   },
-  graphql`
-    query SecurityCoverageAttackPatternsMatrixRefetchQuery(
-      $id: String!
-      $search: String
-      $count: Int
-      $filters: FilterGroup
-    ) {
-      securityCoverage(id: $id) {
-        ...SecurityCoverageAttackPatternsMatrix_securityCoverage
-          @arguments(search: $search, count: $count, filters: $filters)
-      }
-    }
-  `,
 );
 
 export default SecurityCoverageAttackPatternsMatrix;
