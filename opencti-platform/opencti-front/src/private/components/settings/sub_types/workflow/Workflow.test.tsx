@@ -291,7 +291,11 @@ describe('Workflow Component', () => {
     mockLoadedDefinition = mockWorkflowDefinition;
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
     vi.mocked(useSubTypeOutletContext).mockReturnValue({
-      subType: { settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] } },
+      subType: {
+        statuses: [{ id: 'legacy-status' }],
+        statusesRequestAccess: [{ id: 'legacy-request-access-status' }],
+        settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] },
+      },
     } as never);
     mockGetNode.mockReturnValue({ id: 'test-node' });
     mockSetNodes = vi.fn();
@@ -1162,7 +1166,7 @@ describe('Workflow Component', () => {
       // Case-Rfi without the request access setting.
       vi.mocked(useEnterpriseEdition).mockReturnValue(true);
       vi.mocked(useSubTypeOutletContext).mockReturnValue({
-        subType: { settings: { availableSettings: ['workflow_configuration'] } },
+        subType: { statuses: [], statusesRequestAccess: [], settings: { availableSettings: ['workflow_configuration'] } },
       } as never);
       renderRfi();
       expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
@@ -1281,6 +1285,32 @@ describe('Workflow Component', () => {
         renderRfi({ scope: 'GLOBAL', entityType });
 
         expect(screen.queryByRole('button', { name: 'Migrate statuses' })).not.toBeInTheDocument();
+      });
+
+      it.each([
+        ['GLOBAL', 'statuses', 'Migrate statuses'],
+        ['REQUEST_ACCESS', 'statusesRequestAccess', 'Migrate request access statuses'],
+      ] as const)('does not offer the migration on the %s scope when it has no legacy status', (scope, field, label) => {
+        vi.mocked(useSubTypeOutletContext).mockReturnValue({
+          subType: {
+            statuses: [{ id: 'legacy-status' }],
+            statusesRequestAccess: [{ id: 'legacy-request-access-status' }],
+            [field]: [],
+            settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] },
+          },
+        } as never);
+        renderRfi({ scope });
+
+        expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument();
+        expect(screen.getByText('Start to define your workflow by adding a Status.')).toBeInTheDocument();
+      });
+
+      it('puts the migration first on the empty canvas and says legacy statuses exist', () => {
+        renderRfi({ scope: 'GLOBAL' });
+
+        expect(screen.getByText('This type has legacy statuses: migrate them to start your workflow, or define a new one by adding a Status.')).toBeInTheDocument();
+        const buttons = screen.getAllByRole('button').map((button) => button.textContent);
+        expect(buttons.indexOf('Migrate statuses')).toBeLessThan(buttons.indexOf('Add Status'));
       });
 
       it('does not offer the migration once the Global workflow has been published', () => {

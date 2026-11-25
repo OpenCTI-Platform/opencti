@@ -97,7 +97,7 @@ const RequestAccessOutcomeRepair = ({ initialState, statusIds, onRepaired }: Req
         data-testid="request-access-outcome-initial-state"
         severity="info"
         title={t_i18n('Request access outcome statuses')}
-        description={t_i18n('The workflow starts on the first request access status by order, which cannot also be the approved or declined status, and no other request access status is left to pick. Add a request access status with a lower order (statusAdd mutation), or lower the order of another one (statusFieldPatch mutation), then open this dialog again.')}
+        description={t_i18n('The workflow starts on the first request access status by order, which cannot also be the approved or declined status, and no other request access status is left to pick. Through the API, add a request access status with a lower order, or lower the order of another one, then open this dialog again.')}
         style={{ marginTop: 16 }}
       />
     );

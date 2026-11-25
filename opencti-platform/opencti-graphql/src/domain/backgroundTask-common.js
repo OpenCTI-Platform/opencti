@@ -104,9 +104,26 @@ const allTargetsWithoutWorkflow = async (context, user, targetTypes) => {
   return !targetTypes.some(coversWorkflowType);
 };
 
+// A type and its parent (abstract) types, lowercased. An unknown type (a lowercase filter value) only matches itself.
+const typeAndParents = (type) => {
+  let parents = [];
+  try {
+    parents = getParentTypes(type);
+  } catch {
+    // Unknown type: no parent to match
+  }
+  return [type, ...parents].map((name) => name.toLowerCase());
+};
+
+// In `and` mode, a type of one bound is reached only when every other bound names it or one of its parents.
+// `[Container, Malware]` and `[Malware, Report]` give `[Malware, Report]`, `[Stix-Domain-Object]` and `[Malware]` give `[Malware]`.
+const intersectBounds = (bounds) => uniq(bounds.flatMap((bound, index) => bound.filter((type) => {
+  const covering = typeAndParents(type);
+  return bounds.every((other, otherIndex) => otherIndex === index || other.some((otherType) => covering.includes(otherType.toLowerCase())));
+})));
+
 // Entity types a query task can reach, read from its `entity_type eq` filters, nested groups included.
-// In `and` mode, the bounds add up: every reached type is covered by each bound, so by their union.
-// Intersecting the names would drop a type an abstract parent covers (`[Container, Malware]` and `[Malware, Report]` still reach Reports).
+// In `and` mode, the bounds intersect through parent types (see intersectBounds).
 // In `or` mode, the group is only bounded when every member is: their bounds add up.
 // Any other shape (no type filter, `not_eq`, `or` with other filters) returns no type, so the caller fails closed.
 const resolveQueryTargetTypes = (filterGroup) => {
@@ -121,7 +138,7 @@ const resolveQueryTargetTypes = (filterGroup) => {
     return [];
   }
   if (filterGroup.mode === FilterMode.And) {
-    return bounds.flat();
+    return intersectBounds(bounds);
   }
   const everyMemberBounded = typeFilters.length === filters.length && typeFilters.every((filter) => (filter.values ?? []).length > 0)
     && subGroupBounds.every((bound) => bound.length > 0);

@@ -447,7 +447,10 @@ const Workflow = ({
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [migrationOpen, setMigrationOpen] = useState(false);
   // The migration builds the workflow of the scope from its legacy statuses until one is published: it may replace a draft, never a published one.
-  const canMigrate = !workflowDefinitionStatus.hasPublishedVersion && !NON_MIGRATABLE_ENTITY_TYPES.includes(entityType);
+  // Offered only when the scope still has legacy statuses to read.
+  const legacyStatuses = scope === 'REQUEST_ACCESS' ? subType.statusesRequestAccess : subType.statuses;
+  const canMigrate = !workflowDefinitionStatus.hasPublishedVersion && !NON_MIGRATABLE_ENTITY_TYPES.includes(entityType)
+    && legacyStatuses.length > 0;
   const migrateLabel = scope === 'REQUEST_ACCESS' ? t_i18n('Migrate request access statuses') : t_i18n('Migrate statuses');
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
@@ -582,9 +585,17 @@ const Workflow = ({
                 }}
               >
                 <Typography variant="subtitle2" color={theme.palette.text.light}>
-                  {t_i18n('Start to define your workflow by adding a Status.')}
+                  {canMigrate
+                    ? t_i18n('This type has legacy statuses: migrate them to start your workflow, or define a new one by adding a Status.')
+                    : t_i18n('Start to define your workflow by adding a Status.')}
                 </Typography>
+                {canMigrate && (
+                  <Button onClick={() => setMigrationOpen(true)}>
+                    {migrateLabel}
+                  </Button>
+                )}
                 <Button
+                  variant={canMigrate ? 'secondary' : 'primary'}
                   onClick={() => {
                     setSelectedElement({
                       id: NEW_STATUS_NAME,
@@ -604,11 +615,6 @@ const Workflow = ({
                 >
                   {t_i18n('Restore published version')}
                 </Button>
-                {canMigrate && (
-                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
-                    {migrateLabel}
-                  </Button>
-                )}
               </Panel>
             )}
           </ReactFlow>

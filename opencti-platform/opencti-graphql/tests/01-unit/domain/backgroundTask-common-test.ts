@@ -273,9 +273,28 @@ describe('Background task validity check (checkActionValidity)', () => {
         .rejects.toThrowError('You are not allowed to do this.');
     });
 
-    it('should refuse a direct status replace when an and-mode bound names a type with a published workflow, even if another bound excludes it', async () => {
+    it('should accept a direct status replace when another and-mode bound excludes the type with a published workflow', async () => {
       const nested = { mode: 'or', filters: [typeFilter(['Malware'])], filterGroups: [] };
       const input = queryInput({ mode: 'and', filters: [typeFilter([ENTITY_TYPE_CONTAINER_REPORT, 'Malware'])], filterGroups: [nested] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should accept a direct status replace when an abstract top-level type is narrowed by a nested type without a published workflow', async () => {
+      const nested = { mode: 'and', filters: [typeFilter(['Malware'])], filterGroups: [] };
+      const input = queryInput({ mode: 'and', filters: [typeFilter(['Stix-Domain-Object'])], filterGroups: [nested] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should refuse a direct status replace when an abstract top-level type is narrowed by a nested type with a published workflow', async () => {
+      const nested = { mode: 'and', filters: [typeFilter([ENTITY_TYPE_CONTAINER_REPORT])], filterGroups: [] };
+      const input = queryInput({ mode: 'and', filters: [typeFilter(['Stix-Domain-Object'])], filterGroups: [nested] });
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
+        .rejects.toThrowError('You are not allowed to do this.');
+    });
+
+    it('should refuse a direct status replace when and-mode bounds share no type', async () => {
+      workflowMocks.listTypesWithPublishedWorkflow.mockResolvedValue([]);
+      const input = queryInput({ mode: 'and', filters: [typeFilter(['Malware']), typeFilter(['Indicator'])], filterGroups: [] });
       await expect(checkActionValidity(testContext, userUpdate, input, scope, type))
         .rejects.toThrowError('You are not allowed to do this.');
     });

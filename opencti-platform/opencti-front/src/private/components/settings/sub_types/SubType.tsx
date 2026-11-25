@@ -24,6 +24,12 @@ export const subTypeQuery = graphql`
       id
       label
       workflowEnabled
+      statuses {
+        id
+      }
+      statusesRequestAccess {
+        id
+      }
       settings {
         id
         availableSettings

@@ -202,12 +202,14 @@ const MigrationPreview = ({ entityType, scope, onClose, onMigrated }: MigrationP
           <li key={key}>{`${event}: ${from.join(', ')} → ${to}`}</li>
         ))}
       </ul>
-      <Switch
-        label={t_i18n('Publish immediately')}
-        checked={publish}
-        onCheckedChange={setPublish}
-        wrapperClassName="workflow-migration-publish"
-      />
+      <div style={{ marginTop: 16 }}>
+        <Switch
+          label={t_i18n('Publish immediately')}
+          checked={publish}
+          onCheckedChange={setPublish}
+          wrapperClassName="workflow-migration-publish"
+        />
+      </div>
       <DialogActions>
         <Button variant="secondary" onClick={onClose}>{t_i18n('Cancel')}</Button>
         <Button
