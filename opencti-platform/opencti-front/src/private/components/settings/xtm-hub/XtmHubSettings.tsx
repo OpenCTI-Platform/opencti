@@ -1,10 +1,9 @@
-import { graphql, useLazyLoadQuery } from 'react-relay';
-import React, { useEffect, useState, useContext } from 'react';
+import { fetchQuery, graphql, useLazyLoadQuery, useRelayEnvironment } from 'react-relay';
+import React, { useCallback, useEffect, useState, useContext } from 'react';
 import { HubOutlined, MapOutlined, RocketLaunchOutlined, VideoLibraryOutlined, WidgetsOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import XtmHubTab from '@components/settings/xtm-hub/XtmHubTab';
 import Button from '@common/button/Button';
-import Tag from '@common/tag/Tag';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { XtmHubSettingsQuery } from './__generated__/XtmHubSettingsQuery.graphql';
@@ -32,6 +31,7 @@ export const xtmHubSettingsQuery = graphql`
       xtm_hub_backend_is_reachable
       xtm_hub_token
       xtm_hub_commercial_model
+      xtm_hub_organization_name
     }
   }
 `;
@@ -54,25 +54,32 @@ const XtmHubSettingsComponent = () => {
   );
   const isGrantedToXtmHub = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { isXTMHubAccessible, settings } = useContext(UserContext);
+  const relayEnvironment = useRelayEnvironment();
+  const [commitCheckConnectivity] = useApiMutation(checkHubConnectivity);
+
+  // The mount-time connectivity check ran before the platform had a token: run
+  // one now so the backend stores what only the hub knows (the organization),
+  // then refetch without suspending so the card updates in place.
+  const refreshAfterRegistration = useCallback(() => {
+    commitCheckConnectivity({
+      variables: {},
+      onCompleted: () => {
+        fetchQuery<XtmHubSettingsQuery>(relayEnvironment, xtmHubSettingsQuery, {}, { fetchPolicy: 'network-only' })
+          .subscribe({});
+      },
+    });
+  }, [commitCheckConnectivity, relayEnvironment]);
 
   const accent = theme.palette.xtmhub?.main ?? '#00f1bd';
   const registrationStatus = xtmHubSettings.xtm_hub_registration_status ?? undefined;
   const isRegistered = registrationStatus === 'registered' || registrationStatus === 'lost_connectivity';
+  // Unknown until a hub exposing it answers a connectivity check: the row is hidden meanwhile.
+  const organizationName = xtmHubSettings.xtm_hub_organization_name;
   const isSaasConnected = registrationStatus === 'registered' && xtmHubSettings.xtm_hub_commercial_model === 'saas';
   const canInteract = isGrantedToXtmHub
     && isXTMHubAccessible
     && xtmHubSettings.xtm_hub_backend_is_reachable;
   const hubUrl = settings?.platform_xtmhub_url ?? 'https://hub.filigran.io/app';
-
-  const statusChip = (() => {
-    if (registrationStatus === 'registered') {
-      return <Tag label={t_i18n('Connected')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
-    }
-    if (registrationStatus === 'lost_connectivity') {
-      return <Tag label={t_i18n('Connectivity lost')} color={theme.palette.error.main} labelTextTransform="none" disableTooltip />;
-    }
-    return <Tag label={t_i18n('Not connected')} labelTextTransform="none" disableTooltip />;
-  })();
 
   const footer = isRegistered
     ? (
@@ -80,6 +87,7 @@ const XtmHubSettingsComponent = () => {
           {canInteract && (
             <XtmHubTab
               registrationStatus={registrationStatus}
+              onRegistered={refreshAfterRegistration}
               // In lost_connectivity, XtmHubTab runs the (re)connect flow when
               // the dialog opens: the trigger must offer to connect, not to
               // disconnect (which is only available while fully registered).
@@ -128,6 +136,7 @@ const XtmHubSettingsComponent = () => {
           {canInteract && (
             <XtmHubTab
               registrationStatus={registrationStatus}
+              onRegistered={refreshAfterRegistration}
               renderTrigger={(openDialog) => (
                 <Button
                   gradient
@@ -148,7 +157,6 @@ const XtmHubSettingsComponent = () => {
       overline={t_i18n('Filigran Experience')}
       title={t_i18n('XTM Hub')}
       accent={accent}
-      statusChip={statusChip}
       footer={footer}
       testId="experience-xtm-hub-card"
     >
@@ -172,12 +180,20 @@ const XtmHubSettingsComponent = () => {
                     status={null}
                   />
                 </ExperienceDetailRow>
-                <ExperienceDetailRow label={t_i18n('Connected by')} divider={false}>
+                <ExperienceDetailRow label={t_i18n('Connected by')} divider={!!organizationName}>
                   <ItemBoolean
                     neutralLabel={xtmHubSettings.xtm_hub_registration_user_name}
                     status={null}
                   />
                 </ExperienceDetailRow>
+                {organizationName && (
+                  <ExperienceDetailRow label={t_i18n('Workspace')} divider={false}>
+                    <ItemBoolean
+                      neutralLabel={organizationName}
+                      status={null}
+                    />
+                  </ExperienceDetailRow>
+                )}
               </>
             )}
             {registrationStatus === 'lost_connectivity' && (

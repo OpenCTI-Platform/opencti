@@ -1,6 +1,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
+import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import XtmHubTab from './XtmHubTab';
 import { XTM_HUB_AUTO_REGISTER_QUERY_PARAM } from '../../RedirectByPath';
@@ -27,9 +28,17 @@ const getLastRegistrationUrl = () => {
   return (calls[calls.length - 1]?.[0] as { url?: string } | undefined)?.url ?? '';
 };
 
+// The hub tab posts its outcome back through the onMessage given to useExternalTab.
+const sendHubMessage = (data: Record<string, unknown>) => {
+  const calls = mockUseExternalTab.mock.calls;
+  const { onMessage } = calls[calls.length - 1]?.[0] as unknown as { onMessage: (event: MessageEvent) => void };
+  onMessage({ data } as MessageEvent);
+};
+
 interface XtmHubTabTestProps {
   registrationStatus?: string;
   renderTrigger?: (openDialog: () => void) => React.ReactNode;
+  onRegistered?: () => void;
 }
 
 const renderXtmHubTab = (
@@ -115,6 +124,43 @@ describe('XtmHubTab', () => {
       await user.click(screen.getByRole('button', { name: 'Custom trigger' }));
 
       expect(await screen.findByRole('dialog', { name: 'Connect your product to XTM Hub' })).toBeInTheDocument();
+    });
+  });
+
+  describe('XtmHubTab registration completion', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+    });
+
+    const route = '/dashboard/settings/experience';
+
+    it('notifies the caller once the token sent by the hub is saved', async () => {
+      const onRegistered = vi.fn();
+      const { relayEnv } = renderXtmHubTab(route, 'OpenCTI Platform', { onRegistered });
+
+      act(() => sendHubMessage({ action: 'register', token: 'platform-token' }));
+      expect(relayEnv.mock.getMostRecentOperation().fragment.node.name).toBe('XtmHubTabSettingsFieldPatchMutation');
+      expect(onRegistered).not.toHaveBeenCalled();
+      await act(async () => {
+        relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation));
+      });
+
+      expect(onRegistered).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not notify the caller when saving the token fails', async () => {
+      const onRegistered = vi.fn();
+      const { relayEnv } = renderXtmHubTab(route, 'OpenCTI Platform', { onRegistered });
+
+      act(() => sendHubMessage({ action: 'register', token: 'platform-token' }));
+      await act(async () => {
+        // Same shape as a Relay network error: useApiMutation reads its GraphQL errors to notify the user.
+        relayEnv.mock.rejectMostRecentOperation(Object.assign(new Error('Unable to save the token'), {
+          res: { errors: [{ message: 'Unable to save the token' }] },
+        }));
+      });
+
+      expect(onRegistered).not.toHaveBeenCalled();
     });
   });
 });

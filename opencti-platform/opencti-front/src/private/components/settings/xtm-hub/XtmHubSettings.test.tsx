@@ -12,8 +12,13 @@ vi.mock('../../../../components/Loader', () => ({
   default: ({ variant }: { variant?: string }) => <div data-testid={`loader-${variant ?? 'container'}`} />,
 }));
 
-// XtmHubTab drives dialogs and external windows, irrelevant here.
-vi.mock('./XtmHubTab', () => ({ default: () => null }));
+// XtmHubTab drives dialogs and external windows, irrelevant here: only expose
+// the end of a successful connection, which the card has to react to.
+vi.mock('./XtmHubTab', () => ({
+  default: ({ onRegistered }: { onRegistered?: () => void }) => (
+    <button type="button" onClick={onRegistered}>Complete hub connection</button>
+  ),
+}));
 
 const userContext = createMockUserContext({
   me: { capabilities: [{ name: 'BYPASS' }] },
@@ -64,5 +69,80 @@ describe('XtmHubSettings', () => {
     expect(screen.queryByTestId('loader-inElement')).not.toBeInTheDocument();
     expect(screen.queryByTestId('page-loader')).not.toBeInTheDocument();
     expect(screen.getByTestId('enterprise-edition-card')).toBeVisible();
+  });
+
+  describe('workspace', () => {
+    const renderCard = async (settings: Record<string, unknown>) => {
+      const rendered = renderExperienceLikePage();
+      const { relayEnv } = rendered;
+      await act(async () => {
+        relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation));
+      });
+      await act(async () => {
+        relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+          Settings: () => ({
+            id: 'settings-id',
+            xtm_hub_backend_is_reachable: true,
+            xtm_hub_registration_user_name: 'admin',
+            ...settings,
+          }),
+        }));
+      });
+      await screen.findByTestId('experience-xtm-hub-card');
+      return rendered;
+    };
+
+    it.each(['saas', 'other', null])('shows the hub organization of a connected platform whose commercial model is %s', async (commercialModel) => {
+      await renderCard({
+        xtm_hub_registration_status: 'registered',
+        xtm_hub_commercial_model: commercialModel,
+        xtm_hub_organization_name: 'Filigran',
+      });
+
+      expect(screen.getByText('Workspace')).toBeInTheDocument();
+      expect(screen.getByText('Filigran')).toBeInTheDocument();
+    });
+
+    it('hides the workspace while the hub has not returned the organization', async () => {
+      await renderCard({
+        xtm_hub_registration_status: 'registered',
+        xtm_hub_commercial_model: 'other',
+        xtm_hub_organization_name: null,
+      });
+
+      expect(screen.queryByText('Workspace')).not.toBeInTheDocument();
+    });
+
+    it('shows the workspace right after a first connection, without a reload', async () => {
+      const { relayEnv, user } = await renderCard({
+        xtm_hub_registration_status: 'unregistered',
+        xtm_hub_organization_name: null,
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Complete hub connection' }));
+
+      // The platform now has a token: a connectivity check fetches the organization from the hub...
+      expect(relayEnv.mock.getMostRecentOperation().fragment.node.name).toBe('XtmHubSettingsCheckConnectivityMutation');
+      await act(async () => {
+        relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation));
+      });
+      // ...then the card's settings are refetched to bring it into Relay.
+      expect(relayEnv.mock.getMostRecentOperation().fragment.node.name).toBe('XtmHubSettingsQuery');
+      await act(async () => {
+        relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+          Settings: () => ({
+            id: 'settings-id',
+            xtm_hub_backend_is_reachable: true,
+            xtm_hub_registration_user_name: 'admin',
+            xtm_hub_registration_status: 'registered',
+            xtm_hub_organization_name: 'Filigran',
+          }),
+        }));
+      });
+
+      expect(await screen.findByText('Workspace')).toBeInTheDocument();
+      expect(screen.getByText('Filigran')).toBeInTheDocument();
+      expect(screen.getByTestId('experience-xtm-hub-card')).toBeInTheDocument();
+    });
   });
 });

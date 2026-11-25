@@ -41,6 +41,7 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
         xtm_hub_registration_user_name
         xtm_hub_last_connectivity_check
         xtm_hub_token
+        xtm_hub_organization_name
       }
     }
   }
@@ -54,9 +55,14 @@ interface XtmHubTabProps {
    * floated button. The callback receives the dialog opener.
    */
   renderTrigger?: (openDialog: () => void) => React.ReactNode;
+  /**
+   * Called once the platform token is saved after a successful connection,
+   * so the caller can refresh what only the hub knows (e.g. the organization).
+   */
+  onRegistered?: () => void;
 }
 
-const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger }) => {
+const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger, onRegistered }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -128,6 +134,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
         setShowConfirmation(false);
         setProcessStep(ProcessSteps.INSTRUCTIONS);
         setOperationType(null);
+        onRegistered?.();
       },
       onError: () => {
         setProcessStep(ProcessSteps.ERROR);
@@ -176,7 +183,7 @@ const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus, renderTrigger
         setProcessStep(ProcessSteps.ERROR);
       }
     },
-    [commitRegistration, commitUnregistration, settings?.id],
+    [commitRegistration, commitUnregistration, settings?.id, onRegistered],
   );
 
   const { openTab, closeTab, focusTab } = useExternalTab({

@@ -32344,6 +32344,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   xtm_hub_backend_is_reachable?: Maybe<Scalars['Boolean']['output']>;
   xtm_hub_commercial_model?: Maybe<XtmHubCommercialModel>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
+  xtm_hub_organization_name?: Maybe<Scalars['String']['output']>;
   xtm_hub_registration_date?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_status?: Maybe<XtmHubRegistrationStatus>;
   xtm_hub_registration_user_id?: Maybe<Scalars['String']['output']>;
@@ -54020,6 +54021,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   xtm_hub_backend_is_reachable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   xtm_hub_commercial_model?: Resolver<Maybe<ResolversTypes['XTMHubCommercialModel']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  xtm_hub_organization_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   xtm_hub_registration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_status?: Resolver<Maybe<ResolversTypes['XTMHubRegistrationStatus']>, ParentType, ContextType>;
   xtm_hub_registration_user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

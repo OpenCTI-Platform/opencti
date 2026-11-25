@@ -9101,6 +9101,7 @@ type MeUser implements BasicObject & InternalObject {
   otp_qr: String
   parent_types: [String!]!
   password_valid_until: DateTime
+  pastel_colours: Boolean
   personal_notifiers: [Notifier!]
   representative: Representative!
   restrict_delete: Boolean
@@ -14007,6 +14008,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_commercial_model: XTMHubCommercialModel
   xtm_hub_last_connectivity_check: DateTime
+  xtm_hub_organization_name: String
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
   xtm_hub_registration_user_id: String
@@ -17127,6 +17129,7 @@ type User implements BasicObject & InternalObject {
   otp_qr: String
   parent_types: [String!]!
   password_valid_until: DateTime
+  pastel_colours: Boolean
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime
   representative: Representative!
