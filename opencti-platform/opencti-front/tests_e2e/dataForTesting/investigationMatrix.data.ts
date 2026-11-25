@@ -21,6 +21,8 @@ export interface InvestigationMatrixSeed {
    * It is the "unrelated platform technique" of the highlight tests.
    */
   unrelatedAttackPatternId: string;
+  /** Report "E2E Matrix report", which contains T9001. It is in the investigation too. */
+  reportId: string;
 }
 
 const quote = (value: string) => JSON.stringify(value);
@@ -219,5 +221,6 @@ export const seedInvestigationMatrix = async (request: APIRequestContext): Promi
     intrusionSets,
     securityPlatformId: knowledge.securityPlatformId,
     unrelatedAttackPatternId: knowledge.unrelatedAttackPatternId,
+    reportId,
   };
 };

@@ -8,9 +8,10 @@ import { getMatrixConfig } from '../../src/private/components/techniques/attack_
 /*
  * End-to-end coverage of the investigation tactics matrix, kept to what only a real browser and a real platform prove:
  * the data the matrix queries (including the `object` relationship of a report), the colour tokens resolving against the
- * real design-system stylesheet, the graph staying mounted behind the matrix, the backend filters of the security
- * posture, and the layout of the exported image. The rendering rules (decorations, tooltips, accessible names, toggles,
- * empty and unplaced states) are covered by the unit tests next to the components.
+ * real design-system stylesheet, the graph staying mounted behind the matrix, the "only used" toggle and the unplaced
+ * note wired to the real matrix, the backend filters of the security posture, the layout of the exported image, and the
+ * shared matrix component on a report page. The rendering rules (decorations, tooltips, accessible names, toggle labels,
+ * empty states) are covered by the unit tests next to the components.
  */
 
 const INVESTIGATION_URL = '/dashboard/workspaces/investigations';
@@ -70,6 +71,13 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     // The report counts: the `object` relationship comes back from the real investigation query.
     await expect(page.getByRole('button', { name: `${ALPHA}, linked to 3 entities`, exact: true })).toBeVisible();
 
+    // The "only used" toggle hides the platform technique outside the investigation, and brings it back.
+    await investigationPage.getMatrix().getByRole('button', { name: 'Display only used techniques' }).click();
+    await expect(investigationPage.getMatrixCell(UNRELATED)).toBeHidden();
+    await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
+    await investigationPage.getMatrix().getByRole('button', { name: 'Display the whole matrix' }).click();
+    await expect(investigationPage.getMatrixCell(UNRELATED)).toBeVisible();
+
     await investigationPage.toggleHeatmap();
 
     // T9001 is used by A, B and the report: the last stop. T9002 is used by A only: the first.
@@ -128,6 +136,8 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     // T9004 also sits in the default kill chain: wait for T9001, which the wide one does not hold, to leave first.
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeHidden();
     await expect(investigationPage.getMatrixCell(UNRELATED).first()).toBeVisible();
+    // The wide kill chain holds none of the attack patterns of the investigation: the note lists them.
+    await expect(investigationPage.getMatrix().getByText(/attack patterns in this investigation aren't shown in this kill chain/)).toBeVisible();
     const matrixWidth = await investigationPage.getMatrixScrollWidth();
     // The wide kill chain really overflows the viewport.
     expect(matrixWidth).toBeGreaterThan(NARROW_VIEWPORT.width);
@@ -146,5 +156,20 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     // The capture leaves the matrix as it was.
     await expect(investigationPage.getMatrix()).toHaveAttribute('style', styleBeforeExport ?? '');
     expect(await investigationPage.getMatrixScrollWidth()).toBe(matrixWidth);
+  });
+
+  // The matrix component is shared: this guards the existing container pages against the investigation changes.
+  test('The matrix of a report keeps its plain labels and its Add action', async ({ page, request }) => {
+    const { reportId } = await seed(request);
+
+    await page.goto(`/dashboard/analyses/reports/${reportId}/knowledge/matrix`);
+    const cell = page.getByText('E2E Alpha', { exact: true });
+    await expect(cell).toBeVisible();
+    // No technique ID prefix outside of investigations.
+    await expect(page.getByText(ALPHA, { exact: true })).toHaveCount(0);
+
+    await cell.click();
+    await expect(page.getByRole('menuitem', { name: 'View' })).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Add' })).toBeVisible();
   });
 });
