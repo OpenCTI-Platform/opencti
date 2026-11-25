@@ -66,16 +66,15 @@ const findUrlCredentials = (nodes: string[]): { username: string; password: stri
   return undefined;
 };
 
-const authorizationHeader = (auth: EngineConnection['auth'], nodes: string[], url: URL): string | undefined => {
+const authorizationHeader = (auth: EngineConnection['auth'], nodes: string[]): string | undefined => {
   if (auth.apiKey) {
     const key = typeof auth.apiKey === 'string' ? auth.apiKey : Buffer.from(`${auth.apiKey.id}:${auth.apiKey.api_key}`).toString('base64');
     return `ApiKey ${key}`;
   }
-  // Credentials may also be written in the URL, which the Elastic and OpenSearch clients accept
-  const urlCredentials = findUrlCredentials(nodes);
-  const username = urlCredentials?.username ?? (auth.username || decodeURIComponent(url.username));
-  const password = urlCredentials?.password ?? (auth.password || decodeURIComponent(url.password));
-  if (username) {
+  // Credentials may also be written in the URL, which the Elastic and OpenSearch clients accept.
+  // Like them, only a complete pair is sent, taken from the URL or from the configuration, never mixed.
+  const { username, password } = findUrlCredentials(nodes) ?? auth;
+  if (username && password) {
     return `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`;
   }
   return undefined;
@@ -85,7 +84,7 @@ const authorizationHeader = (auth: EngineConnection['auth'], nodes: string[], ur
 export const probeEngine = async (connection: EngineConnection): Promise<EngineInfo> => {
   const nodes = Array.isArray(connection.url) ? connection.url : [connection.url];
   const url = new URL(nodes[0]);
-  const authorization = authorizationHeader(connection.auth, nodes, url);
+  const authorization = authorizationHeader(connection.auth, nodes);
   url.username = '';
   url.password = '';
   const tls = { ca: connection.ca ?? undefined, rejectUnauthorized: connection.rejectUnauthorized };

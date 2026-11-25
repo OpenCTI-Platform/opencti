@@ -126,6 +126,16 @@ describe('engine detection: probeEngine', () => {
     expect(lastHeaders.authorization).toBe(`Basic ${Buffer.from('elastic:a-strong-password').toString('base64')}`);
   });
 
+  it.each([
+    ['a password in the URL and a configured user', 'http://:changeme@', { username: 'opencti' }],
+    ['a user in the URL and a configured password', 'http://opencti@', { password: 'changeme' }],
+    ['a configured user only', 'http://', { username: 'opencti' }],
+  ])('should send no credentials with %s, as the clients need a complete pair', async (_label, prefix, auth) => {
+    answer = { status: 200, body: '{}' };
+    await probeEngine(connection({ url: baseUrl.replace('http://', prefix), auth }));
+    expect(lastHeaders.authorization).toBeUndefined();
+  });
+
   it('should stop on a refused probe, such as a missing privilege', async () => {
     answer = { status: 403, body: '{"error":"forbidden"}' };
     await expect(probeEngine(connection())).rejects.toThrow('refused the version probe');
