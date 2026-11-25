@@ -1,4 +1,3 @@
-import '../config/prototype-seal';
 import { initializeOnlyRedisLockClient, lockResource } from '../database/redis';
 import { logApp } from '../config/conf';
 
