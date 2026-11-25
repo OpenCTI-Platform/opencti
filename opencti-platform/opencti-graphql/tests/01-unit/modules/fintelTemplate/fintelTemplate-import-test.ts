@@ -70,6 +70,20 @@ describe('Fintel template import schema', () => {
     refuses({ start_date: 'yesterday' });
     refuses({ fintel_template_widgets: [{ variable_name: 'widget', widget: { type: 'list' } }] });
   });
+
+  it('refuses a widget the editor cannot open or whose filters would be stored as text: no data selection, filters that are not an object', () => {
+    const withSelection = (selection: Record<string, unknown>[]) => ({
+      ...configuration,
+      fintel_template_widgets: [{ variable_name: 'widget', widget: { type: 'list', dataSelection: selection } }],
+    });
+    const parses = (selection: Record<string, unknown>[]) => fintelTemplateImportSchema.safeParse(withSelection(selection)).success;
+    expect(parses([])).toBe(false);
+    expect(parses([{ filters: '{"mode":"and","filters":[],"filterGroups":[]}' }])).toBe(false);
+    expect(parses([{ dynamicFrom: [] }])).toBe(false);
+    expect(parses([{ dynamicTo: 1 }])).toBe(false);
+    // No filter, or none written: a widget of attributes of the instance has none
+    expect(parses([{ filters: null, dynamicFrom: undefined }, { instance_id: 'SELF_ID' }])).toBe(true);
+  });
 });
 
 describe('Fintel template import', () => {
@@ -116,6 +130,27 @@ describe('Fintel template import', () => {
     // The configuration of the result stays the one of the bundle
     const bundleSelection = expect.objectContaining({ filters: {} });
     expect(configuration.fintel_template_widgets).toEqual([expect.objectContaining({ widget: expect.objectContaining({ dataSelection: [bundleSelection] }) })]);
+  });
+
+  it('stores no filter for a selection that has none, never the text of a null', async () => {
+    const widgets = [{ variable_name: 'widget', widget: { type: 'list', dataSelection: [{ filters: null, dynamicFrom: { mode: 'and', filters: [], filterGroups: [] } }] } }];
+    await importFintelTemplate(context, user, { ...configuration, fintel_template_widgets: widgets }, overwrite);
+    const [selection] = addInput().fintel_template_widgets![0].widget.dataSelection;
+    expect(selection).toMatchObject({ filters: undefined, dynamicTo: undefined, dynamicFrom: '{"mode":"and","filters":[],"filterGroups":[]}' });
+  });
+
+  it('skips a built-in template exported and imported as it is: a selection without filter is the empty filter group the export writes', async () => {
+    const builtIn = {
+      ...reportFintelTemplate,
+      fintel_template_widgets: [{
+        variable_name: 'widgetSelfAttributes',
+        widget: { id: 'built-in-widget-id', type: 'attribute', perspective: null, dataSelection: [{ instance_id: 'SELF_ID', columns: [] }], parameters: { title: 'Attributes' } },
+      }],
+    } as unknown as BasicStoreEntityFintelTemplate;
+    withExisting(builtIn);
+    const exported = await exportFintelTemplateToBundle(context, user, builtIn);
+    expect(exported.fintel_template_widgets![0].widget.dataSelection[0]).toMatchObject({ filters: {}, dynamicFrom: {}, dynamicTo: {} });
+    expect(await importFintelTemplate(context, user, exported, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 
   it('creates a template whatever the names of the others: two templates can have the same name', async () => {

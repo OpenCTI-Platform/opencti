@@ -425,6 +425,9 @@ export type FintelTemplateWidgetFromImport = {
   };
 };
 
+// The filters as the platform stores them: a filter group as JSON text, or none
+const toStoredFilters = (filters: unknown) => (filters === null || filters === undefined ? undefined : JSON.stringify(filters));
+
 // The widgets of an exported template with the ids of this platform, the filters as the platform stores them.
 // A reference this platform does not have is kept as it is
 export const toImportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidgetFromImport[]) => {
@@ -436,9 +439,9 @@ export const toImportedFintelTemplateWidgets = async (context: AuthContext, user
       ...widgets[i],
       dataSelection: widgets[i].dataSelection.map((selection) => ({
         ...selection,
-        filters: JSON.stringify(selection.filters),
-        dynamicFrom: JSON.stringify(selection.dynamicFrom),
-        dynamicTo: JSON.stringify(selection.dynamicTo),
+        filters: toStoredFilters(selection.filters),
+        dynamicFrom: toStoredFilters(selection.dynamicFrom),
+        dynamicTo: toStoredFilters(selection.dynamicTo),
       })),
     },
   }));

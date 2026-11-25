@@ -9,13 +9,22 @@ export const FINTEL_TEMPLATE_NAME_MAX_LENGTH = 512;
 
 export const FINTEL_TEMPLATE_STANDARD_ID_PATTERN = /^finteltemplate--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-// A widget as the export writes it: what the platform reads without checking is checked here (its data selection), so that the item fails with
-// a reason instead of an error. The rest of the widget is the one of a dashboard widget, kept as it is
+// The filters of a data selection as the export writes them: a filter group as an object, or none. A filter written as text would be stored
+// encoded twice, and its ids never converted
+const widgetFiltersSchema = z.looseObject({}).nullable().optional();
+
+// A widget as the export writes it: what the platform reads without checking is checked here, so that the item fails with a reason instead of
+// an error or a template the editor cannot open: at least one data selection (the editor reads the first one), and its filters as objects.
+// The rest of the widget is the one of a dashboard widget, kept as it is
 const fintelTemplateWidgetSchema = z.object({
   variable_name: z.string().min(1, 'The variable name of a widget is required'),
   widget: z.looseObject({
     type: z.string(),
-    dataSelection: z.array(z.looseObject({})),
+    dataSelection: z.array(z.looseObject({
+      filters: widgetFiltersSchema,
+      dynamicFrom: widgetFiltersSchema,
+      dynamicTo: widgetFiltersSchema,
+    })).min(1, 'A widget needs at least one data selection'),
   }),
 });
 

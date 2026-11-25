@@ -76,11 +76,15 @@ const prepareWidgets = async (context: AuthContext, user: AuthUser, widgets: Fin
   }
 };
 
-// Two lists of widgets are the same when they hold the same widgets in the same order, whatever their ids (given at every write) and the order of
-// the keys of their stored filters (the platform stores them as JSON text)
+// Two lists of widgets are the same when they hold the same widgets in the same order, whatever their ids (given at every write), the order of
+// the keys of their stored filters (the platform stores them as JSON text), and whether a selection without filter has none or an empty one
+// (the export writes an empty filter group for a built-in widget that has none)
 const toComparableWidgets = (widgets: { variable_name: string; widget: object }[]) => widgets.map(({ variable_name, widget }) => {
   const { id: _, dataSelection, ...rest } = widget as { id?: string; dataSelection?: Record<string, unknown>[] };
-  const parse = (value: unknown) => (typeof value === 'string' ? JSON.parse(value) : value);
+  const parse = (value: unknown) => {
+    const filters = typeof value === 'string' ? JSON.parse(value) : value;
+    return filters === null || filters === undefined ? {} : filters;
+  };
   return {
     variable_name,
     widget: {
