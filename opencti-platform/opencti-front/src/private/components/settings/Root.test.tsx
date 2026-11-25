@@ -70,6 +70,22 @@ describe('Settings Root permission redirect', () => {
     expect(await screen.findByText('Settings page')).toBeInTheDocument();
   });
 
+  it('does not show the permission dialog to a user with the Experience capabilities when its entry denies it (draft)', async () => {
+    experienceGranted = true;
+    deniedPaths = ['/dashboard/settings/experience'];
+    testRender(
+      <Routes>
+        <Route path="/dashboard/settings/*" element={<Root />} />
+      </Routes>,
+      { route: `/dashboard/settings/experience?${XTM_HUB_AUTO_REGISTER_QUERY_PARAM}=true` },
+    );
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/dashboard/settings');
+    });
+    expect(sessionStorage.getItem(XTM_HUB_PERMISSION_REQUIRED_DIALOG_SESSION_STORAGE_KEY)).toBeNull();
+  });
+
   it('initializes permission dialog marker when experience is denied and auto-register is present', async () => {
     testRender(
       <Routes>

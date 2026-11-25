@@ -81,9 +81,10 @@ const Root = () => {
           <Route
             path="/experience"
             element={(
-              // The entry's rules (draft...), then a narrower capability check than the entry: Parameters-only users
-              // see the page in the menu but are denied it, with the auto-registration handling.
-              <EntryGuard path="/dashboard/settings/experience" placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}>
+              // The entry's rules (draft...) with a plain redirect: the "permission required" dialog would be wrong
+              // for a user who has the capabilities. Then a narrower capability check than the entry: Parameters-only
+              // users see the page in the menu but are denied it, with the auto-registration handling.
+              <EntryGuard path="/dashboard/settings/experience" placeholder={<Navigate to={fallbackUrl} replace={true} />}>
                 <Security
                   needs={[SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]}
                   placeholder={<ExperienceUnauthorizedRedirect fallbackUrl={fallbackUrl} />}

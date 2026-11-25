@@ -81,6 +81,8 @@ describe('route guards', () => {
 
 describe('route guards coverage', () => {
   // A page declared by an entry but opened by a route without `EntryGuard` would stay reachable by URL when the menus hide it.
+  // Only literal `<EntryGuard path="…">` in `Index.tsx` and `**/Root.{tsx,jsx}` is seen: a guard added in another file,
+  // or with a computed path, is not counted. Extend the glob or the regex below if you add one there.
   const sources = import.meta.glob<string>(
     ['/src/private/Index.tsx', '/src/private/components/**/Root.{tsx,jsx}'],
     { query: '?raw', import: 'default', eager: true },
