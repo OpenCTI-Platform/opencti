@@ -77,7 +77,7 @@ export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => 
             if (event.target === event.currentTarget) focusableFields(event.currentTarget)[0]?.focus();
           }}
         >
-          {/* FDS-WORKAROUND #86: a submenu takes the arrow and letter keys of a field inside it — see fds-migration/LIBRARY-FEEDBACK.md #86 */}
+          {/* FDS-WORKAROUND #87: a submenu takes the arrow and letter keys of a field inside it — see fds-migration/LIBRARY-FEEDBACK.md #87 */}
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             onKeyDown={(event) => {
