@@ -51,7 +51,7 @@ describe('IngestionJsonImport', () => {
     const file = new File(['zip'], 'bundle.zip', { type: 'application/zip' });
     await rendered.user.upload(screen.getByTestId('config-preset-partial-import-file'), file);
     await waitFor(() => expect(operation(rendered, 'ConfigPresetPartialImportPreviewMutation')).toBeDefined());
-    expect(operation(rendered, 'ConfigPresetPartialImportPreviewMutation')?.request.variables).toEqual({ file, type: 'jsonFeeds' });
+    expect(operation(rendered, 'ConfigPresetPartialImportPreviewMutation')?.request.variables).toEqual({ file, type: 'jsonFeeds', scope: null });
     await act(async () => {
       const preview = operation(rendered, 'ConfigPresetPartialImportPreviewMutation')!;
       rendered.relayEnv.mock.resolve(preview, MockPayloadGenerator.generate(preview, {

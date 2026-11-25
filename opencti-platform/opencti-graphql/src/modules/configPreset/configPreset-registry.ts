@@ -15,6 +15,7 @@ import { labelsFamily } from './registry/labels-configPreset-registry';
 import { connectorsFamily } from './registry/connectors-configPreset-registry';
 import { csvFeedsFamily, jsonFeedsFamily, rssFeedsFamily, taxiiFeedsFamily } from './registry/ingestion-configPreset-registry';
 import { ruleEngineFamily } from './registry/ruleEngine-configPreset-registry';
+import { playbooksFamily } from './registry/playbooks-configPreset-registry';
 import { isEnterpriseEditionUpToDate } from '../../enterprise-edition/ee';
 import { exclusionListsFamily } from './registry/exclusionLists-configPreset-registry';
 import { killChainPhasesFamily } from './registry/killChainPhases-configPreset-registry';
@@ -22,6 +23,7 @@ import { vocabulariesFamily } from './registry/vocabularies-configPreset-registr
 import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
 import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
+import { customViewsFamily } from './registry/customViews-configPreset-registry';
 import { dashboardsFamily } from './registry/dashboards-configPreset-registry';
 import { formIntakesFamily } from './registry/formIntakes-configPreset-registry';
 
@@ -48,12 +50,14 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   statusTemplatesFamily,
   caseTemplatesFamily,
   dashboardsFamily,
+  customViewsFamily,
   connectorsFamily,
   rssFeedsFamily,
   csvFeedsFamily,
   jsonFeedsFamily,
   taxiiFeedsFamily,
   formIntakesFamily,
+  playbooksFamily,
   ruleEngineFamily,
   fintelDesignsFamily,
 ];

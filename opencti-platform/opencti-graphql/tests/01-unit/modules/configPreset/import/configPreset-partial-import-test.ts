@@ -58,6 +58,60 @@ describe('Config preset partial import', () => {
     expect(resolveConfigPresetPartialImportItems(bundle, family('branding'), [])).toEqual([]);
   });
 
+  describe('with a scope', () => {
+    const VIEW_REPORT = 'customview--11111111-2222-4333-8444-555555555555';
+    const VIEW_MALWARE = 'customview--aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+    const VIEW_NO_TYPE = 'customview--cccccccc-bbbb-4ccc-8ddd-eeeeeeeeeeee';
+    const viewPath = (id: string) => `customization/custom_views/${id}.json`;
+    const viewsBundle: ConfigPresetBundle = {
+      ...bundle,
+      items: [
+        ...bundle.items,
+        { type: 'customViews', id: VIEW_REPORT, path: viewPath(VIEW_REPORT), configuration: { name: 'Overview', target_entity_type: 'Report' } },
+        { type: 'customViews', id: VIEW_MALWARE, path: viewPath(VIEW_MALWARE), configuration: { name: 'Overview', target_entity_type: 'Malware' } },
+        { type: 'customViews', id: VIEW_NO_TYPE, path: viewPath(VIEW_NO_TYPE), configuration: { name: 'No type' } },
+      ],
+    };
+    const views = family('customViews');
+    const report = 'Report';
+
+    it('takes only the items of the type whose configuration has the value, the others of the bundle are not offered', () => {
+      expect(resolveConfigPresetPartialImportItems(viewsBundle, views, null).map(({ id }) => id)).toEqual([VIEW_REPORT, VIEW_MALWARE, VIEW_NO_TYPE]);
+      expect(resolveConfigPresetPartialImportItems(viewsBundle, views, null, report).map(({ id }) => id)).toEqual([VIEW_REPORT]);
+      expect(resolveConfigPresetPartialImportItems(viewsBundle, views, null, 'Campaign')).toEqual([]);
+    });
+
+    it('imports an item in the scope, and refuses the id of an item out of it as it refuses an id the bundle does not have', () => {
+      expect(resolveConfigPresetPartialImportItems(viewsBundle, views, [VIEW_REPORT], report).map(({ id }) => id)).toEqual([VIEW_REPORT]);
+      expect(() => resolveConfigPresetPartialImportItems(viewsBundle, views, [VIEW_MALWARE], report)).toThrow('Unknown configuration preset item');
+      expect(() => resolveConfigPresetPartialImportItems(viewsBundle, views, [VIEW_NO_TYPE], report)).toThrow('Unknown configuration preset item');
+    });
+
+    it('compares the value of the scope key as the import schema of the family reads it: trimmed, and the case matters', () => {
+      const padded: ConfigPresetBundle = {
+        ...viewsBundle,
+        items: [...viewsBundle.items, { type: 'customViews', id: 'customview--padded', path: viewPath('customview--padded'), configuration: { name: 'Padded', target_entity_type: ' Report ' } }],
+      };
+      expect(resolveConfigPresetPartialImportItems(padded, views, null, ' Report').map(({ id }) => id)).toEqual([VIEW_REPORT, 'customview--padded']);
+      expect(resolveConfigPresetPartialImportItems(viewsBundle, views, null, 'report')).toEqual([]);
+    });
+
+    it('reads the scope key of the family as an own property of the configuration only, and a value that is not a string is out of the scope', () => {
+      const inherited: ConfigPresetBundle = {
+        ...bundle,
+        items: [
+          { type: 'customViews', id: VIEW_REPORT, path: viewPath(VIEW_REPORT), configuration: Object.create({ target_entity_type: 'Report' }) },
+          { type: 'customViews', id: VIEW_MALWARE, path: viewPath(VIEW_MALWARE), configuration: { name: 'Number', target_entity_type: 1 } },
+        ],
+      };
+      expect(resolveConfigPresetPartialImportItems(inherited, views, null, 'Report')).toEqual([]);
+    });
+
+    it('refuses a scope for a type that does not declare a scope key', () => {
+      expect(() => resolveConfigPresetPartialImportItems(bundle, family('branding'), null, 'Report')).toThrow('This configuration type cannot be scoped');
+    });
+  });
+
   it('refuses an item that is not in the bundle for the type', () => {
     expect(() => resolveConfigPresetPartialImportItems(bundle, family('branding'), ['platform'])).toThrow('Unknown configuration preset item');
   });

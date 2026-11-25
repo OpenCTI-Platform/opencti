@@ -186,14 +186,41 @@ describe('managed connector token', () => {
     const connectorA = managedConnector('connector-a', 'catalog-x');
     await readToken(connectorA);
     await readToken(managedConnector('connector-b', 'catalog-y'));
-    userTokens.push({ id: 'legacy-token', name: 'Composer managed token' });
     redisStore.clear();
 
     expect(await readToken(connectorA)).toBe('public-key|plaintext-3');
 
     expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledTimes(1);
     expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'user-1', 'token-1');
-    expect(userTokens.map(({ id }) => id)).toEqual(['token-2', 'legacy-token', 'token-3']);
+    expect(userTokens.map(({ id }) => id)).toEqual(['token-2', 'token-3']);
+  });
+
+  it('should revoke the legacy token of the user when issuing a connector token, and only that one', async () => {
+    // Issued before tokens were per connector: one per user, without managed_by fields
+    userTokens.push({ id: 'legacy-token', name: 'Composer managed token' });
+    userTokens.push({ id: 'user-token', name: 'Composer managed token (copy)' });
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    const connectorB = managedConnector('connector-b', 'catalog-y');
+
+    expect(await readToken(connectorA)).toBe('public-key|plaintext-1');
+
+    expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledTimes(1);
+    expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'user-1', 'legacy-token');
+    // Connector B gets its own token without revoking anything else
+    expect(await readToken(connectorB)).toBe('public-key|plaintext-2');
+    expect(mockRevokeUserTokenByAdmin).toHaveBeenCalledTimes(1);
+    expect(userTokens.map(({ id }) => id)).toEqual(['user-token', 'token-1', 'token-2']);
+  });
+
+  it('should keep the legacy token of the user while serving a cached connector token', async () => {
+    const connectorA = managedConnector('connector-a', 'catalog-x');
+    await readToken(connectorA);
+    userTokens.push({ id: 'legacy-token', name: 'Composer managed token' });
+
+    expect(await readToken(connectorA)).toBe('public-key|plaintext-1');
+
+    expect(mockRevokeUserTokenByAdmin).not.toHaveBeenCalled();
+    expect(userTokens.map(({ id }) => id)).toEqual(['token-1', 'legacy-token']);
   });
 
   it('should fail with a functional error when the connector user does not exist', async () => {

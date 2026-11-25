@@ -43,31 +43,39 @@ export const removeSuggestions = (message) => {
   return result + message.slice(cursor);
 };
 
-const INTROSPECTION_FIELDS = ['__schema', '__type'];
-const isIntrospectionDocument = (document) => {
-  let isIntrospection = false;
+const SCHEMA_FIELD = '__schema';
+const TYPE_FIELD = '__type';
+const getIntrospectionFields = (document) => {
+  const fields = new Set();
   visit(document, {
     Field: (node) => {
-      if (INTROSPECTION_FIELDS.includes(node.name.value)) {
-        isIntrospection = true;
-        return BREAK;
+      const { value } = node.name;
+      if (value === SCHEMA_FIELD || value === TYPE_FIELD) {
+        fields.add(value);
+        // __schema decides alone, no need to look further
+        return value === SCHEMA_FIELD ? BREAK : undefined;
       }
       return undefined;
     },
   });
-  return isIntrospection;
+  return fields;
 };
 
 const checkIntrospection = (document, user) => {
-  if (isIntrospectionDocument(document)) {
-    const isIntrospectionDisabled = !PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED;
-    if (isIntrospectionDisabled) {
-      throw muteError(ResourceNotFoundError('GraphQL introspection not authorized!'));
-    }
-    // is user authenticated
-    if (!user) {
-      throw AuthRequired();
-    }
+  const fields = getIntrospectionFields(document);
+  if (fields.size === 0) {
+    return;
+  }
+  // Without the secure defaults, any authenticated user can read a type with __type:
+  // other products of the suite (OpenAEV, XTM One) rely on it.
+  const isTypeAllowed = !fields.has(SCHEMA_FIELD) && !GRAPHQL_SECURE_BY_DEFAULT;
+  const isIntrospectionDisabled = !PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED;
+  if (isIntrospectionDisabled && !isTypeAllowed) {
+    throw muteError(ResourceNotFoundError('GraphQL introspection not authorized!'));
+  }
+  // is user authenticated
+  if (!user) {
+    throw AuthRequired();
   }
 };
 
