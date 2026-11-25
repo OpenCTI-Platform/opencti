@@ -1,6 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { EntityOption } from '@components/common/form/EntitySelect';
-import { DEFAULT_MATRIX_FILTERS, type InvestigationMatrixFilters, MATRIX_RELATIONSHIP_TYPES, type MatrixRelationshipType } from './matrixFilters';
+import { DEFAULT_MATRIX_FILTERS, hasActiveMatrixFilters, type InvestigationMatrixFilters, MATRIX_RELATIONSHIP_TYPES, type MatrixRelationshipType } from './matrixFilters';
 
 /**
  * What the user chose in the matrix toolbar. The matrix unmounts when the graph view is shown,
@@ -93,37 +93,20 @@ const writeMatrixFilters = (investigationId: string, filters: InvestigationMatri
 };
 
 /**
- * The matrix filters of one investigation, saved in local storage on each change. The graph component is
- * reused when the user opens another investigation: that one starts from its own stored filters.
+ * The matrix filters of one investigation, kept in local storage: they survive a reload. The investigation
+ * graph is mounted again for each investigation (keyed by its id), so the hook reads the storage once.
  */
 export const useInvestigationMatrixFilters = (
   investigationId: string,
 ): [InvestigationMatrixFilters, (change: Partial<InvestigationMatrixFilters>) => void, () => void] => {
-  const [state, setState] = useState(() => ({ investigationId, filters: readMatrixFilters(investigationId) }));
-  // Latest state, so two changes in a row before a render do not lose the first one.
-  const latest = useRef(state);
-  if (state.investigationId !== investigationId) {
-    const next = { investigationId, filters: readMatrixFilters(investigationId) };
-    latest.current = next;
-    setState(next);
-  }
-  const filters = state.investigationId === investigationId ? state.filters : latest.current.filters;
+  const [filters, setFilters] = useState(() => readMatrixFilters(investigationId));
+  useEffect(() => {
+    // No filter in use: nothing stored, so that a cleared investigation leaves no entry behind.
+    writeMatrixFilters(investigationId, hasActiveMatrixFilters(filters) ? filters : undefined);
+  }, [investigationId, filters]);
   const change = useCallback((update: Partial<InvestigationMatrixFilters>) => {
-    // A callback kept from before an investigation switch must not build on the filters of the other one.
-    const isCurrent = latest.current.investigationId === investigationId;
-    const next = {
-      investigationId,
-      filters: { ...(isCurrent ? latest.current.filters : readMatrixFilters(investigationId)), ...update },
-    };
-    writeMatrixFilters(investigationId, next.filters);
-    if (!isCurrent) return;
-    latest.current = next;
-    setState(next);
-  }, [investigationId]);
-  const clear = useCallback(() => {
-    latest.current = { investigationId, filters: DEFAULT_MATRIX_FILTERS };
-    writeMatrixFilters(investigationId, undefined);
-    setState(latest.current);
-  }, [investigationId]);
+    setFilters((current) => ({ ...current, ...update }));
+  }, []);
+  const clear = useCallback(() => setFilters(DEFAULT_MATRIX_FILTERS), []);
   return [filters, change, clear];
 };

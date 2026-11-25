@@ -45,8 +45,9 @@ export const useMatrixImageExport = ({ elementId, name }: { elementId: string; n
       setExportTheme(themeNode);
       await wait(RENDER_DELAY);
 
+      // The user left the matrix view during the wait: nothing to capture, and nothing went wrong.
       const container = document.getElementById(elementId);
-      if (!container) throw new Error(`Element #${elementId} not found`);
+      if (!container) return;
       const { offsetWidth, offsetHeight } = container;
       undoPrepareCapture = prepareMatrixCapture(container);
 

@@ -97,6 +97,26 @@ describe('useMatrixImageExport', () => {
     expect(vi.mocked(exportImage).mock.calls[1][4]).toBeNull();
   });
 
+  it('ends the export without an error when the matrix is gone before the capture', async () => {
+    const { result } = renderHook(() => useMatrixImageExport({ elementId: 'matrix-export', name: 'Case - Matrix view' }), { wrapper });
+
+    let pending!: Promise<void>;
+    act(() => {
+      pending = result.current.exportImage('dark:bg');
+    });
+    // The user switches to the graph view during the wait.
+    element.remove();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+      await pending;
+    });
+
+    expect(exportImage).not.toHaveBeenCalled();
+    expect(MESSAGING$.notifyError).not.toHaveBeenCalled();
+    expect(setExportTheme).toHaveBeenLastCalledWith(null);
+    expect(result.current.exporting).toBe(false);
+  });
+
   it('notifies a failed capture and ends the export', async () => {
     vi.mocked(exportImage).mockRejectedValue(new Error('boom'));
     const { result } = renderHook(() => useMatrixImageExport({ elementId: 'matrix-export', name: 'Case - Matrix view' }), { wrapper });
