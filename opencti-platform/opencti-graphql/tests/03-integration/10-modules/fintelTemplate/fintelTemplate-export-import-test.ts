@@ -12,6 +12,7 @@ import { downloadFile } from '../../../../src/database/raw-file-storage';
 import { fullEntitiesList, internalLoadById } from '../../../../src/database/middleware-loader';
 import { allFilesForPaths } from '../../../../src/modules/internal/document/document-domain';
 import { MARKING_TLP_GREEN } from '../../../../src/schema/identifier';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import type { BasicStoreEntityMarkingDefinition } from '../../../../src/types/store';
 import { addFintelTemplate, fintelTemplateDelete } from '../../../../src/modules/fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../../../../src/modules/fintelTemplate/fintelTemplate-types';
@@ -83,6 +84,20 @@ const markedWidget = (markingId: string) => ({
     parameters: { title: 'Green reports' },
   },
 });
+// A widget of the attributes of a given report, not of the instance the template is applied to: it points to the report by its id
+const reportAttributesWidget = (reportId: string) => ({
+  variable_name: 'givenReport',
+  widget: {
+    type: 'attribute',
+    perspective: null,
+    dataSelection: [{ instance_id: reportId, columns: [{ label: 'Name', attribute: 'name', variableName: 'givenReportName' }] }],
+    parameters: { title: 'A given report' },
+  },
+});
+const instanceIdOf = (template: BasicStoreEntityFintelTemplate) => {
+  const widgets: { variable_name: string; widget: { dataSelection: { instance_id?: string | null }[] } }[] = template.fintel_template_widgets;
+  return widgets.find(({ variable_name }) => variable_name === 'givenReport')?.widget.dataSelection[0].instance_id;
+};
 const markingValueOf = (template: BasicStoreEntityFintelTemplate) => JSON.parse(template.fintel_template_widgets[0].widget.dataSelection[0].filters as string).filters[0].values[0];
 const runImport = async (zip: Buffer, selections: unknown[], dryRun: boolean) => {
   const uploaded = await queryAsAdminWithSuccess({ query: UPLOAD_MUTATION, variables: { file: createUploadFromBuffer(zip, 'fintel-templates.zip') } });
@@ -109,12 +124,14 @@ const templatePath = (template: BasicStoreEntityFintelTemplate) => `customizatio
 
 describe('Fintel templates: export and import of the real zip', () => {
   let green: { id: string; standard_id: string };
+  let givenReport: { id: string; standard_id: string };
 
   beforeAll(async () => {
     vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
     vi.spyOn(enterpriseEdition, 'isEnterpriseEditionUpToDate').mockResolvedValue(true);
     green = await internalLoadById<BasicStoreEntityMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_GREEN);
+    [givenReport] = await fullEntitiesList(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_REPORT], { first: 1 });
   });
 
   afterAll(async () => {
@@ -140,7 +157,7 @@ describe('Fintel templates: export and import of the real zip', () => {
       start_date: '2026-01-02T00:00:00.000Z',
       default: true,
       include_back_page_by_default: false,
-      fintel_template_widgets: [markedWidget(green.id)],
+      fintel_template_widgets: [markedWidget(green.id), reportAttributesWidget(givenReport.id)],
     }, true);
     await addFintelTemplate(testContext, ADMIN_USER, { name: GROUPING_NAME, settings_types: ['Grouping'], default: false }, true);
     const report = await loadTemplate(REPORT_NAME);
@@ -153,6 +170,8 @@ describe('Fintel templates: export and import of the real zip', () => {
     const exported = JSON.parse(onlyReport.files[templatePath(report)].toString());
     expect(exported.configuration).toMatchObject({ standard_id: report.standard_id, name: REPORT_NAME, settings_types: ['Report'], default: true });
     expect(exported.configuration.fintel_template_widgets[0].widget.dataSelection[0].filters.filters[0].values).toEqual([green.standard_id]);
+    // The given report of an attribute widget too
+    expect(exported.configuration.fintel_template_widgets[1].widget.dataSelection[0].instance_id).toBe(givenReport.standard_id);
 
     const { bundle: zip } = await exportBundle([{ type: 'fintelTemplates', items: [report.standard_id, grouping.standard_id] }]);
 
@@ -178,8 +197,9 @@ describe('Fintel templates: export and import of the real zip', () => {
       include_back_page_by_default: false,
     });
     expect(new Date(restored.start_date).toISOString()).toBe('2026-01-02T00:00:00.000Z');
-    // The widget points to the marking by its id on this platform again
+    // The widgets point to the marking and to the given report by their ids on this platform again
     expect(markingValueOf(restored)).toBe(green.id);
+    expect(instanceIdOf(restored)).toBe(givenReport.id);
     expect(await loadTemplate(GROUPING_NAME)).toMatchObject({ standard_id: grouping.standard_id, default: false });
     // The default template of the bundle is the only default of its entity type
     expect(await defaultsOf('Report')).toEqual([REPORT_NAME]);

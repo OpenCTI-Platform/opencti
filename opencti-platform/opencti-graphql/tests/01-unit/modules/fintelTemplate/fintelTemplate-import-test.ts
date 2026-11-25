@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   fullEntitiesList: vi.fn(),
+  internalFindByIdsMapped: vi.fn(),
   storeLoadById: vi.fn(),
 }));
 vi.mock('../../../../src/modules/fintelTemplate/fintelTemplate-domain', async (importOriginal) => ({
@@ -16,7 +17,7 @@ vi.mock('../../../../src/modules/workspace/workspace-utils', async (importOrigin
   convertWidgetsIds: vi.fn(),
 }));
 
-import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
+import { fullEntitiesList, internalFindByIdsMapped, storeLoadById } from '../../../../src/database/middleware-loader';
 import { addFintelTemplate, fintelTemplateEditField } from '../../../../src/modules/fintelTemplate/fintelTemplate-domain';
 import { convertWidgetsIds } from '../../../../src/modules/workspace/workspace-utils';
 import { exportFintelTemplateToBundle } from '../../../../src/modules/fintelTemplate/fintelTemplate-export';
@@ -83,6 +84,43 @@ describe('Fintel template import schema', () => {
     expect(parses([{ dynamicTo: 1 }])).toBe(false);
     // No filter, or none written: a widget of attributes of the instance has none
     expect(parses([{ filters: null, dynamicFrom: undefined }, { instance_id: 'SELF_ID' }])).toBe(true);
+  });
+});
+
+describe('Fintel template widgets: the instance an attribute widget shows', () => {
+  const REPORT = { internal_id: 'report-internal-id', standard_id: 'report--2c5e8f1a-4b3d-5e6f-8a9b-0c1d2e3f4a5b' };
+  // The platform knows the report by every id it has
+  const withReport = () => vi.mocked(internalFindByIdsMapped).mockResolvedValue({ [REPORT.internal_id]: REPORT, [REPORT.standard_id]: REPORT } as never);
+  const attributesOf = (...instanceIds: string[]) => instanceIds.map((instanceId, i) => ({
+    variable_name: `attributes${i}`,
+    widget: { id: `widget-${i}`, type: 'attribute', perspective: null, dataSelection: [{ instance_id: instanceId, columns: [], filters: '{}' }], parameters: {} },
+  }));
+  const instanceIdsOf = (widgets: { widget: { dataSelection: { instance_id?: unknown }[] } }[] | undefined) => (widgets ?? [])
+    .map(({ widget }) => widget.dataSelection[0].instance_id);
+
+  it('exports a given instance by its standard id, keeps the instance the template is applied to and an unknown one as they are', async () => {
+    withReport();
+    const template = { ...reportFintelTemplate, fintel_template_widgets: attributesOf('report-internal-id', 'SELF_ID', 'deleted-entity-id') } as unknown as BasicStoreEntityFintelTemplate;
+    const exported = await exportFintelTemplateToBundle(context, user, template);
+    expect(instanceIdsOf(exported.fintel_template_widgets as never)).toEqual([REPORT.standard_id, 'SELF_ID', 'deleted-entity-id']);
+    // Only the given instances are looked up, once each
+    expect(internalFindByIdsMapped).toHaveBeenCalledWith(context, user, ['report-internal-id', 'deleted-entity-id'], { baseData: true, mapWithAllIds: true });
+    // The template itself is untouched
+    expect(instanceIdsOf(template.fintel_template_widgets as never)).toEqual(['report-internal-id', 'SELF_ID', 'deleted-entity-id']);
+  });
+
+  it('imports a given instance by its id on this platform, keeps the instance the template is applied to and an unknown one as they are', async () => {
+    withReport();
+    const widgets = attributesOf(REPORT.standard_id, 'SELF_ID', 'report--00000000-0000-4000-8000-000000000000')
+      .map(({ variable_name, widget }) => ({ variable_name, widget: { ...widget, dataSelection: widget.dataSelection.map((selection) => ({ ...selection, filters: {} })) } }));
+    await importFintelTemplate(context, user, { ...configuration, fintel_template_widgets: widgets }, overwrite);
+    expect(instanceIdsOf(addInput().fintel_template_widgets as never)).toEqual(['report-internal-id', 'SELF_ID', 'report--00000000-0000-4000-8000-000000000000']);
+  });
+
+  it('looks nothing up when every widget shows the instance the template is applied to', async () => {
+    await exportFintelTemplateToBundle(context, user, reportFintelTemplate);
+    await importFintelTemplate(context, user, configuration, overwrite);
+    expect(internalFindByIdsMapped).not.toHaveBeenCalled();
   });
 });
 

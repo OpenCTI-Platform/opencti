@@ -18,7 +18,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIdsMapped, storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -362,7 +362,27 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
 
 const MINIMAL_VERSION_FOR_IMPORT = '6.5.0';
 
-// The widgets of a template in the export format: the filters as objects, with the standard ids of what they point to
+// The instance an attribute widget shows when it is a given entity, and not the one the template is applied to (SELF_ID): its id converted as the
+// ids of the filters are, to its standard id for an export and to the id of this platform for an import. A reference the platform does not have
+// is kept as it is. The ids are replaced in place
+const convertWidgetsInstanceIds = async (context: AuthContext, user: AuthUser, widgets: { dataSelection?: { instance_id?: string | null }[] }[], from: 'internal' | 'stix') => {
+  const selections = widgets.flatMap(({ dataSelection }) => dataSelection ?? [])
+    .filter(({ instance_id }) => typeof instance_id === 'string' && instance_id !== '' && instance_id !== SELF_ID);
+  if (selections.length === 0) {
+    return;
+  }
+  const ids = [...new Set(selections.map(({ instance_id }) => instance_id as string))];
+  const instances = await internalFindByIdsMapped(context, user, ids, { baseData: true, mapWithAllIds: true });
+  selections.forEach((selection) => {
+    const instance = instances[selection.instance_id as string];
+    if (instance) {
+      // eslint-disable-next-line no-param-reassign
+      selection.instance_id = from === 'internal' ? instance.standard_id : instance.internal_id;
+    }
+  });
+};
+
+// The widgets of a template in the export format: the filters as objects, with the standard ids of what they and the instance they show point to
 export const toExportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidget[]) => {
   const widgets = templateWidgets.map(({ widget }) => ({
     ...widget,
@@ -374,6 +394,7 @@ export const toExportedFintelTemplateWidgets = async (context: AuthContext, user
     })),
   }));
   await convertWidgetsIds(context, user, widgets, 'internal');
+  await convertWidgetsInstanceIds(context, user, widgets, 'internal');
   return templateWidgets.map(({ variable_name }, i) => ({
     variable_name,
     widget: widgets[i],
@@ -428,11 +449,12 @@ export type FintelTemplateWidgetFromImport = {
 // The filters as the platform stores them: a filter group as JSON text, or none
 const toStoredFilters = (filters: unknown) => (filters === null || filters === undefined ? undefined : JSON.stringify(filters));
 
-// The widgets of an exported template with the ids of this platform, the filters as the platform stores them.
-// A reference this platform does not have is kept as it is
+// The widgets of an exported template with the ids of this platform, in their filters and for the instance they show, the filters as the
+// platform stores them. A reference this platform does not have is kept as it is
 export const toImportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidgetFromImport[]) => {
   const widgets = templateWidgets.map(({ widget }) => widget);
   await convertWidgetsIds(context, user, widgets, 'stix');
+  await convertWidgetsInstanceIds(context, user, widgets, 'stix');
   return templateWidgets.map(({ variable_name }, i) => ({
     variable_name,
     widget: {
