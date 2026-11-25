@@ -177,6 +177,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const keptDefaultNotes: Record<string, string> = {
     branding: t_i18n('The platform keeps its current default theme.'),
     fintelDesigns: t_i18n('The platform keeps its current default fintel design.'),
+    fintelTemplates: t_i18n('The entity type keeps its current default FINTEL template.'),
   };
   const theme = useTheme<Theme>();
   const environment = useRelayEnvironment();
@@ -491,7 +492,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
-          // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
+          // A copy of the default theme, fintel design or fintel template is another item: the platform (or the entity type) keeps its current default
           const keptDefaultNote = keptDefaultNotes[type.key];
           const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
           const shownResult = result && isResultShown(result, hasChoice) ? result : null;

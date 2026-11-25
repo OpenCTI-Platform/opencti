@@ -1337,6 +1337,22 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.queryByText('The platform keeps its current default theme.')).not.toBeInTheDocument();
     });
 
+    it('says that the entity type keeps its default fintel template when that template is added as a copy, with its own words', async () => {
+      const withFintelTemplates = {
+        ...preview,
+        types: [...preview.types, previewType('fintelTemplates', 'Fintel templates', [
+          previewItem('finteltemplate--1', 'Executive Summary (Report)', { translatable: false, exists: true, conflict: true, isDefault: true }),
+        ], ['OVERWRITE', 'COPY'])],
+      };
+      const rendered = await renderPreview(session(), [], withFintelTemplates);
+      const hint = 'The entity type keeps its current default FINTEL template.';
+      expect(screen.queryByText(hint)).not.toBeInTheDocument();
+      await rendered.user.click(screen.getByRole('combobox', { name: 'Executive Summary (Report): When it already exists' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(screen.getByText(hint)).toBeInTheDocument();
+      expect(screen.queryByText('The platform keeps its current default theme.')).not.toBeInTheDocument();
+    });
+
     it('is not offered on an item that is not imported', async () => {
       const { user } = await renderPreview();
       await user.click(within(screen.getByTestId('config-preset-import-item-branding-theme--2')).getByRole('checkbox'));

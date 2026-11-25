@@ -175,6 +175,8 @@ export const computeConfigPresetItems = async (
     connectorNames: new Set(),
     fintelDesignNames: new Set(),
     renamedFintelDesignIds: new Set(),
+    fintelTemplateNames: new Set(),
+    renamedFintelTemplateIds: new Set(),
     credentials,
     serviceAccounts,
   };

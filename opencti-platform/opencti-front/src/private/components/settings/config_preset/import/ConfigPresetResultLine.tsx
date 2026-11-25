@@ -70,6 +70,11 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
     case 'Fintel design name already exists': return t_i18n('Fintel design name already exists');
     case 'The logo of the fintel design is too large': return t_i18n('The logo of the fintel design is too large');
     case 'The logo of the fintel design is not a supported image': return t_i18n('The logo of the fintel design is not a supported image');
+    case 'The standard id of the fintel template does not match its id': return t_i18n('The standard id of the fintel template does not match its id');
+    case 'Fintel template already exists': return t_i18n('Fintel template already exists');
+    case 'Fintel template name already exists': return t_i18n('Fintel template name already exists');
+    case 'The entity type of the fintel template cannot change': return t_i18n('The entity type of the fintel template cannot change');
+    case 'The filters of the widgets are malformed': return t_i18n('The filters of the widgets are malformed');
     case 'The standard id of the role does not match its name': return t_i18n('The standard id of the role does not match its name');
     case 'Role already exists': return t_i18n('Role already exists');
     case 'Role name already exists': return t_i18n('Role name already exists');

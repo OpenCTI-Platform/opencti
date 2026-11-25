@@ -73,6 +73,7 @@ import { exportConnector } from '../../../../src/modules/connector/connector-exp
 import { enrichPlaybook, EXPORTED_PLAYBOOK_DEFINITION, playbookAuthor } from './configPreset-playbooks-fixtures';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign, PNG_LOGO } from './configPreset-fintelDesigns-fixtures';
+import { groupingFintelTemplate, reportFintelTemplate } from './configPreset-fintelTemplates-fixtures';
 import { FINTEL_DESIGN_LOGO_MAX_SIZE } from '../../../../src/modules/fintelDesign/fintelDesign-logo';
 import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
 import { executiveCustomView, malwareCustomView } from './configPreset-customViews-fixtures';
@@ -276,11 +277,19 @@ describe('Config preset registry', () => {
         group: 'customization',
         itemIds: [defaultFintelDesign.standard_id, nightFintelDesign.standard_id],
       },
+      // The fintel templates of every entity type, by name
+      {
+        id: 'fintelTemplates',
+        label: 'Fintel templates',
+        description: 'Fintel templates of the entity types and their widgets',
+        group: 'customization',
+        itemIds: [reportFintelTemplate.standard_id, groupingFintelTemplate.standard_id],
+      },
     ]);
   });
 
   it('marks as requiring the Enterprise Edition the families of an Enterprise Edition setting only', () => {
-    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'playbooks', 'fintelDesigns']);
+    expect(CONFIG_PRESET_FAMILIES.filter((family) => family.requiresEnterpriseEdition).map((family) => family.id)).toEqual(['whitemark', 'emailTemplates', 'connectors', 'playbooks', 'fintelDesigns', 'fintelTemplates']);
   });
 
   it('translates the static labels only, never a theme name, a label value, an exclusion list name, a phase name, a vocabulary entry, a status template, a case template or a fintel design name', async () => {
@@ -336,6 +345,8 @@ describe('Config preset registry', () => {
       ...RULES_DECLARATION.map(({ name }) => [name, true]),
       ['Filigran report', false],
       ['Night briefing', false],
+      ['Executive Summary (Report)', false],
+      ['Incident brief (Grouping)', false],
     ]);
   });
 
@@ -395,6 +406,8 @@ describe('Config preset registry', () => {
       ...RULES_DECLARATION.map(({ id }) => `automation_rules/rule_engine/${id}.json`),
       `customization/fintel_designs/${defaultFintelDesign.standard_id}.json`,
       `customization/fintel_designs/${nightFintelDesign.standard_id}.json`,
+      `customization/fintel_templates/${reportFintelTemplate.standard_id}.json`,
+      `customization/fintel_templates/${groupingFintelTemplate.standard_id}.json`,
     ]);
     expect(new Set(paths).size).toBe(paths.length);
   });
@@ -1227,6 +1240,84 @@ describe('Config preset registry', () => {
       // No ids: no query, whose empty filter would match every view
       expect(await ids([], [])).toEqual([]);
       expect((await views.listItems(context, user, { first: 10, ids: [] })).edges).toEqual([]);
+      expect(fullEntitiesList).not.toHaveBeenCalled();
+      expect(pageEntitiesConnection).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('fintel templates', () => {
+    const templates = findFamily('fintelTemplates');
+
+    it('exports a template in the import format only, its widgets as the file export writes them, and whether it is the default of its type', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('fintelTemplates', reportFintelTemplate.standard_id));
+      expect(file).toEqual({
+        openCTI_version: PLATFORM_VERSION,
+        type: 'customization.fintelTemplates',
+        id: reportFintelTemplate.standard_id,
+        configuration: {
+          standard_id: reportFintelTemplate.standard_id,
+          name: 'Executive Summary',
+          settings_types: ['Report'],
+          description: 'The summary of a report',
+          instance_filters: null,
+          template_content: '<p>$containerRepresentative</p>',
+          start_date: '2026-01-02T00:00:00.000Z',
+          // The filters as objects, as the file export writes them
+          fintel_template_widgets: [{
+            variable_name: 'widgetSelfAttributes',
+            widget: {
+              id: 'report-widget-id',
+              type: 'attribute',
+              perspective: null,
+              dataSelection: [{
+                instance_id: 'SELF_ID',
+                columns: [{ label: 'Representative', attribute: 'representative.main', variableName: 'containerRepresentative' }],
+                filters: {},
+                dynamicFrom: {},
+                dynamicTo: {},
+              }],
+              parameters: { title: 'Attributes of the instance' },
+            },
+          }],
+          default: true,
+          include_cover_page_by_default: true,
+          include_back_page_by_default: false,
+        },
+      });
+      expect(JSON.stringify(file)).not.toMatch(/creator-secret-id|created_at|report-fintel-template-id/);
+    });
+
+    it('writes every key of a template, an empty one included, so that an overwrite makes the template the one of the bundle', async () => {
+      const file = await exportConfigPresetItem(context, user, templates, await findItem('fintelTemplates', groupingFintelTemplate.standard_id));
+      expect(file.configuration).toEqual({
+        standard_id: groupingFintelTemplate.standard_id,
+        name: 'Incident brief',
+        settings_types: ['Grouping'],
+        description: '',
+        instance_filters: null,
+        template_content: '',
+        // Not published
+        start_date: null,
+        fintel_template_widgets: [],
+        default: false,
+        include_cover_page_by_default: true,
+        include_back_page_by_default: true,
+      });
+    });
+
+    it('names a template with its entity type, marks the default of its type, and makes no template depend on another', async () => {
+      const page = await templates.listItems(context, user, { first: 10 });
+      expect(page.edges.map(({ node }) => [node.id, node.label, node.translatable, node.isDefault, node.dependsOn])).toEqual([
+        [reportFintelTemplate.standard_id, 'Executive Summary (Report)', false, true, []],
+        [groupingFintelTemplate.standard_id, 'Incident brief (Grouping)', false, false, []],
+      ]);
+      const ids = async (selected: string[] | null, excluded: string[]) => (await templates.resolveItems(context, user, selected, excluded)).map((item) => item.id);
+      expect(await ids(null, [reportFintelTemplate.standard_id])).toEqual([groupingFintelTemplate.standard_id]);
+      vi.mocked(fullEntitiesList).mockClear();
+      vi.mocked(pageEntitiesConnection).mockClear();
+      // No ids: no query, whose empty filter would match every template
+      expect(await ids([], [])).toEqual([]);
+      expect((await templates.listItems(context, user, { first: 10, ids: [] })).edges).toEqual([]);
       expect(fullEntitiesList).not.toHaveBeenCalled();
       expect(pageEntitiesConnection).not.toHaveBeenCalled();
     });

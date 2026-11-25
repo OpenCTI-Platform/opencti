@@ -7004,5 +7004,15 @@
   "Not found across the XTM Platform": "Non trovato nella piattaforma XTM",
   "Found": "Trovato",
   "Not found": "Non trovato",
-  "Unavailable": "Non disponibile"
+  "Unavailable": "Non disponibile",
+  "FINTEL templates": "template FINTEL",
+  "Import a template file": "Importa un file di template",
+  "A FINTEL template exported as a JSON file": "Un template FINTEL esportato come file JSON",
+  "Select the FINTEL templates to import from a full configuration bundle (zip)": "Seleziona i template FINTEL da importare da un bundle di configurazione completo (zip)",
+  "The entity type keeps its current default FINTEL template.": "Il tipo di entità mantiene il template FINTEL predefinito attuale.",
+  "The standard id of the fintel template does not match its id": "L'ID standard del template FINTEL non corrisponde al suo ID",
+  "Fintel template already exists": "Il template FINTEL esiste già",
+  "Fintel template name already exists": "Il nome del template FINTEL esiste già",
+  "The entity type of the fintel template cannot change": "Il tipo di entità del template FINTEL non può cambiare",
+  "The filters of the widgets are malformed": "I filtri dei widget non sono validi"
 }

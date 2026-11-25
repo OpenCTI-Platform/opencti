@@ -134,10 +134,11 @@ const applyUniqueDefaultTemplateConstraint = async (
   return results.map(({ element }) => element);
 };
 
+// standard_id is not part of FintelTemplateAddInput: only internal callers (the import of a configuration preset) set it
 export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
-  input: FintelTemplateAddInput,
+  input: FintelTemplateAddInput & { standard_id?: string },
   preventDefaultWidgets = false,
 ) => {
   // check rights
@@ -361,6 +362,24 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
 
 const MINIMAL_VERSION_FOR_IMPORT = '6.5.0';
 
+// The widgets of a template in the export format: the filters as objects, with the standard ids of what they point to
+export const toExportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidget[]) => {
+  const widgets = templateWidgets.map(({ widget }) => ({
+    ...widget,
+    dataSelection: widget.dataSelection.map((selection) => ({
+      ...selection,
+      filters: JSON.parse(selection.filters ?? '{}'),
+      dynamicFrom: JSON.parse(selection.dynamicFrom ?? '{}'),
+      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}'),
+    })),
+  }));
+  await convertWidgetsIds(context, user, widgets, 'internal');
+  return templateWidgets.map(({ variable_name }, i) => ({
+    variable_name,
+    widget: widgets[i],
+  }));
+};
+
 export const fintelTemplateExport = async (context: AuthContext, user: AuthUser, template: BasicStoreEntityFintelTemplate) => {
   const {
     name,
@@ -375,20 +394,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
     include_back_page_by_default,
   } = template;
 
-  const widgets = fintel_template_widgets.map(({ widget }) => ({
-    ...widget,
-    dataSelection: widget.dataSelection.map((selection) => ({
-      ...selection,
-      filters: JSON.parse(selection.filters ?? '{}'),
-      dynamicFrom: JSON.parse(selection.dynamicFrom ?? '{}'),
-      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}'),
-    })),
-  }));
-  await convertWidgetsIds(context, user, widgets, 'internal');
-  const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
-    variable_name,
-    widget: widgets[i],
-  }));
+  const exportWidgets = await toExportedFintelTemplateWidgets(context, user, fintel_template_widgets);
 
   return JSON.stringify({
     openCTI_version: pjson.version,
@@ -408,7 +414,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
   });
 };
 
-type FintelTemplateWidgetFromImport = {
+export type FintelTemplateWidgetFromImport = {
   variable_name: string;
   widget: Widget & {
     dataSelection: WidgetDataSelection & {
@@ -417,6 +423,25 @@ type FintelTemplateWidgetFromImport = {
       dynamicTo: FilterGroup;
     };
   };
+};
+
+// The widgets of an exported template with the ids of this platform, the filters as the platform stores them.
+// A reference this platform does not have is kept as it is
+export const toImportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidgetFromImport[]) => {
+  const widgets = templateWidgets.map(({ widget }) => widget);
+  await convertWidgetsIds(context, user, widgets, 'stix');
+  return templateWidgets.map(({ variable_name }, i) => ({
+    variable_name,
+    widget: {
+      ...widgets[i],
+      dataSelection: widgets[i].dataSelection.map((selection) => ({
+        ...selection,
+        filters: JSON.stringify(selection.filters),
+        dynamicFrom: JSON.stringify(selection.dynamicFrom),
+        dynamicTo: JSON.stringify(selection.dynamicTo),
+      })),
+    },
+  }));
 };
 
 export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
@@ -430,24 +455,9 @@ export const fintelTemplateConfigurationImport = async (context: AuthContext, us
     );
   }
 
-  const widgets = fintel_template_widgets.map(({ widget }) => widget);
-  await convertWidgetsIds(context, user, widgets, 'stix');
-  const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
-    variable_name,
-    widget: {
-      ...widgets[i],
-      dataSelection: widgets[i].dataSelection.map((selection) => ({
-        ...selection,
-        filters: JSON.stringify(selection.filters),
-        dynamicFrom: JSON.stringify(selection.dynamicFrom),
-        dynamicTo: JSON.stringify(selection.dynamicTo),
-      })),
-    },
-  }));
-
   const fintelInput = {
     ...parsedData.configuration,
-    fintel_template_widgets: exportWidgets,
+    fintel_template_widgets: await toImportedFintelTemplateWidgets(context, user, fintel_template_widgets),
   };
 
   return addFintelTemplate(context, user, fintelInput, true);
