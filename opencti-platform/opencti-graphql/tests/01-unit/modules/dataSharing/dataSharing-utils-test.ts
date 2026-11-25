@@ -5,7 +5,7 @@ import * as MiddlewareLoader from '../../../../src/database/middleware-loader';
 import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import { SYSTEM_USER } from '../../../../src/utils/access';
-import conf, { logApp } from '../../../../src/config/conf';
+import conf, { logApp, prepareLogMetadata } from '../../../../src/config/conf';
 import { booleanTrueFilter } from '../../../../src/utils/filtering/filtering-utils';
 import {
   checkPublicSharingsWithoutUser,
@@ -169,7 +169,7 @@ describe('checkPublicSharingsWithoutUser', () => {
   it.each([
     [false, 'served with full access to the platform data'],
     [true, 'refused'],
-  ])('should warn with the list of public collections without a public user (switch %s)', async (secure, verdict) => {
+  ])('should warn with the count, then each public collection without a public user (switch %s)', async (secure, verdict) => {
     conf.set(SECURE_KEY, secure);
     vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
       if (types?.[0] === 'StreamCollection') {
@@ -180,11 +180,22 @@ describe('checkPublicSharingsWithoutUser', () => {
 
     await checkPublicSharingsWithoutUser(mockContext);
 
-    expect(logApp.warn).toHaveBeenCalledTimes(1);
+    expect(logApp.warn).toHaveBeenCalledTimes(2);
     const [message, meta] = vi.mocked(logApp.warn).mock.calls[0];
     expect(message).toContain(verdict);
     expect(message).toContain(`app:data_sharing:secure_by_default=${secure}`);
-    expect(meta).toEqual({ collections: [{ entity_type: 'StreamCollection', id: 'stream-1', name: 'Legacy stream' }] });
+    expect(meta).toEqual({ count: 1 });
+    expect(vi.mocked(logApp.warn).mock.calls[1][1]).toEqual({ collection: { entity_type: 'StreamCollection', id: 'stream-1', name: 'Legacy stream' } });
+  });
+
+  it('should log every collection, beyond the size limits of the log metadata', async () => {
+    const streams = Array.from({ length: 120 }, (_, index) => ({ id: `stream-${index}`, entity_type: 'StreamCollection', name: `Legacy stream ${index}`, stream_public: true }));
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => (types?.[0] === 'StreamCollection' ? streams as any : []));
+
+    await checkPublicSharingsWithoutUser(mockContext);
+
+    const loggedIds = vi.mocked(logApp.warn).mock.calls.slice(1).map(([, meta]) => (prepareLogMetadata(meta) as any).collection?.id);
+    expect(loggedIds).toEqual(streams.map(({ id }) => id));
   });
 });
 

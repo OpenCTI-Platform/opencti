@@ -128,8 +128,9 @@ export const isPublicUserMissingAfterEdit = async (
   loadSharing: () => Promise<PublicSharingEntity | undefined>,
 ): Promise<boolean> => {
   const { publicField, userIdField } = getSharingConfig(entityType);
-  const publicItem = input.find((item) => item.key === publicField);
-  const userIdItem = input.find((item) => item.key === userIdField);
+  // A patch can carry several inputs for one key and the last one wins: check the value that is stored
+  const publicItem = input.findLast((item) => item.key === publicField);
+  const userIdItem = input.findLast((item) => item.key === userIdField);
   const setsPublic = isTrueValue(publicItem?.value?.[0]);
   if (!setsPublic && !userIdItem) {
     return false;
@@ -158,11 +159,15 @@ export const checkPublicSharingsWithoutUser = async (context: AuthContext): Prom
     return;
   }
   if (isDataSharingSecureByDefault()) {
-    logApp.warn('[OPENCTI] Some public collections have no public user: they are refused until an administrator configures one (app:data_sharing:secure_by_default=true).', { collections });
-    return;
+    logApp.warn('[OPENCTI] Some public collections have no public user: they are refused until an administrator configures one (app:data_sharing:secure_by_default=true).', { count: collections.length });
+  } else {
+    logApp.warn('[OPENCTI] Some public collections have no public user: they are served with full access to the platform data (app:data_sharing:secure_by_default=false). '
+      + 'They will be refused in an upcoming version: configure a public user on each, then set APP__DATA_SHARING__SECURE_BY_DEFAULT=true to opt in now.', { count: collections.length });
   }
-  logApp.warn('[OPENCTI] Some public collections have no public user: they are served with full access to the platform data (app:data_sharing:secure_by_default=false). '
-    + 'They will be refused in an upcoming version: configure a public user on each, then set APP__DATA_SHARING__SECURE_BY_DEFAULT=true to opt in now.', { collections });
+  // One line per collection: the log metadata is truncated, a single list would hide some of them
+  collections.forEach((collection) => {
+    logApp.warn('[OPENCTI] Public collection without public user', { collection });
+  });
 };
 
 /**

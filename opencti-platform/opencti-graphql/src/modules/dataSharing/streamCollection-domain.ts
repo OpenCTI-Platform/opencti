@@ -86,7 +86,8 @@ export const streamCollectionEditField = async (context: AuthContext, user: Auth
   if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public stream collection settings');
   }
-  const publicUserIdItem = input.find((item) => item.key === 'stream_public_user_id');
+  // The last input of a key is the one stored
+  const publicUserIdItem = input.findLast((item) => item.key === 'stream_public_user_id');
   if (publicUserIdItem?.value?.[0]) {
     await validatePublicUserId(context, publicUserIdItem.value[0]);
   }
