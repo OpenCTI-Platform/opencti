@@ -3,12 +3,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import testRender, { testRenderHook } from '../../../../utils/tests/test-render';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { addObjectToContainer, CreatedObject, removeObjectFromContainer } from './containerObjects';
+import type { ContainerObjectMutationArgs, CreatedObject } from './useContainerObjects';
 import { CREATED_OBJECTS_BATCH_DELAY_MS, useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
 
-vi.mock('./containerObjects', () => ({
-  addObjectToContainer: vi.fn(),
-  removeObjectFromContainer: vi.fn(),
+const { addObjectToContainer, removeObjectFromContainer } = vi.hoisted(() => ({
+  addObjectToContainer: vi.fn<(args: ContainerObjectMutationArgs) => Promise<void>>(),
+  removeObjectFromContainer: vi.fn<(args: ContainerObjectMutationArgs) => Promise<void>>(),
+}));
+
+vi.mock('./useContainerObjects', () => ({
+  useContainerObjects: () => ({ addObjectToContainer, removeObjectFromContainer }),
 }));
 
 const observable = (id: string): CreatedObject => ({ id, entity_type: 'IPv4-Addr', parent_types: ['Stix-Cyber-Observable'] });

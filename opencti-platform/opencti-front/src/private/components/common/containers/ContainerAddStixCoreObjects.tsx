@@ -40,7 +40,7 @@ import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { addObjectToContainer, removeObjectFromContainer } from './containerObjects';
+import { useContainerObjects } from './useContainerObjects';
 import { useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
 import { CreationFeedbackContext } from '../../../../utils/hooks/useCreationFeedback';
 import CommitMessage from '../form/CommitMessage';
@@ -115,6 +115,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
   enableReferences,
 }) => {
   const theme = useTheme<Theme>();
+  const { addObjectToContainer, removeObjectFromContainer } = useContainerObjects();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const [referenceDialogOpened, setReferenceDialogOpened] = useState(false);
   const [currentlyToggledCoreObject, setCurrentlyToggledCoreObject] = useState<ContainerAddStixCoreObjectsLine | null>(null);

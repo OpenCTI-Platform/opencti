@@ -20,7 +20,7 @@ import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@co
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
 import { CreationFeedbackContext } from '../../../../utils/hooks/useCreationFeedback';
 import { useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
-import { CreatedObject } from './containerObjects';
+import { CreatedObject } from './useContainerObjects';
 
 interface ControlledDialProps {
   onOpen: () => void;

@@ -22,7 +22,7 @@ import InvestigationEnrichmentTool from '../../../private/components/workspaces/
 import Security from '../../../utils/Security';
 import { KNOWLEDGE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { fetchQuery } from '../../../relay/environment';
-import { CreatedObject } from '../../../private/components/common/containers/containerObjects';
+import { CreatedObject } from '../../../private/components/common/containers/useContainerObjects';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;

@@ -4,7 +4,7 @@ import { Form, Formik, FormikConfig } from 'formik';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { DataColumns } from '../../../../components/list_lines';
 import { ContainerAddStixCoreObjecstLineDummy, ContainerAddStixCoreObjectsLine } from './ContainerAddStixCoreObjectsLine';
-import { addObjectToContainer, removeObjectFromContainer } from './containerObjects';
+import { useContainerObjects } from './useContainerObjects';
 import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
@@ -178,6 +178,7 @@ const ContainerAddStixCoreObjectsLines: FunctionComponent<ContainerAddStixCoreOb
   enableReferences,
   onLabelClick,
 }) => {
+  const { addObjectToContainer, removeObjectFromContainer } = useContainerObjects();
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
     ContainerAddStixCoreObjectsLinesQuery,
     ContainerAddStixCoreObjectsLines_data$key

@@ -5,7 +5,7 @@ import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
-import { addObjectToContainer, CreatedObject, removeObjectFromContainer } from './containerObjects';
+import { CreatedObject, useContainerObjects } from './useContainerObjects';
 import { useAddCreatedObjectsToContainerIndicatorsQuery$data } from './__generated__/useAddCreatedObjectsToContainerIndicatorsQuery.graphql';
 
 /** The objects created within this delay of each other are added together, with a single message. */
@@ -88,6 +88,7 @@ const fetchIndicatorsBasedOn = async (observableId: string): Promise<CreatedObje
  */
 export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToContainerArgs) => {
   const { t_i18n } = useFormatter();
+  const { addObjectToContainer, removeObjectFromContainer } = useContainerObjects();
   // The latest arguments: the batch is flushed after a delay, and Undo is clicked later
   const argsRef = useRef(args);
   argsRef.current = args;
