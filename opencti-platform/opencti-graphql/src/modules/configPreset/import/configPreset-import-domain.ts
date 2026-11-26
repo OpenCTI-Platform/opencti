@@ -4,15 +4,16 @@ import { FunctionalError } from '../../../config/errors';
 import { downloadFile } from '../../../database/raw-file-storage';
 import { deleteFile, type FileUploadData, loadFile, type LoadedFile, uploadToStorage } from '../../../database/file-storage';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ConfigPresetImportPreview, ConfigPresetImportType } from '../../../generated/graphql';
+import type { ConfigPresetImportItemConnection, ConfigPresetImportPreview, ConfigPresetImportType, QueryConfigPresetImportItemsArgs } from '../../../generated/graphql';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
 import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAvailable } from '../configPreset-registry';
+import { CONFIG_PRESET_FIRST_PAGE_SIZE } from '../export/configPreset-export-domain';
 import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetFamilyModes, getConfigPresetPlatformId } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
-import { dropConfigPresetImportCache, getConfigPresetImportSnapshot } from './configPreset-import-cache';
+import { dropConfigPresetImportCache, getConfigPresetImportIndex, getConfigPresetImportSnapshot, setConfigPresetImportIndex } from './configPreset-import-cache';
 import {
   CONFIG_PRESET_IMPORT_MAX_ZIP_SIZE,
   type ConfigPresetItemKey,
@@ -30,6 +31,7 @@ import {
   type ConfigPresetBundleItem,
   type ConfigPresetComputedItem,
   type ConfigPresetImportCredentials,
+  type ConfigPresetImportIndex,
   type ConfigPresetImportPlan,
 } from './configPreset-import-types';
 
@@ -224,9 +226,11 @@ export const computeConfigPresetItems = async (
   return results;
 };
 
+const pageInfoOf = (globalCount: number, hasNextPage = false) => ({ startCursor: '', endCursor: '', hasNextPage, hasPreviousPage: false, globalCount });
+
 // The types of the computed items, in registry order, each with its items: what already exists, the values they would write
 // and their required dependencies. A family the platform cannot import is locked, without its items.
-// Shared by the preview of the wizard and the one of a partial import.
+// Shared by the preview of the wizard and the one of a partial import: every item is listed, the wizard pages some types afterwards.
 export const buildConfigPresetImportTypes = (
   bundle: ConfigPresetBundle,
   results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[],
@@ -236,15 +240,9 @@ export const buildConfigPresetImportTypes = (
   const families = CONFIG_PRESET_FAMILIES.filter((family) => results.some(({ item }) => item.type === family.id));
   // The position of each item of the bundle by its path, read once: a search of the whole bundle for each item is the square of its size
   const itemIndexByPath = new Map(bundle.items.map((item, index) => [item.path, index]));
-  return families.map((family) => ({
-    key: family.id,
-    label: family.label,
-    description: family.description,
-    group: { key: family.group.id, label: family.group.label },
-    lockedByEnterpriseEdition: !availability.get(family.id),
-    modes: getConfigPresetFamilyModes(family),
+  return families.map((family) => {
     // The items of a family the platform cannot import are not shown: the dialog shows the type as locked
-    items: !availability.get(family.id) ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {
+    const items = !availability.get(family.id) ? [] : results.filter(({ item }) => item.type === family.id).map(({ item, computed }) => {
       const dependencyPaths = Object.values(bundle.dependencies[configPresetFamilyType(family)]?.[item.id] ?? {});
       return {
         key: item.id,
@@ -263,22 +261,116 @@ export const buildConfigPresetImportTypes = (
           .sort((a, b) => a - b)
           .map((index) => ({ type: bundle.items[index].type, key: bundle.items[index].id })),
       };
-    }),
-  }));
+    });
+    return {
+      key: family.id,
+      label: family.label,
+      description: family.description,
+      group: { key: family.group.id, label: family.group.label },
+      lockedByEnterpriseEdition: !availability.get(family.id),
+      modes: getConfigPresetFamilyModes(family),
+      items,
+      itemsPageInfo: pageInfoOf(items.length),
+      conflictsCount: items.filter(({ conflict }) => conflict).length,
+    };
+  });
 };
 
-// The items of the zip per family, with what already exists, the values they would write and their required dependencies
-export const configPresetImportPreview = async (context: AuthContext, user: AuthUser, fileId: string): Promise<ConfigPresetImportPreview> => {
-  const bundle = await readConfigPresetImportBundle(context, user, fileId);
+// A type with more items than this is listed page by page, when nothing in it asks the user for anything: a credential, a service account and a
+// mode are chosen item by item in the dialog, which needs those items in hand, and such a type has dozens of items, not thousands.
+export const CONFIG_PRESET_IMPORT_PAGED_FROM = 200;
+// What a paged type lists in the preview: the next pages come from configPresetImportItems
+export const CONFIG_PRESET_IMPORT_FIRST_PAGE_SIZE = CONFIG_PRESET_FIRST_PAGE_SIZE;
+const CONFIG_PRESET_IMPORT_DEFAULT_PAGE_SIZE = 25;
+const CONFIG_PRESET_IMPORT_MAX_PAGE_SIZE = 200;
+
+const isPagedConfigPresetImportType = (type: ConfigPresetImportType) => {
+  return !type.lockedByEnterpriseEdition
+    && type.items.length > CONFIG_PRESET_IMPORT_PAGED_FROM
+    && type.modes.length <= 1
+    && type.items.every((item) => item.credentials.length === 0 && !item.serviceAccountRequired);
+};
+
+// The preview of a bundle: every type, a paged one with its first page only. The index holds all the items of the paged types.
+// Reads the platform for each item of the bundle once: this is what the preview costs.
+const computeConfigPresetImportPreviewTypes = async (context: AuthContext, user: AuthUser, bundle: ConfigPresetBundle) => {
   const keys: ConfigPresetItemKey[] = bundle.items;
   const ordered = resolveBundleDependencies(bundle, keys);
   const availability = await getConfigPresetFamiliesAvailability(context, ordered);
   const results = await computeConfigPresetItems(context, user, ordered, { availability });
+  const index: ConfigPresetImportIndex = new Map();
+  const types = buildConfigPresetImportTypes(bundle, results, availability).map((type) => {
+    if (!isPagedConfigPresetImportType(type)) {
+      return type;
+    }
+    index.set(type.key, type.items);
+    return { ...type, items: type.items.slice(0, CONFIG_PRESET_IMPORT_FIRST_PAGE_SIZE), itemsPageInfo: pageInfoOf(type.items.length, true) };
+  });
+  return { types, index };
+};
+
+// The items of the zip per family, with what already exists, the values they would write and their required dependencies.
+// The index of the paged types is kept with the file: the preview is the moment the dialog reads what the platform holds.
+export const configPresetImportPreview = async (context: AuthContext, user: AuthUser, fileId: string): Promise<ConfigPresetImportPreview> => {
+  const bundle = await readConfigPresetImportBundle(context, user, fileId);
+  const { types, index } = await computeConfigPresetImportPreviewTypes(context, user, bundle);
+  setConfigPresetImportIndex(user.id, fileId, Promise.resolve(index));
   return {
     bundle_name: bundle.metadata.bundle_name,
     openCTI_version: bundle.metadata.openCTI_version,
     generated_at: bundle.metadata.generated_at,
-    types: buildConfigPresetImportTypes(bundle, results, availability),
+    types,
     ignored: bundle.ignored,
+  };
+};
+
+// The index of a file: the one the preview kept, else computed now (another node, or what was kept expired) and kept for the next pages
+const loadConfigPresetImportIndex = (context: AuthContext, user: AuthUser, fileId: string): Promise<ConfigPresetImportIndex> => {
+  const kept = getConfigPresetImportIndex(user.id, fileId);
+  if (kept) {
+    return kept;
+  }
+  // Reading the bundle creates the entry the index is kept in
+  const computing = readConfigPresetImportBundle(context, user, fileId).then(async (bundle) => (await computeConfigPresetImportPreviewTypes(context, user, bundle)).index);
+  setConfigPresetImportIndex(user.id, fileId, computing);
+  return computing;
+};
+
+// One page of the items of a paged type, searched and filtered in memory: nothing is computed, the preview did. The cursor is the position
+// of the last item of the page among the matching ones.
+export const findConfigPresetImportItems = async (
+  context: AuthContext,
+  user: AuthUser,
+  { file_id: fileId, type, first, after, search, ids, excludedIds, conflictsOnly }: QueryConfigPresetImportItemsArgs,
+): Promise<ConfigPresetImportItemConnection> => {
+  checkConfigPresetImportAccess(context, user);
+  if (!CONFIG_PRESET_FAMILIES.some((family) => family.id === type)) {
+    throw FunctionalError('Unknown configuration preset type', { type });
+  }
+  const items = (await loadConfigPresetImportIndex(context, user, fileId)).get(type);
+  if (!items) {
+    throw FunctionalError('The type is not listed page by page', { type });
+  }
+  const idSet = ids ? new Set(ids) : null;
+  const excludedSet = excludedIds && excludedIds.length > 0 ? new Set(excludedIds) : null;
+  const needle = search?.trim().toLowerCase();
+  const matching = items.filter((item) => {
+    return (!idSet || idSet.has(item.key))
+      && (!excludedSet || !excludedSet.has(item.key))
+      && (!conflictsOnly || item.conflict)
+      && (!needle || item.label.toLowerCase().includes(needle));
+  });
+  const offset = Math.max(0, Number.parseInt(after ?? '', 10) || 0);
+  const size = Math.min(Math.max(first ?? CONFIG_PRESET_IMPORT_DEFAULT_PAGE_SIZE, 1), CONFIG_PRESET_IMPORT_MAX_PAGE_SIZE);
+  const edges = matching.slice(offset, offset + size).map((node, position) => ({ cursor: String(offset + position + 1), node }));
+  return {
+    edges,
+    pageInfo: {
+      startCursor: edges[0]?.cursor ?? '',
+      endCursor: edges[edges.length - 1]?.cursor ?? '',
+      hasNextPage: offset + size < matching.length,
+      hasPreviousPage: offset > 0,
+      globalCount: matching.length,
+    },
   };
 };

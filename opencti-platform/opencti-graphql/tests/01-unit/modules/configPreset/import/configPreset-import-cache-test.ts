@@ -5,7 +5,9 @@ import {
   CONFIG_PRESET_IMPORT_CACHE_MAX_ENTRIES,
   CONFIG_PRESET_IMPORT_CACHE_TTL_MS,
   dropConfigPresetImportCache,
+  getConfigPresetImportIndex,
   getConfigPresetImportSnapshot,
+  setConfigPresetImportIndex,
 } from '../../../../../src/modules/configPreset/import/configPreset-import-cache';
 
 const snapshot = (size = 10) => Buffer.alloc(size);
@@ -121,5 +123,79 @@ describe('Config preset import snapshot cache', () => {
     expect(huge).toHaveBeenCalledTimes(2);
     await getConfigPresetImportSnapshot('user', 'small', small);
     expect(small).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Config preset import index cache', () => {
+  const indexOf = (count = 1) => new Map([['labels', Array.from({ length: count }, (_, i) => ({ key: `label--${i}` }))]]) as never;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    clearConfigPresetImportCache();
+    vi.useRealTimers();
+  });
+
+  it('keeps the index with the entry of the file, and gives it back to the same user and file only', async () => {
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    const index = Promise.resolve(indexOf());
+    setConfigPresetImportIndex('user', 'file', index);
+    expect(getConfigPresetImportIndex('user', 'file')).toBe(index);
+    expect(getConfigPresetImportIndex('other', 'file')).toBeUndefined();
+    expect(getConfigPresetImportIndex('user', 'another')).toBeUndefined();
+  });
+
+  it('keeps nothing when the file has no entry: an index is never kept for a file that was not read', () => {
+    setConfigPresetImportIndex('user', 'file', Promise.resolve(indexOf()));
+    expect(getConfigPresetImportIndex('user', 'file')).toBeUndefined();
+  });
+
+  it('replaces the index when another one is kept', async () => {
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    setConfigPresetImportIndex('user', 'file', Promise.resolve(indexOf(1)));
+    const next = Promise.resolve(indexOf(2));
+    setConfigPresetImportIndex('user', 'file', next);
+    expect(getConfigPresetImportIndex('user', 'file')).toBe(next);
+  });
+
+  it('does not keep an index that could not be computed', async () => {
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    const failed = Promise.reject(new Error('computation failed'));
+    setConfigPresetImportIndex('user', 'file', failed);
+    await expect(failed).rejects.toThrow('computation failed');
+    expect(getConfigPresetImportIndex('user', 'file')).toBeUndefined();
+  });
+
+  it('does not drop the index a later computation kept when an earlier one fails', async () => {
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    const failed = Promise.reject(new Error('computation failed'));
+    setConfigPresetImportIndex('user', 'file', failed);
+    const next = Promise.resolve(indexOf());
+    setConfigPresetImportIndex('user', 'file', next);
+    await expect(failed).rejects.toThrow();
+    expect(getConfigPresetImportIndex('user', 'file')).toBe(next);
+  });
+
+  it('forgets the index with the entry: on a drop, and when the entry expires', async () => {
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    setConfigPresetImportIndex('user', 'file', Promise.resolve(indexOf()));
+    dropConfigPresetImportCache('user');
+    expect(getConfigPresetImportIndex('user', 'file')).toBeUndefined();
+
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    setConfigPresetImportIndex('user', 'file', Promise.resolve(indexOf()));
+    await vi.advanceTimersByTimeAsync(CONFIG_PRESET_IMPORT_CACHE_TTL_MS + 1);
+    expect(getConfigPresetImportIndex('user', 'file')).toBeUndefined();
+  });
+
+  it('lives on while it is read: using the index extends the life of the entry', async () => {
+    await getConfigPresetImportSnapshot('user', 'file', loaderOf());
+    setConfigPresetImportIndex('user', 'file', Promise.resolve(indexOf()));
+    await vi.advanceTimersByTimeAsync(CONFIG_PRESET_IMPORT_CACHE_TTL_MS - 1000);
+    expect(getConfigPresetImportIndex('user', 'file')).toBeDefined();
+    await vi.advanceTimersByTimeAsync(CONFIG_PRESET_IMPORT_CACHE_TTL_MS - 1000);
+    expect(getConfigPresetImportIndex('user', 'file')).toBeDefined();
   });
 });

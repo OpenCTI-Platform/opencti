@@ -2316,6 +2316,16 @@ type ConfigPresetImportItem {
   translatable: Boolean!
 }
 
+type ConfigPresetImportItemConnection {
+  edges: [ConfigPresetImportItemEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ConfigPresetImportItemEdge {
+  cursor: String!
+  node: ConfigPresetImportItem!
+}
+
 enum ConfigPresetImportOutcome {
   COMPLETED
   STOPPED
@@ -2410,9 +2420,11 @@ enum ConfigPresetImportSessionStatus {
 }
 
 type ConfigPresetImportType {
+  conflictsCount: Int!
   description: String!
   group: ConfigPresetExportableGroup!
   items: [ConfigPresetImportItem!]!
+  itemsPageInfo: PageInfo!
   key: String!
   label: String!
   lockedByEnterpriseEdition: Boolean!
@@ -12031,6 +12043,7 @@ type Query {
   city(id: String): City
   configPresetExportableItems(after: ID, excludedIds: [ID!], first: Int, ids: [ID!], search: String, type: ID!): ConfigPresetExportableItemConnection!
   configPresetExportableTypes: [ConfigPresetExportableType!]!
+  configPresetImportItems(after: ID, conflictsOnly: Boolean, excludedIds: [ID!], file_id: ID!, first: Int, ids: [ID!], search: String, type: ID!): ConfigPresetImportItemConnection!
   configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
   configPresetImportRunning: ConfigPresetImportRunning!
   configPresetImportSession: ConfigPresetImportSession

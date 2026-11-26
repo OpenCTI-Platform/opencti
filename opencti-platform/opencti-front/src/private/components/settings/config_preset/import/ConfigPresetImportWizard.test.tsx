@@ -42,6 +42,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   dependsOn: [],
   ...overrides,
 });
+// A type listed whole, as the API does for all but the types of thousands of items: its page is all of its items
 const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE'], lockedByEnterpriseEdition = false) => ({
   key,
   label,
@@ -50,6 +51,8 @@ const previewType = (key: string, label: string, items: unknown[], modes = ['OVE
   lockedByEnterpriseEdition,
   modes,
   items,
+  itemsPageInfo: { globalCount: items.length, hasNextPage: false },
+  conflictsCount: items.filter((item) => (item as { conflict?: boolean }).conflict).length,
 });
 const preview = {
   bundle_name: 'Test bundle',
@@ -1458,5 +1461,93 @@ describe('ConfigPresetImportWizard', () => {
         expect(familySelect()).toHaveTextContent('Add as a copy');
       });
     });
+  });
+});
+
+// A bundle with a type of thousands of items: its first page comes with the preview, the rest from the items query
+describe('ConfigPresetImportWizard: a type listed page by page', () => {
+  const itemEdge = (key: string, label: string, overrides: Record<string, unknown> = {}) => ({ node: previewItem(key, label, { translatable: false, ...overrides }) });
+  const bigPreview = {
+    ...preview,
+    types: [
+      {
+        ...previewType('labels', 'Labels', Array.from({ length: 10 }, (_, i) => previewItem(`label--${i}`, `Label ${i}`, { translatable: false, conflict: i < 3 }))),
+        itemsPageInfo: { hasNextPage: true, globalCount: 5000 },
+        conflictsCount: 120,
+      },
+    ],
+  };
+  const itemsQueries = (rendered: Rendered) => rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportItemsQuery');
+  // The variables of the items queries sent, the latest last: a query that was answered is no longer pending
+  const itemsVariables: unknown[] = [];
+  const resolveItems = async (rendered: Rendered, edges: unknown[]) => {
+    await act(async () => {
+      const target = itemsQueries(rendered).at(-1)!;
+      itemsVariables.push(target.request.variables);
+      rendered.relayEnv.mock.resolve(target, MockPayloadGenerator.generate(target, {
+        ConfigPresetImportItemConnection: () => ({ edges, pageInfo: { hasNextPage: false, endCursor: '25', globalCount: edges.length } }),
+      }));
+    });
+  };
+  const openManage = async (rendered: Rendered, edges: unknown[]) => {
+    await rendered.user.click(screen.getByRole('button', { name: 'Manage' }));
+    await resolveItems(rendered, edges);
+  };
+
+  beforeEach(() => {
+    onFinish.mockReset();
+    enterpriseEdition.enabled = false;
+    itemsVariables.length = 0;
+  });
+
+  it('shows a Manage button for the type, and counts all its items', async () => {
+    await renderPreview(session(), [], bigPreview);
+    expect(screen.getByRole('button', { name: 'Manage' })).toBeInTheDocument();
+    expect(screen.getByText(/5000 items/)).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Labels (5000/5000)' })).toBeInTheDocument();
+    // Its items are in the sub-view, not in the list
+    expect(screen.queryByTestId('config-preset-import-item-labels-label--0')).not.toBeInTheDocument();
+  });
+
+  it('opens the sub-view that reads the items of the type from the API, and goes back', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20'), itemEdge('label--21', 'Label 21', { conflict: true })]);
+    expect(itemsVariables.at(-1)).toMatchObject({ file_id: 'config_preset/import/id/bundle.zip', type: 'labels', count: 25, search: '' });
+    expect(screen.getByRole('checkbox', { name: 'Label 20' })).toBeInTheDocument();
+    expect(screen.getByText('5000 / 5000 selected')).toBeInTheDocument();
+    // The way back is in the sticky footer, as Apply is in the list: it stays at the bottom while the pages load, and is never the last row
+    const footer = within(screen.getByTestId('config-preset-sticky-footer'));
+    expect(footer.getByRole('button', { name: 'Back to bundle' })).toBeInTheDocument();
+    expect(screen.getByTestId('config-preset-sticky-footer')).toHaveStyle({ position: 'sticky', bottom: '0px' });
+    await rendered.user.click(footer.getByRole('button', { name: 'Back to bundle' }));
+    expect(within(screen.getByTestId('config-preset-sticky-footer')).getByRole('button', { name: 'Apply' })).toBeInTheDocument();
+  });
+
+  it('searches and keeps the items that already exist, by asking the API again', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20')]);
+    await rendered.user.type(screen.getByRole('searchbox', { name: 'Search' }), 'acme');
+    await waitFor(() => expect(itemsQueries(rendered).at(-1)!.request.variables).toMatchObject({ search: 'acme' }), { timeout: 2000 });
+    await resolveItems(rendered, []);
+    expect(await screen.findByText('No results')).toBeInTheDocument();
+    await rendered.user.click(screen.getByRole('button', { name: 'Already exists 120' }));
+    await waitFor(() => expect(itemsQueries(rendered).at(-1)!.request.variables).toMatchObject({ search: 'acme', conflictsOnly: true }));
+  });
+
+  it('keeps the items that are selected or not by their ids, as the export does', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20')]);
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Label 20' }));
+    await rendered.user.click(screen.getByRole('button', { name: 'Excluded 1' }));
+    await waitFor(() => expect(itemsQueries(rendered).at(-1)!.request.variables).toMatchObject({ ids: ['label--20'] }));
+  });
+
+  it('sends the selection of the type as every item but the excluded ones, never a list of thousands of keys', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20')]);
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Label 20' }));
+    await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation')).toHaveLength(1), { timeout: 2000 });
+    const save = rendered.relayEnv.mock.getAllOperations().find((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation')!;
+    expect(save.request.variables).toMatchObject({ selections: [{ type: 'labels', items: null, excluded_items: ['label--20'] }] });
   });
 });

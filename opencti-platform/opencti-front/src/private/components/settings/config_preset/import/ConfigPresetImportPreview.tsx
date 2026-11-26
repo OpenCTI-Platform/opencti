@@ -35,6 +35,8 @@ import {
 } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
+import ConfigPresetImportItems from './ConfigPresetImportItems';
+import ConfigPresetStickyFooter from './ConfigPresetStickyFooter';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine, { CODE_UNCHANGED, translateReasons } from './ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from './ConfigPresetCredentialsDialog';
@@ -91,6 +93,11 @@ const configPresetImportPreviewQuery = graphql`
             key
           }
         }
+        itemsPageInfo {
+          hasNextPage
+          globalCount
+        }
+        conflictsCount
       }
     }
   }
@@ -106,9 +113,7 @@ const configPresetImportPreviewSaveMutation = graphql`
 
 type Preview = ConfigPresetImportPreviewQuery$data['configPresetImportPreview'];
 type PreviewType = Preview['types'][number];
-
-// The list takes its counts from the items it was given: a bundle is read at once, there is no next page
-const toCountedTypes = (types: ReadonlyArray<PreviewType>) => types.map((type) => ({ ...type, itemsPageInfo: { globalCount: type.items.length } }));
+type PreviewItem = PreviewType['items'][number];
 
 type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
 
@@ -185,6 +190,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
   // What the import does with the items that exist, by item; saved with the selection
   const [importModes, setImportModes] = useState<ConfigImportModes>({});
+  // The type whose items are managed in the sub-view, when it is listed page by page
+  const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   const [credentials, setCredentials] = useState<Record<string, Record<string, string>>>({});
   const [credentialsItem, setCredentialsItem] = useState<{ typeKey: string; item: PreviewType['items'][number] } | null>(null);
@@ -290,7 +297,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     isMountedRef.current = false;
   }, []);
 
-  const types = preview ? toCountedTypes(preview.types) : [];
+  // A type with thousands of items lists its first page: its count comes from the API, the next pages from the sub-view
+  const types = preview ? preview.types : [];
   const givenCredentials = (typeKey: string, itemKey: string) => credentials[`${typeKey}/${itemKey}`] ?? {};
   // A secret stored on the platform is kept on overwrite, never on a copy
   const requiredCredentials = (typeKey: string, item: PreviewType['items'][number]) => {
@@ -447,7 +455,120 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   if (!preview) {
     return <Spinner label={t_i18n('Loading')} />;
   }
-  const itemsCount = preview.types.reduce((count, type) => count + type.items.length, 0);
+  const itemsCount = preview.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0);
+  // The row of an item, in the list of its type and in the sub-view of a type that is listed page by page
+  const renderRow = (type: PreviewType, item: PreviewItem) => {
+    // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
+    const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
+    const result = results?.[`${type.key}/${item.key}`];
+    // The types the import hides: the row alone only says that the item is there
+    // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
+    const keptDefaultNote = keptDefaultNotes[type.key];
+    const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+    const shownResult = result && isResultShown(result, hasChoice) ? result : null;
+    // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
+    const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
+    // Under the label: the expected status, then what the item is and why the import does what it does
+    const detail = [
+      typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined),
+      shownResult?.reason ? translateReasons(t_i18n, shownResult.reason) : undefined,
+    ].filter(Boolean).join(' · ');
+    const description = (hasStatus || detail) ? (
+      <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: theme.spacing(1) }}>
+        {shownResult && hasStatus && <ConfigPresetResultLine status={shownResult.status} code={shownResult.code} withoutReason />}
+        {detail}
+      </span>
+    ) : undefined;
+    const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
+    const itemLabel = item.translatable ? t_i18n(item.label) : item.label;
+    if (isCredentialsLocked(type.key, item)) {
+      return (
+        <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
+          <ConfigPresetCredentialsItemRow
+            label={itemLabel}
+            actions={item.conflict && type.modes.length > 1 && (
+              <ConfigPresetImportModeSelect
+                subject={itemLabel}
+                purpose="When it already exists"
+                modes={type.modes}
+                value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                disabled={isStarting}
+                onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
+              />
+            )}
+            onOpen={() => setCredentialsItem({ typeKey: type.key, item })}
+          />
+        </div>
+      );
+    }
+    const hasCredentials = item.credentials.length > 0 && isImportedItem(type.key, item.key);
+    const serviceAccount = serviceAccounts[`${type.key}/${item.key}`];
+    const needsServiceAccount = isImportedItem(type.key, item.key) && (!!serviceAccount || result?.code === 'no_ingestion_group');
+    return (
+      <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
+        <ConfigPresetItemRow
+          typeKey={type.key}
+          item={item}
+          description={description}
+          selection={importableSelection}
+          forced={forced}
+          disabled={isStarting}
+          onSelectionChange={handleSelectionChange}
+          statusSlot={(hasChoice || hasCredentials || needsServiceAccount) ? (
+            // The choices are on the right of the row, and end where the one of the type does: the chevron is after them
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginRight: theme.spacing(4) }}>
+              {needsServiceAccount && (
+                <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setServiceAccountItem({ typeKey: type.key, item })}>
+                  {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
+                </Button>
+              )}
+              {hasCredentials && (
+                <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setCredentialsItem({ typeKey: type.key, item })}>
+                  {t_i18n('Configuration')}
+                </Button>
+              )}
+              {hasChoice && (
+                <ConfigPresetImportModeSelect
+                  subject={item.translatable ? t_i18n(item.label) : item.label}
+                  purpose="When it already exists"
+                  modes={type.modes}
+                  value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                  disabled={isStarting}
+                  onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
+                />
+              )}
+            </div>
+          ) : undefined}
+        />
+        {keepsDefault && (
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+            {keptDefaultNote}
+          </Text>
+        )}
+        {hiddenTypes && (
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+            {translateConfigPresetEntityTypes(t_i18n, hiddenTypes)}
+          </Text>
+        )}
+      </div>
+    );
+  };
+  const managedType = types.find((type) => type.key === managedTypeKey);
+  if (managedType) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
+        <ConfigPresetImportItems<PreviewItem>
+          fileId={session.file_id}
+          type={managedType}
+          selection={importableSelection}
+          forced={forced}
+          onSelectionChange={handleSelectionChange}
+          renderItem={(item) => renderRow(managedType, item)}
+          onBack={() => setManagedTypeKey(null)}
+        />
+      </div>
+    );
+  }
   return (
     // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
@@ -469,6 +590,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         disabled={isStarting}
         lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
+        onManageType={setManagedTypeKey}
         renderTypeActions={(type) => {
           // As soon as an imported item conflicts, whatever their number, so that every type reads the same; an item that is not imported has none
           const conflictKeys = type.items.filter((item) => item.conflict && isImportedItem(type.key, item.key)).map((item) => item.key);
@@ -486,119 +608,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             />
           );
         }}
-        renderItem={(type, item) => {
-          // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
-          const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
-          const result = results?.[`${type.key}/${item.key}`];
-          // The types the import hides: the row alone only says that the item is there
-          // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
-          const keptDefaultNote = keptDefaultNotes[type.key];
-          const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
-          const shownResult = result && isResultShown(result, hasChoice) ? result : null;
-          // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
-          const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
-          // Under the label: the expected status, then what the item is and why the import does what it does
-          const detail = [
-            typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined),
-            shownResult?.reason ? translateReasons(t_i18n, shownResult.reason) : undefined,
-          ].filter(Boolean).join(' · ');
-          const description = (hasStatus || detail) ? (
-            <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: theme.spacing(1) }}>
-              {shownResult && hasStatus && <ConfigPresetResultLine status={shownResult.status} code={shownResult.code} withoutReason />}
-              {detail}
-            </span>
-          ) : undefined;
-          const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
-          const itemLabel = item.translatable ? t_i18n(item.label) : item.label;
-          if (isCredentialsLocked(type.key, item)) {
-            return (
-              <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-                <ConfigPresetCredentialsItemRow
-                  label={itemLabel}
-                  actions={item.conflict && type.modes.length > 1 && (
-                    <ConfigPresetImportModeSelect
-                      subject={itemLabel}
-                      purpose="When it already exists"
-                      modes={type.modes}
-                      value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
-                      disabled={isStarting}
-                      onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
-                    />
-                  )}
-                  onOpen={() => setCredentialsItem({ typeKey: type.key, item })}
-                />
-              </div>
-            );
-          }
-          const hasCredentials = item.credentials.length > 0 && isImportedItem(type.key, item.key);
-          const serviceAccount = serviceAccounts[`${type.key}/${item.key}`];
-          const needsServiceAccount = isImportedItem(type.key, item.key) && (!!serviceAccount || result?.code === 'no_ingestion_group');
-          return (
-            <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-              <ConfigPresetItemRow
-                typeKey={type.key}
-                item={item}
-                description={description}
-                selection={importableSelection}
-                forced={forced}
-                disabled={isStarting}
-                onSelectionChange={handleSelectionChange}
-                statusSlot={(hasChoice || hasCredentials || needsServiceAccount) ? (
-                  // The choices are on the right of the row, and end where the one of the type does: the chevron is after them
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginRight: theme.spacing(4) }}>
-                    {needsServiceAccount && (
-                      <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setServiceAccountItem({ typeKey: type.key, item })}>
-                        {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
-                      </Button>
-                    )}
-                    {hasCredentials && (
-                      <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setCredentialsItem({ typeKey: type.key, item })}>
-                        {t_i18n('Configuration')}
-                      </Button>
-                    )}
-                    {hasChoice && (
-                      <ConfigPresetImportModeSelect
-                        subject={item.translatable ? t_i18n(item.label) : item.label}
-                        purpose="When it already exists"
-                        modes={type.modes}
-                        value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
-                        disabled={isStarting}
-                        onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
-                      />
-                    )}
-                  </div>
-                ) : undefined}
-              />
-              {keepsDefault && (
-                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {keptDefaultNote}
-                </Text>
-              )}
-              {hiddenTypes && (
-                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {translateConfigPresetEntityTypes(t_i18n, hiddenTypes)}
-                </Text>
-              )}
-            </div>
-          );
-        }}
+        renderItem={renderRow}
       />
-      <div
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 1,
-          marginTop: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: theme.spacing(2),
-          paddingTop: theme.spacing(2),
-          // The surface of the dialog, so that the footer hides what scrolls under it without drawing a box of its own
-          background: 'var(--bg-elevation-default)',
-          // The scroll area of the Dialog has a 4px vertical padding below the sticky footer, where the list would show through
-          boxShadow: `0 ${theme.spacing(0.5)} 0 0 var(--bg-elevation-default)`,
-        }}
-      >
+      <ConfigPresetStickyFooter>
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
           isOtherImportRunning={isOtherImportRunning}
@@ -611,7 +623,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           onStartOver={() => setConfirmStartOver(true)}
           onApply={handleApply}
         />
-      </div>
+      </ConfigPresetStickyFooter>
       {serviceAccountItem && (
         <ConfigPresetServiceAccountDialog
           open

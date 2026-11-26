@@ -1,4 +1,5 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
+import type { ConfigPresetImportItem } from '../../../generated/graphql';
 import { ConfigImportMode, type ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
 import type { ConnectorImportLoaded } from '../../connector/connector-import';
@@ -183,3 +184,6 @@ export interface ConfigPresetBundle {
   // Entries of the zip that are not an importable item
   ignored: string[];
 }
+
+// What the preview computed of the items of the types it lists page by page, by type key: the pages are read from it
+export type ConfigPresetImportIndex = Map<string, ConfigPresetImportItem[]>;

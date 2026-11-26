@@ -4,6 +4,11 @@
 // time after its last use. Another node has its own copy: a miss is a read, never an error. A read that failed is not kept.
 // The attachments of the items (exclusion lists, fintel designs) are not part of it: they are read from the zip when an importer asks, which
 // downloads the zip again. A bundle with attachments is slower than one without, not slower than without this cache.
+// The entry also holds the index of the items of the types the preview lists page by page (see getConfigPresetImportIndex). It lives and dies
+// with the entry; it is made of live objects (about 250 bytes an item), which is why only the types that are paged are in it, and it is
+// not counted in the size limit: a bundle of 50 000 labels holds about 13 MB of it.
+import type { ConfigPresetImportIndex } from './configPreset-import-types';
+
 export const CONFIG_PRESET_IMPORT_CACHE_TTL_MS = 15 * 60 * 1000;
 // A user works on one zip at a time (a new upload drops the previous one): this is for the few administrators who import at once
 export const CONFIG_PRESET_IMPORT_CACHE_MAX_ENTRIES = 2;
@@ -14,6 +19,8 @@ interface ConfigPresetImportCacheEntry {
   snapshot: Promise<Buffer>;
   // Known once the snapshot is read
   size: number;
+  // What the preview computed of the items of the paged types, shared by the callers that ask while it is computed
+  index?: Promise<ConfigPresetImportIndex>;
   timer?: NodeJS.Timeout;
 }
 
@@ -79,6 +86,32 @@ export const getConfigPresetImportSnapshot = (userId: string, fileId: string, lo
     }
   });
   return entry.snapshot;
+};
+
+// The index of the paged types of the file, when one is kept. The entry only exists for a user who was allowed to read the file.
+export const getConfigPresetImportIndex = (userId: string, fileId: string): Promise<ConfigPresetImportIndex> | undefined => {
+  const key = cacheKey(userId, fileId);
+  const entry = entries.get(key);
+  if (!entry) {
+    return undefined;
+  }
+  // Used again: it lives on
+  armExpiry(key, entry);
+  return entry.index;
+};
+
+// Keeps the index of the file with its entry, replacing the one kept. Nothing is kept when there is no entry (a snapshot too big to be kept),
+// and a computation that failed is not kept.
+export const setConfigPresetImportIndex = (userId: string, fileId: string, index: Promise<ConfigPresetImportIndex>) => {
+  const entry = entries.get(cacheKey(userId, fileId));
+  if (entry) {
+    entry.index = index;
+    index.catch(() => {
+      if (entry.index === index) {
+        entry.index = undefined;
+      }
+    });
+  }
 };
 
 // The file is deleted or replaced (start over, a new upload, the import): what was read of it is of no use any more

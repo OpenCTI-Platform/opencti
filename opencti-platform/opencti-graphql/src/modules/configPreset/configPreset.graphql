@@ -86,6 +86,16 @@ type ConfigPresetImportItem {
     dependsOn: [ConfigPresetItemReference!]!
 }
 
+type ConfigPresetImportItemEdge {
+    cursor: String!
+    node: ConfigPresetImportItem!
+}
+
+type ConfigPresetImportItemConnection {
+    pageInfo: PageInfo!
+    edges: [ConfigPresetImportItemEdge!]!
+}
+
 type ConfigPresetImportType {
     key: String!
     label: String!
@@ -94,7 +104,13 @@ type ConfigPresetImportType {
     # The category is part of the Enterprise Edition and the platform has not got it: the category has no item, and the dialog offers to
     # activate the license. False once the platform has the license, and for a category that is not part of the Enterprise Edition.
     lockedByEnterpriseEdition: Boolean!
+    # All the items of the type, or its first page when the type has thousands of items and nothing in it asks the user for anything
+    # (a credential, a service account, a mode): the next pages come from configPresetImportItems.
     items: [ConfigPresetImportItem!]!
+    # Page info of items: globalCount is the number of items of the type in the bundle, hasNextPage tells that the type is listed page by page.
+    itemsPageInfo: PageInfo!
+    # How many items of the type conflict with the platform, whatever page they are on.
+    conflictsCount: Int!
     # The modes the type supports for an item in conflict; the dialog shows a choice on such an item when there is more than one.
     modes: [ConfigImportMode!]!
 }
@@ -257,6 +273,18 @@ extend type Query {
         ids: [ID!]
         excludedIds: [ID!]
     ): ConfigPresetExportableItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+    # Items of one type of the uploaded zip, by page (a type that the preview lists page by page); ids, the keys of the items, keeps only those
+    # items, excludedIds removes those, conflictsOnly keeps those that conflict with the platform. Reads only, never changes the import session.
+    configPresetImportItems(
+        file_id: ID!
+        type: ID!
+        first: Int
+        after: ID
+        search: String
+        ids: [ID!]
+        excludedIds: [ID!]
+        conflictsOnly: Boolean
+    ): ConfigPresetImportItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # What the uploaded zip of the caller holds; reads only, never changes the import session.
     configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # The import session of the caller, null when there is none.
