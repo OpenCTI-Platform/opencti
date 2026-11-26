@@ -24,7 +24,12 @@ import { publishUserAction } from '../../../src/listener/UserActionListener';
 import { sessionAuthenticateUser } from '../../../src/modules/user/user-domain';
 import { AuthenticationProviderError } from '../../../src/modules/authenticationProvider/providers-logger';
 import { AuthType, EnvStrategyType, PROVIDERS, type ProviderConfiguration } from '../../../src/modules/authenticationProvider/providers-configuration';
+import { getXtmHubJwks } from '../../../src/modules/xtm/hub/xtm-hub-key';
 
+vi.mock('../../../src/modules/xtm/hub/xtm-hub-key', async (importOriginal) => {
+  const actual: object = await importOriginal();
+  return { ...actual, getXtmHubJwks: vi.fn() };
+});
 vi.mock('../../../src/http/ipWhitelistMiddleware', async (importOriginal) => {
   const actual: object = await importOriginal();
   return { ...actual, checkIpWhitelistForRequest: vi.fn() };
@@ -889,5 +894,59 @@ describe('httpPlatform: /auth/:provider', () => {
 
     expect(passport.authenticate).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
+describe('httpPlatform: /xtm/hub/jwks', () => {
+  const setupJwksHandler = async () => {
+    const routes = new Map<string, any[]>();
+    const app: any = {
+      set: vi.fn(),
+      use: vi.fn(),
+      get: vi.fn((path: unknown, ...handlers: any[]) => {
+        if (typeof path === 'string') {
+          routes.set(path, handlers);
+        }
+      }),
+      post: vi.fn(),
+      delete: vi.fn(),
+      put: vi.fn(),
+      patch: vi.fn(),
+      all: vi.fn(),
+    };
+    await createApp(app, {} as any);
+    return Array.from(routes.entries()).find(([path]) => path.endsWith('/xtm/hub/jwks'))?.[1] ?? [];
+  };
+
+  const buildResponse = () => ({ set: vi.fn(), json: vi.fn(), status: vi.fn().mockReturnThis() }) as any;
+  const publicJwk = { kty: 'OKP', crv: 'Ed25519', alg: 'EdDSA', use: 'sig', kid: '0123456789abcdef', x: 'x'.repeat(43) };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should serve the XTM Hub public key without authentication', async () => {
+    vi.mocked(getXtmHubJwks).mockResolvedValue({ keys: [publicJwk] });
+    const handlers = await setupJwksHandler();
+    const res = buildResponse();
+
+    // A single handler: no authentication middleware stands in front of it.
+    expect(handlers).toHaveLength(1);
+    await handlers[0]({ headers: {} }, res);
+
+    expect(createAuthenticatedContext).not.toHaveBeenCalled();
+    expect(res.set).toHaveBeenCalledWith('Cache-Control', 'public, max-age=300');
+    expect(res.json).toHaveBeenCalledWith({ keys: [publicJwk] });
+  });
+
+  it('should answer 500 without details when the key cannot be derived', async () => {
+    vi.mocked(getXtmHubJwks).mockRejectedValue(new Error('no settings'));
+    const handlers = await setupJwksHandler();
+    const res = buildResponse();
+
+    await handlers[0]({ headers: {} }, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: 'Internal server error' });
   });
 });
