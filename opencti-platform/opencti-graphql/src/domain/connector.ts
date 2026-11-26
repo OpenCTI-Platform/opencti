@@ -8,7 +8,7 @@ import { FunctionalError, ValidationError } from '../config/errors';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_NAMESPACE } from '../schema/general';
-import { SYSTEM_USER } from '../utils/access';
+import { isPublicDashboardUser, SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisDeleteIngestionLogHistory, redisGetWork, setEditContext } from '../database/redis';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
@@ -48,6 +48,9 @@ const MINIMAL_SYNCHRONIZER_COMPATIBLE_VERSION = '6.9.6';
 
 // region works
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
+  if (isPublicDashboardUser(user)) {
+    return null;
+  }
   const work = await elLoadById<Work>(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
   if (work) return connector(context, user, work.connector_id);
   return null;

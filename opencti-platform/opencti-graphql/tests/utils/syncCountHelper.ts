@@ -29,7 +29,7 @@ testCreatedCounter['data-source'] = 2;
 testCreatedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testCreatedCounter['email-addr'] = 1;
 testCreatedCounter.event = 2;
-testCreatedCounter['external-reference'] = 17;
+testCreatedCounter['external-reference'] = 18; // includes 1 created and deleted by publicDashboard-test (reference on an import file)
 testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 11;
 testCreatedCounter.grouping = 2;
@@ -108,7 +108,7 @@ testUpdatedCounter.malware = 24; // 1 org sharing by the request access workflow
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
-testUpdatedCounter.location = 16; // includes 2 by publicDashboard-test (an import file pushed then deleted)
+testUpdatedCounter.location = 17; // includes 3 by publicDashboard-test (an import file pushed then deleted, an external reference added)
 // 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
 testUpdatedCounter['attack-pattern'] = 6;
 // 5 by workflow-closing-reason-test merge (1) and external status write (4) cases
@@ -182,7 +182,7 @@ testDeletedCounter['data-source'] = 2;
 testDeletedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testDeletedCounter['email-addr'] = 1;
 testDeletedCounter.event = 2;
-testDeletedCounter['external-reference'] = 1;
+testDeletedCounter['external-reference'] = 2; // includes 1 created and deleted by publicDashboard-test (reference on an import file)
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 7;
 testDeletedCounter.grouping = 2;
