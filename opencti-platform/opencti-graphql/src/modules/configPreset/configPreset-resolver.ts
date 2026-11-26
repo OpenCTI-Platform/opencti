@@ -6,6 +6,7 @@ import {
   backToConfigPresetImportSelection,
   clearConfigPresetImportSession,
   findConfigPresetImportSession,
+  readConfigPresetImportResults,
   saveConfigPresetImportSession,
 } from './import/configPreset-import-session-domain';
 import { findConfigPresetImportRunning } from './import/configPreset-import-running';
@@ -20,6 +21,16 @@ const configPresetResolvers: Resolvers = {
     type_label: ({ type }) => getConfigPresetFamilyDisplay(type).type_label,
     type_index: ({ type }) => getConfigPresetFamilyDisplay(type).type_index,
     group: ({ type }) => getConfigPresetFamilyDisplay(type).group,
+  },
+  // The counts of a type: its label, its place and its group come from the registry
+  ConfigPresetImportTypeCounts: {
+    type_label: ({ type }) => getConfigPresetFamilyDisplay(type).type_label,
+    type_index: ({ type }) => getConfigPresetFamilyDisplay(type).type_index,
+    group: ({ type }) => getConfigPresetFamilyDisplay(type).group,
+  },
+  // The results of every item are read when the query asks for them, not with every read of the session
+  ConfigPresetImportSession: {
+    results: (session, _, context) => readConfigPresetImportResults(context.user!, session),
   },
   Query: {
     configPresetExportableTypes: (_, __, context) => findConfigPresetExportableTypes(context, context.user!),

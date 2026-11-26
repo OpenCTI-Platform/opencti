@@ -1394,16 +1394,32 @@ export const redisDeleteConfigPresetImportSession = async (userId: string) => {
 
 // The results of the items of an import run, one list per user and run (its start date). The session keeps only its small fields:
 // a result is appended with one command, so the cost of a write does not grow with the number of results already stored.
-const configPresetImportResultsKey = (userId: string, startedAt: string) => `config_preset_import_results_${userId}_${startedAt}`;
+// The keys of a run share the hash tag between braces, so they are in the same slot of a Redis cluster: one transaction writes them all
+const configPresetImportRunKey = (userId: string, startedAt: string, name: string) => `config_preset_import_{${userId}_${startedAt}}_${name}`;
+const configPresetImportResultsKey = (userId: string, startedAt: string) => configPresetImportRunKey(userId, startedAt, 'results');
+// The results that need a look (failed, skipped for a reason), and the counts by type and outcome: what a screen shows of a run of any size
+const configPresetImportProblemsKey = (userId: string, startedAt: string) => configPresetImportRunKey(userId, startedAt, 'problems');
+const configPresetImportCountsKey = (userId: string, startedAt: string) => configPresetImportRunKey(userId, startedAt, 'counts');
 
-export const redisAppendConfigPresetImportResult = async (userId: string, startedAt: string, result: object) => {
-  const key = configPresetImportResultsKey(userId, startedAt);
-  await getClientBase().multi().rpush(key, JSON.stringify(result)).expire(key, CONFIG_PRESET_IMPORT_SESSION_TTL).exec();
+// counter: the field of the counts hash the result is counted in; isProblem: the result is also kept in the list of the problems
+export const redisAppendConfigPresetImportResult = async (
+  userId: string,
+  startedAt: string,
+  result: object,
+  { counter, isProblem }: { counter: string; isProblem: boolean },
+) => {
+  const results = configPresetImportResultsKey(userId, startedAt);
+  const problems = configPresetImportProblemsKey(userId, startedAt);
+  const counts = configPresetImportCountsKey(userId, startedAt);
+  const json = JSON.stringify(result);
+  const tx = getClientBase().multi().rpush(results, json).hincrby(counts, counter, 1);
+  if (isProblem) {
+    tx.rpush(problems, json);
+  }
+  await tx.expire(results, CONFIG_PRESET_IMPORT_SESSION_TTL).expire(counts, CONFIG_PRESET_IMPORT_SESSION_TTL).expire(problems, CONFIG_PRESET_IMPORT_SESSION_TTL).exec();
 };
 
-// The results of a run in the order they were appended; an entry that cannot be parsed is skipped
-export const redisReadConfigPresetImportResults = async (userId: string, startedAt: string): Promise<object[]> => {
-  const raws = await getClientBase().lrange(configPresetImportResultsKey(userId, startedAt), 0, -1);
+const parseConfigPresetImportResults = (userId: string, raws: string[]): object[] => {
   const results: object[] = [];
   raws.forEach((raw) => {
     try {
@@ -1415,8 +1431,30 @@ export const redisReadConfigPresetImportResults = async (userId: string, started
   return results;
 };
 
+// What a screen shows of a run, in one round trip whatever its number of results: how many, the counts, the first problems, the last results
+export const redisReadConfigPresetImportProgress = async (userId: string, startedAt: string, problemsLimit: number, recentLimit: number) => {
+  const answers = await getClientBase().multi()
+    .llen(configPresetImportResultsKey(userId, startedAt))
+    .hgetall(configPresetImportCountsKey(userId, startedAt))
+    .lrange(configPresetImportProblemsKey(userId, startedAt), 0, problemsLimit - 1)
+    .lrange(configPresetImportResultsKey(userId, startedAt), -recentLimit, -1)
+    .exec();
+  const [processed, counters, problems, recent] = (answers ?? []).map(([, answer]) => answer) as [number, Record<string, string>, string[], string[]];
+  return {
+    processed: processed ?? 0,
+    counters: counters ?? {},
+    problems: parseConfigPresetImportResults(userId, problems ?? []),
+    recent: parseConfigPresetImportResults(userId, recent ?? []),
+  };
+};
+
+// The results of a run in the order they were appended; an entry that cannot be parsed is skipped
+export const redisReadConfigPresetImportResults = async (userId: string, startedAt: string): Promise<object[]> => {
+  return parseConfigPresetImportResults(userId, await getClientBase().lrange(configPresetImportResultsKey(userId, startedAt), 0, -1));
+};
+
 export const redisDeleteConfigPresetImportResults = async (userId: string, startedAt: string) => {
-  await getClientBase().del(configPresetImportResultsKey(userId, startedAt));
+  await getClientBase().del(configPresetImportResultsKey(userId, startedAt), configPresetImportProblemsKey(userId, startedAt), configPresetImportCountsKey(userId, startedAt));
 };
 
 // The running record of a real import: who, since when, how far. The other administrators read their banner from it.

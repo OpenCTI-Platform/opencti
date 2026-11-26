@@ -156,7 +156,7 @@ describe('Config preset import session', () => {
 
   describe('the results of a run', () => {
     const startedAt = '2026-01-01T00:00:00.000Z';
-    const resultsKey = (at = startedAt) => `config_preset_import_results_${ADMIN_USER.id}_${at}`;
+    const resultsKey = (at = startedAt) => `config_preset_import_{${ADMIN_USER.id}_${at}}_results`;
     const result = (key: string) => ({ type: 'labels', key, status: 'CREATED' as const, reason: null });
     const startRun = async () => {
       await upload();
@@ -180,6 +180,70 @@ describe('Config preset import session', () => {
       } finally {
         await lock.unlock();
       }
+    });
+
+    describe('as the screens read them', () => {
+      const PROGRESS_QUERY = gql(`query ConfigPresetSessionProgress {
+        configPresetImportSession {
+          status processed type_counts { type type_label created overwritten unchanged skipped failed } problems { key status } recent { key }
+        }
+      }`);
+      const readProgress = async () => (await queryAsAdminWithSuccess({ query: PROGRESS_QUERY })).data?.configPresetImportSession;
+      const append = (type: string, key: string, status: 'CREATED' | 'OVERWRITTEN' | 'SKIPPED' | 'FAILED', code: string | null = null) => {
+        return applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ITEM_PROCESSED', { result: { type, key, status, reason: status === 'FAILED' ? 'no' : null, code } });
+      };
+
+      it('give the counts by type, the first problems and the last items, whatever the number of results', async () => {
+        await startRun();
+        for (let i = 0; i < 120; i += 1) {
+          await append('labels', `ok-${i}`, 'CREATED');
+        }
+        for (let i = 0; i < 105; i += 1) {
+          await append('labels', `ko-${i}`, 'FAILED');
+        }
+        await append('labels', 'same', 'SKIPPED', 'unchanged');
+        await append('messages', 'banner', 'OVERWRITTEN');
+        const progress = await readProgress();
+        expect(progress.processed).toBe(227);
+        expect(progress.type_counts).toHaveLength(2);
+        expect(progress.type_counts.find(({ type }: { type: string }) => type === 'labels')).toMatchObject({
+          type_label: 'Labels', created: 120, overwritten: 0, unchanged: 1, skipped: 0, failed: 105,
+        });
+        expect(progress.type_counts.find(({ type }: { type: string }) => type === 'messages')).toMatchObject({ overwritten: 1, created: 0 });
+        // A hundred problems at most, in the order of processing, and none of what went well or is up to date
+        expect(progress.problems).toHaveLength(100);
+        expect(progress.problems[0]).toEqual({ key: 'ko-0', status: 'FAILED' });
+        expect(progress.problems[99]).toEqual({ key: 'ko-99', status: 'FAILED' });
+        expect(progress.recent.map(({ key }: { key: string }) => key)).toEqual(['ko-97', 'ko-98', 'ko-99', 'ko-100', 'ko-101', 'ko-102', 'ko-103', 'ko-104', 'same', 'banner']);
+        expect(await getClientBase().llen(`config_preset_import_{${ADMIN_USER.id}_${startedAt}}_results`)).toBe(227);
+      });
+
+      it('are summarized from the results of a session that kept them inside it', async () => {
+        await startRun();
+        const session = await storedSession();
+        const inline = [
+          { type: 'labels', key: 'a', status: 'CREATED', reason: null },
+          { type: 'labels', key: 'b', status: 'FAILED', reason: 'no' },
+        ];
+        await redisSetConfigPresetImportSession(ADMIN_USER.id, { ...session, status: 'FINISHED', outcome: 'COMPLETED', results: inline });
+        const progress = await readProgress();
+        expect(progress.processed).toBe(2);
+        expect(progress.type_counts).toMatchObject([{ type: 'labels', created: 1, failed: 1 }]);
+        expect(progress.problems).toEqual([{ key: 'b', status: 'FAILED' }]);
+      });
+
+      it('are empty for a draft', async () => {
+        await upload();
+        expect(await readProgress()).toMatchObject({ status: 'DRAFT', processed: 0, type_counts: [], problems: [], recent: [] });
+      });
+
+      it('are deleted with the results when the run goes away', async () => {
+        await startRun();
+        await append('labels', 'a', 'FAILED');
+        await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ABORT', undefined);
+        const tag = `{${ADMIN_USER.id}_${startedAt}}`;
+        expect(await getClientBase().exists(`config_preset_import_${tag}_results`, `config_preset_import_${tag}_problems`, `config_preset_import_${tag}_counts`)).toBe(0);
+      });
     });
 
     it('keep the list with a TTL of 30 days, and after the end of the run', async () => {

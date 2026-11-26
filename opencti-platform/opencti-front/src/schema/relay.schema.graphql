@@ -2384,6 +2384,9 @@ type ConfigPresetImportSession {
   counts: ConfigPresetImportCounts
   file_id: ID!
   outcome: ConfigPresetImportOutcome
+  problems: [ConfigPresetImportResult!]!
+  processed: Int!
+  recent: [ConfigPresetImportResult!]!
   report_id: String
   results: [ConfigPresetImportResult!]!
   revision: Int!
@@ -2391,6 +2394,7 @@ type ConfigPresetImportSession {
   started_at: DateTime
   status: ConfigPresetImportSessionStatus!
   total: Int!
+  type_counts: [ConfigPresetImportTypeCounts!]!
 }
 
 enum ConfigPresetImportSessionEvent {
@@ -2429,6 +2433,18 @@ type ConfigPresetImportType {
   label: String!
   lockedByEnterpriseEdition: Boolean!
   modes: [ConfigImportMode!]!
+}
+
+type ConfigPresetImportTypeCounts {
+  created: Int!
+  failed: Int!
+  group: ConfigPresetExportableGroup!
+  overwritten: Int!
+  skipped: Int!
+  type: String!
+  type_index: Int!
+  type_label: String!
+  unchanged: Int!
 }
 
 input ConfigPresetItemCredentialsInput {

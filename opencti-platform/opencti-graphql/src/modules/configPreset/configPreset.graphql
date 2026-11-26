@@ -192,6 +192,19 @@ type ConfigPresetImportCounts {
     failed: Int!
 }
 
+# The counts of the items of a type, by what the import did with them: unchanged are the items the platform had as the bundle says.
+type ConfigPresetImportTypeCounts {
+    type: String!
+    type_label: String!
+    type_index: Int!
+    group: ConfigPresetExportableGroup!
+    created: Int!
+    overwritten: Int!
+    unchanged: Int!
+    skipped: Int!
+    failed: Int!
+}
+
 type ConfigPresetImportSessionSelection {
     type: ID!
     items: [ID!]
@@ -213,6 +226,16 @@ type ConfigPresetImportSession {
     revision: Int!
     started_at: DateTime
     total: Int!
+    # The number of items processed so far.
+    processed: Int!
+    # The counts by type, of every item processed: what the progress and the result show, whatever the size of the bundle.
+    type_counts: [ConfigPresetImportTypeCounts!]!
+    # The first items that failed or were skipped for a reason, in the order of processing, a hundred at most: the counts cover every item.
+    problems: [ConfigPresetImportResult!]!
+    # The last items processed.
+    recent: [ConfigPresetImportResult!]!
+    # The result of every item: tens of thousands for a big bundle, and read only when it is asked for. A screen that shows the counts and
+    # the problems does not ask for it, the report holds the complete list.
     results: [ConfigPresetImportResult!]!
     outcome: ConfigPresetImportOutcome
     counts: ConfigPresetImportCounts

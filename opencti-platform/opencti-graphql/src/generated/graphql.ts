@@ -4775,6 +4775,9 @@ export type ConfigPresetImportSession = {
   counts?: Maybe<ConfigPresetImportCounts>;
   file_id: Scalars['ID']['output'];
   outcome?: Maybe<ConfigPresetImportOutcome>;
+  problems: Array<ConfigPresetImportResult>;
+  processed: Scalars['Int']['output'];
+  recent: Array<ConfigPresetImportResult>;
   report_id?: Maybe<Scalars['String']['output']>;
   results: Array<ConfigPresetImportResult>;
   revision: Scalars['Int']['output'];
@@ -4782,6 +4785,7 @@ export type ConfigPresetImportSession = {
   started_at?: Maybe<Scalars['DateTime']['output']>;
   status: ConfigPresetImportSessionStatus;
   total: Scalars['Int']['output'];
+  type_counts: Array<ConfigPresetImportTypeCounts>;
 };
 
 export enum ConfigPresetImportSessionEvent {
@@ -4822,6 +4826,19 @@ export type ConfigPresetImportType = {
   label: Scalars['String']['output'];
   lockedByEnterpriseEdition: Scalars['Boolean']['output'];
   modes: Array<ConfigImportMode>;
+};
+
+export type ConfigPresetImportTypeCounts = {
+  __typename?: 'ConfigPresetImportTypeCounts';
+  created: Scalars['Int']['output'];
+  failed: Scalars['Int']['output'];
+  group: ConfigPresetExportableGroup;
+  overwritten: Scalars['Int']['output'];
+  skipped: Scalars['Int']['output'];
+  type: Scalars['String']['output'];
+  type_index: Scalars['Int']['output'];
+  type_label: Scalars['String']['output'];
+  unchanged: Scalars['Int']['output'];
 };
 
 export type ConfigPresetItemCredentialsInput = {
@@ -42131,6 +42148,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetImportSessionSelection: ResolverTypeWrapper<ConfigPresetImportSessionSelection>;
   ConfigPresetImportSessionStatus: ConfigPresetImportSessionStatus;
   ConfigPresetImportType: ResolverTypeWrapper<ConfigPresetImportType>;
+  ConfigPresetImportTypeCounts: ResolverTypeWrapper<ConfigPresetImportTypeCounts>;
   ConfigPresetItemCredentialsInput: ConfigPresetItemCredentialsInput;
   ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
@@ -43386,6 +43404,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetImportSession: ConfigPresetImportGraphqlSession;
   ConfigPresetImportSessionSelection: ConfigPresetImportSessionSelection;
   ConfigPresetImportType: ConfigPresetImportType;
+  ConfigPresetImportTypeCounts: ConfigPresetImportTypeCounts;
   ConfigPresetItemCredentialsInput: ConfigPresetItemCredentialsInput;
   ConfigPresetItemMode: ConfigPresetItemMode;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
@@ -45937,6 +45956,9 @@ export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType ext
   counts?: Resolver<Maybe<ResolversTypes['ConfigPresetImportCounts']>, ParentType, ContextType>;
   file_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   outcome?: Resolver<Maybe<ResolversTypes['ConfigPresetImportOutcome']>, ParentType, ContextType>;
+  problems?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
+  processed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recent?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
   report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
   revision?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -45944,6 +45966,7 @@ export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType ext
   started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['ConfigPresetImportSessionStatus'], ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type_counts?: Resolver<Array<ResolversTypes['ConfigPresetImportTypeCounts']>, ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportSessionSelectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSessionSelection'] = ResolversParentTypes['ConfigPresetImportSessionSelection']> = ResolversObject<{
@@ -45963,6 +45986,18 @@ export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extend
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   lockedByEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modes?: Resolver<Array<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportTypeCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportTypeCounts'] = ResolversParentTypes['ConfigPresetImportTypeCounts']> = ResolversObject<{
+  created?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  failed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  overwritten?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type_index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  unchanged?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetItemModeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemMode'] = ResolversParentTypes['ConfigPresetItemMode']> = ResolversObject<{
@@ -57147,6 +57182,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetImportSession?: ConfigPresetImportSessionResolvers<ContextType>;
   ConfigPresetImportSessionSelection?: ConfigPresetImportSessionSelectionResolvers<ContextType>;
   ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
+  ConfigPresetImportTypeCounts?: ConfigPresetImportTypeCountsResolvers<ContextType>;
   ConfigPresetItemMode?: ConfigPresetItemModeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   ConfigPresetPartialImportOutput?: ConfigPresetPartialImportOutputResolvers<ContextType>;
