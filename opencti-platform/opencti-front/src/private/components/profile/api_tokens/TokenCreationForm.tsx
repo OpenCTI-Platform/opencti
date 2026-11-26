@@ -8,7 +8,7 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { graphql } from 'react-relay';
 import { PayloadError, RecordSourceSelectorProxy } from 'relay-runtime';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, getDataID, MESSAGING$ } from '../../../../relay/environment';
 import { TokenCreationFormMutation$data } from './__generated__/TokenCreationFormMutation.graphql';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 
@@ -84,7 +84,8 @@ const TokenCreationForm: FunctionComponent<TokenCreationFormProps> = ({
         const expiresAt = payload.getValue('expires_at');
         const maskedToken = payload.getValue('masked_token');
 
-        const userRecord = store.get(userId);
+        // userId is the id of the profile's MeUser, stored under its namespaced key
+        const userRecord = store.get(getDataID({ id: userId }, 'MeUser') ?? userId);
         if (!userRecord) return;
 
         const apiTokens = userRecord.getLinkedRecords('api_tokens') || [];

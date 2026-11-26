@@ -19,6 +19,8 @@ vi.mock('../../../../relay/environment', async () => {
   };
 });
 
+import { commitLocalUpdate, commitMutation as relayCommitMutation } from 'relay-runtime';
+import { createMockEnvironment } from 'relay-test-utils';
 import { commitMutation } from '../../../../relay/environment';
 
 describe('Component: TokenCreationForm', () => {
@@ -90,6 +92,34 @@ describe('Component: TokenCreationForm', () => {
 
     expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith('Token generated successfully');
     expect(onSuccess).toHaveBeenCalledWith('valid-token-123');
+  });
+
+  it('should append the new token to the profile MeUser, not to the User sharing its id', async () => {
+    const environment = createMockEnvironment();
+    commitLocalUpdate(environment, (store) => {
+      const tokens = [store.create('token-1', 'ApiToken')];
+      // The same user as a MeUser (namespaced key) and as a User (raw id), both with the token
+      store.create('MeUser:user-id', 'MeUser').setLinkedRecords(tokens, 'api_tokens');
+      store.create('user-id', 'User').setLinkedRecords(tokens, 'api_tokens');
+    });
+    // Run the real mutation, so its updater runs against the store
+    (commitMutation as Mock).mockImplementation(({ mutation, variables, updater }) => relayCommitMutation(environment, { mutation, variables, updater }));
+    const { user } = testRender(<TokenCreationForm userId="user-id" onSuccess={onSuccess} onClose={onClose} />);
+
+    await user.type(screen.getByLabelText('Name'), 'My Token');
+    await user.click(screen.getByRole('button', { name: 'Generate' }));
+    await waitFor(() => expect(commitMutation).toHaveBeenCalled());
+    environment.mock.resolveMostRecentOperation({
+      data: { userTokenAdd: { plaintext_token: 'valid-token-123', token_id: 'id-123', expires_at: null, masked_token: '***-123' } },
+    });
+
+    const tokenIds: Record<string, string[] | undefined> = {};
+    commitLocalUpdate(environment, (store) => {
+      ['MeUser:user-id', 'user-id'].forEach((dataID) => {
+        tokenIds[dataID] = store.get(dataID)?.getLinkedRecords('api_tokens')?.map((token) => token.getDataID());
+      });
+    });
+    expect(tokenIds).toEqual({ 'MeUser:user-id': ['token-1', 'id-123'], 'user-id': ['token-1'] });
   });
 
   it('should handle mutation error', async () => {
