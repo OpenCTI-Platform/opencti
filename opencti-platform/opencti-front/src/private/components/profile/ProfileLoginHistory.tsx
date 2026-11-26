@@ -5,6 +5,7 @@ import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import { ProfileLoginHistory_me$key } from './__generated__/ProfileLoginHistory_me.graphql';
+import { ProfileLoginHistory_settings$key } from './__generated__/ProfileLoginHistory_settings.graphql';
 
 const profileLoginHistoryFragment = graphql`
   fragment ProfileLoginHistory_me on MeUser {
@@ -16,21 +17,39 @@ const profileLoginHistoryFragment = graphql`
   }
 `;
 
+const profileLoginHistorySettingsFragment = graphql`
+  fragment ProfileLoginHistory_settings on Settings {
+    # The number of logins to show, set by the platform administrators. 0 hides the card
+    platform_login_history_count
+    platform_providers {
+      name
+      provider
+    }
+  }
+`;
+
 interface ProfileLoginHistoryProps {
   me: ProfileLoginHistory_me$key;
-  // The number of logins to show, set by the platform administrators. 0 hides the card
-  loginHistoryCount: number;
+  settings: ProfileLoginHistory_settings$key;
 }
 
 // The last successful logins of the connected user, read from the activity log (Enterprise Edition)
-const ProfileLoginHistory: React.FC<ProfileLoginHistoryProps> = ({ me, loginHistoryCount }) => {
+const ProfileLoginHistory: React.FC<ProfileLoginHistoryProps> = ({ me, settings }) => {
   const { t_i18n, fldt } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { login_history } = useFragment(profileLoginHistoryFragment, me);
-  if (!isEnterpriseEdition || loginHistoryCount <= 0) {
+  const { platform_login_history_count, platform_providers } = useFragment(profileLoginHistorySettingsFragment, settings);
+  if (!isEnterpriseEdition || (platform_login_history_count ?? 0) <= 0) {
     return null;
   }
   const logins = login_history ?? [];
+  // A login records the identifier of its provider: show the name users see on the login page instead.
+  // A provider removed since then is no longer listed, so its identifier is shown as is.
+  const providerNames = new Map(platform_providers.map(({ provider, name }) => [provider, name]));
+  const providerName = (provider: string | null | undefined) => {
+    if (!provider) return '-';
+    return providerNames.get(provider) ?? provider;
+  };
   return (
     <Card title={t_i18n('Last logins')}>
       <Box component="p" sx={{ color: 'text.secondary', marginTop: 0, marginBottom: 2 }}>
@@ -57,7 +76,7 @@ const ProfileLoginHistory: React.FC<ProfileLoginHistoryProps> = ({ me, loginHist
               {logins.map((login) => (
                 <TableRow key={login.id}>
                   <TableCell>{fldt(login.timestamp)}</TableCell>
-                  <TableCell>{login.provider ?? '-'}</TableCell>
+                  <TableCell>{providerName(login.provider)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

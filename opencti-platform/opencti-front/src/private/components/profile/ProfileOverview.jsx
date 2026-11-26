@@ -596,7 +596,7 @@ const ProfileOverviewComponent = (props) => {
           </Formik>
         )}
       </Card>
-      <ProfileLoginHistory me={me} loginHistoryCount={settings.platform_login_history_count ?? 0} />
+      <ProfileLoginHistory me={me} settings={settings} />
       <Card title={t('API access')}>
         <div>
           <Label>{t('OpenCTI version')}</Label>
@@ -692,7 +692,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
     fragment ProfileOverview_settings on Settings {
       otp_mandatory
       platform_notifier_auto_trigger_assignee
-      platform_login_history_count
+      ...ProfileLoginHistory_settings
     }
   `,
 });
