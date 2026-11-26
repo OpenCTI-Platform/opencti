@@ -6,7 +6,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Field, Form, Formik } from 'formik';
 import * as React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import TextField from './TextField';
 import testRender from '../utils/tests/test-render';
@@ -67,6 +67,52 @@ describe('TextField pivot — number path', () => {
     renderField({ type: 'number', step: 1 }, 3);
     await user.click(screen.getByRole('button', { name: 'Increase value' }));
     expect(numberInput()).toHaveValue(4);
+  });
+
+  describe('submit on blur', () => {
+    // The stepper changes the value, then focuses the input: the value seen on focus is already the stepped one
+    it('submits a value changed with the stepper', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn();
+      renderField({ type: 'number', onSubmit }, 3);
+      await user.click(screen.getByRole('button', { name: 'Increase value' }));
+      await user.click(screen.getByRole('button', { name: 'Increase value' }));
+      await user.click(document.body);
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveBeenCalledWith('order', '5');
+    });
+
+    it('submits a value changed with the stepper while the input is focused', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn();
+      renderField({ type: 'number', onSubmit }, 3);
+      await user.click(numberInput());
+      await user.click(screen.getByRole('button', { name: 'Decrease value' }));
+      await user.click(document.body);
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveBeenCalledWith('order', '2');
+    });
+
+    it('submits a typed value', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn();
+      renderField({ type: 'number', onSubmit }, 3);
+      await user.clear(numberInput());
+      await user.type(numberInput(), '7');
+      await user.click(document.body);
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      expect(onSubmit).toHaveBeenCalledWith('order', '7');
+    });
+
+    it('does not submit a value stepped back to where it was', async () => {
+      const user = userEvent.setup();
+      const onSubmit = vi.fn();
+      renderField({ type: 'number', onSubmit }, 3);
+      await user.click(screen.getByRole('button', { name: 'Increase value' }));
+      await user.click(screen.getByRole('button', { name: 'Decrease value' }));
+      await user.click(document.body);
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
   });
 
   it('still falls back to MUI for a prop the Input cannot place', () => {
