@@ -111,8 +111,14 @@ jobs:
           RENOVATE_IGNORE_PR_AUTHOR: 'true'
           RENOVATE_REPOSITORY_CACHE: ${{ inputs.repoCache || 'enabled' }}
 
+      # Only scheduled and manual runs save the cache.
+      # GitHub gives runs started by issues a read-only cache.
+      # A run started by pull_request saves under the pull request ref, which the runs on master cannot restore.
       - name: Save Renovate repository cache
-        if: inputs.repoCache != 'disabled' && steps.cache-restore.outputs.cache-hit != 'true'
+        if: >-
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') &&
+          inputs.repoCache != 'disabled' &&
+          steps.cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.cache_dir }}
