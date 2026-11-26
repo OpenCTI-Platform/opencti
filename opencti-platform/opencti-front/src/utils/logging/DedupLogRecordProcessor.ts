@@ -29,6 +29,7 @@ interface DedupWindow {
 // No exception stacktrace, so the same error thrown from different places still groups.
 // `data` is part of the key: records about different subjects must not be merged.
 // Serialized as a JSON array so that field boundaries stay unambiguous.
+// The module and origin are part of the key (RFC 0006): the same error in two modules alerts in both.
 const recordKey = (record: ReadWriteLogRecord) => {
   const attributes = record.attributes ?? {};
   return JSON.stringify([
@@ -38,6 +39,8 @@ const recordKey = (record: ReadWriteLogRecord) => {
     attributes['exception.type'] ?? '',
     attributes['exception.message'] ?? '',
     attributes.data ?? null,
+    attributes.module ?? '',
+    attributes.origin ?? '',
   ]);
 };
 

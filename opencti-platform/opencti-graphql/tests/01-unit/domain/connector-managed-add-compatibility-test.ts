@@ -32,12 +32,6 @@ vi.mock('../../../src/database/middleware-loader', () => ({
 vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
 }));
-vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
-  computeConnectorTargetContract: vi.fn(),
-  getSupportedContractsByImage: vi.fn(),
-  getContractConfigSchemaWithoutExcludedRuntimeVars: vi.fn(() => ({ properties: {}, required: [] })),
-  mapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn(),
-}));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
   addConnectorDeployedCount: vi.fn(), addWorkbenchDraftConvertionCount: vi.fn(), addWorkbenchValidationCount: vi.fn(),
@@ -70,17 +64,25 @@ vi.mock('../../../src/config/conf', async () => {
   return { ...actual, logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() } };
 });
 vi.mock('../../../src/enterprise-edition/ee', () => ({ checkEnterpriseEdition: vi.fn() }));
-vi.mock('../../../src/modules/catalog/catalog-repository', () => ({
+vi.mock('../../../src/modules/catalog/catalog-api', () => ({
+  computeConnectorTargetContract: vi.fn(),
+  getContractConfigSchemaWithoutExcludedRuntimeVars: vi.fn(() => ({ properties: {}, required: [] })),
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn(),
   findCatalogByCatalogId: vi.fn(),
   findLatestCompatibleCatalogContractByImageName: vi.fn(),
   findCatalogContractsByImageName: vi.fn(),
 }));
 
-import { findCatalogByCatalogId, findCatalogContractsByImageName, findLatestCompatibleCatalogContractByImageName } from '../../../src/modules/catalog/catalog-repository';
+import {
+  computeConnectorTargetContract,
+  findCatalogByCatalogId,
+  findCatalogContractsByImageName,
+  findLatestCompatibleCatalogContractByImageName,
+  getContractConfigSchemaWithoutExcludedRuntimeVars,
+} from '../../../src/modules/catalog/catalog-api';
 import { managedConnectorAdd, managedConnectorEdit } from '../../../src/modules/connector/connector-domain';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
-import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars } from '../../../src/modules/catalog/catalog-domain';
 import { createEntity } from '../../../src/database/middleware';
 import { publishUserAction } from '../../../src/listener/UserActionListener';
 

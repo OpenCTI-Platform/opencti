@@ -56,6 +56,7 @@ import {
   fetchSourceCatalogRevisionHint,
   mapCatalogContractDtoToCatalogContractSyncSource,
 } from '../../../../src/modules/catalog/sync/catalog-sync-source-gateway';
+import { buildErrorScope } from '../../../../src/config/error-origin';
 
 const baseV0Contract = {
   title: 'IPinfo',
@@ -234,5 +235,46 @@ describe('catalog-sync-source-gateway', () => {
       uri: 'https://catalog.example.org/manifest.json',
     });
     expect(hint).toBeUndefined();
+  });
+
+  describe('remote source error classification (RFC 0006)', () => {
+    const remoteSource = { kind: 'remote', uri: 'https://catalog.example/manifest.json' } as const;
+    const axiosFailure = (fields: Record<string, unknown>) => Object.assign(new Error('Request failed'), fields);
+    const fetchError = (failure: unknown) => {
+      mockGet.mockRejectedValue(failure);
+      return fetchSourceCatalog(remoteSource).catch((e: unknown) => e);
+    };
+
+    it('should classify an unreachable source as infra', async () => {
+      const error = await fetchError(axiosFailure({ code: 'ECONNREFUSED' }));
+      expect(buildErrorScope(error)).toEqual({ origin: 'infra', dependency: 'remote_http' });
+    });
+
+    it('should classify a timed out request as infra', async () => {
+      const error = await fetchError(axiosFailure({ code: 'ERR_CANCELED' }));
+      expect(buildErrorScope(error).origin).toBe('infra');
+    });
+
+    it('should classify a failing or throttling source as infra', async () => {
+      expect(buildErrorScope(await fetchError(axiosFailure({ response: { status: 502 } }))).origin).toBe('infra');
+      expect(buildErrorScope(await fetchError(axiosFailure({ response: { status: 429 } }))).origin).toBe('infra');
+    });
+
+    it('should leave a rejected request untouched', async () => {
+      const failure = axiosFailure({ response: { status: 404 } });
+      expect(await fetchError(failure)).toBe(failure);
+    });
+
+    it('should classify the revision hint request the same way', async () => {
+      mockHead.mockRejectedValue(axiosFailure({ code: 'ETIMEDOUT' }));
+      const error = await fetchSourceCatalogRevisionHint(remoteSource).catch((e: unknown) => e);
+      expect(buildErrorScope(error)).toEqual({ origin: 'infra', dependency: 'remote_http' });
+    });
+
+    it('should classify a manifest that is not valid JSON as input', async () => {
+      mockGet.mockResolvedValue({ data: '<html>maintenance</html>' });
+      const error = await fetchSourceCatalog(remoteSource).catch((e: unknown) => e);
+      expect(buildErrorScope(error).origin).toBe('input');
+    });
   });
 });

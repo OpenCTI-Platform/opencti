@@ -1,5 +1,6 @@
 import { logs, SeverityNumber } from '@opentelemetry/api';
 import type { Attributes } from '@opentelemetry/api';
+import { type AppModule, classifyFrontendError, resolveRouteModule } from './errorOrigin';
 
 export const LOGGER_NAME = 'opencti-front';
 
@@ -16,7 +17,24 @@ export interface LogOptions {
   eventName: string;
   data?: Record<string, unknown>;
   error?: unknown;
+  // The module whose code raised the error, e.g. given by a module error boundary (RFC 0006).
+  // Without it, the record goes to the module of the page the user is on.
+  module?: AppModule;
 }
+
+// RFC 0006 fields: `entry_module` and `module` for every record, `origin` and `dependency` for a record
+// carrying an error. The backend derives the level of a classified record from its origin.
+const scopeAttributes = (options: LogOptions) => {
+  const entryModule = typeof window !== 'undefined' ? resolveRouteModule(window.location.pathname) : undefined;
+  const module = options.module ?? entryModule;
+  const classification = options.error !== undefined ? classifyFrontendError(options.error) : undefined;
+  return {
+    ...(module ? { module } : {}),
+    ...(entryModule ? { entry_module: entryModule } : {}),
+    ...(classification ? { origin: classification.origin } : {}),
+    ...(classification?.dependency ? { dependency: classification.dependency } : {}),
+  };
+};
 
 // The SDK fills the exception fields only from an Error, a string or a number. Anything else
 // thrown (undefined, a plain or null-prototype object, a DOM Event) leaves them empty or makes
@@ -45,7 +63,10 @@ const emit = (level: LogLevel, message: string, options: LogOptions) => {
       severityText: level,
       severityNumber: SEVERITY_NUMBERS[level],
       body: message,
-      attributes: options.data ? { data: toAttributeData(options.data) as Attributes } : {},
+      attributes: {
+        ...(options.data ? { data: toAttributeData(options.data) as Attributes } : {}),
+        ...scopeAttributes(options),
+      },
       exception: 'error' in options ? toException(options.error) : undefined,
     });
   } catch {

@@ -1,6 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
+import { APP_MODULE } from '../../../utils/logging/errorOrigin';
 import Loader from '../../../components/Loader';
 import EntryGuard from '../nav/EntryGuard';
 
@@ -39,7 +40,7 @@ const Root = () => {
           path="/catalog/:connectorSlug"
           element={(
             <EntryGuard path="/dashboard/integrations">
-              {boundaryWrapper(IngestionCatalogConnector)}
+              {boundaryWrapper(IngestionCatalogConnector, APP_MODULE.CATALOG)}
             </EntryGuard>
           )}
         />

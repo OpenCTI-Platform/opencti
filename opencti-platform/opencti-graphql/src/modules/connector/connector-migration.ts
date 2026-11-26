@@ -9,9 +9,10 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { addConnectorDeployedCount } from '../../manager/telemetryManager';
 import {
   computeConnectorTargetContract,
+  findLatestCompatibleCatalogContractByImageName,
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
-} from '../catalog/catalog-domain';
+} from '../catalog/catalog-api';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER } from '../../schema/internalObject';
 import type { BasicStoreEntityConnectorManager } from './connector-types';
@@ -19,7 +20,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { isServiceAccountUser } from '../../utils/access';
 import { resolveUserByIdFromCache, userEditField } from '../user/user-domain';
 import { now } from '../../utils/format';
-import { findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
 
 type ConfigInput = {
   key: string;

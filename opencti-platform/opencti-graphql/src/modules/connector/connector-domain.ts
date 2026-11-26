@@ -27,13 +27,15 @@ import {
 import semver from 'semver';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import {
+  buildConnectorUpdateStatus,
+  compareContractVersions,
   findCatalogByCatalogId,
   findCatalogContractsByImageName,
   findCatalogContractsBySlugs,
   findLatestCompatibleCatalogContractByImageName,
   findLatestCompatibleCatalogContractBySlug,
-} from '../catalog/catalog-repository';
-import { buildConnectorUpdateStatus, compareContractVersions, groupContractVersionsBySlug } from '../catalog/catalog-version-utils';
+  groupContractVersionsBySlug,
+} from '../catalog/catalog-api';
 import { findManagedConnectorsByCatalogId } from './connector-repository';
 import { publishUserAction } from '../../listener/UserActionListener';
 import type { AuthContext, AuthUser, UserApiToken } from '../../types/user';
@@ -72,7 +74,7 @@ import {
   getContractConfigSchemaWithoutExcludedRuntimeVars,
   mapContractEntityFieldsToEmbeddedConnectorManagerContract,
   mapContractEntityFieldsToGraphqlCatalogContract,
-} from '../../modules/catalog/catalog-domain';
+} from '../catalog/catalog-api';
 import { connectorSecretKeys } from './connector-export';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { createOnTheFlyUser } from '../../modules/user/user-domain';

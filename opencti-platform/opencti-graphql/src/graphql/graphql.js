@@ -17,6 +17,7 @@ import conf, {
   PLAYGROUND_INTROSPECTION_DISABLED,
 } from '../config/conf';
 import { AuthRequired, BadUserInputError, muteError, ResourceNotFoundError } from '../config/errors';
+import { classifyErrorOrigin } from '../config/error-origin';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
@@ -231,9 +232,15 @@ const createApolloServer = (schema = createSchema()) => {
       warn: (msg) => logApp.warn(`[APOLLO] ${msg}`),
       error: (msg) => logApp.error(`[APOLLO] ${msg}`),
     },
-    formatError: (error) => {
+    formatError: (error, originalError) => {
       // To maintain compatibility with client in version 3.
-      const enrichedError = { ...error, message: protection.formatGraphqlErrorMessage(error.message), name: error.extensions?.code ?? error.name };
+      // `origin` (RFC 0006): the UI tells a rejected input from a failing API without its own list of codes.
+      const enrichedError = {
+        ...error,
+        message: protection.formatGraphqlErrorMessage(error.message),
+        name: error.extensions?.code ?? error.name,
+        extensions: { ...error.extensions, origin: classifyErrorOrigin(originalError ?? error) },
+      };
       // Remove the exception stack in production.
       return DEV_MODE ? enrichedError : dissocPath(['extensions', 'exception'], enrichedError);
     },

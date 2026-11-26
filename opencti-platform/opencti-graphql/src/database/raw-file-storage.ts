@@ -20,6 +20,8 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import { checkResolvedMinioCredentials } from '../config/default-credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
+import { isNetworkFailure } from '../config/error-origin';
+import { defineDependencyClient } from './dependency-client';
 import type { AuthUser } from '../types/user';
 import { getRoleAssumerWithWebIdentity, setupAwsClient } from '../utils/awsSdk';
 
@@ -52,6 +54,25 @@ export const s3ConnectionConfig = () => ({
 });
 
 let s3Client: S3Client; // Client reference
+
+// region error classification (RFC 0006)
+// The SDK already retried (standard retry mode), so a failure left here is final for the caller.
+// Unavailable: network failure, SDK timeout, a server fault (5xx) or throttling (429).
+const isS3Unavailable = (err: any) => {
+  if (isNetworkFailure(err) || err?.name === 'TimeoutError') {
+    return true;
+  }
+  const status = err?.$metadata?.httpStatusCode;
+  return err?.$fault === 'server' || (typeof status === 'number' && (status >= 500 || status === 429));
+};
+
+export const s3Dependency = defineDependencyClient({
+  dependency: 's3',
+  isUnavailable: isS3Unavailable,
+  unavailableMessage: 'File storage is unavailable',
+});
+const s3Call = s3Dependency.call;
+// endregion
 
 const buildCredentialProvider = async () => {
   // If aws role must be used
@@ -135,10 +156,10 @@ export const storageInit = async () => {
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFileFromStorage = async (id: string) => {
-  return s3Client.send(new s3.DeleteObjectCommand({
+  return s3Call('delete', () => s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
     Key: id,
-  }));
+  })));
 };
 
 /**
@@ -146,27 +167,27 @@ export const deleteFileFromStorage = async (id: string) => {
  * @param id
  * @returns {Promise<Readable | null>} Readable stream of the file content, or null if file doesn't exist
  * @throws {UnsupportedError} when file body is null or undefined
+ * @throws {InfraError} when the file storage is unavailable
  */
 export const downloadFile = async (id: string): Promise<Readable | null> => {
+  let object: GetObjectCommandOutput;
   try {
-    const object = await s3Client.send(new s3.GetObjectCommand({
+    object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
       Key: id,
     }));
-    if (!object || !object.Body) {
-      logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
-      throw UnsupportedError('File body is null or undefined', { fileId: id });
-    }
-    return object.Body as Readable;
   } catch (err: any) {
     // If file doesn't exist, return null instead of throwing
     if (err.name === 'NoSuchKey') {
       return null;
     }
-    // For other errors, log and throw
-    logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { cause: err, fileId: id });
-    throw err;
+    // Logged by the error boundary that catches it.
+    throw s3Dependency.classify(err, { operation: 'download' });
   }
+  if (!object || !object.Body) {
+    throw UnsupportedError('File body is null or undefined', { fileId: id });
+  }
+  return object.Body as Readable;
 };
 
 export const downloadFileWithoutLogging = async (key: string): Promise<Readable | null> => {
@@ -214,7 +235,6 @@ export const downloadFileRange = async (id: string, range?: string): Promise<Ran
 
     const object = await s3Client.send(new s3.GetObjectCommand(getParams));
     if (!object || !object.Body) {
-      logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
       throw UnsupportedError('File body is null or undefined', { fileId: id });
     }
     return {
@@ -231,8 +251,8 @@ export const downloadFileRange = async (id: string, range?: string): Promise<Ran
     if (err.name === 'InvalidRange' || err.$metadata?.httpStatusCode === 416) {
       return { stream: Readable.from([]), contentLength: 0, totalSize, rangeNotSatisfiable: true };
     }
-    logApp.error('[FILE STORAGE] Cannot retrieve file range from S3', { cause: err, fileId: id });
-    throw err;
+    // Logged by the error boundary that catches it.
+    throw s3Dependency.classify(err, { operation: 'download_range' });
   }
 };
 
@@ -285,10 +305,10 @@ export const streamToString = (stream: any, encoding: BufferEncoding = 'utf8'): 
 };
 
 export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf8'): Promise<string | undefined> => {
-  const object: GetObjectCommandOutput = await s3Client.send(new s3.GetObjectCommand({
+  const object: GetObjectCommandOutput = await s3Call('get_content', () => s3Client.send(new s3.GetObjectCommand({
     Bucket: bucketName,
     Key: id,
-  }));
+  })));
   if (!object.Body) {
     return undefined;
   }
@@ -302,7 +322,7 @@ export const rawCopyFile = async (sourceId: string, targetId: string) => {
     Key: targetId,
   };
   const command = new CopyObjectCommand(input);
-  await s3Client.send(command);
+  await s3Call('copy', () => s3Client.send(command));
 };
 
 /**
@@ -310,10 +330,10 @@ export const rawCopyFile = async (sourceId: string, targetId: string) => {
  */
 export const getFileSize = async (user: AuthUser, fileS3Path: string): Promise<number | undefined> => {
   try {
-    const object: HeadObjectCommandOutput = await s3Client.send(new s3.HeadObjectCommand({
+    const object: HeadObjectCommandOutput = await s3Call('head', () => s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
       Key: fileS3Path,
-    }));
+    })));
     return object.ContentLength;
   } catch (err) {
     throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
@@ -329,7 +349,7 @@ export const rawUpload = async (key: string, body: string | Readable | Buffer) =
       Body: body,
     },
   });
-  await s3Upload.done();
+  await s3Call('upload', () => s3Upload.done());
 };
 
 export interface FileMetadata {
@@ -349,7 +369,7 @@ export const rawUploadWithMetadata = async (key: string, body: Readable | Buffer
       ContentEncoding: contentEncoding,
     },
   });
-  await s3Upload.done();
+  await s3Call('upload', () => s3Upload.done());
 };
 
 export const getFileMetadata = async (key: string): Promise<FileMetadata | null> => {
@@ -364,7 +384,7 @@ export const getFileMetadata = async (key: string): Promise<FileMetadata | null>
     if (err.name === 'NoSuchKey' || err.name === 'NotFound' || err.$metadata?.httpStatusCode === 404) {
       return null;
     }
-    throw err;
+    throw s3Dependency.classify(err, { operation: 'head' });
   }
 };
 
@@ -377,5 +397,5 @@ export const rawListObjects = async (directory: string, recursive: boolean, cont
   if (continuationToken) {
     requestParams.ContinuationToken = continuationToken;
   }
-  return s3Client.send(new s3.ListObjectsV2Command(requestParams));
+  return s3Call('list', () => s3Client.send(new s3.ListObjectsV2Command(requestParams)));
 };

@@ -7,6 +7,7 @@ import { validate as uuidValidate } from 'uuid';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import { mergeResolvers } from '@graphql-tools/merge';
 import { rateLimitDirective } from 'graphql-rate-limit-directive';
+import { registerRootFieldModules } from './rootFieldModules';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
@@ -253,9 +254,16 @@ const schemaResolvers = [
   stixObjectOrStixRelationshipResolvers,
   stixObjectOrStixRelationshipOrCreatorResolvers,
 ];
-export const registerGraphqlSchema = ({ schema, resolver }) => {
+/**
+ * @param {{ schema: any, resolver: any, module?: import('../config/error-origin').AppModule }} registration
+ * `module` (RFC 0006): the module owning these resolvers, read by the error boundary as the entry module.
+ */
+export const registerGraphqlSchema = ({ schema, resolver, module }) => {
   schemaTypeDefs.push(schema);
   schemaResolvers.push(resolver);
+  if (module) {
+    registerRootFieldModules(module, resolver);
+  }
 };
 
 // enabling rate-limit on specific queries with directive @rateLimit

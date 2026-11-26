@@ -2,7 +2,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { SYSTEM_USER } from '../../utils/access';
-import { getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-domain';
+import { getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-api';
 import type { BasicStoreEntityConnector } from './connector-types';
 import type { ConnectorImportConfiguration } from './connector-import-schema';
 

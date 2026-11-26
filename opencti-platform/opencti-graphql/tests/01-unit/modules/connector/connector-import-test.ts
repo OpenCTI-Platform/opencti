@@ -1,12 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../../src/modules/catalog/catalog-repository', () => ({
+vi.mock('../../../../src/modules/catalog/catalog-api', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/catalog/catalog-api')>()),
+  computeConnectorTargetContract: vi.fn(),
   findCatalogByCatalogId: vi.fn(),
   findLatestCompatibleCatalogContractByImageName: vi.fn(),
-}));
-vi.mock('../../../../src/modules/catalog/catalog-domain', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/modules/catalog/catalog-domain')>()),
-  computeConnectorTargetContract: vi.fn(),
 }));
 vi.mock('../../../../src/modules/connector/connector-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/connector/connector-domain')>()),
@@ -18,8 +16,7 @@ vi.mock('../../../../src/modules/user/user-domain', () => ({ userAlreadyExists: 
 vi.mock('../../../../src/domain/group', () => ({ findDefaultIngestionGroups: vi.fn() }));
 vi.mock('../../../../src/database/middleware-loader', () => ({ storeLoadById: vi.fn() }));
 
-import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../../../../src/modules/catalog/catalog-repository';
-import { computeConnectorTargetContract } from '../../../../src/modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../../../../src/modules/catalog/catalog-api';
 import { managedConnectorAdd, managedConnectorEdit } from '../../../../src/modules/connector/connector-domain';
 import { findConnectorManagers, findConnectors } from '../../../../src/modules/connector/connector-repository';
 import { userAlreadyExists } from '../../../../src/modules/user/user-domain';

@@ -319,6 +319,12 @@ type AppMemory {
   used_heap_size: Float
 }
 
+enum AppModule {
+  catalog
+  connector
+  core
+}
+
 type Artifact implements BasicObject & HashedObservable & StixCoreObject & StixCyberObservable & StixObject {
   cases(first: Int): CaseConnection
   connectors(onlyAlive: Boolean): [Connector]
@@ -4805,6 +4811,22 @@ enum EntitySettingsOrdering {
   target_type
 }
 
+enum ErrorDependency {
+  api
+  assets
+  elasticsearch
+  rabbitmq
+  redis
+  remote_http
+  s3
+}
+
+enum ErrorOrigin {
+  code
+  infra
+  input
+}
+
 type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
   aliases: [String]
   avatar: OpenCtiFile
@@ -5640,10 +5662,14 @@ input FrontendLogExceptionInput {
 
 input FrontendLogInput {
   data: JSON
+  dependency: ErrorDependency
+  entryModule: AppModule
   eventName: String!
   exception: FrontendLogExceptionInput
   level: FrontendLogLevel!
   message: String!
+  module: AppModule
+  origin: ErrorOrigin
   timestamp: DateTime!
 }
 

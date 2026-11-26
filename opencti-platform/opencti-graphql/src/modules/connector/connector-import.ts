@@ -1,6 +1,10 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { findCatalogByCatalogId, findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
-import { computeConnectorTargetContract, getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-domain';
+import {
+  computeConnectorTargetContract,
+  findCatalogByCatalogId,
+  findLatestCompatibleCatalogContractByImageName,
+  getContractConfigSchemaWithoutExcludedRuntimeVars,
+} from '../catalog/catalog-api';
 import { ConfigImportMode, type ConfigImportOptions, type ConfigImportResult } from '../configImport/configImport-types';
 import { CONFIG_IMPORT_UNCHANGED_REASON, configImportValidationReason, freeConfigImportName, joinConfigImportReasons } from '../configImport/configImport-utils';
 import { userAlreadyExists } from '../user/user-domain';

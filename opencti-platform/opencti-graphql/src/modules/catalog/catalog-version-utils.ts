@@ -1,7 +1,8 @@
 import semver from 'semver';
 import validRange from 'semver/ranges/valid.js';
 import { UnsupportedError } from '../../config/errors';
-import { logApp, PLATFORM_VERSION } from '../../config/conf';
+import { PLATFORM_VERSION } from '../../config/conf';
+import { logCatalog } from './catalog-logger';
 import type { BasicStoreEntityCatalogContract, CatalogContractCompatibility, CatalogContractVersion } from './catalog-types';
 
 type SupportVersionContract = Pick<BasicStoreEntityCatalogContract, 'support_version' | 'min_version' | 'max_version' | 'contract_id'>;
@@ -46,8 +47,7 @@ export const isSupportVersionCompatible = (
     if (options.onUnparsableVersion) {
       options.onUnparsableVersion({ contractId: contract.contract_id, field, version, platformVersion });
     } else {
-      logApp.warn(`[OPENCTI-MODULE] Ignoring catalog contract with unparsable ${field}`, {
-        module: 'catalog',
+      logCatalog.warn(`[OPENCTI-MODULE] Ignoring catalog contract with unparsable ${field}`, {
         contractId: contract.contract_id,
         [field]: version,
         platformVersion,
