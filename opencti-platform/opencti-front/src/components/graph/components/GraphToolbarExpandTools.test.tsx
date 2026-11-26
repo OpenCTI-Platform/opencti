@@ -111,11 +111,13 @@ describe('GraphToolbarExpandTools', () => {
       });
     };
 
+    // Read from the reader AST, which holds what the graph receives: a fragment spread without
+    // `@relay(mask: false)` there is a masked reference, its fields only in the normalization AST.
     const endpoint = (side: 'from' | 'to') => {
-      const { operation } = expandRelationshipsQuery as unknown as { operation: Selection };
+      const { fragment } = expandRelationshipsQuery as unknown as { fragment: Selection };
       const node = ['stixRelationships', 'edges', 'node'].reduce<Selection | undefined>(
         (parent, name) => linkedField(parent?.selections, name),
-        operation,
+        fragment,
       );
       return linkedField(node?.selections, side);
     };
@@ -125,7 +127,7 @@ describe('GraphToolbarExpandTools', () => {
     it.each(['from', 'to'] as const)('fetches the representative of the %s endpoint whatever its type', (side) => {
       const representative = linkedField(fieldsOfEveryType(endpoint(side)?.selections), 'representative');
 
-      expect(representative?.selections?.map((s) => s.name)).toContain('main');
+      expect(representative?.selections?.map((s) => s.name) ?? []).toContain('main');
     });
   });
 });
