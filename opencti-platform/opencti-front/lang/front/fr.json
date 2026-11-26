@@ -7017,5 +7017,6 @@
   "The filters of the widgets are malformed": "Les filtres des widgets sont mal formés",
   "Becomes the default fintel design of the platform.": "Devient le modèle Fintel par défaut de la plateforme.",
   "Becomes the default FINTEL template of its entity type.": "Devient le modèle FINTEL par défaut de son type d'entité.",
-  "A template with the same name already exists in its entity type": "Un modèle du même nom existe déjà pour son type d'entité"
+  "A template with the same name already exists in its entity type": "Un modèle du même nom existe déjà pour son type d'entité",
+  "FINTEL templates are not available for this entity type": "Les modèles FINTEL ne sont pas disponibles pour ce type d'entité"
 }

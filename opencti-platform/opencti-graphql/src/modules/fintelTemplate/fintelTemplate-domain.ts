@@ -49,6 +49,28 @@ export const canCustomizeTemplate = async (context: AuthContext) => {
   }
 };
 
+// The entity types that have FINTEL templates: the ones whose page shows them. A template of another type is shown nowhere.
+// The front lists the same types (typesWithFintelTemplates in utils/hooks/useAttributes.ts): change both together
+export const FINTEL_TEMPLATE_ENTITY_TYPES = [
+  // Containers
+  'Report',
+  'Grouping',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  // Stix Domain Objects
+  'Threat-Actor',
+  'Threat-Actor-Individual',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
+  'Campaign',
+  'Malware',
+  'Vulnerability',
+  'Incident',
+];
+
+export const isFintelTemplateAvailableForEntityType = (entityType: string) => FINTEL_TEMPLATE_ENTITY_TYPES.includes(entityType);
+
 export const canViewTemplates = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
   return isEE;

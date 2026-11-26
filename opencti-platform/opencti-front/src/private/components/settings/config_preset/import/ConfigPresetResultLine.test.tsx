@@ -47,6 +47,7 @@ describe('ConfigPresetResultLine', () => {
     ['Fintel template name already exists', 'Fintel template name already exists'],
     ['A template with the same name already exists in its entity type', 'A template with the same name already exists in its entity type'],
     ['The entity type of the fintel template cannot change', 'The entity type of the fintel template cannot change'],
+    ['FINTEL templates are not available for this entity type', 'FINTEL templates are not available for this entity type'],
     ['The filters of the widgets are malformed', 'The filters of the widgets are malformed'],
     ['Added as "Dark (1)"', 'Added as "Dark (1)"'],
     ['Default theme Dark could not be imported', 'Default theme Dark could not be imported'],

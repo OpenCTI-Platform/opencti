@@ -15,6 +15,7 @@ import {
 import {
   addFintelTemplate,
   checkFintelTemplateWidgetsValidity,
+  isFintelTemplateAvailableForEntityType,
   fintelTemplateEditField,
   type FintelTemplateWidgetFromImport,
   toImportedFintelTemplateWidgets,
@@ -185,6 +186,11 @@ export const importFintelTemplate = async (
     return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
   }
   const { data } = parsed;
+  // The entity types of a platform are not the ones of another (a newer version), and a bundle can be edited: a template of a type that has no
+  // FINTEL templates would be shown nowhere. The item fails, the others go on
+  if (!isFintelTemplateAvailableForEntityType(data.settings_types[0])) {
+    return refused('failed', 'entity_type', 'FINTEL templates are not available for this entity type', false, data);
+  }
   const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, data.standard_id, ENTITY_TYPE_FINTEL_TEMPLATE);
   if (existing && mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Fintel template already exists', true, data);

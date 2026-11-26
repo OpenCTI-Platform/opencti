@@ -7017,5 +7017,6 @@
   "The filters of the widgets are malformed": "Фильтры виджетов имеют неверный формат",
   "Becomes the default fintel design of the platform.": "Становится дизайном Fintel по умолчанию для платформы.",
   "Becomes the default FINTEL template of its entity type.": "Становится шаблоном FINTEL по умолчанию для своего типа сущности.",
-  "A template with the same name already exists in its entity type": "Для этого типа сущности уже существует шаблон с таким же именем"
+  "A template with the same name already exists in its entity type": "Для этого типа сущности уже существует шаблон с таким же именем",
+  "FINTEL templates are not available for this entity type": "Шаблоны FINTEL недоступны для этого типа сущности"
 }

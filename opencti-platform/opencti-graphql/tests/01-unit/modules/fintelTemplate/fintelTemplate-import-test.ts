@@ -230,6 +230,19 @@ describe('Fintel template import', () => {
     expect(await importFintelTemplate(context, user, otherPlatform, { ...overwrite, dryRun: true, reservedNames })).toMatchObject({ reason: sameName });
   });
 
+  it('refuses a template of an entity type that has no FINTEL templates, a type of a newer platform included, without reading nor writing anything', async () => {
+    for (const settingsType of ['Indicator', 'Foo']) {
+      expect(await importFintelTemplate(context, user, { ...configuration, settings_types: [settingsType] }, overwrite)).toMatchObject({
+        status: 'failed',
+        code: 'entity_type',
+        reason: 'FINTEL templates are not available for this entity type',
+        exists: false,
+      });
+    }
+    expect(storeLoadById).not.toHaveBeenCalled();
+    expect(addFintelTemplate).not.toHaveBeenCalled();
+  });
+
   it('refuses a template that exists when it is added', async () => {
     withExisting(reportFintelTemplate);
     expect(await importFintelTemplate(context, user, configuration, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });

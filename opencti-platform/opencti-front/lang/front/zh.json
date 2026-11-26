@@ -7017,5 +7017,6 @@
   "The filters of the widgets are malformed": "小组件的筛选条件格式不正确",
   "Becomes the default fintel design of the platform.": "成为平台的默认 Fintel 设计。",
   "Becomes the default FINTEL template of its entity type.": "成为其实体类型的默认 FINTEL 模板。",
-  "A template with the same name already exists in its entity type": "其实体类型中已存在同名模板"
+  "A template with the same name already exists in its entity type": "其实体类型中已存在同名模板",
+  "FINTEL templates are not available for this entity type": "此实体类型不支持 FINTEL 模板"
 }

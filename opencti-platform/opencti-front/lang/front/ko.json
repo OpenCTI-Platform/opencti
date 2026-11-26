@@ -7017,5 +7017,6 @@
   "The filters of the widgets are malformed": "위젯의 필터 형식이 잘못되었습니다",
   "Becomes the default fintel design of the platform.": "플랫폼의 기본 Fintel 디자인이 됩니다.",
   "Becomes the default FINTEL template of its entity type.": "해당 엔터티 유형의 기본 FINTEL 템플릿이 됩니다.",
-  "A template with the same name already exists in its entity type": "해당 엔터티 유형에 같은 이름의 템플릿이 이미 존재합니다"
+  "A template with the same name already exists in its entity type": "해당 엔터티 유형에 같은 이름의 템플릿이 이미 존재합니다",
+  "FINTEL templates are not available for this entity type": "이 엔터티 유형에서는 FINTEL 템플릿을 사용할 수 없습니다"
 }
