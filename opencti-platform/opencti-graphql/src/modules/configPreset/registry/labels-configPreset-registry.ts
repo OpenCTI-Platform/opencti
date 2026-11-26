@@ -1,4 +1,6 @@
 import { FilterMode, FilterOperator, LabelsOrdering, OrderingMode } from '../../../generated/graphql';
+import { elRefreshIndices } from '../../../database/engine';
+import { READ_INDEX_STIX_META_OBJECTS } from '../../../database/utils';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import { findAllLabels, findLabelPaginated } from '../../../domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../schema/stixMetaObject';
@@ -56,7 +58,11 @@ const labelsImporter: ConfigPresetImporter = {
   },
   apply: async (context, user, item, computed, mode, plan) => {
     // The labels read ahead by prepare, when the caller did: no lookup per label (the partial import has none, it looks the label up)
-    return toAppliedStatus(await importLabel(context, user, item.configuration, { mode }, plan.existingLabels), computed);
+    return toAppliedStatus(await importLabel(context, user, item.configuration, { mode, deferRefresh: plan.deferRefresh }, plan.existingLabels), computed);
+  },
+  // The labels of a real import were written without a refresh of their index: one refresh makes them all searchable
+  finalize: async () => {
+    await elRefreshIndices([READ_INDEX_STIX_META_OBJECTS]);
   },
 };
 

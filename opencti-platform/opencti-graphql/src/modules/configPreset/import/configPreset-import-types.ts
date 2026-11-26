@@ -88,6 +88,9 @@ export interface ConfigPresetImportPlan {
   // The labels that exist among the ones of the items being computed, by standard id, read once for all of them by the labels importer
   // (prepare): a lookup per label is a round trip per item, tens of thousands of them for a big bundle
   existingLabels?: Map<string, BasicStoreEntityLabel>;
+  // The items are written without waiting for the search index to refresh: the importers refresh it once at the end (finalize). Set by a
+  // real import of the wizard, which calls finalize; absent for every other caller, which writes and reads as before.
+  deferRefresh?: boolean;
   // The theme names the earlier items of a dry run would take, which writes nothing: an import reads the platform before each item
   themeNames?: Set<string>;
   // The names that the themes the earlier items of a dry run would rename no longer hold
@@ -147,6 +150,9 @@ export interface ConfigPresetImporter {
   // Optional, reads only: called once with the items of the family about to be computed, so that the importer reads what they need in one
   // query instead of one per item, and records it in the plan
   prepare?: (context: AuthContext, user: AuthUser, items: ConfigPresetBundleItem[], plan: ConfigPresetImportPlan) => Promise<void>;
+  // Optional: called once after the last item of a real import (also when it stopped), for the families that had items. Where an importer
+  // that defers the refresh of its index (plan.deferRefresh) refreshes it. A failure is logged, it never fails the import.
+  finalize?: (context: AuthContext, user: AuthUser, plan: ConfigPresetImportPlan) => Promise<void>;
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
   // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave

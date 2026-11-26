@@ -4,12 +4,18 @@ vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) 
   ...(await importOriginal<typeof import('../../../../../src/database/middleware-loader')>()),
   internalFindByIds: vi.fn(),
 }));
+vi.mock('../../../../../src/database/engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../../src/database/engine')>()),
+  elRefreshIndices: vi.fn(async () => undefined),
+}));
 vi.mock('../../../../../src/modules/label/label-import', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/label/label-import')>()),
   importLabel: vi.fn(),
 }));
 
 import { internalFindByIds } from '../../../../../src/database/middleware-loader';
+import { elRefreshIndices } from '../../../../../src/database/engine';
+import { READ_INDEX_STIX_META_OBJECTS } from '../../../../../src/database/utils';
 import { getLabelStandardId, importLabel } from '../../../../../src/modules/label/label-import';
 import type { BasicStoreEntityLabel } from '../../../../../src/modules/label/label-types';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
@@ -112,6 +118,18 @@ describe('Labels import (registry): the labels that exist are read at once', () 
     const configuration = { value: 'APT' };
     await family.importer!.apply(context, user, item(configuration), { label: 'APT', translatable: false, exists: false, conflict: false, status: 'created' }, ConfigImportMode.Add, { created: new Set(), existingLabels });
     expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Add }, existingLabels);
+  });
+
+  it('applies without waiting for the index to refresh when the plan says so, and refreshes the index of the labels once in finalize', async () => {
+    vi.mocked(importLabel).mockResolvedValue({ status: 'created', exists: false });
+    const configuration = { value: 'APT' };
+    const deferred: ConfigPresetImportPlan = { created: new Set(), existingLabels: new Map(), deferRefresh: true };
+    await family.importer!.apply(context, user, item(configuration), { label: 'APT', translatable: false, exists: false, conflict: false, status: 'created' }, ConfigImportMode.Add, deferred);
+    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Add, deferRefresh: true }, deferred.existingLabels);
+    expect(elRefreshIndices).not.toHaveBeenCalled();
+    await family.importer!.finalize!(context, user, deferred);
+    expect(elRefreshIndices).toHaveBeenCalledOnce();
+    expect(elRefreshIndices).toHaveBeenCalledWith([READ_INDEX_STIX_META_OBJECTS]);
   });
 
   it('computes an item with the labels of the plan', async () => {

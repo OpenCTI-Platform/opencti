@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
-import { buildConfigPresetImportTypes, computeConfigPresetItems } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
+import { buildConfigPresetImportTypes, computeConfigPresetItems, finalizeConfigPresetItems } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
 import type { ConfigPresetBundle, ConfigPresetBundleItem, ConfigPresetComputedItem } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import type { AuthContext, AuthUser } from '../../../../../src/types/user';
 
@@ -53,6 +53,30 @@ describe('Config preset compute: what the importers read ahead', () => {
     vi.spyOn(family('messages').importer!, 'compute').mockResolvedValue(computedItem);
     await computeConfigPresetItems(context, user, [bundleItem('messages', 'banner')], { availability: new Map([['messages', true]]) });
     expect(prepare).not.toHaveBeenCalled();
+  });
+});
+
+describe('Config preset import: what the importers do at the end', () => {
+  const items = [bundleItem('labels', 'a'), bundleItem('messages', 'banner')];
+  const plan = { created: new Set<string>() };
+
+  it('lets the importer of a family that had items finalize once, with the plan', async () => {
+    const finalize = vi.spyOn(family('labels').importer!, 'finalize').mockResolvedValue(undefined);
+    await finalizeConfigPresetItems(context, user, items, plan, new Map([['labels', true], ['messages', true]]));
+    expect(finalize).toHaveBeenCalledTimes(1);
+    expect(finalize).toHaveBeenCalledWith(context, user, plan);
+  });
+
+  it('does not finalize a family without items, nor one the platform cannot use', async () => {
+    const finalize = vi.spyOn(family('labels').importer!, 'finalize').mockResolvedValue(undefined);
+    await finalizeConfigPresetItems(context, user, [bundleItem('messages', 'banner')], plan, new Map([['labels', true], ['messages', true]]));
+    await finalizeConfigPresetItems(context, user, items, plan, new Map([['labels', false], ['messages', true]]));
+    expect(finalize).not.toHaveBeenCalled();
+  });
+
+  it('does not fail when a finalize fails', async () => {
+    vi.spyOn(family('labels').importer!, 'finalize').mockRejectedValue(new Error('search down'));
+    await expect(finalizeConfigPresetItems(context, user, items, plan, new Map([['labels', true]]))).resolves.toBeUndefined();
   });
 });
 

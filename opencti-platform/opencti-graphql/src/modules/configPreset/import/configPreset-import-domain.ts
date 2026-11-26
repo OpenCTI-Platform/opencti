@@ -184,6 +184,27 @@ export const prepareConfigPresetItems = async (
   }
 };
 
+// The counterpart of prepareConfigPresetItems, at the end of a real import: the importers that have a finalize run it once, for the
+// families that had items. Whatever they do (a refresh of an index) never fails the import: it is logged.
+export const finalizeConfigPresetItems = async (
+  context: AuthContext,
+  user: AuthUser,
+  items: ConfigPresetBundleItem[],
+  plan: ConfigPresetImportPlan,
+  availability: Map<string, boolean>,
+) => {
+  const families = CONFIG_PRESET_FAMILIES.filter((family) => family.importer?.finalize && availability.get(family.id));
+  for (let i = 0; i < families.length; i += 1) {
+    if (items.some((item) => item.type === families[i].id)) {
+      try {
+        await families[i].importer!.finalize!(context, user, plan);
+      } catch (err) {
+        logApp.warn('[CONFIG PRESET] The end of the import of a family failed', { cause: err, family: families[i].id });
+      }
+    }
+  }
+};
+
 // compute of every item, required dependencies first: reads only, the plan records what would be created
 // modes: the mode of each item, defaultMode for the items that have none (OVERWRITE when absent: the preview, the dependencies)
 // availability: the families the platform can use, when the caller has read it already

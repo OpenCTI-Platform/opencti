@@ -27,7 +27,7 @@ export const importLabel = async (
   context: AuthContext,
   user: AuthUser,
   configuration: unknown,
-  { mode, dryRun = false }: ConfigImportOptions,
+  { mode, dryRun = false, deferRefresh = false }: ConfigImportOptions,
   // The labels that exist, by standard id, when the caller read them all at once: a label that is not in it does not exist, with no lookup
   existingLabels?: Map<string, BasicStoreEntityLabel>,
 ): Promise<LabelImportResult> => {
@@ -62,7 +62,7 @@ export const importLabel = async (
   if (!dryRun) {
     // addLabel gives a label without color the one it makes of its value. When the caller read the labels ahead (existingLabels), a label
     // that is not in the map does not exist: addLabel does not look it up again
-    const added = await addLabel(context, user, { value, color }, { knownNotExisting: !!existingLabels });
+    const added = await addLabel(context, user, { value, color }, { knownNotExisting: !!existingLabels, refresh: !deferRefresh });
     // The next items of the import see this label as an existing one, as they would after a lookup
     existingLabels?.set(standardId, added);
     // addLabel returns the label as it is when another one was created since the lookup above: it is an existing label.

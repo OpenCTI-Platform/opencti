@@ -21,6 +21,7 @@ import {
 import {
   computeConfigPresetItem,
   computeConfigPresetItems,
+  finalizeConfigPresetItems,
   getConfigPresetFamiliesAvailability,
   prepareConfigPresetItems,
   readConfigPresetImportBundle,
@@ -202,13 +203,15 @@ const realImport = async (
   }
   logApp.info('[CONFIG PRESET] Import started', { user_id: user.id, file_id: fileId, total: items.length });
   const importContext = context;
-  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), emailTemplateNames: new Set(), ...itemOptions };
+  // deferRefresh: the importers write without waiting for the search index to refresh, and refresh it once at the end (finalize below)
+  const plan: ConfigPresetImportPlan = { created: new Set(), targets: new Map(), emailTemplateNames: new Set(), deferRefresh: true, ...itemOptions };
   const modes = configPresetImportModes(selections);
   const results: ConfigPresetImportItemResult[] = [];
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
   let stopReason: string | null = null;
+  let availability: Map<string, boolean> | undefined;
   try {
-    const availability = await getConfigPresetFamiliesAvailability(importContext, items);
+    availability = await getConfigPresetFamiliesAvailability(importContext, items);
     for (let i = 0; i < items.length && !stopReason; i += 1) {
       const item = items[i];
       // A lost lock aborts its signal and throws nothing: checked before each item, the item in progress finishes
@@ -238,6 +241,10 @@ const realImport = async (
     }
     logApp.error('[CONFIG PRESET] The import was stopped by an unexpected error', { cause: err });
     stopReason = err instanceof Error ? err.message : String(err);
+  }
+  // Whether it ended or stopped: what the items wrote with a deferred refresh is made searchable once, before the report and the end
+  if (availability) {
+    await finalizeConfigPresetItems(importContext, user, items, plan, availability);
   }
   if (stopReason) {
     // The remaining items are failed with the reason, in the results and, best effort, in the session

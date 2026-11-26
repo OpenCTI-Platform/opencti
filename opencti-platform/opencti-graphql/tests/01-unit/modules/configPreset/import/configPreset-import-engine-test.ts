@@ -166,6 +166,52 @@ describe('Config preset real import: what the items need is read a slice at a ti
     expect(prepare.mock.calls[0][3]).toBe(prepare.mock.calls[2][3]);
   });
 
+  it('writes with a deferred refresh, and finalizes once after the last item, with the plan the items were written with', async () => {
+    withBundle(labelItems(3));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    const events: string[] = [];
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    const apply = vi.spyOn(labels, 'apply').mockImplementation(async (_context, _user, item) => {
+      events.push(`apply ${item.id}`);
+    });
+    const finalize = vi.spyOn(labels, 'finalize').mockImplementation(async () => {
+      events.push('finalize');
+    });
+    await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    expect(events).toEqual(['apply label--0', 'apply label--1', 'apply label--2', 'finalize']);
+    expect(apply.mock.calls[0][5].deferRefresh).toBe(true);
+    expect(finalize.mock.calls[0][2]).toBe(apply.mock.calls[0][5]);
+  });
+
+  it('finalizes when the import stops, and the failure of a finalize does not fail the import', async () => {
+    withBundle(labelItems(2));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    vi.spyOn(labels, 'apply').mockImplementation(async (_context, _user, item) => {
+      if (item.id === 'label--1') {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
+    });
+    const finalize = vi.spyOn(labels, 'finalize').mockRejectedValue(new Error('search down'));
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    expect(finalize).toHaveBeenCalledTimes(1);
+    expect(results.map(({ status }) => status)).toEqual(['CREATED', 'FAILED']);
+  });
+
+  it('writes nothing and finalizes nothing on a dry run', async () => {
+    withBundle(labelItems(1));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    const apply = vi.spyOn(labels, 'apply').mockResolvedValue(undefined);
+    const finalize = vi.spyOn(labels, 'finalize').mockResolvedValue(undefined);
+    await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], true);
+    expect(apply).not.toHaveBeenCalled();
+    expect(finalize).not.toHaveBeenCalled();
+  });
+
   it('does not prepare a family the platform cannot use', async () => {
     withBundle(labelItems(2));
     const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
