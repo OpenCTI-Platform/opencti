@@ -30,6 +30,7 @@ import {
   type ConfigPresetComputedItem,
   type ConfigPresetImportCredentials,
   type ConfigPresetImportPlan,
+  recordConfigPresetTarget,
 } from './configPreset-import-types';
 
 const fileMissing = () => FunctionalError('The uploaded file no longer exists', { reason: CONFIG_PRESET_REASON_FILE_MISSING });
@@ -142,6 +143,8 @@ export const computeConfigPresetItem = async (
 ): Promise<ConfigPresetComputedItem> => {
   const incompatible = computeIncompatibleConfigPresetItem(family, item);
   if (incompatible) {
+    // Not written: the items that depend on it never get the local item with its bundle id (a group the local role)
+    recordConfigPresetTarget(plan, item.type, item.id, null);
     return incompatible;
   }
   // The importer of a family the platform cannot import is never called: it may read through domain functions that refuse without

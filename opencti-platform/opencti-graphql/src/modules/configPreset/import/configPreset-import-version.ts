@@ -30,8 +30,10 @@ const incompatibleItemLabel = (family: ConfigPresetFamilyDefinition, item: Confi
   if (item.id === family.id) {
     return { label: family.label, translatable: true };
   }
-  const { name } = item.configuration;
-  return { label: typeof name === 'string' && name.trim() ? name : item.id, translatable: false };
+  const name = ['name', 'value', 'definition', 'phase_name']
+    .map((key) => item.configuration[key])
+    .find((value): value is string => typeof value === 'string' && value.trim() !== '');
+  return { label: name ?? item.id, translatable: false };
 };
 
 export const computeIncompatibleConfigPresetItem = (family: ConfigPresetFamilyDefinition, item: ConfigPresetBundleItem): ConfigPresetComputedItem | null => {
