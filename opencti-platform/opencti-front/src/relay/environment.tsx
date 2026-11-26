@@ -141,6 +141,8 @@ export const environment = new Environment({ network, store, getDataID });
 // Dev only: Relay only logs store id collisions in the console, which is easy to miss. Show each one once.
 if (import.meta.env.DEV) {
   const typeCollision = /conflicting types `(\w+)` and `(\w+)`/;
+  // "references to the conflicting field, <field> and its id values" / "with conflicting field, <field> and its values"
+  const fieldCollision = /conflicting field, (\S+) and its/;
   const reported = new Set<string>();
   const consoleError = console.error;
   // Merged in one toast, as the message bus keeps the last message of a burst and the toast shows one, and delayed,
@@ -171,6 +173,11 @@ if (import.meta.env.DEV) {
     if (types) {
       // fix: classify the type in namespacedTypenames or unkeyedTypenames
       notifyOnce(`types:${types[1]}/${types[2]}`, `${types[1]} and ${types[2]} share an id`);
+    }
+    const field = fieldCollision.exec(args[0]);
+    if (field) {
+      // fix: the id is not unique, or the server resolves this field differently for the same object
+      notifyOnce(`field:${field[1]}`, `objects with the same id disagree on "${field[1]}"`);
     }
   };
 }
