@@ -15,6 +15,7 @@ import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
 import { logApp } from '../config/conf';
 import { internalLoadById } from '../database/middleware-loader';
+import { isPublicDashboardUser } from '../utils/access';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -94,6 +95,9 @@ export const worksForDraft = async (context, user, draftId, args = {}) => {
 };
 
 export const worksForSource = async (context, user, sourceId, args = {}) => {
+  if (isPublicDashboardUser(user)) {
+    return [];
+  }
   const { first = ES_MINIMUM_FIXED_PAGINATION, filters = null, type } = args;
   let finalFilters = addFilter(filters, 'event_source_id', sourceId);
   if (type) {

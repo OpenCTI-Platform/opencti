@@ -16,9 +16,11 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 import { ABSTRACT_STIX_REF_RELATIONSHIP, BASE_TYPE_ENTITY, buildRefRelationKey } from '../schema/general';
 import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
-import { BYPASS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
+import { BYPASS, isPublicDashboardUser, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../utils/access';
 import { stixCoreObjectImportDelete, stixCoreObjectImportPush } from './stixCoreObject';
 import { addFilter } from '../utils/filtering/filtering-utils';
+import { loadFile } from '../database/file-storage';
+import { paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 
 export const findById = (context, user, externalReferenceId) => {
   return storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -52,6 +54,20 @@ export const externalReferenceImportPush = async (context, user, externalReferen
   const entitiesReferences = await findReferencesForExternalId(context, user, externalReferenceId, { types: ['Stix-Domain-Object'], first: 50 });
   const finalArgs = { ...args, importContextEntities: entitiesReferences };
   return stixCoreObjectImportPush(context, user, externalReferenceId, file, finalArgs);
+};
+
+export const externalReferenceImportFiles = async (context, user, externalReference, { first }) => {
+  const opts = { first, entity_type: externalReference.entity_type };
+  const listing = await paginatedForPathWithEnrichment(context, user, `import/${externalReference.entity_type}/${externalReference.id}`, externalReference.id, opts);
+  if (externalReference.fileId && !isPublicDashboardUser(user)) {
+    try {
+      const refFile = await loadFile(context, user, externalReference.fileId);
+      listing.edges.unshift({ node: refFile, cursor: '' });
+    } catch {
+      // FileId is no longer available
+    }
+  }
+  return listing;
 };
 
 export const addExternalReference = async (context, user, externalReference) => {
