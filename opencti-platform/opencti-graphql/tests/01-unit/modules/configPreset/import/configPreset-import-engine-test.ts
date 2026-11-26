@@ -59,6 +59,7 @@ import { readConfigPresetImportBundle } from '../../../../../src/modules/configP
 import { dropConfigPresetImportCache } from '../../../../../src/modules/configPreset/import/configPreset-import-cache';
 import { readConfigPresetImportSession } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundle, ConfigPresetBundleItem } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { BYPASS } from '../../../../../src/utils/access';
@@ -128,6 +129,52 @@ describe('Config preset real import of a role in COPY and a group that depends o
       ['groups', 'FAILED', 'Roles could not be imported: Analyst'],
     ]);
     expect(importRole).not.toHaveBeenCalled();
+  });
+});
+
+describe('Config preset real import: what the items need is read a slice at a time', () => {
+  const labelItems = (count: number): ConfigPresetBundleItem[] => Array.from({ length: count }, (_, i) => ({
+    type: 'labels',
+    id: `label--${i}`,
+    path: `taxonomy/labels/label--${i}.json`,
+    configuration: { value: `label ${i}` },
+  }));
+  const computedItem = { label: 'label', translatable: false, exists: false, conflict: false, status: 'created' as const };
+
+  it('prepares 500 items before the first of them, and not before the whole import', async () => {
+    withBundle(labelItems(1001));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    const events: string[] = [];
+    const prepare = vi.spyOn(labels, 'prepare').mockImplementation(async (_context, _user, items) => {
+      events.push(`prepare ${items.length}`);
+    });
+    vi.spyOn(labels, 'compute').mockImplementation(async (_context, _user, item) => {
+      events.push(item.id);
+      return computedItem;
+    });
+    vi.spyOn(labels, 'apply').mockResolvedValue('created' as never);
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    expect(results).toHaveLength(1001);
+    expect(prepare).toHaveBeenCalledTimes(3);
+    expect(prepare.mock.calls.map(([, , items]) => items.length)).toEqual([500, 500, 1]);
+    // Before the first item of each slice, after the last of the one before; the same plan for every slice
+    expect(events.indexOf('prepare 500')).toBe(0);
+    expect(events.slice(0, 2)).toEqual(['prepare 500', 'label--0']);
+    const secondSlice = events.indexOf('label--499') + 1;
+    expect(events.slice(secondSlice, secondSlice + 2)).toEqual(['prepare 500', 'label--500']);
+    expect(events[events.indexOf('label--999') + 1]).toBe('prepare 1');
+    expect(prepare.mock.calls[0][3]).toBe(prepare.mock.calls[2][3]);
+  });
+
+  it('does not prepare a family the platform cannot use', async () => {
+    withBundle(labelItems(2));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    const prepare = vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    vi.spyOn(labels, 'apply').mockResolvedValue('created' as never);
+    await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    // A family of the platform is available: prepare ran once for the 2 labels
+    expect(prepare).toHaveBeenCalledTimes(1);
   });
 });
 

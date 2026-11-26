@@ -74,7 +74,7 @@ describe('Labels import (registry)', () => {
     const configuration = { value: 'APT', color: '#ff0000' };
     vi.mocked(importLabel).mockResolvedValueOnce({ status: 'created', exists: false });
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBeUndefined();
-    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Overwrite });
+    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Overwrite }, undefined);
     // Created by another import since the dry run
     vi.mocked(importLabel).mockResolvedValueOnce({ status: 'skipped', code: 'unchanged', exists: true });
     expect(await family.importer!.apply(context, user, item(configuration), { ...computed, status: 'created' }, ConfigImportMode.Overwrite, plan)).toBe('skipped');
@@ -104,6 +104,14 @@ describe('Labels import (registry): the labels that exist are read at once', () 
     vi.mocked(internalFindByIds).mockResolvedValue([stored('label 0')] as never);
     await family.importer!.prepare!(context, user, labelItems(1), slicePlan);
     expect([...slicePlan.existingLabels!.keys()].sort()).toEqual(['earlier', getLabelStandardId('label 0')].sort());
+  });
+
+  it('applies an item with the labels of the plan, so that it is not looked up again', async () => {
+    vi.mocked(importLabel).mockResolvedValue({ status: 'created', exists: false });
+    const existingLabels = new Map<string, BasicStoreEntityLabel>();
+    const configuration = { value: 'APT' };
+    await family.importer!.apply(context, user, item(configuration), { label: 'APT', translatable: false, exists: false, conflict: false, status: 'created' }, ConfigImportMode.Add, { created: new Set(), existingLabels });
+    expect(importLabel).toHaveBeenCalledWith(context, user, configuration, { mode: ConfigImportMode.Add }, existingLabels);
   });
 
   it('computes an item with the labels of the plan', async () => {

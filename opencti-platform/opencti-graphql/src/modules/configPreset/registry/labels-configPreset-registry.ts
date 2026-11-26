@@ -54,8 +54,9 @@ const labelsImporter: ConfigPresetImporter = {
     }
     return toComputedItem(label, await importLabel(context, user, item.configuration, { mode, dryRun: true }, plan.existingLabels));
   },
-  apply: async (context, user, item, computed, mode) => {
-    return toAppliedStatus(await importLabel(context, user, item.configuration, { mode }), computed);
+  apply: async (context, user, item, computed, mode, plan) => {
+    // The labels read ahead by prepare, when the caller did: no lookup per label (the partial import has none, it looks the label up)
+    return toAppliedStatus(await importLabel(context, user, item.configuration, { mode }, plan.existingLabels), computed);
   },
 };
 

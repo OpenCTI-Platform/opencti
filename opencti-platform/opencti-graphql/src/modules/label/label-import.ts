@@ -60,11 +60,15 @@ export const importLabel = async (
     return importExisting(existing);
   }
   if (!dryRun) {
-    // addLabel gives a label without color the one it makes of its value
-    const added = await addLabel(context, user, { value, color });
+    // addLabel gives a label without color the one it makes of its value. When the caller read the labels ahead (existingLabels), a label
+    // that is not in the map does not exist: addLabel does not look it up again
+    const added = await addLabel(context, user, { value, color }, { knownNotExisting: !!existingLabels });
+    // The next items of the import see this label as an existing one, as they would after a lookup
+    existingLabels?.set(standardId, added);
     // addLabel returns the label as it is when another one was created since the lookup above: it is an existing label.
-    // Known limitation, left as it is: a label created by someone else between the lookup of addLabel and its write is upserted by the
+    // Known limitation, left as it is: a label created by someone else between the lookup and its write is upserted by the
     // generic create path (with the color given, else the generated one) and reported as created. Fixing it needs a create-only creation in the middleware.
+    // The window is the one of the read-ahead (a slice of the import) when existingLabels is given, a lookup when it is not.
     if (color && added.color?.toLowerCase() !== color.toLowerCase()) {
       return importExisting(added);
     }

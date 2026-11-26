@@ -80,17 +80,37 @@ describe('importLabel', () => {
     it('creates it with the given color', async () => {
       const result = await importLabel(context, user, { value: 'APT', color: '#ff0000' }, { mode });
       expect(result).toMatchObject({ status: 'created', exists: false });
-      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: '#ff0000' });
+      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: '#ff0000' }, { knownNotExisting: false });
     });
 
     it('leaves the color to the platform when the configuration has none', async () => {
       await importLabel(context, user, { value: 'APT' }, { mode });
-      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: undefined });
+      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: undefined }, { knownNotExisting: false });
     });
 
     it('decides the same result on a dry run, and writes nothing', async () => {
       expect(await importLabel(context, user, { value: 'APT' }, { mode, dryRun: true })).toMatchObject({ status: 'created', exists: false });
       expect(addLabel).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('a label that is not in the labels the caller read ahead', () => {
+    it('does not look it up, creates it, and adds it to them: the next items of the import see it', async () => {
+      const existingLabels = new Map<string, BasicStoreEntityLabel>();
+      const result = await importLabel(context, user, { value: 'APT', color: '#ff0000' }, { mode: ConfigImportMode.Add }, existingLabels);
+      expect(result).toMatchObject({ status: 'created', exists: false });
+      expect(storeLoadById).not.toHaveBeenCalled();
+      expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'APT', color: '#ff0000' }, { knownNotExisting: true });
+      expect([...existingLabels.keys()]).toEqual([getLabelStandardId('APT')]);
+      // The same label again is an existing one now
+      expect(await importLabel(context, user, { value: 'apt', color: '#ff0000' }, { mode: ConfigImportMode.Add }, existingLabels)).toMatchObject({ status: 'failed', code: 'exists' });
+      expect(addLabel).toHaveBeenCalledTimes(1);
+    });
+
+    it('adds nothing to them on a dry run', async () => {
+      const existingLabels = new Map<string, BasicStoreEntityLabel>();
+      await importLabel(context, user, { value: 'APT' }, { mode: ConfigImportMode.Add, dryRun: true }, existingLabels);
+      expect(existingLabels.size).toBe(0);
     });
   });
 
@@ -176,7 +196,7 @@ describe('Label import with the existing labels read at once', () => {
     await importLabel(context, user, configuration, { mode: ConfigImportMode.Overwrite }, existing(stored));
     expect(labelEditField).toHaveBeenCalledWith(context, user, stored.id, [{ key: 'color', value: ['#00ff00'] }]);
     await importLabel(context, user, { value: 'New', color: '#00ff00' }, { mode: ConfigImportMode.Overwrite }, existing(stored));
-    expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'New', color: '#00ff00' });
+    expect(addLabel).toHaveBeenCalledWith(context, user, { value: 'New', color: '#00ff00' }, { knownNotExisting: true });
     expect(storeLoadById).not.toHaveBeenCalled();
   });
 

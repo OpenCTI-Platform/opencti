@@ -41,10 +41,11 @@ export const stringToColour = (str) => {
   return colour;
 };
 
-export const addLabel = async (context, user, label) => {
+// knownNotExisting: the caller has just read that no label has this value (an import that read its labels ahead): not read again
+export const addLabel = async (context, user, label, { knownNotExisting = false } = {}) => {
   // Check if a label with the same value (case-insensitive) already exists
   const standardId = generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label.value) });
-  const existing = await storeLoadById(context, user, standardId, ENTITY_TYPE_LABEL);
+  const existing = knownNotExisting ? undefined : await storeLoadById(context, user, standardId, ENTITY_TYPE_LABEL);
   if (existing) {
     return existing;
   }

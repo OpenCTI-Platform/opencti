@@ -18,7 +18,13 @@ import {
   reloadConfigPresetImportUser,
   toConfigPresetItemOptions,
 } from './configPreset-import-utils';
-import { computeConfigPresetItem, computeConfigPresetItems, readConfigPresetImportBundle } from './configPreset-import-domain';
+import {
+  computeConfigPresetItem,
+  computeConfigPresetItems,
+  getConfigPresetFamiliesAvailability,
+  prepareConfigPresetItems,
+  readConfigPresetImportBundle,
+} from './configPreset-import-domain';
 import { resolveBundleDependencies } from './configPreset-import-bundle';
 import { dropConfigPresetImportCache } from './configPreset-import-cache';
 import { writeConfigPresetImportReport } from './configPreset-import-report';
@@ -154,6 +160,9 @@ const dryRun = async (
   return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes, ...itemOptions })), report_id: null, settings: null, entity_settings: null };
 };
 
+// The items read ahead together by a real import: what a slice needs is read once, before its first item
+const CONFIG_PRESET_IMPORT_SLICE_SIZE = 500;
+
 const realImport = async (
   context: AuthContext,
   user: AuthUser,
@@ -199,12 +208,18 @@ const realImport = async (
   // Why the import stopped before the end, when it did: a lost lock, or an unexpected error between two items
   let stopReason: string | null = null;
   try {
+    const availability = await getConfigPresetFamiliesAvailability(importContext, items);
     for (let i = 0; i < items.length && !stopReason; i += 1) {
       const item = items[i];
       // A lost lock aborts its signal and throws nothing: checked before each item, the item in progress finishes
       if (lock.signal.aborted) {
         stopReason = 'Import stopped: lock lost';
       } else {
+        // What the items of a slice need is read before the first of them, in one query per family, not one per item. The platform is
+        // read as late as the slice, so what the earlier slices wrote is in it.
+        if (i % CONFIG_PRESET_IMPORT_SLICE_SIZE === 0) {
+          await prepareConfigPresetItems(importContext, user, items.slice(i, i + CONFIG_PRESET_IMPORT_SLICE_SIZE), plan, availability);
+        }
         // Re-read before each item: losing BYPASS, or the account, stops the import
         const runUser = await reloadConfigPresetImportUser(importContext, user);
         const result = await importConfigPresetItem(importContext, runUser, item, plan, configPresetImportMode(modes, item.type, item.id));
