@@ -10,7 +10,6 @@ const XTM_ONE_TOKEN = conf.get('xtm:xtm_one_token');
 // manager should run — the token is the signal that XTM One registration
 // is intentionally configured.
 const XTM_ONE_ENABLED = !!(XTM_ONE_URL && XTM_ONE_TOKEN);
-const BOOT_DELAY = 30_000; // 30 seconds — let the platform finish init
 
 export const xtmOneRegistrationManager = async () => {
   const context = executionContext('xtm_one_registration_manager');
@@ -29,6 +28,8 @@ export const XTM_ONE_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
     handler: xtmOneRegistrationManager,
     interval: XTM_ONE_SCHEDULE_TIME,
     lockKey: 'xtm_one_registration_manager_lock',
+    // Register once when the managers start, so the platform appears in XTM One without waiting for the first interval
+    runOnStart: true,
   },
   enabledByConfig: XTM_ONE_ENABLED,
   enabledToStart(): boolean {
@@ -40,17 +41,4 @@ export const XTM_ONE_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   warning(): boolean {
     return false;
   },
-};
-
-// Fire once at boot so the platform appears in XTM One immediately
-// instead of waiting for the first interval tick.
-// Called by back.ts, not on import: scripts and tests load the managers too.
-export const scheduleXtmOneBootRegistration = () => {
-  if (XTM_ONE_ENABLED) {
-    setTimeout(() => {
-      xtmOneRegistrationManager().catch((err: any) => {
-        logApp.warn('[XTM One] Boot registration failed, will retry on next tick', { error: err.message });
-      });
-    }, BOOT_DELAY);
-  }
 };
