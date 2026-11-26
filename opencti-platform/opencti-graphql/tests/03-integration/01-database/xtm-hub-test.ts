@@ -574,6 +574,18 @@ describe('XTM hub', () => {
       );
     });
 
+    it('should keep the saved xtm_hub_available_news_feed_types when the hub could not answer', async () => {
+      consumeProvisionedNewsFeedItemsSpy.mockResolvedValue({
+        news_feed_items: [],
+        available_news_feed_types: null,
+      });
+
+      await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+      expect(updateAttributeSpy).not.toHaveBeenCalled();
+      expect(upsertNewsFeedSpy).not.toHaveBeenCalled();
+    });
+
     it('should call loadProvisionedNewsFeedItems with correct platform credentials', async () => {
       await loadAndSaveLatestNewsFeed(testContext, HUB_REGISTRATION_MANAGER_USER);
 

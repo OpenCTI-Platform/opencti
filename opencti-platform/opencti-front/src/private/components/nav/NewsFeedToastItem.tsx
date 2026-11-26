@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../components/Theme';
 import { useFormatter } from '../../../components/i18n';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
-import { getNewsFeedIcon, getNewsFeedLabel, isKnownNewsFeedType } from '../../../utils/NewsFeed';
+import { getNewsFeedIcon, getNewsFeedLabel, getNewsFeedLinkLabel, isKnownNewsFeedType } from '../../../utils/NewsFeed';
 
 export interface NewsFeedToastData {
   id: string;
@@ -29,6 +29,7 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
 
   const IconComponent: React.ElementType = getNewsFeedIcon(item.news_feed_type);
   const typeLabel = getNewsFeedLabel(item.news_feed_type);
+  const linkLabel = t_i18n(getNewsFeedLinkLabel(item.news_feed_type));
 
   const urlPath = item.metadata?.find((m) => m?.key === 'url_path')?.value;
   const resourceLink = useXTMHubResourceLink(urlPath);
@@ -86,15 +87,15 @@ const NewsFeedToastItem: FunctionComponent<NewsFeedToastItemProps> = ({
         )}
       </Box>
 
-      {/* Open in XTM Hub */}
+      {/* Open link */}
       {resourceLink && (
-        <Tooltip title={t_i18n('Open in XTM Hub')}>
+        <Tooltip title={linkLabel}>
           <IconButton
             asChild
             variant="default"
             priority="tertiary"
             size="sm"
-            aria-label={t_i18n('Open in XTM Hub')}
+            aria-label={linkLabel}
             icon={<OpenInNewOutlined fontSize="small" />}
           >
             {/* IconButton's `asChild` clones this element and injects the

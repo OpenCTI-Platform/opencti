@@ -82,7 +82,8 @@ export interface ProvisionedNewsFeedItem {
 
 interface ConsumeProvisionedNewsFeedItemsResponse {
   news_feed_items: ProvisionedNewsFeedItem[];
-  available_news_feed_types: NewsFeedItemType[];
+  // null when the hub could not answer: the available types are then unknown, not empty
+  available_news_feed_types: NewsFeedItemType[] | null;
 }
 
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
@@ -281,7 +282,7 @@ export const xtmHubClient = {
       },
     });
 
-    const emptyResponse: ConsumeProvisionedNewsFeedItemsResponse = { news_feed_items: [], available_news_feed_types: [] };
+    const emptyResponse: ConsumeProvisionedNewsFeedItemsResponse = { news_feed_items: [], available_news_feed_types: null };
 
     try {
       const response = await httpClient.post('/graphql-api', { query: mutation });

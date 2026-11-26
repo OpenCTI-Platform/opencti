@@ -22123,6 +22123,7 @@ export type NetworkTrafficAddInput = {
 
 export enum NewsFeedCategory {
   BlogPost = 'BLOG_POST',
+  GithubRelease = 'GITHUB_RELEASE',
   Resource = 'RESOURCE'
 }
 
@@ -22130,6 +22131,7 @@ export type NewsFeedCount = {
   __typename?: 'NewsFeedCount';
   blog_post_count?: Maybe<Scalars['Int']['output']>;
   count?: Maybe<Scalars['Int']['output']>;
+  github_release_count?: Maybe<Scalars['Int']['output']>;
   resource_count?: Maybe<Scalars['Int']['output']>;
   user_id?: Maybe<Scalars['String']['output']>;
 };
@@ -22170,6 +22172,7 @@ export type NewsFeedItemMetadata = {
 };
 
 export enum NewsFeedItemsOrdering {
+  Score = '_score',
   CreationDate = 'creation_date',
   NewsFeedType = 'news_feed_type',
   Title = 'title'
@@ -25837,6 +25840,7 @@ export type Query = {
   myNotifications?: Maybe<NotificationConnection>;
   myOpinion?: Maybe<Opinion>;
   myUnreadNewsFeedsCount?: Maybe<Scalars['Int']['output']>;
+  myUnreadNewsFeedsCounts?: Maybe<NewsFeedCount>;
   myUnreadNotificationsCount?: Maybe<Scalars['Int']['output']>;
   narrative?: Maybe<Narrative>;
   narratives?: Maybe<NarrativeConnection>;
@@ -51318,6 +51322,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
 export type NewsFeedCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['NewsFeedCount'] = ResolversParentTypes['NewsFeedCount']> = ResolversObject<{
   blog_post_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  github_release_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   resource_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
@@ -52770,6 +52775,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   myNotifications?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, Partial<QueryMyNotificationsArgs>>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
   myUnreadNewsFeedsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryMyUnreadNewsFeedsCountArgs>>;
+  myUnreadNewsFeedsCounts?: Resolver<Maybe<ResolversTypes['NewsFeedCount']>, ParentType, ContextType>;
   myUnreadNotificationsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   narrative?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<QueryNarrativeArgs, 'id'>>;
   narratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType, Partial<QueryNarrativesArgs>>;

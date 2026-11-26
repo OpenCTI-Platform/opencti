@@ -98,10 +98,20 @@ describe('NewsFeed', () => {
     expect(mockCommitMarkAllAsRead).toHaveBeenCalledWith({ variables: { category: 'RESOURCE' } });
   });
 
-  it('marks every item as read on mount when the blogposts tab is not available', () => {
+  it('also marks the blogposts as read on mount when the blogposts tab is not available', () => {
     renderNewsFeed({ markBlogPostsAsRead: true });
-    expect(mockCommitMarkAllAsRead).toHaveBeenCalledOnce();
-    expect(mockCommitMarkAllAsRead).toHaveBeenCalledWith({ variables: { category: null } });
+    expect(mockCommitMarkAllAsRead.mock.calls).toEqual([
+      [{ variables: { category: 'RESOURCE' } }],
+      [{ variables: { category: 'BLOG_POST' } }],
+    ]);
+  });
+
+  it('also marks the GitHub releases as read on mount when the last releases tab is not available', () => {
+    renderNewsFeed({ markGitHubReleasesAsRead: true });
+    expect(mockCommitMarkAllAsRead.mock.calls).toEqual([
+      [{ variables: { category: 'RESOURCE' } }],
+      [{ variables: { category: 'GITHUB_RELEASE' } }],
+    ]);
   });
 
   it('restricts the news feed items to the news feed entity type', () => {
@@ -123,6 +133,13 @@ describe('NewsFeed', () => {
     renderNewsFeed();
     expect(dataTableProps?.contextFilters?.filters).toContainEqual(
       expect.objectContaining({ key: 'news_feed_type', values: ['BLOG_POST'], operator: 'not_eq' }),
+    );
+  });
+
+  it('excludes the GitHub releases, which have their own tab', () => {
+    renderNewsFeed();
+    expect(dataTableProps?.contextFilters?.filters).toContainEqual(
+      expect.objectContaining({ key: 'news_feed_type', values: ['GITHUB_RELEASE'], operator: 'not_eq' }),
     );
   });
 

@@ -5,6 +5,7 @@ import {
   markAllNewsFeedItemsAsRead,
   myNewsFeedsFind,
   myUnreadNewsFeedsCount,
+  myUnreadNewsFeedsCounts,
   upsertNewsFeed,
   cleanOldNewsFeedItems,
 } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
@@ -173,15 +174,15 @@ describe('News feed', () => {
 
     it('should notify with the unread count for the created item user_id', async () => {
       mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: mockUser.id });
-      // blogposts count first, then resources count
-      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(2);
+      // blogposts count first, then resources count, then GitHub releases count
+      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(2).mockResolvedValueOnce(4);
 
       await addNewsFeed(mockContext, mockUser, baseInput);
 
       expect(mockNotify).toHaveBeenCalledOnce();
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 3, blog_post_count: 1, resource_count: 2, user_id: mockUser.id },
+        { count: 7, blog_post_count: 1, resource_count: 2, github_release_count: 4, user_id: mockUser.id },
         mockUser,
       );
     });
@@ -189,13 +190,13 @@ describe('News feed', () => {
     it('should use the user_id from the created entity (not from the auth user) when notifying', async () => {
       const differentUserId = 'different-user-99';
       mockCreateInternalObject.mockResolvedValue({ id: 'new-id', user_id: differentUserId });
-      mockElCount.mockResolvedValueOnce(0).mockResolvedValueOnce(2);
+      mockElCount.mockResolvedValueOnce(0).mockResolvedValueOnce(2).mockResolvedValueOnce(0);
 
       await addNewsFeed(mockContext, mockUser, { ...baseInput, user_id: differentUserId });
 
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 2, blog_post_count: 0, resource_count: 2, user_id: differentUserId },
+        { count: 2, blog_post_count: 0, resource_count: 2, github_release_count: 0, user_id: differentUserId },
         mockUser,
       );
     });
@@ -317,7 +318,26 @@ describe('News feed', () => {
       );
     });
 
-    it('should count everything but the blogposts for the resource category', async () => {
+    it('should only count the GitHub releases for the GitHub release category', async () => {
+      mockElCount.mockResolvedValue(1);
+
+      await myUnreadNewsFeedsCount(mockContext, mockUser, null, NewsFeedCategory.GithubRelease);
+
+      expect(mockElCount).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        expect.any(String),
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['GITHUB_RELEASE'] },
+            ]),
+          }),
+        }),
+      );
+    });
+
+    it('should count everything but the blogposts and the GitHub releases for the resource category', async () => {
       mockElCount.mockResolvedValue(1);
 
       await myUnreadNewsFeedsCount(mockContext, mockUser, null, NewsFeedCategory.Resource);
@@ -330,6 +350,7 @@ describe('News feed', () => {
           filters: expect.objectContaining({
             filters: expect.arrayContaining([
               { key: ['news_feed_type'], values: ['BLOG_POST'], operator: 'not_eq' },
+              { key: ['news_feed_type'], values: ['GITHUB_RELEASE'], operator: 'not_eq' },
             ]),
           }),
         }),
@@ -342,6 +363,21 @@ describe('News feed', () => {
       const result = await myUnreadNewsFeedsCount(mockContext, mockUser, 'other-user-42');
 
       expect(result).toBe(7);
+    });
+  });
+
+  describe('myUnreadNewsFeedsCounts', () => {
+    beforeEach(() => {
+      mockElCount.mockReset();
+    });
+
+    it('should return the unread count of each tab and their total, for the given user', async () => {
+      // blogposts count first, then resources count, then GitHub releases count
+      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(2).mockResolvedValueOnce(4);
+
+      const result = await myUnreadNewsFeedsCounts(mockContext, mockUser, mockUser.id);
+
+      expect(result).toEqual({ count: 7, blog_post_count: 1, resource_count: 2, github_release_count: 4, user_id: mockUser.id });
     });
   });
 
@@ -415,11 +451,11 @@ describe('News feed', () => {
 
       await markAllNewsFeedItemsAsRead(mockContext, mockUser);
 
-      expect(mockElCount).toHaveBeenCalledTimes(2);
+      expect(mockElCount).toHaveBeenCalledTimes(3);
       expect(mockNotify).toHaveBeenCalledOnce();
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 0, blog_post_count: 0, resource_count: 0, user_id: mockUser.id },
+        { count: 0, blog_post_count: 0, resource_count: 0, github_release_count: 0, user_id: mockUser.id },
         mockUser,
       );
     });
@@ -427,15 +463,15 @@ describe('News feed', () => {
     it('should notify with a non-zero count if new unread items appeared concurrently', async () => {
       mockFullEntitiesList.mockResolvedValue([{ id: 'item-1', is_read: false }]);
       // Simulate a concurrent new unread item arriving after the patches
-      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
+      mockElCount.mockResolvedValueOnce(1).mockResolvedValueOnce(0).mockResolvedValueOnce(0);
 
       await markAllNewsFeedItemsAsRead(mockContext, mockUser);
 
-      expect(mockElCount).toHaveBeenCalledTimes(2);
+      expect(mockElCount).toHaveBeenCalledTimes(3);
       expect(mockNotify).toHaveBeenCalledOnce();
       expect(mockNotify).toHaveBeenCalledWith(
         'ENTITY_TYPE_NEWS_FEED_NUMBER_EDIT_TOPIC',
-        { count: 1, blog_post_count: 1, resource_count: 0, user_id: mockUser.id },
+        { count: 1, blog_post_count: 1, resource_count: 0, github_release_count: 0, user_id: mockUser.id },
         mockUser,
       );
     });
@@ -459,6 +495,25 @@ describe('News feed', () => {
       );
     });
 
+    it('should only mark the GitHub releases as read for the GitHub release category', async () => {
+      mockFullEntitiesList.mockResolvedValue([]);
+
+      await markAllNewsFeedItemsAsRead(mockContext, mockUser, NewsFeedCategory.GithubRelease);
+
+      expect(mockFullEntitiesList).toHaveBeenCalledWith(
+        mockContext,
+        mockUser,
+        ['NewsFeedItem'],
+        expect.objectContaining({
+          filters: expect.objectContaining({
+            filters: expect.arrayContaining([
+              { key: ['news_feed_type'], values: ['GITHUB_RELEASE'] },
+            ]),
+          }),
+        }),
+      );
+    });
+
     it('should only mark the resources as read for the resource category', async () => {
       mockFullEntitiesList.mockResolvedValue([]);
 
@@ -472,6 +527,7 @@ describe('News feed', () => {
           filters: expect.objectContaining({
             filters: expect.arrayContaining([
               { key: ['news_feed_type'], values: ['BLOG_POST'], operator: 'not_eq' },
+              { key: ['news_feed_type'], values: ['GITHUB_RELEASE'], operator: 'not_eq' },
             ]),
           }),
         }),

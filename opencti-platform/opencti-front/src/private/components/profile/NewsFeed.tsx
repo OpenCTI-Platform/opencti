@@ -19,7 +19,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import { useQueryLoadingWithLoadQuery } from '../../../utils/hooks/useQueryLoading';
 import NewsFeedTags from './NewsFeedTags';
 import { useXTMHubResourceLink } from '../../../utils/hooks/useXTMHubResourceLink';
-import { getNewsFeedIcon, isKnownNewsFeedType, NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
+import { getNewsFeedIcon, isKnownNewsFeedType, NEWS_FEED_BLOG_POST_TYPE, NEWS_FEED_GITHUB_RELEASE_TYPE } from '../../../utils/NewsFeed';
 
 const LOCAL_STORAGE_KEY = 'newsFeed';
 
@@ -162,17 +162,31 @@ interface NewsFeedComponentProps {
   contextFilters: FilterGroup;
   onNewItem: () => void;
   markBlogPostsAsRead: boolean;
+  markGitHubReleasesAsRead: boolean;
 }
 
-const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef, helpers, contextFilters, onNewItem, markBlogPostsAsRead }) => {
+const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({
+  queryRef,
+  helpers,
+  contextFilters,
+  onNewItem,
+  markBlogPostsAsRead,
+  markGitHubReleasesAsRead,
+}) => {
   const { t_i18n } = useFormatter();
 
   const [commitMarkAllAsRead] = useMutation(markAllNewsFeedItemsAsReadMutation);
 
   useEffect(() => {
-    // Without the blogpost tab, nothing else can mark the blogposts as read: do it here, so the badge cannot stay on.
-    commitMarkAllAsRead({ variables: { category: markBlogPostsAsRead ? null : 'RESOURCE' } });
-  }, [commitMarkAllAsRead, markBlogPostsAsRead]);
+    commitMarkAllAsRead({ variables: { category: 'RESOURCE' } });
+    // Without their own tab, nothing else can mark these items as read: do it here, so the badge cannot stay on.
+    if (markBlogPostsAsRead) {
+      commitMarkAllAsRead({ variables: { category: 'BLOG_POST' } });
+    }
+    if (markGitHubReleasesAsRead) {
+      commitMarkAllAsRead({ variables: { category: 'GITHUB_RELEASE' } });
+    }
+  }, [commitMarkAllAsRead, markBlogPostsAsRead, markGitHubReleasesAsRead]);
 
   const subConfig = useMemo(() => ({
     subscription: newsFeedItemSubscription,
@@ -262,11 +276,13 @@ const NewsFeedComponent: FunctionComponent<NewsFeedComponentProps> = ({ queryRef
 };
 
 interface NewsFeedProps {
-  // true when the blogpost tab is not available: this tab then marks every unread item as read, not only the resources.
+  // true when the blogpost tab is not available: this tab then also marks the blogposts as read.
   markBlogPostsAsRead?: boolean;
+  // true when the last releases tab is not available: this tab then also marks the GitHub releases as read.
+  markGitHubReleasesAsRead?: boolean;
 }
 
-const NewsFeed: FunctionComponent<NewsFeedProps> = ({ markBlogPostsAsRead = false }) => {
+const NewsFeed: FunctionComponent<NewsFeedProps> = ({ markBlogPostsAsRead = false, markGitHubReleasesAsRead = false }) => {
   const { me } = useAuth();
 
   const {
@@ -301,6 +317,12 @@ const NewsFeed: FunctionComponent<NewsFeedProps> = ({ markBlogPostsAsRead = fals
         operator: 'not_eq',
         mode: 'and',
       },
+      {
+        key: 'news_feed_type',
+        values: [NEWS_FEED_GITHUB_RELEASE_TYPE],
+        operator: 'not_eq',
+        mode: 'and',
+      },
     ],
     filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
   };
@@ -327,6 +349,7 @@ const NewsFeed: FunctionComponent<NewsFeedProps> = ({ markBlogPostsAsRead = fals
         contextFilters={contextFilters}
         onNewItem={handleNewItem}
         markBlogPostsAsRead={markBlogPostsAsRead}
+        markGitHubReleasesAsRead={markGitHubReleasesAsRead}
       />
     </Suspense>
   ) : (

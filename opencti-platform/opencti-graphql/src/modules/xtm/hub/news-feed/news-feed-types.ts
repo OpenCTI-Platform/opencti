@@ -11,6 +11,7 @@ export enum NewsFeedItemType {
   RESOURCE_CUSTOM_VIEW = 'RESOURCE_CUSTOM_VIEW',
   RESOURCE_INTEGRATION = 'RESOURCE_INTEGRATION',
   BLOG_POST = 'BLOG_POST',
+  GITHUB_RELEASE = 'GITHUB_RELEASE',
 }
 
 export interface NewsFeedItemMetadata {

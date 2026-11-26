@@ -1,12 +1,18 @@
 import { ArticleOutlined, InsertChartOutlined, InsightsOutlined, IntegrationInstructionsOutlined, LibraryBooksOutlined, NotificationsOutlined } from '@mui/icons-material';
 import type { ElementType } from 'react';
 
+export const GITHUB_RELEASES_URL = 'https://github.com/OpenCTI-Platform/opencti/releases';
+
+const DEFAULT_LINK_LABEL = 'Open in XTM Hub';
+
 interface NewsFeedTypeDefinition {
   icon: ElementType;
   label: string;
+  linkLabel?: string;
 }
 
 export const NEWS_FEED_BLOG_POST_TYPE = 'BLOG_POST';
+export const NEWS_FEED_GITHUB_RELEASE_TYPE = 'GITHUB_RELEASE';
 
 const NEWS_FEED_TYPE_MAP: Record<string, NewsFeedTypeDefinition> = {
   RESOURCE_CUSTOM_DASHBOARD: { icon: InsertChartOutlined, label: 'New Custom Dashboard' },
@@ -14,6 +20,7 @@ const NEWS_FEED_TYPE_MAP: Record<string, NewsFeedTypeDefinition> = {
   RESOURCE_CUSTOM_VIEW: { icon: InsightsOutlined, label: 'New Custom View' },
   RESOURCE_INTEGRATION: { icon: IntegrationInstructionsOutlined, label: 'New Integration' },
   [NEWS_FEED_BLOG_POST_TYPE]: { icon: ArticleOutlined, label: 'Blogpost' },
+  GITHUB_RELEASE: { icon: IntegrationInstructionsOutlined, label: 'New GitHub release', linkLabel: 'Open the GitHub release' },
 };
 
 export const isKnownNewsFeedType = (type: string): boolean =>
@@ -24,6 +31,9 @@ export const getNewsFeedIcon = (type: string): ElementType =>
 
 export const getNewsFeedLabel = (type: string): string | undefined =>
   NEWS_FEED_TYPE_MAP[type]?.label;
+
+export const getNewsFeedLinkLabel = (type: string): string =>
+  (isKnownNewsFeedType(type) ? NEWS_FEED_TYPE_MAP[type].linkLabel : undefined) ?? DEFAULT_LINK_LABEL;
 
 type NewsFeedMetadata = readonly ({ readonly key: string; readonly value: string | null | undefined } | null | undefined)[] | null | undefined;
 

@@ -62,6 +62,21 @@ describe('NewsFeedToastItem', () => {
     expect(url.searchParams.get('platform_id')).toBe(SETTINGS_ID);
   });
 
+  it('renders the label and a link to the release for a GitHub release', () => {
+    renderItem(buildItem({
+      title: 'OpenCTI 7.261014.0',
+      news_feed_type: 'GITHUB_RELEASE',
+      metadata: [
+        { key: 'url_path', value: 'redirect/news-feed/item-1' },
+        { key: 'product_version', value: '7.261014.0' },
+      ],
+    }));
+    expect(screen.getByText('New GitHub release')).toBeInTheDocument();
+    expect(screen.queryByText(UNSUPPORTED_TYPE_MESSAGE)).not.toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'Open the GitHub release' });
+    expect(new URL(link.getAttribute('href') as string).pathname).toBe('/redirect/news-feed/item-1');
+  });
+
   it('opens the hub link in a new safe tab', () => {
     renderItem(buildItem());
     const link = screen.getByRole('link', { name: 'Open in XTM Hub' });

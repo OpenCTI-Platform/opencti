@@ -45,13 +45,21 @@ vi.mock('@common/card/Card', () => ({
 }));
 
 vi.mock('./NewsFeed', () => ({
-  default: ({ markBlogPostsAsRead }: { markBlogPostsAsRead?: boolean }) => (
-    <div data-testid="news-feed-list" data-mark-blog-posts-as-read={String(!!markBlogPostsAsRead)} />
+  default: ({ markBlogPostsAsRead, markGitHubReleasesAsRead }: { markBlogPostsAsRead?: boolean; markGitHubReleasesAsRead?: boolean }) => (
+    <div
+      data-testid="news-feed-list"
+      data-mark-blog-posts-as-read={String(!!markBlogPostsAsRead)}
+      data-mark-github-releases-as-read={String(!!markGitHubReleasesAsRead)}
+    />
   ),
 }));
 
 vi.mock('./NewsFeedBlogPosts', () => ({
   default: () => <div data-testid="news-feed-blog-posts" />,
+}));
+
+vi.mock('./NewsFeedGitHubReleases', () => ({
+  default: () => <div data-testid="news-feed-github-releases" />,
 }));
 
 vi.mock('./NewsFeedSettings', () => ({
@@ -67,16 +75,25 @@ const REGISTERED_SETTINGS = {
   xtm_hub_available_news_feed_types: ['RESOURCE_CUSTOM_DASHBOARD', 'RESOURCE_PLAYBOOK'],
 };
 
+const GITHUB_RELEASES_SETTINGS = {
+  ...REGISTERED_SETTINGS,
+  xtm_hub_available_news_feed_types: ['RESOURCE_CUSTOM_DASHBOARD', 'GITHUB_RELEASE'],
+};
+
 const renderPage = (options?: {
   settings?: Record<string, unknown>;
   me?: Record<string, unknown>;
   unreadCount?: number | null;
   unreadBlogPostsCount?: number | null;
+  unreadGitHubReleasesCount?: number | null;
 }) => {
   const settings = options?.settings ?? REGISTERED_SETTINGS;
   mockUseLazyLoadQuery.mockReturnValue({
-    myUnreadResourcesCount: options?.unreadCount ?? 0,
-    myUnreadBlogPostsCount: options?.unreadBlogPostsCount ?? 0,
+    myUnreadNewsFeedsCounts: {
+      resource_count: options?.unreadCount ?? 0,
+      blog_post_count: options?.unreadBlogPostsCount ?? 0,
+      github_release_count: options?.unreadGitHubReleasesCount ?? 0,
+    },
     settings,
   });
   return testRender(<NewsFeedPage />, {
@@ -87,11 +104,15 @@ const renderPage = (options?: {
   });
 };
 
-const emitNewsFeedNumber = (resourceCount: number | null, blogPostCount: number | null = null) => act(() => {
+const emitNewsFeedNumber = (
+  resourceCount: number | null,
+  blogPostCount: number | null = null,
+  gitHubReleaseCount: number | null = null,
+) => act(() => {
   subscriptionOnNext?.({
-    newsFeedsNumber: resourceCount === null && blogPostCount === null
+    newsFeedsNumber: resourceCount === null && blogPostCount === null && gitHubReleaseCount === null
       ? null
-      : { resource_count: resourceCount, blog_post_count: blogPostCount },
+      : { resource_count: resourceCount, blog_post_count: blogPostCount, github_release_count: gitHubReleaseCount },
   });
 });
 
@@ -100,6 +121,7 @@ const BLOG_POST_SETTINGS = { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed
 const getTabBadge = (tabName: RegExp) => screen.getByRole('tab', { name: tabName }).querySelector('[aria-label$="items"]');
 const getBadge = () => getTabBadge(/News feed/);
 const getBlogPostsBadge = () => getTabBadge(/Blogpost/);
+const getLastReleasesBadge = () => getTabBadge(/Last releases/);
 
 describe('NewsFeedPage', () => {
   beforeEach(() => {
@@ -139,6 +161,16 @@ describe('NewsFeedPage', () => {
     expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-blog-posts-as-read', 'false');
   });
 
+  it('makes the news feed mark the GitHub releases as read when the last releases tab is not available', () => {
+    renderPage();
+    expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-github-releases-as-read', 'true');
+  });
+
+  it('keeps the GitHub releases unread on the news feed when the last releases tab is available', () => {
+    renderPage({ settings: GITHUB_RELEASES_SETTINGS });
+    expect(screen.getByTestId('news-feed-list')).toHaveAttribute('data-mark-github-releases-as-read', 'false');
+  });
+
   it('displays the blogposts when the blogposts tab is selected', async () => {
     const { user } = renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: ['BLOG_POST'] } });
     await user.click(screen.getByRole('tab', { name: /Blogpost/ }));
@@ -157,6 +189,29 @@ describe('NewsFeedPage', () => {
     await user.click(screen.getByRole('tab', { name: /Settings/ }));
     expect(screen.getByTestId('news-feed-settings')).toBeInTheDocument();
     expect(screen.queryByTestId('news-feed-list')).not.toBeInTheDocument();
+  });
+
+  it('hides the Last releases tab when the platform cannot receive GitHub releases', () => {
+    renderPage();
+    expect(screen.queryByRole('tab', { name: /Last releases/ })).not.toBeInTheDocument();
+  });
+
+  it('hides the Last releases tab when the platform has no available type', () => {
+    renderPage({ settings: { ...REGISTERED_SETTINGS, xtm_hub_available_news_feed_types: null } });
+    expect(screen.queryByRole('tab', { name: /Last releases/ })).not.toBeInTheDocument();
+  });
+
+  it('displays the Last releases tab when the platform can receive GitHub releases', () => {
+    renderPage({ settings: GITHUB_RELEASES_SETTINGS });
+    expect(screen.getByRole('tab', { name: /Last releases/ })).toBeInTheDocument();
+  });
+
+  it('displays the GitHub releases when the Last releases tab is selected', async () => {
+    const { user } = renderPage({ settings: GITHUB_RELEASES_SETTINGS });
+    await user.click(screen.getByRole('tab', { name: /Last releases/ }));
+    expect(screen.getByTestId('news-feed-github-releases')).toBeInTheDocument();
+    expect(screen.queryByTestId('news-feed-list')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('news-feed-settings')).not.toBeInTheDocument();
   });
 
   it('gives the available news feed types of the platform to the settings', async () => {
@@ -215,6 +270,24 @@ describe('NewsFeedPage', () => {
     expect(getBlogPostsBadge()).not.toBeInTheDocument();
   });
 
+  it('displays the unread GitHub releases count on the last releases tab only', () => {
+    renderPage({ settings: GITHUB_RELEASES_SETTINGS, unreadCount: 2, unreadGitHubReleasesCount: 3 });
+    expect(getLastReleasesBadge()).toHaveTextContent('3');
+    expect(getBadge()).toHaveTextContent('2');
+  });
+
+  it('hides the last releases badge when there is no unread GitHub release', () => {
+    renderPage({ settings: GITHUB_RELEASES_SETTINGS, unreadCount: 2, unreadGitHubReleasesCount: 0 });
+    expect(getLastReleasesBadge()).not.toBeInTheDocument();
+  });
+
+  it('updates the last releases badge with its own live count', () => {
+    renderPage({ settings: GITHUB_RELEASES_SETTINGS, unreadCount: 2, unreadGitHubReleasesCount: 0 });
+    emitNewsFeedNumber(2, 0, 1);
+    expect(getLastReleasesBadge()).toHaveTextContent('1');
+    expect(getBadge()).toHaveTextContent('2');
+  });
+
   it('updates each badge with its own live count', () => {
     renderPage({ settings: BLOG_POST_SETTINGS, unreadCount: 2, unreadBlogPostsCount: 5 });
     emitNewsFeedNumber(7, 0);
@@ -265,8 +338,7 @@ describe('NewsFeedPage', () => {
   it('does not reuse the stale live counts when the news feed is enabled again', () => {
     let setUnsubscribed: (value: boolean) => void = () => {};
     mockUseLazyLoadQuery.mockReturnValue({
-      myUnreadResourcesCount: 4,
-      myUnreadBlogPostsCount: 2,
+      myUnreadNewsFeedsCounts: { resource_count: 4, blog_post_count: 2, github_release_count: 0 },
       settings: BLOG_POST_SETTINGS,
     });
     const Harness = () => {
