@@ -320,6 +320,11 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
 };
 
 const transformTemplate = (template: string, code: string, context: string[], async: boolean, shouldYield: boolean) => {
+  // HTML-like comments are not supported in template code
+  if (code.includes('<!--') || code.includes('-->')) {
+    throw new VerifierParsingError('Invalid javascript');
+  }
+
   context.forEach((name) => {
     if (forbiddenGlobals.includes(name) || name.startsWith(safeReservedPrefix)) {
       throw new VerifierIllegalAccessError(`Forbidden context variable ${JSON.stringify(name)}`);
@@ -508,7 +513,7 @@ const transformTemplate = (template: string, code: string, context: string[], as
 
   const processString = () => {
     const parentType = cursor.node.parent?.type.name;
-    if (parentType === 'Property') {
+    if (parentType === 'Property' || parentType === 'PatternProperty') {
       processPropertyDefinitionOrName();
     }
   };
@@ -666,12 +671,29 @@ interface SafeRealm {
 // Rebuilds the values a template can reach inside the sandbox realm, so none of them inherits from
 // the host realm's shared prototypes. The data deep copy, the guards, the Object substitute and the
 // octi wrapper are all made with the sandbox's own intrinsics, so a write a template leaves on an
-// inherited method dies with the per-render context instead of carrying to the next render. Function
-// values pass through by reference (a worker never receives any; the main-thread callers' helpers
-// keep working), so only those keep host-realm prototypes.
+// inherited method dies with the per-render context instead of carrying to the next render. A function
+// value (only main-thread callers pass any) is replaced by a sandbox-realm wrapper that copies its
+// receiver, arguments and result the same way, so a function passed along in either direction is
+// wrapped too.
 const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
   clone: sandbox.runInContext(`(value) => {
     const brand = Object.prototype.toString;
+    const wrapFunction = (fn, seen) => {
+      const wrapper = function (...args) {
+        const copies = new Map();
+        const receiver = this === globalThis ? undefined : clone(this, copies);
+        const copiedArgs = args.map((arg) => clone(arg, copies));
+        let result;
+        try { result = Reflect.apply(fn, receiver, copiedArgs); } catch (error) {
+          const translated = new Error(error == null ? '' : error.message);
+          translated.name = error == null ? 'Error' : error.name;
+          throw translated;
+        }
+        return clone(result, new Map());
+      };
+      seen.set(fn, wrapper);
+      return wrapper;
+    };
     const copyInto = (source, target, seen) => {
       seen.set(source, target);
       const keys = Object.keys(source);
@@ -683,6 +705,7 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
       return target;
     };
     const clone = (value, seen) => {
+      if (typeof value === 'function') { return seen.get(value) ?? wrapFunction(value, seen); }
       if (value === null || typeof value !== 'object') { return value; }
       const existing = seen.get(value);
       if (existing) { return existing; }

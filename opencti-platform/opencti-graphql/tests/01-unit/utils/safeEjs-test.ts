@@ -140,6 +140,8 @@ describe('check safeRender on invalid cases', () => {
   const parsingErrorCases = Object.entries({
     'invalid EJS': ' <%= ',
     'invalid JS': ' <%= user( %>',
+    'HTML-like comment open in code': '<% let a = 2; a <!-- a %>',
+    'HTML-like comment close in code': '<% let a = 2; a-->0 %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(parsingErrorCases)('safeRender should fail with VerifierParsingError for "$name" case', ({ template }) => {
@@ -205,6 +207,8 @@ describe('check safeRender on valid cases', () => {
     'output tag with an expression and a trailing semicolon': '<%= 1 + 2; %>',
     'no-space output tag with a trailing semicolon': '<%=user.name;%>',
     'synchronous side effect of an async IIFE before output': '<% let v = 0; (async () => { v = 1; })(); %><%= v %>',
+    'quoted key in destructuring': '<% const { "name": n } = user; %><%= n %>',
+    'HTML comment in template text': '<!-- note --><%= user.name %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(validCases)('safeRender should succeed for "$name" case', ({ template }) => {
@@ -962,6 +966,62 @@ describe('check createSafeEjsSandbox', () => {
     expect(await sandbox.safeRender('<% let i=0; while(i<10) i=i+1; %><%= i %>', {}, quotas)).toEqual('10');
     expect(() => sandbox.safeRender('<% while(true); %>', {}, quotas)).toThrow(VerifierProcessingQuotaExceededError);
     expect(await sandbox.safeRender('<%= 1 + 1 %>', {}, quotas)).toEqual('2');
+  });
+});
+
+describe('check safeRender with functions in data', () => {
+  it('should call a data function and render its result', () => {
+    expect(safeRender('<%= helper("a", "b") %>', { helper: (k: string, v: string) => `${k}=${v}` })).toEqual('a=b');
+  });
+
+  it('should keep the receiver of a data method', () => {
+    const user = {
+      name: 'test',
+      getName() {
+        return this.name;
+      },
+    };
+    expect(safeRender('<%= user.getName() %>', { user })).toEqual('test');
+  });
+
+  it('should surface the message of an error thrown by a data function', () => {
+    const template = '<% let m = "none"; try { fail(); } catch (e) { m = e.message; } %><%= m %>';
+    const failWithError = () => {
+      throw new Error('boom');
+    };
+    const failWithNull = () => {
+      throw null;
+    };
+    expect(safeRender(template, { fail: failWithError })).toEqual('boom');
+    expect(safeRender(template, { fail: failWithNull })).toEqual('');
+  });
+
+  it('should give a template callback the values a data function passes and return its result', () => {
+    const data = { apply: (cb: (o: { v: number }) => unknown) => cb({ v: 41 }) };
+    expect(safeRender('<%= apply((o) => o.v + 1) %>', data)).toEqual('42');
+  });
+
+  it('should keep the identity of an object passed twice to a data function', () => {
+    expect(safeRender('<% const o = { a: 1 }; %><%= same(o, o) %>', { same: (a: unknown, b: unknown) => a === b })).toEqual('true');
+  });
+
+  it('should return usable copies of the objects a data function returns', () => {
+    const data = { obj: () => ({ a: 1 }), arr: () => [1, 2], map: () => new Map([['k', 1]]) };
+    expect(safeRender('<%- JSON.stringify([obj(), arr(), [...map()]]) %>', data)).toEqual('[{"a":1},[1,2],[["k",1]]]');
+  });
+
+  it('should not leak a write on a data function into the host', () => {
+    const helper = () => 'ok';
+    const sandbox = createSafeEjsSandbox();
+    expect(sandbox.safeRender('<% helper.note = "x"; %><%= helper() %>', { helper })).toEqual('ok');
+    expect((helper as unknown as Record<string, unknown>).note).toBeUndefined();
+    expect(sandbox.safeRender('<%= typeof helper.note %>', { helper })).toEqual('undefined');
+  });
+
+  it('should call data functions in an async render with a custom delimiter', async () => {
+    const data = { pick: (matrix: { value: string; result: number }[], value: string) => matrix.find((m) => m.value === value)?.result };
+    const options = { delimiter: '?', async: true, maxExecutedStatementCount: 10000, maxExecutionDuration: 5000 };
+    expect(await createSafeEjsSandbox().safeRender('<?- pick([{ value: "high", result: 90 }], "high") ?>', data, options)).toEqual('90');
   });
 });
 
