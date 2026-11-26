@@ -3,7 +3,7 @@ import { act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 import { graphNode } from '../../../utils/tests/graphTestData';
-import GraphToolbarExpandTools from './GraphToolbarExpandTools';
+import GraphToolbarExpandTools, { expandRelationshipsQuery } from './GraphToolbarExpandTools';
 
 const mocks = vi.hoisted(() => ({
   dialogContent: vi.fn(),
@@ -89,5 +89,43 @@ describe('GraphToolbarExpandTools', () => {
 
     expect(mocks.onInvestigationExpand).toHaveBeenCalled();
     expect(mocks.resetFilters).not.toHaveBeenCalled();
+  });
+
+  describe('the expand query', () => {
+    interface Selection {
+      kind: string;
+      name?: string;
+      type?: string;
+      selections?: readonly Selection[];
+    }
+
+    const linkedField = (selections: readonly Selection[] | undefined, name: string) => {
+      return (selections ?? []).find((s) => s.kind === 'LinkedField' && s.name === name);
+    };
+
+    // The fields selected on an endpoint whatever its type: the ones of fragments on a single type are left out.
+    const fieldsOfEveryType = (selections: readonly Selection[] | undefined): Selection[] => {
+      return (selections ?? []).flatMap((s) => {
+        if (s.kind !== 'InlineFragment') return [s];
+        return ['StixObject', 'BasicObject'].includes(s.type ?? '') ? fieldsOfEveryType(s.selections) : [];
+      });
+    };
+
+    const endpoint = (side: 'from' | 'to') => {
+      const { operation } = expandRelationshipsQuery as unknown as { operation: Selection };
+      const node = ['stixRelationships', 'edges', 'node'].reduce<Selection | undefined>(
+        (parent, name) => linkedField(parent?.selections, name),
+        operation,
+      );
+      return linkedField(node?.selections, side);
+    };
+
+    // An endpoint without its representative is drawn "Unknown", as the narratives reached
+    // through the `to` side of a relationship were (#16992).
+    it.each(['from', 'to'] as const)('fetches the representative of the %s endpoint whatever its type', (side) => {
+      const representative = linkedField(fieldsOfEveryType(endpoint(side)?.selections), 'representative');
+
+      expect(representative?.selections?.map((s) => s.name)).toContain('main');
+    });
   });
 });
