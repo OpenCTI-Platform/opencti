@@ -76,7 +76,7 @@ interface DataSourceCreationProps {
 }
 
 interface DataSourceFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: DataSourceCreationMutation['response']['dataSourceAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   inputValue?: string;
@@ -128,9 +128,9 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     resetBulk,
   } = useBulkCommit<DataSourceCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'dataSourceAdd');
+        updater(store, 'dataSourceAdd', response?.dataSourceAdd);
       }
     },
   });

@@ -66,7 +66,7 @@ interface DataComponentAddInput {
 }
 
 interface DataComponentFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: DataComponentCreationMutation['response']['dataComponentAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   inputValue?: string;
@@ -120,9 +120,9 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     resetBulk,
   } = useBulkCommit<DataComponentCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'dataComponentAdd');
+        updater(store, 'dataComponentAdd', response?.dataComponentAdd);
       }
     },
   });

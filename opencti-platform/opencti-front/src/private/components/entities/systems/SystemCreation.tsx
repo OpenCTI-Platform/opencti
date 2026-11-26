@@ -77,7 +77,7 @@ interface SystemAddInput {
 }
 
 interface SystemFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: SystemCreationMutation['response']['systemAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -133,9 +133,9 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     resetBulk,
   } = useBulkCommit<SystemCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'systemAdd');
+        updater(store, 'systemAdd', response?.systemAdd);
       }
     },
   });

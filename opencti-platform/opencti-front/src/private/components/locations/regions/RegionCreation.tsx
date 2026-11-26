@@ -65,7 +65,7 @@ interface RegionAddInput {
 }
 
 interface RegionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: RegionCreationMutation['response']['regionAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -113,9 +113,9 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     resetBulk,
   } = useBulkCommit<RegionCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'regionAdd');
+        updater(store, 'regionAdd', response?.regionAdd);
       }
     },
   });

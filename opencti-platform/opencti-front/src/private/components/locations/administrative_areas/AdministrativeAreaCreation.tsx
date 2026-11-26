@@ -70,7 +70,7 @@ interface AdministrativeAreaAddInput {
 }
 
 interface AdministrativeAreaFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: AdministrativeAreaCreationMutation['response']['administrativeAreaAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -123,9 +123,9 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     resetBulk,
   } = useBulkCommit<AdministrativeAreaCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'administrativeAreaAdd');
+        updater(store, 'administrativeAreaAdd', response?.administrativeAreaAdd);
       }
     },
   });

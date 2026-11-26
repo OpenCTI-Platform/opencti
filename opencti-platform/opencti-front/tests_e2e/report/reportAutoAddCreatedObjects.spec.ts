@@ -8,6 +8,7 @@ import ContainerAddObservablesPage from '../model/containerAddObservables.pageMo
 import ObservableFormPage from '../model/form/observableForm.pageModel';
 import ObservablesPage from '../model/observable.pageModel';
 import LeftBarPage from '../model/menu/leftBar.pageModel';
+import EntitiesTabPageModel from '../model/EntitiesTab.pageModel';
 import { patchEntitySetting } from '../dataForTesting/entitySetting.data';
 
 /**
@@ -119,6 +120,36 @@ test.describe('Objects created from a container panel are added to the container
     await addObservablesPage.getUndoButton().click();
 
     await expect(containerObservablesPage.getObservableInContainer(`IPv4 address ${ip}`)).toBeHidden();
+  });
+
+  test('created area is added to the report', async ({ page }) => {
+    const reportPage = new ReportPage(page);
+    const reportForm = new ReportFormPage(page);
+    const reportDetailsPage = new ReportDetailsPage(page);
+    const entitiesTab = new EntitiesTabPageModel(page);
+    const reportName = `Auto add area ${nowTime}`;
+    const areaName = `Auto add area ${nowTime}`;
+
+    await reportPage.goto();
+    await new LeftBarPage(page).open();
+    await reportPage.openNewReportForm();
+    await reportForm.nameField.fill(reportName);
+    await reportPage.getCreateReportButton().click();
+    await reportPage.getItemFromList(reportName).click();
+    await expect(reportDetailsPage.getPage()).toBeVisible();
+    await reportDetailsPage.tabs.goToEntitiesTab();
+    await entitiesTab.clickAddEntities();
+
+    await page.getByRole('button', { name: 'Create an entity', exact: true }).click();
+    await page.getByLabel('Entity type').first().click();
+    await page.getByRole('option', { name: 'Area', exact: true }).click();
+    await page.getByRole('textbox', { name: 'Name' }).fill(areaName);
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+
+    // By text: while the panel is open, the modal hides the message from the accessibility tree
+    await expect(page.getByText('Area created and added to the Report')).toBeVisible();
+    await entitiesTab.closeAddEntity();
+    await expect(page.getByRole('link', { name: new RegExp(areaName) })).toBeVisible();
   });
 
   test('close hides the message and keeps the object', async ({ page }) => {

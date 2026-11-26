@@ -31,7 +31,8 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
+import { NoteCreationMutation, NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
+import { NoteCreationUserMutation } from './__generated__/NoteCreationUserMutation.graphql';
 
 export const noteCreationUserMutation = graphql`
   mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
@@ -86,7 +87,11 @@ interface NoteCreationProps {
 }
 
 interface NoteFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: NoteCreationMutation['response']['noteAdd'] | NoteCreationUserMutation['response']['userNoteAdd'],
+  ) => void;
   onClose?: () => void;
   inputValue?: string;
   defaultCreatedBy?: FieldOption;
@@ -165,9 +170,13 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       variables: {
         input,
       },
-      updater: (store) => {
-        if (updater) {
-          updater(store, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
+      updater: (store, response) => {
+        if (!updater) return;
+        // The mutation depends on the user's capabilities, and so does its root field
+        if (userIsKnowledgeEditor) {
+          updater(store, 'noteAdd', (response as NoteCreationMutation['response'] | null)?.noteAdd);
+        } else {
+          updater(store, 'userNoteAdd', (response as NoteCreationUserMutation['response'] | null)?.userNoteAdd);
         }
       },
       onCompleted: () => {

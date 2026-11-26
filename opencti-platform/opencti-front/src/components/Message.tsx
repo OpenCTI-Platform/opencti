@@ -28,6 +28,13 @@ type FullError = {
   };
 };
 
+type MessageType = {
+  text: string | ReactElement;
+  type: string;
+  fullError: FullError | null;
+  action?: MessageAction;
+}
+
 const Message = () => {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState('message');
@@ -55,7 +62,7 @@ const Message = () => {
     const subscription = MESSAGING$.messages.subscribe({
       next: (messages) => {
         if (messages && messages.length > 0 && messages[0]) {
-          const firstMessage = messages[0] as { text: string | ReactElement; type: string; fullError: FullError | null; action?: MessageAction };
+          const firstMessage = messages[0] as MessageType;
           const textPart = firstMessage.text;
           const translatedText = (typeof textPart === 'string' || textPart instanceof String)
             ? t_i18n(textPart)

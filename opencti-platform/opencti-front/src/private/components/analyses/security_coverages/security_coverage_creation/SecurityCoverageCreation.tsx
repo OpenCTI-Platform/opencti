@@ -102,7 +102,7 @@ const securityCoverageValidation = (t_i18n: (value: string) => string, isAutomat
 };
 
 export interface SecurityCoverageFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: SecurityCoverageCreationMutation['response']['securityCoverageAdd']) => void;
   onClose?: () => void;
   inputValue?: string;
   defaultCreatedBy?: FieldOption;
@@ -266,9 +266,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'securityCoverageAdd');
+          updater(store, 'securityCoverageAdd', response?.securityCoverageAdd);
         }
       },
       onError: (error: Error) => {
