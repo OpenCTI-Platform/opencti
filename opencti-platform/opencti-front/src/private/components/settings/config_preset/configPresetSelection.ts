@@ -65,9 +65,25 @@ export const selectAllConfigPresetItems = (types: ReadonlyArray<{ readonly key: 
   return Object.fromEntries(types.map((type) => [type.key, ALL]));
 };
 
+// The ids of a selection as a set, by the array itself: a selection is never mutated, so one set serves every row of the list,
+// where a scan of the ids for each of 50 000 rows would be quadratic. Short lists are scanned, as it costs less than a set.
+const SET_THRESHOLD = 32;
+const idSets = new WeakMap<readonly string[], ReadonlySet<string>>();
+const hasId = (ids: readonly string[], id: string): boolean => {
+  if (ids.length < SET_THRESHOLD) {
+    return ids.includes(id);
+  }
+  let set = idSets.get(ids);
+  if (!set) {
+    set = new Set(ids);
+    idSets.set(ids, set);
+  }
+  return set.has(id);
+};
+
 export const isConfigPresetItemSelected = (selection: ConfigPresetSelection, typeKey: string, itemKey: string): boolean => {
   const { mode, ids } = typeSelection(selection, typeKey);
-  return mode === 'all' ? !ids.includes(itemKey) : ids.includes(itemKey);
+  return mode === 'all' ? !hasId(ids, itemKey) : hasId(ids, itemKey);
 };
 
 // One level: the dependencies of the selected items the dialog has loaded (the first page of each type)
@@ -78,7 +94,8 @@ export const getConfigPresetForcedItems = (types: ReadonlyArray<ExportableType>,
   types.forEach((type) => type.items
     .filter((item) => isConfigPresetItemSelected(selection, type.key, item.key))
     .forEach((item) => item.dependsOn.forEach((dependency) => {
-      forced[dependency.type] = [...(forced[dependency.type] ?? []), dependency.key];
+      // Pushed, not spread into a new array: a type with tens of thousands of dependents would copy the list for each
+      (forced[dependency.type] ??= []).push(dependency.key);
     })));
   return forced;
 };

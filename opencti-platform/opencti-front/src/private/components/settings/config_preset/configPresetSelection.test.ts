@@ -174,3 +174,31 @@ describe('configPresetSelection', () => {
     expect(buildConfigPresetSelections(types, selection, {}, forced)).toEqual([{ type: 'platform', items: null }]);
   });
 });
+
+describe('A selection of thousands of items', () => {
+  const keys = Array.from({ length: 5000 }, (_, index) => `label--${index}`);
+
+  it('finds an item in a long list of ids, in both modes, and follows a toggle', () => {
+    const some: ConfigPresetSelection = { labels: { mode: 'some', ids: keys } };
+    expect(isConfigPresetItemSelected(some, 'labels', 'label--4999')).toBe(true);
+    expect(isConfigPresetItemSelected(some, 'labels', 'other')).toBe(false);
+    const excluded: ConfigPresetSelection = { labels: { mode: 'all', ids: keys } };
+    expect(isConfigPresetItemSelected(excluded, 'labels', 'label--0')).toBe(false);
+    expect(isConfigPresetItemSelected(excluded, 'labels', 'other')).toBe(true);
+    // A toggle makes a new list: the answer follows it, and the list it came from is left as it was
+    const toggled = toggleConfigPresetItem(some, 'labels', 'label--0', false);
+    expect(isConfigPresetItemSelected(toggled, 'labels', 'label--0')).toBe(false);
+    expect(isConfigPresetItemSelected(some, 'labels', 'label--0')).toBe(true);
+    expect(toggled.labels.ids).toHaveLength(4999);
+  });
+
+  it('lists the forced items of a type once for each dependent, without changing the order', () => {
+    const types = [{
+      key: 'groups',
+      itemsPageInfo: { globalCount: 3 },
+      items: ['a', 'b', 'c'].map((key) => ({ key, dependsOn: [{ type: 'roles', key: 'role-1' }, { type: 'roles', key: `role-${key}` }] })),
+    }];
+    const selection: ConfigPresetSelection = { groups: { mode: 'some', ids: ['a', 'c'] } };
+    expect(getConfigPresetForcedItems(types, selection)).toEqual({ roles: ['role-1', 'role-a', 'role-1', 'role-c'] });
+  });
+});

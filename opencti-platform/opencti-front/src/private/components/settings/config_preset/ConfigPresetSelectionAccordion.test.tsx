@@ -74,4 +74,24 @@ describe('ConfigPresetSelectionAccordion', () => {
     await user.click(screen.getByRole('button', { name: 'Collapse Platform settings (0/40)' }));
     expect(screen.queryByRole('checkbox', { name: 'Branding (0/40)' })).not.toBeInTheDocument();
   });
+
+  it('mounts the first rows of a type with thousands of items, never all of them', async () => {
+    const labels: ConfigPresetAccordionType = {
+      key: 'labels',
+      label: 'Labels',
+      description: 'Labels',
+      group,
+      items: Array.from({ length: 5000 }, (_, index) => ({ key: `label--${index}`, label: `label ${index}`, translatable: false, isDefault: false, dependsOn: [] })),
+      itemsPageInfo: { globalCount: 5000 },
+    };
+    const { user } = testRender(
+      <ConfigPresetSelectionAccordion types={[labels]} selection={{ labels: { mode: 'all', ids: [] } }} forced={{}} onSelectionChange={vi.fn()} />,
+    );
+    expandConfigPresetGroups();
+    await user.click(screen.getByRole('button', { name: /^Expand Labels/ }));
+    // 200 rows, the checkbox of the type and the one of the group
+    expect(screen.getAllByRole('checkbox')).toHaveLength(202);
+    await user.click(screen.getByRole('button', { name: 'Show more (4800)' }));
+    expect(screen.getAllByRole('checkbox')).toHaveLength(402);
+  });
 });
