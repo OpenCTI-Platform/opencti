@@ -58,6 +58,7 @@ const ReferencesHarness = forwardRef<ReferencesHandle, { args: Args }>(({ args }
   useImperativeHandle(ref, () => ({ onCreated }));
   return <>{referencesDialog}</>;
 });
+ReferencesHarness.displayName = 'ReferencesHarness';
 
 describe('useAddCreatedObjectsToContainer', () => {
   let notifySuccess: ReturnType<typeof vi.spyOn>;
@@ -134,7 +135,9 @@ describe('useAddCreatedObjectsToContainer', () => {
     act(() => hook.result.current.bulkCreation?.onBulkStart());
     act(() => hook.result.current.onCreated(observable('o1')));
     // Long after the first one, other creations may still come: nothing is added yet
-    await act(async () => { await vi.advanceTimersByTimeAsync(CREATED_OBJECTS_BATCH_DELAY_MS * 3); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CREATED_OBJECTS_BATCH_DELAY_MS * 3);
+    });
     expect(addObjectToContainer).not.toHaveBeenCalled();
     expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 0, total: 0, inProgress: true });
 
@@ -142,7 +145,9 @@ describe('useAddCreatedObjectsToContainer', () => {
       hook.result.current.onCreated(observable('o2'));
       hook.result.current.bulkCreation?.onBulkCompleted();
     });
-    await act(async () => { await vi.runAllTimersAsync(); });
+    await act(async () => {
+      await vi.runAllTimersAsync();
+    });
 
     expect(addObjectToContainer).toHaveBeenCalledTimes(2);
     expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 2, total: 2, inProgress: false });
@@ -174,9 +179,13 @@ describe('useAddCreatedObjectsToContainer', () => {
     const hook = renderAddHook(baseArgs());
 
     act(() => hook.result.current.onCreated(observable('o1')));
-    await act(async () => { await vi.advanceTimersByTimeAsync(400); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400);
+    });
     act(() => hook.result.current.onCreated(observable('o2')));
-    await act(async () => { await vi.advanceTimersByTimeAsync(400); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(400);
+    });
     act(() => hook.result.current.onCreated(observable('o3')));
     await flushBatch();
 
@@ -209,7 +218,10 @@ describe('useAddCreatedObjectsToContainer', () => {
     });
     await flushBatch();
     const { action } = notifySuccess.mock.calls[0][1];
-    await act(async () => { action.onClick(); await vi.runAllTimersAsync(); });
+    await act(async () => {
+      action.onClick();
+      await vi.runAllTimersAsync();
+    });
 
     expect(removeObjectFromContainer).toHaveBeenCalledOnce();
     expect(removeObjectFromContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
@@ -232,7 +244,10 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(addObjectToContainer).toHaveBeenCalledOnce();
     expect(addObjectToContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
     const { action } = notifySuccess.mock.calls[0][1];
-    await act(async () => { action.onClick(); await vi.runAllTimersAsync(); });
+    await act(async () => {
+      action.onClick();
+      await vi.runAllTimersAsync();
+    });
     expect(removeObjectFromContainer).toHaveBeenCalledOnce();
     expect(removeObjectFromContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
   });
@@ -277,14 +292,8 @@ describe('useAddCreatedObjectsToContainer', () => {
   });
 
   it('asks references once for the batch when references are enforced', async () => {
-    type Handle = { onCreated: (o: CreatedObject) => void };
-    const Harness = forwardRef<Handle, { args: Args }>(({ args }, ref) => {
-      const { onCreated, referencesDialog } = useAddCreatedObjectsToContainer(args);
-      useImperativeHandle(ref, () => ({ onCreated }));
-      return <>{referencesDialog}</>;
-    });
-    const handle = React.createRef<Handle>();
-    testRender(<Harness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
+    const handle = React.createRef<ReferencesHandle>();
+    testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
 
     act(() => {
       handle.current?.onCreated(observable('o1'));
@@ -329,7 +338,9 @@ describe('useAddCreatedObjectsToContainer', () => {
     await flushBatch();
     expect(screen.getByText('Reference modification')).toBeInTheDocument();
     unmount();
-    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
 
     expect(addObjectToContainer).not.toHaveBeenCalled();
     expect(notifyWarning).toHaveBeenCalledOnce();
@@ -357,4 +368,3 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(vi.mocked(addObjectToContainer).mock.calls.map(([call]) => call.objectId)).toEqual(['o1', 'o2']);
   });
 });
-

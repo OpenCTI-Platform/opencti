@@ -154,8 +154,8 @@ const GraphToolbarContentTools = ({
           // A created object is added to the graph with the same data as the other nodes
           resolveObject={stixCoreObjectRefetchQuery
             ? (id) => fetchQuery(stixCoreObjectRefetchQuery, { id })
-              .toPromise()
-              .then((data) => (data as { stixCoreObject: ObjectToParse }).stixCoreObject as unknown as CreatedObject)
+                .toPromise()
+                .then((data) => (data as { stixCoreObject: ObjectToParse }).stixCoreObject as unknown as CreatedObject)
             : undefined}
           containerStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
           // The graph's entity is a container: its author is an identity

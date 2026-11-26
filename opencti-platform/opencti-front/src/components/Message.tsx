@@ -33,7 +33,7 @@ type MessageType = {
   type: string;
   fullError: FullError | null;
   action?: MessageAction;
-}
+};
 
 const Message = () => {
   const [open, setOpen] = useState(false);

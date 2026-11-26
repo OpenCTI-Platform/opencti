@@ -50,15 +50,23 @@ describe('Message', () => {
     testRender(<Message />);
     act(() => MESSAGING$.notifySuccess('Observable created and added to the Report', { action: { label: 'Undo', onClick: vi.fn() } }));
     // the messaging service is debounced
-    await act(async () => { await vi.advanceTimersByTimeAsync(600); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(600);
+    });
     const undo = screen.getByRole('button', { name: 'Undo' });
     act(() => undo.focus());
-    await act(async () => { await vi.advanceTimersByTimeAsync(10000); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10000);
+    });
     expect(screen.queryByText('Observable created and added to the Report')).not.toBeNull();
     act(() => undo.blur());
-    await act(async () => { await vi.advanceTimersByTimeAsync(9000); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(9000);
+    });
     // The exit transition starts once the message is closed
-    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
     expect(screen.queryByText('Observable created and added to the Report')).toBeNull();
   });
 });

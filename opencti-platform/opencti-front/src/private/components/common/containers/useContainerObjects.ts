@@ -2,12 +2,8 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 // The generated requests are imported directly: importing them from ContainerAddStixCoreObjectsLines would create an import cycle
-import relationAddMutation, {
-  ContainerAddStixCoreObjectsLinesRelationAddMutation,
-} from './__generated__/ContainerAddStixCoreObjectsLinesRelationAddMutation.graphql';
-import relationDeleteMutation, {
-  ContainerAddStixCoreObjectsLinesRelationDeleteMutation,
-} from './__generated__/ContainerAddStixCoreObjectsLinesRelationDeleteMutation.graphql';
+import relationAddMutation, { ContainerAddStixCoreObjectsLinesRelationAddMutation } from './__generated__/ContainerAddStixCoreObjectsLinesRelationAddMutation.graphql';
+import relationDeleteMutation, { ContainerAddStixCoreObjectsLinesRelationDeleteMutation } from './__generated__/ContainerAddStixCoreObjectsLinesRelationDeleteMutation.graphql';
 import knowledgeGraphRelationAddMutation, {
   ReportKnowledgeGraphQueryRelationAddMutation,
 } from '../../analyses/reports/__generated__/ReportKnowledgeGraphQueryRelationAddMutation.graphql';

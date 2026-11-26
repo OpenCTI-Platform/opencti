@@ -253,7 +253,7 @@ const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
           open={openCreateEntity}
           handleClose={handleCloseCreateEntity}
           onCompleted={() => setOpenCreateEntity(false)}
-          stixDomainObjectTypes={entitiesType}
+          stixDomainObjectTypes={[entitiesType]}
           creationCallback={undefined}
           confidence={undefined}
           defaultCreatedBy={undefined}

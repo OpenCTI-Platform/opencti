@@ -3,14 +3,17 @@ import Alert from '@mui/material/Alert';
 import { Stack } from '@mui/material';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import * as R from 'ramda';
-import React, { useState } from 'react';
-import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
+import React, { CSSProperties, useState } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import type { ButtonSize } from '../../../../components/common/button/Button.types';
 import BulkTextModalButton from '../../../../components/fields/BulkTextField/BulkTextModalButton';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { insertNode } from '../../../../utils/store';
+import type { FieldOption } from '../../../../utils/field';
 import { GroupingCreationForm } from '../../analyses/groupings/GroupingCreation';
 import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/MalwareAnalysisCreation';
 import { NoteCreationForm } from '../../analyses/notes/NoteCreation';
@@ -50,6 +53,10 @@ import { IntrusionSetCreationForm } from '../../threats/intrusion_sets/Intrusion
 import { ThreatActorGroupCreationForm } from '../../threats/threat_actors_group/ThreatActorGroupCreation';
 import { ThreatActorIndividualCreationForm } from '../../threats/threat_actors_individual/ThreatActorIndividualCreation';
 import { FORM_UNCREATABLE_TYPES, useDeferredCreation } from '../../../../utils/hooks/useDeferredCreation';
+import type { CreatedObject } from '../containers/useContainerObjects';
+import type { DefaultValue } from '../../settings/sub_types/entity_setting/entitySetting';
+import type { DefaultMarking } from '../../settings/marking_definitions/markingDefinition.types';
+import { StixDomainObjectCreationAllTypesQuery } from './__generated__/StixDomainObjectCreationAllTypesQuery.graphql';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -118,31 +125,31 @@ const BULK_ENTITIES = [
   'Vulnerability',
 ];
 
-const sharedUpdater = (
-  store,
-  userId,
-  paginationOptions,
-  paginationKey,
-  newEdge,
-) => {
-  const userProxy = store.get(userId);
-  const params = { ...paginationOptions };
-  delete params.count;
-  delete params.id;
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    paginationKey,
-    params,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-  const pageInfo = conn.getLinkedRecord('pageInfo');
-  if (pageInfo) {
-    const globalCount = pageInfo.getValue('globalCount');
-    if (Number.isInteger(globalCount)) {
-      pageInfo.setValue(globalCount + 1, 'globalCount');
-    }
-  }
-};
+// The created object, as the mutations of the creation forms return it
+export interface CreatedStixDomainObject {
+  id: string;
+  standard_id?: string;
+  entity_type: string;
+  parent_types?: readonly string[];
+  name: string;
+  representative?: { main: string };
+}
+
+// Each creation form gives the response of its own mutation
+type CreationUpdater = (store: RecordSourceSelectorProxy, rootField: string, element?: unknown) => void;
+
+interface StixDomainPanelProps {
+  queryRef: PreloadedQuery<StixDomainObjectCreationAllTypesQuery>;
+  stixDomainObjectTypes?: string[];
+  onClose: () => void;
+  onCompleted?: () => void;
+  creationUpdater: CreationUpdater;
+  confidence?: number;
+  inputValue?: string;
+  defaultCreatedBy?: DefaultValue | null;
+  defaultMarkingDefinitions?: readonly DefaultMarking[] | null;
+  isFromBulkRelation?: boolean;
+}
 
 const StixDomainPanel = ({
   queryRef,
@@ -155,16 +162,18 @@ const StixDomainPanel = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
   isFromBulkRelation,
-}) => {
+}: StixDomainPanelProps) => {
   const [bulkOpen, setBulkOpen] = useState(false);
   const { t_i18n } = useFormatter();
-  const queryData = usePreloadedQuery(
+  const queryData = usePreloadedQuery<StixDomainObjectCreationAllTypesQuery>(
     stixDomainObjectCreationAllTypesQuery,
     queryRef,
   );
   const { isDeferredMode } = useDeferredCreation();
+  // For the Opinion form: a hook cannot be called only for one type
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
 
-  const buildEntityTypes = (queryData, stixDomainObjectTypes) => {
+  const buildEntityTypes = () => {
     const choices = (queryData.sdoTypes?.edges ?? [])
       .map((edge) => ({
         label: t_i18n(`entity_${edge.node.label}`),
@@ -208,19 +217,18 @@ const StixDomainPanel = ({
     });
   };
 
-  const availableEntityTypes = buildEntityTypes(
-    queryData,
-    stixDomainObjectTypes,
-  ).filter((n) => !isDeferredMode || !FORM_UNCREATABLE_TYPES.includes(n.value));
-  const selectedType = (stixDomainObjectTypes?.length && availableEntityTypes.find((item) => item.value === stixDomainObjectTypes[0])) ?? availableEntityTypes.at(0);
+  const availableEntityTypes = buildEntityTypes()
+    .filter((n) => !isDeferredMode || !FORM_UNCREATABLE_TYPES.includes(n.value));
+  const selectedType = (stixDomainObjectTypes?.length && availableEntityTypes.find((item) => item.value === stixDomainObjectTypes[0])) || availableEntityTypes.at(0);
   const [type, setType] = useState(selectedType?.value);
-  const baseCreatedBy = defaultCreatedBy
+  const isBulkType = !!type && BULK_ENTITIES.includes(type);
+  const baseCreatedBy: FieldOption | undefined = defaultCreatedBy
     ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
     : undefined;
-  const baseMarkingDefinitions = (defaultMarkingDefinitions ?? []).map((n) => ({
-    label: n.definition,
+  const baseMarkingDefinitions: FieldOption[] = (defaultMarkingDefinitions ?? []).map((n) => ({
+    label: n.definition ?? '',
     value: n.id,
-    color: n.x_opencti_color,
+    color: n.x_opencti_color ?? undefined,
     entity: n,
   }));
 
@@ -532,7 +540,7 @@ const StixDomainPanel = ({
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose}
+          onClose={onClose}
           updater={creationUpdater}
         />
       );
@@ -541,7 +549,6 @@ const StixDomainPanel = ({
       // Observed data
       return (
         <ObservedDataCreationForm
-          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -552,7 +559,6 @@ const StixDomainPanel = ({
     }
     if (type === 'Opinion') {
       // Opinion
-      const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
       return userIsKnowledgeEditor ? (
         <OpinionCreationFormKnowledgeEditor
           inputValue={inputValue}
@@ -779,7 +785,7 @@ const StixDomainPanel = ({
   };
 
   const renderUnavailableBulkMessage = () => {
-    if (isFromBulkRelation && !BULK_ENTITIES.includes(type)) {
+    if (isFromBulkRelation && !isBulkType) {
       return (
         <Alert
           severity="info"
@@ -808,8 +814,7 @@ const StixDomainPanel = ({
           {!isFromBulkRelation && (
             <BulkTextModalButton
               onClick={() => setBulkOpen(true)}
-              sx={{ marginRight: 0 }}
-              disabled={!BULK_ENTITIES.includes(type)}
+              disabled={!isBulkType}
             />
           )}
         </Stack>
@@ -835,6 +840,28 @@ const StixDomainPanel = ({
   );
 };
 
+interface StixDomainObjectCreationProps {
+  // Replaces the default store update: called with the created object
+  creationCallback?: (element: CreatedStixDomainObject) => void;
+  inputValue?: string | null;
+  confidence?: number | null;
+  defaultCreatedBy?: DefaultValue | null;
+  defaultMarkingDefinitions?: readonly DefaultMarking[] | null;
+  stixDomainObjectTypes?: string[];
+  display?: boolean;
+  open?: boolean;
+  speeddial?: boolean;
+  controlledDialStyles?: CSSProperties;
+  controlledDialSize?: ButtonSize;
+  handleClose?: () => void;
+  paginationKey?: string;
+  paginationOptions?: object;
+  onCompleted?: () => void;
+  // Called with each object created, also with each one of a bulk creation
+  onCreated?: (object: CreatedObject) => void;
+  isFromBulkRelation?: boolean;
+}
+
 const StixDomainObjectCreation = ({
   creationCallback,
   inputValue,
@@ -851,12 +878,11 @@ const StixDomainObjectCreation = ({
   paginationKey,
   paginationOptions,
   onCompleted,
-  // Optional: the cast keeps TypeScript from requiring it, or typing it as undefined
-  onCreated = /** @type {((object: any) => void) | undefined} */ (undefined),
+  onCreated,
   isFromBulkRelation,
-}) => {
-  const [status, setStatus] = useState({ open: false, type: null });
-  const [queryRef, loadQuery] = useQueryLoader(
+}: StixDomainObjectCreationProps) => {
+  const [status, setStatus] = useState<{ open: boolean; type: string | null }>({ open: false, type: null });
+  const [queryRef, loadQuery] = useQueryLoader<StixDomainObjectCreationAllTypesQuery>(
     stixDomainObjectCreationAllTypesQuery,
   );
   const isOpen = speeddial ? open : status.open;
@@ -871,22 +897,16 @@ const StixDomainObjectCreation = ({
   };
   const stateHandleClose = () => setStatus({ open: false, type: null });
 
-  const creationUpdater = (store, rootField, element) => {
+  const creationUpdater: CreationUpdater = (store, rootField, element) => {
+    // All the creation forms return at least these fields of the created object
+    const created = element as CreatedStixDomainObject | null | undefined;
     // Deferred: no mutation may be committed from inside a Relay updater
-    if (onCreated && element) setTimeout(() => onCreated(element), 0);
+    if (onCreated && created) setTimeout(() => onCreated(created), 0);
     const payload = store.getRootField(rootField);
     if (creationCallback) {
-      creationCallback(element);
-    } else {
-      const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-      const container = store.getRoot();
-      sharedUpdater(
-        store,
-        container.getDataID(),
-        paginationOptions,
-        paginationKey || 'Pagination_stixDomainObjects',
-        newEdge,
-      );
+      if (created) creationCallback(created);
+    } else if (payload) {
+      insertNode(store, paginationKey || 'Pagination_stixDomainObjects', paginationOptions, rootField);
       if (onCompleted) onCompleted();
     }
   };
@@ -907,14 +927,14 @@ const StixDomainObjectCreation = ({
           <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             <StixDomainPanel
               queryRef={queryRef}
-              inputValue={inputValue}
-              confidence={confidence}
+              inputValue={inputValue ?? undefined}
+              confidence={confidence ?? undefined}
               defaultCreatedBy={defaultCreatedBy}
               defaultMarkingDefinitions={defaultMarkingDefinitions}
               stixDomainObjectTypes={stixDomainObjectTypes}
               creationUpdater={creationUpdater}
               onCompleted={onCompleted}
-              onClose={speeddial ? handleClose : stateHandleClose}
+              onClose={(speeddial ? handleClose : stateHandleClose) ?? (() => {})}
               isFromBulkRelation={isFromBulkRelation}
             />
           </React.Suspense>

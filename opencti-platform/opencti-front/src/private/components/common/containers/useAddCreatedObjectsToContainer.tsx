@@ -313,7 +313,14 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     }
     // The bulk result dialog already confirms the creation: its line replaces the message
     if (bulkAdded) return;
-    MESSAGING$.notifySuccess(addedMessage(added), { action: { label: 'Undo', onClick: () => { undo(added); } } });
+    MESSAGING$.notifySuccess(addedMessage(added), {
+      action: {
+        label: 'Undo',
+        onClick: () => {
+          undo(added);
+        },
+      },
+    });
   };
 
   const runFlush = async () => {
