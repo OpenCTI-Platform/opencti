@@ -134,7 +134,7 @@ testUpdatedCounter.malware = 25; // and 1 org sharing by the request access work
 testUpdatedCounter.file = 27;
 testUpdatedCounter['intrusion-set'] = 18;
 testUpdatedCounter['data-component'] = 7;
-testUpdatedCounter.location = 14;
+testUpdatedCounter.location = 16; // includes 2 by publicDashboard-test (an import file pushed then deleted)
 // 3 by ingestionDeduplication-test (a change at the source, an edit in the platform, the source content applied again)
 // +4 by middleware-test (renames keeping aliases)
 // Includes 1 by the has-covered cleanup tests of securityCoverage-utils-test (created-by added)

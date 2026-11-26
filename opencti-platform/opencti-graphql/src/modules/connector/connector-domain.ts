@@ -6,7 +6,7 @@ import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { now, sinceNowInMs } from '../../utils/format';
 import { isEmptyField, REDACTED_INFORMATION } from '../../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../../schema/general';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
+import { isPublicDashboardUser, isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../utils/access';
 import { notify } from '../../database/redis';
 import {
   type ConnectorHealthMetrics,
@@ -241,6 +241,9 @@ export const completeConnector = (connector: any, lastSeenAt?: string | null) =>
 };
 
 export const connectors = async (context: AuthContext, user: AuthUser) => {
+  if (isPublicDashboardUser(user)) {
+    return [];
+  }
   const [storedConnectors, builtInConnectors] = await Promise.all([
     findConnectors(context, user),
     builtInConnectorsRuntime(context, user),
