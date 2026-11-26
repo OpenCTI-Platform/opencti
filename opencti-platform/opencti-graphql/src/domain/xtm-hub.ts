@@ -201,7 +201,7 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
     } catch (error) {
       // A mail failure (a wrong SMTP configuration, for example) must not abort the connectivity check.
       // The flag stays true, so the next connectivity check sends the email again.
-      logApp.error('[XTMH] The lost connectivity email cannot be sent', { cause: error });
+      logApp.warn('[XTMH] The lost connectivity email cannot be sent', { cause: error });
     }
   }
 
