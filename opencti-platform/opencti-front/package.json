@@ -94,7 +94,7 @@
     "marked": "18.2.1",
     "mdi-material-ui": "8.0.0",
     "moment": "2.31.0",
-    "pdfmake": "0.3.14",
+    "pdfmake": "0.3.15",
     "pmtiles": "4.5.0",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",

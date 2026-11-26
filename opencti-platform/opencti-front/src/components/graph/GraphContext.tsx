@@ -50,6 +50,8 @@ interface GraphContextValue {
   context?: string;
   /** Name of what the graph shows, for the exported image. */
   title?: string;
+  /** The user cannot change what the graph holds: the tools adding, expanding and removing are hidden. */
+  readOnly?: boolean;
 }
 
 const GraphContext = createContext<GraphContextValue | undefined>(undefined);
@@ -61,6 +63,7 @@ interface GraphProviderProps {
   context?: string;
   positions?: OctiGraphPositions;
   title?: string;
+  readOnly?: boolean;
 }
 
 const GraphStateProvider = ({
@@ -70,6 +73,7 @@ const GraphStateProvider = ({
   objects,
   positions,
   title,
+  readOnly,
 }: GraphProviderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -245,6 +249,7 @@ const GraphStateProvider = ({
     timeRange,
     context,
     title,
+    readOnly,
     isFullscreen,
     setIsFullscreen,
     rawPositions,
@@ -259,6 +264,7 @@ const GraphStateProvider = ({
     rawPositions,
     isFullscreen,
     title,
+    readOnly,
   ]);
 
   return (

@@ -10,6 +10,14 @@ const STRONG_CONFIGURATION = {
   MINIO__ACCESS_KEY: 'opencti',
   MINIO__SECRET_KEY: 'a-strong-minio-secret',
   MINIO__USE_AWS_ROLE: 'false',
+  ELASTICSEARCH__USERNAME: 'opencti',
+  ELASTICSEARCH__PASSWORD: 'a-strong-elasticsearch-password',
+  REDIS__USERNAME: 'opencti',
+  REDIS__PASSWORD: 'a-strong-redis-password',
+  // The Sentinel credentials are only used, and checked, in Sentinel mode
+  REDIS__MODE: 'sentinel',
+  REDIS__SENTINEL_USERNAME: 'opencti',
+  REDIS__SENTINEL_PASSWORD: 'a-strong-sentinel-password',
 };
 
 // The configuration is read once, when the modules are loaded:
@@ -42,6 +50,10 @@ describe('Default credentials', () => {
     ['rabbitmq:password', 'changeme', 'RABBITMQ__PASSWORD'],
     ['minio:secret_key', 'minioadmin', 'MINIO__SECRET_KEY'],
     ['minio:secret_key', 'ChangeMe', 'MINIO__SECRET_KEY'],
+    ['elasticsearch:password', 'changeme', 'ELASTICSEARCH__PASSWORD'],
+    ['elasticsearch:password', 'admin', 'ELASTICSEARCH__PASSWORD'],
+    ['redis:password', 'ChangeMe', 'REDIS__PASSWORD'],
+    ['redis:sentinel_password', 'changeme', 'REDIS__SENTINEL_PASSWORD'],
   ])('should find %s set to %s', async (setting, value, envKey) => {
     const { findDefaultCredentials } = await loadModules({ [envKey]: value });
 
@@ -53,8 +65,23 @@ describe('Default credentials', () => {
     ['rabbitmq:username', 'rabbitmq:password', 'changeme', 'RABBITMQ__USERNAME', 'RABBITMQ__PASSWORD'],
     ['minio:access_key', 'minio:secret_key', 'minioadmin', 'MINIO__ACCESS_KEY', 'MINIO__SECRET_KEY'],
     ['minio:access_key', 'minio:secret_key', 'ChangeMe', 'MINIO__ACCESS_KEY', 'MINIO__SECRET_KEY'],
+    ['elasticsearch:username', 'elasticsearch:password', 'changeme', 'ELASTICSEARCH__USERNAME', 'ELASTICSEARCH__PASSWORD'],
+    ['elasticsearch:username', 'elasticsearch:password', 'admin', 'ELASTICSEARCH__USERNAME', 'ELASTICSEARCH__PASSWORD'],
+    ['redis:username', 'redis:password', 'changeme', 'REDIS__USERNAME', 'REDIS__PASSWORD'],
+    ['redis:sentinel_username', 'redis:sentinel_password', 'changeme', 'REDIS__SENTINEL_USERNAME', 'REDIS__SENTINEL_PASSWORD'],
   ])('should find %s with %s both set to %s', async (userSetting, passwordSetting, value, userEnvKey, passwordEnvKey) => {
     const { findDefaultCredentials } = await loadModules({ [userEnvKey]: value, [passwordEnvKey]: value });
+
+    expect(findDefaultCredentials()).toEqual([userSetting, passwordSetting]);
+  });
+
+  it.each([
+    ['elasticsearch:username', 'elastic', 'elasticsearch:password', 'changeme', 'ELASTICSEARCH__USERNAME', 'ELASTICSEARCH__PASSWORD'],
+    ['elasticsearch:username', 'Elastic', 'elasticsearch:password', 'ChangeMe', 'ELASTICSEARCH__USERNAME', 'ELASTICSEARCH__PASSWORD'],
+    ['redis:username', 'default', 'redis:password', 'changeme', 'REDIS__USERNAME', 'REDIS__PASSWORD'],
+    ['redis:sentinel_username', 'default', 'redis:sentinel_password', 'changeme', 'REDIS__SENTINEL_USERNAME', 'REDIS__SENTINEL_PASSWORD'],
+  ])('should find %s set to %s with %s set to %s', async (userSetting, user, passwordSetting, password, userEnvKey, passwordEnvKey) => {
+    const { findDefaultCredentials } = await loadModules({ [userEnvKey]: user, [passwordEnvKey]: password });
 
     expect(findDefaultCredentials()).toEqual([userSetting, passwordSetting]);
   });
@@ -64,6 +91,10 @@ describe('Default credentials', () => {
     ['rabbitmq:username', 'changeme', 'RABBITMQ__USERNAME'],
     ['minio:access_key', 'minioadmin', 'MINIO__ACCESS_KEY'],
     ['minio:access_key', 'ChangeMe', 'MINIO__ACCESS_KEY'],
+    ['elasticsearch:username', 'elastic', 'ELASTICSEARCH__USERNAME'],
+    ['elasticsearch:username', 'admin', 'ELASTICSEARCH__USERNAME'],
+    ['redis:username', 'default', 'REDIS__USERNAME'],
+    ['redis:sentinel_username', 'default', 'REDIS__SENTINEL_USERNAME'],
   ])('should accept %s set to %s with a strong password, as the pair is not a default', async (_setting, value, envKey) => {
     const { findDefaultCredentials } = await loadModules({ [envKey]: value });
 
@@ -121,9 +152,189 @@ describe('Default credentials', () => {
   });
 
   it('should only check the known defaults of each setting', async () => {
-    const { findDefaultCredentials } = await loadModules({ APP__ADMIN__PASSWORD: 'guest', RABBITMQ__PASSWORD: 'minioadmin' });
+    const { findDefaultCredentials } = await loadModules({
+      APP__ADMIN__PASSWORD: 'guest',
+      RABBITMQ__PASSWORD: 'minioadmin',
+      ELASTICSEARCH__PASSWORD: 'guest',
+      REDIS__PASSWORD: 'admin',
+      REDIS__SENTINEL_PASSWORD: 'elastic',
+    });
 
     expect(findDefaultCredentials()).toEqual([]);
+  });
+
+  it('should only count the user names as defaults of the user name settings', async () => {
+    const { findDefaultCredentials } = await loadModules({ ELASTICSEARCH__PASSWORD: 'elastic', REDIS__PASSWORD: 'default' });
+
+    expect(findDefaultCredentials()).toEqual([]);
+  });
+
+  it('should skip the Elasticsearch user and password with an API key, which the client uses instead', async () => {
+    const { findDefaultCredentials } = await loadModules({
+      ELASTICSEARCH__API_KEY: 'an-elasticsearch-api-key',
+      ELASTICSEARCH__USERNAME: 'elastic',
+      ELASTICSEARCH__PASSWORD: 'changeme',
+    });
+
+    expect(findDefaultCredentials()).toEqual([]);
+  });
+
+  it.each(['single', 'cluster'])('should skip the Sentinel credentials in %s mode, which does not use them', async (mode) => {
+    const { findDefaultCredentials } = await loadModules({
+      REDIS__MODE: mode,
+      REDIS__SENTINEL_USERNAME: 'default',
+      REDIS__SENTINEL_PASSWORD: 'changeme',
+    });
+
+    expect(findDefaultCredentials()).toEqual([]);
+  });
+
+  it('should check the Redis credentials in cluster mode', async () => {
+    const { findDefaultCredentials } = await loadModules({ REDIS__MODE: 'cluster', REDIS__USERNAME: 'default', REDIS__PASSWORD: 'changeme' });
+
+    expect(findDefaultCredentials()).toEqual(['redis:username', 'redis:password']);
+  });
+
+  it('should skip the Elasticsearch credentials with AWS SigV4, which signs the requests instead', async () => {
+    const { findDefaultCredentials } = await loadModules({
+      OPENSEARCH__REGION: 'eu-west-1',
+      ELASTICSEARCH__URL: 'http://admin:admin@localhost:9200',
+      ELASTICSEARCH__USERNAME: 'admin',
+      ELASTICSEARCH__PASSWORD: 'admin',
+    });
+
+    expect(findDefaultCredentials()).toEqual([]);
+  });
+
+  describe('Elasticsearch credentials in elasticsearch:url', () => {
+    it.each([
+      ['a default pair', 'http://elastic:changeme@localhost:9200'],
+      ['the OpenSearch default pair', 'https://admin:admin@localhost:9200'],
+      ['a default password with any user', 'http://opencti:ChangeMe@localhost:9200'],
+      ['an encoded default password', 'http://opencti:%43hange%4De@localhost:9200'],
+      ['a default pair in one of the URLs', '["http://localhost:9200","http://elastic:changeme@localhost:9201"]'],
+    ])('should find %s, naming the setting only', async (_label, url) => {
+      const { findDefaultCredentials } = await loadModules({ ELASTICSEARCH__URL: url });
+
+      expect(findDefaultCredentials()).toEqual(['elasticsearch:url']);
+    });
+
+    it('should use the URL credentials over the configured ones, as the clients do', async () => {
+      const { findDefaultCredentials } = await loadModules({
+        ELASTICSEARCH__URL: 'http://opencti:a-strong-url-password@localhost:9200',
+        ELASTICSEARCH__USERNAME: 'elastic',
+        ELASTICSEARCH__PASSWORD: 'changeme',
+      });
+
+      expect(findDefaultCredentials()).toEqual([]);
+    });
+
+    it('should use the first URL holding a user and a password, as the clients do', async () => {
+      const { findDefaultCredentials } = await loadModules({
+        ELASTICSEARCH__URL: '["http://opencti:a-strong-url-password@localhost:9200","http://elastic:changeme@localhost:9201"]',
+      });
+
+      expect(findDefaultCredentials()).toEqual([]);
+    });
+
+    it.each([
+      ['a user only', 'http://elastic@localhost:9200'],
+      ['no credentials', 'http://localhost:9200'],
+      ['an invalid URL', 'not a url'],
+    ])('should check the configured credentials with %s in the URL', async (_label, url) => {
+      const { findDefaultCredentials } = await loadModules({ ELASTICSEARCH__URL: url, ELASTICSEARCH__PASSWORD: 'changeme' });
+
+      expect(findDefaultCredentials()).toEqual(['elasticsearch:password']);
+    });
+
+    it('should check the URL credentials with a remote credentials provider, as the clients use them over the resolved ones', async () => {
+      const { findDefaultCredentials } = await loadModules({
+        ELASTICSEARCH__CREDENTIALS_PROVIDER__SELECTOR: 'cyberark',
+        ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS: '["username","password"]',
+        ELASTICSEARCH__URL: 'http://elastic:changeme@localhost:9200',
+      });
+
+      expect(findDefaultCredentials()).toEqual(['elasticsearch:url']);
+    });
+
+    it('should skip the URL credentials with an API key', async () => {
+      const { findDefaultCredentials } = await loadModules({
+        ELASTICSEARCH__API_KEY: 'an-elasticsearch-api-key',
+        ELASTICSEARCH__URL: 'http://elastic:changeme@localhost:9200',
+      });
+
+      expect(findDefaultCredentials()).toEqual([]);
+    });
+  });
+
+  it.each([
+    ['opensearch', 'the forced OpenSearch client, which has no API key support', 'an-elasticsearch-api-key'],
+    ['auto', 'an empty API key', ''],
+  ])('should check the Elasticsearch credentials with engine_client %s and %s', async (engineClient, _label, apiKey) => {
+    const { findDefaultCredentials } = await loadModules({
+      ELASTICSEARCH__ENGINE_CLIENT: engineClient,
+      ELASTICSEARCH__API_KEY: apiKey,
+      ELASTICSEARCH__USERNAME: 'elastic',
+      ELASTICSEARCH__PASSWORD: 'changeme',
+    });
+
+    expect(findDefaultCredentials()).toEqual(['elasticsearch:username', 'elasticsearch:password']);
+  });
+
+  it.each([
+    ['Elasticsearch', 'ELASTICSEARCH', '["username","password"]', { ELASTICSEARCH__USERNAME: 'elastic', ELASTICSEARCH__PASSWORD: 'changeme' }],
+    ['Redis', 'REDIS', '["username","password","sentinelUsername","sentinelPassword"]', {
+      REDIS__USERNAME: 'changeme',
+      REDIS__PASSWORD: 'changeme',
+      REDIS__SENTINEL_USERNAME: 'changeme',
+      REDIS__SENTINEL_PASSWORD: 'changeme',
+    }],
+  ])('should leave the %s credentials targeted by a remote credentials provider, and check the others', async (_label, prefix, targets, defaults) => {
+    const { findDefaultCredentials } = await loadModules({
+      [`${prefix}__CREDENTIALS_PROVIDER__SELECTOR`]: 'cyberark',
+      [`${prefix}__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS`]: targets,
+      ...defaults,
+      RABBITMQ__PASSWORD: 'guest',
+    });
+
+    expect(findDefaultCredentials()).toEqual(['rabbitmq:password']);
+  });
+
+  it('should check the configured password when a remote credentials provider only targets the user', async () => {
+    const { findDefaultCredentials } = await loadModules({
+      ELASTICSEARCH__CREDENTIALS_PROVIDER__SELECTOR: 'cyberark',
+      ELASTICSEARCH__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS: '["username"]',
+      ELASTICSEARCH__USERNAME: 'elastic',
+      ELASTICSEARCH__PASSWORD: 'changeme',
+    });
+
+    // The configured user name is replaced, so only the password is reported
+    expect(findDefaultCredentials()).toEqual(['elasticsearch:password']);
+  });
+
+  it('should check the Sentinel credentials when a remote credentials provider only targets the Redis ones', async () => {
+    const { findDefaultCredentials } = await loadModules({
+      REDIS__CREDENTIALS_PROVIDER__SELECTOR: 'cyberark',
+      REDIS__CREDENTIALS_PROVIDER__CYBERARK__FIELD_TARGETS: '["username","password"]',
+      REDIS__PASSWORD: 'changeme',
+      REDIS__SENTINEL_USERNAME: 'default',
+      REDIS__SENTINEL_PASSWORD: 'changeme',
+    });
+
+    expect(findDefaultCredentials()).toEqual(['redis:sentinel_username', 'redis:sentinel_password']);
+  });
+
+  it('should check the Elasticsearch and Redis credentials with an unsupported remote credentials provider, which falls back to them', async () => {
+    const { findDefaultCredentials } = await loadModules({
+      ELASTICSEARCH__CREDENTIALS_PROVIDER__SELECTOR: 'unknown',
+      ELASTICSEARCH__CREDENTIALS_PROVIDER__FIELD_TARGETS: '["username","password"]',
+      ELASTICSEARCH__PASSWORD: 'changeme',
+      REDIS__CREDENTIALS_PROVIDER__SELECTOR: 'unknown',
+      REDIS__CREDENTIALS_PROVIDER__FIELD_TARGETS: '["password"]',
+      REDIS__PASSWORD: 'changeme',
+    });
+
+    expect(findDefaultCredentials()).toEqual(['elasticsearch:password', 'redis:password']);
   });
 
   it('should accept the exact ChangeMe health access key, which keeps /health disabled', async () => {

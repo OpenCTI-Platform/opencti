@@ -102,6 +102,40 @@ describe('engine detection: probeEngine', () => {
     expect(lastHeaders.authorization).toBe(`Basic ${Buffer.from('user:p@ss').toString('base64')}`);
   });
 
+  it('should use the URL credentials over the configured ones, as the clients do', async () => {
+    answer = { status: 200, body: '{}' };
+    await probeEngine(connection({
+      url: baseUrl.replace('http://', 'http://opencti:url-password@'),
+      auth: { username: 'elastic', password: 'changeme' },
+    }));
+    expect(lastHeaders.authorization).toBe(`Basic ${Buffer.from('opencti:url-password').toString('base64')}`);
+  });
+
+  it('should use the credentials of the first URL holding a user and a password, as the clients do', async () => {
+    answer = { status: 200, body: '{}' };
+    await probeEngine(connection({
+      url: [baseUrl, 'http://opencti:url-password@127.0.0.1:1'],
+      auth: { username: 'elastic', password: 'changeme' },
+    }));
+    expect(lastHeaders.authorization).toBe(`Basic ${Buffer.from('opencti:url-password').toString('base64')}`);
+  });
+
+  it('should use the configured credentials when the URL only holds a user', async () => {
+    answer = { status: 200, body: '{}' };
+    await probeEngine(connection({ url: baseUrl.replace('http://', 'http://opencti@'), auth: { username: 'elastic', password: 'a-strong-password' } }));
+    expect(lastHeaders.authorization).toBe(`Basic ${Buffer.from('elastic:a-strong-password').toString('base64')}`);
+  });
+
+  it.each([
+    ['a password in the URL and a configured user', 'http://:changeme@', { username: 'opencti' }],
+    ['a user in the URL and a configured password', 'http://opencti@', { password: 'changeme' }],
+    ['a configured user only', 'http://', { username: 'opencti' }],
+  ])('should send no credentials with %s, as the clients need a complete pair', async (_label, prefix, auth) => {
+    answer = { status: 200, body: '{}' };
+    await probeEngine(connection({ url: baseUrl.replace('http://', prefix), auth }));
+    expect(lastHeaders.authorization).toBeUndefined();
+  });
+
   it('should stop on a refused probe, such as a missing privilege', async () => {
     answer = { status: 403, body: '{"error":"forbidden"}' };
     await expect(probeEngine(connection())).rejects.toThrow('refused the version probe');

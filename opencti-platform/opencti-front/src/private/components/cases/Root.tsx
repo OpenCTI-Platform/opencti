@@ -1,7 +1,9 @@
 import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '@components/Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const CaseIncidents = lazy(() => import('./CaseIncidents'));
@@ -16,65 +18,93 @@ const Feedbacks = lazy(() => import('./Feedbacks'));
 const RootFeedback = lazy(() => import('./feedbacks/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Case-Incident')) {
-    redirect = 'incidents';
-  } else if (!useIsHiddenEntity('Case-Rfi')) {
-    redirect = 'rfis';
-  } else if (!useIsHiddenEntity('Case-Rft')) {
-    redirect = 'rfts';
-  } else if (!useIsHiddenEntity('Feedback')) {
-    redirect = 'feedbacks';
-  } else if (!useIsHiddenEntity('Task')) {
-    redirect = 'tasks';
-  }
-
+  const redirect = useFirstVisiblePath(sectionEntries('cases'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/cases/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/incidents"
-          element={boundaryWrapper(CaseIncidents)}
+          element={(
+            <EntryGuard path="/dashboard/cases/incidents">
+              {boundaryWrapper(CaseIncidents)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/incidents/:caseId/*"
-          element={boundaryWrapper(RootIncident)}
+          element={(
+            <EntryGuard path="/dashboard/cases/incidents">
+              {boundaryWrapper(RootIncident)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/rfis"
-          element={boundaryWrapper(CaseRfis)}
+          element={(
+            <EntryGuard path="/dashboard/cases/rfis">
+              {boundaryWrapper(CaseRfis)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/rfis/:caseId/*"
-          element={boundaryWrapper(RootCaseRfi)}
+          element={(
+            <EntryGuard path="/dashboard/cases/rfis">
+              {boundaryWrapper(RootCaseRfi)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/rfts"
-          element={boundaryWrapper(CaseRfts)}
+          element={(
+            <EntryGuard path="/dashboard/cases/rfts">
+              {boundaryWrapper(CaseRfts)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/rfts/:caseId/*"
-          element={boundaryWrapper(RootCaseRft)}
+          element={(
+            <EntryGuard path="/dashboard/cases/rfts">
+              {boundaryWrapper(RootCaseRft)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/tasks"
-          element={boundaryWrapper(Tasks)}
+          element={(
+            <EntryGuard path="/dashboard/cases/tasks">
+              {boundaryWrapper(Tasks)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/tasks/:taskId/*"
-          element={boundaryWrapper(RootTask)}
+          element={(
+            <EntryGuard path="/dashboard/cases/tasks">
+              {boundaryWrapper(RootTask)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/feedbacks"
-          element={boundaryWrapper(Feedbacks)}
+          element={(
+            <EntryGuard path="/dashboard/cases/feedbacks">
+              {boundaryWrapper(Feedbacks)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/feedbacks/:caseId/*"
-          element={boundaryWrapper(RootFeedback)}
+          element={(
+            <EntryGuard path="/dashboard/cases/feedbacks">
+              {boundaryWrapper(RootFeedback)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>
