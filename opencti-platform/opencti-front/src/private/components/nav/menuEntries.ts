@@ -8,15 +8,11 @@ export const entriesModules = import.meta.glob<MenuEntry[]>('/src/private/compon
 export const allMenuEntries: MenuEntry[] = Object.values(entriesModules).flatMap((entries) => entries ?? []);
 
 /**
- * Capabilities opening a page (or a section): the union of the `requiredCapabilities` of the entries under `path`.
- * Single source for route guards, so they cannot drift from the menus and the search. Any ONE of them is enough.
+ * The entries of a page (or of a section: every page under `path`). What `EntryGuard` asks the visibility rules about,
+ * so a route cannot drift from the menus and the search.
  * `exact`: only the entry at `path`, not the ones under it (a page that is also the parent of others, like Parameters).
  *
- * Fails closed: a path without entries (typo, page not declared yet) yields `[]`, and `useGranted` denies an empty
- * list for everyone, except BYPASS users who pass every check before the list is even read.
+ * A path without entries (typo, page not declared yet) yields `[]`, which the guard denies.
  */
-export const capabilitiesOf = (path: string, { exact = false }: { exact?: boolean } = {}): string[] => [...new Set(
-  allMenuEntries
-    .filter((entry) => entry.path === path || (!exact && entry.path.startsWith(`${path}/`)))
-    .flatMap((entry) => entry.requiredCapabilities ?? []),
-)];
+export const entriesUnder = (path: string, { exact = false }: { exact?: boolean } = {}): MenuEntry[] => allMenuEntries
+  .filter((entry) => entry.path === path || (!exact && entry.path.startsWith(`${path}/`)));

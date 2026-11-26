@@ -2,11 +2,11 @@ import React, { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import Loader from '../../../../components/Loader';
 import CustomizationMenu from '../CustomizationMenu';
-import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
-import { capabilitiesOf } from '../../nav/menuEntries';
-import useSettingsFallbackUrl from '../../../../utils/hooks/useSettingsFallbackUrl';
+import EntryGuard from '../../nav/EntryGuard';
+import useFirstVisiblePath from '../../common/menus/useFirstVisiblePath';
+import { entriesUnder } from '../../nav/menuEntries';
+import useSettingsFallbackUrl from '../useSettingsFallbackUrl';
 
-const Security = lazy(() => import('../../../../utils/Security'));
 const Notifiers = lazy(() => import('../Notifiers'));
 const Retention = lazy(() => import('../Retention'));
 const Rules = lazy(() => import('../rules/Rules'));
@@ -18,14 +18,11 @@ const ExclusionLists = lazy(() => import('../exclusion_lists/ExclusionLists'));
 const FintelDesigns = lazy(() => import('../fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('../fintel_design/FintelDesign'));
 
+const customizationEntries = entriesUnder('/dashboard/settings/customization');
+
 const RootCustomization = () => {
   const fallbackUrl = useSettingsFallbackUrl();
-  const isGrantedToCustomization = useGranted([SETTINGS_SETCUSTOMIZATION]);
-
-  if (!isGrantedToCustomization) {
-    return <Navigate to={fallbackUrl} />;
-  }
-
+  const redirect = useFirstVisiblePath(customizationEntries, fallbackUrl);
   return (
     <>
       <Routes>
@@ -42,86 +39,86 @@ const RootCustomization = () => {
         <Routes>
           <Route
             path="/"
-            element={<Navigate to="/dashboard/settings/customization/entity_types" replace={true} />}
+            element={<Navigate to={redirect} replace={true} />}
           />
           <Route
             path="/entity_types"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/entity_types')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/entity_types" placeholder={<Navigate to={fallbackUrl} />}>
                 <SubTypes />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/entity_types/:subTypeId/*"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/entity_types')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/entity_types" placeholder={<Navigate to={fallbackUrl} />}>
                 <RootSubType />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/retention"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/retention')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/retention" placeholder={<Navigate to={fallbackUrl} />}>
                 <Retention />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/rules"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/rules')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/rules" placeholder={<Navigate to={fallbackUrl} />}>
                 <Rules />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/decay"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/decay')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/decay" placeholder={<Navigate to={fallbackUrl} />}>
                 <DecayRuleTabs />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/decay/:decayRuleId/*"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/decay')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/decay" placeholder={<Navigate to={fallbackUrl} />}>
                 <DecayRule />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/exclusion_lists"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/exclusion_lists')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/exclusion_lists" placeholder={<Navigate to={fallbackUrl} />}>
                 <ExclusionLists />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/fintel_designs"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/fintel_designs')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/fintel_designs" placeholder={<Navigate to={fallbackUrl} />}>
                 <FintelDesigns />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/fintel_designs/:fintelDesignId/*"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/fintel_designs')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/fintel_designs" placeholder={<Navigate to={fallbackUrl} />}>
                 <FintelDesign />
-              </Security>
+              </EntryGuard>
             )}
           />
           <Route
             path="/notifiers"
             element={(
-              <Security needs={capabilitiesOf('/dashboard/settings/customization/notifiers')} placeholder={<Navigate to={fallbackUrl} />}>
+              <EntryGuard path="/dashboard/settings/customization/notifiers" placeholder={<Navigate to={fallbackUrl} />}>
                 <Notifiers />
-              </Security>
+              </EntryGuard>
             )}
           />
         </Routes>

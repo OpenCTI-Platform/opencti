@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import React from 'react';
 import { SearchIndexedFilesFile_node$data } from './__generated__/SearchIndexedFilesFile_node.graphql';
-import { Link, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
@@ -30,8 +30,10 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { decodeSearchKeyword } from '../../../utils/SearchUtils';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useManagerConfiguration from '../../../utils/hooks/useManagerConfiguration';
-import Security from '../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD, SETTINGS_FILEINDEXING } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/hooks/useGranted';
+import useVisibleEntries from '../common/menus/useVisibleEntries';
+import { fileIndexing } from '../settings/Settings.entries';
+import useSwitchDraft from '../drafts/useSwitchDraft';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { graphql } from 'react-relay';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -129,6 +131,16 @@ const SearchIndexedFilesComponent = () => {
 
   const managerConfiguration = useManagerConfiguration();
   const isFileIndexingRunning = managerConfiguration?.manager_running || false;
+  // Same rules as the File indexing page. The second entry ignores the draft rule: who could open it outside the draft.
+  const fileIndexingOutsideDraft = { ...fileIndexing, availableInDraft: true };
+  const visibleFileIndexing = useVisibleEntries([fileIndexing, fileIndexingOutsideDraft]);
+  const navigate = useNavigate();
+  const { exitDraft } = useSwitchDraft();
+  const exitDraftToFileIndexing = () => exitDraft({
+    onCompleted: () => {
+      navigate(fileIndexing.path);
+    },
+  });
   const { keyword } = useParams() as { keyword: string };
   const searchTerm = decodeSearchKeyword(keyword);
 
@@ -276,20 +288,31 @@ const SearchIndexedFilesComponent = () => {
           >
             <AlertTitle style={{ marginBottom: 0 }}>
               {t_i18n('File indexing is not started.')}
-              <Security
-                needs={[SETTINGS_FILEINDEXING]}
-                placeholder={<span>&nbsp;{t_i18n('Please contact your administrator.')}</span>}
-              >
+              {visibleFileIndexing.includes(fileIndexing) && (
                 <Button
                   component={Link}
                   size="small"
-                  to="/dashboard/settings/file_indexing"
+                  to={fileIndexing.path}
                   variant="secondary"
                   sx={{ marginLeft: 1 }}
                 >
                   {t_i18n('Configure file indexing')}
                 </Button>
-              </Security>
+              )}
+              {/* In a draft, where the page is closed: offer to leave the draft to reach it. */}
+              {!visibleFileIndexing.includes(fileIndexing) && visibleFileIndexing.includes(fileIndexingOutsideDraft) && (
+                <Button
+                  size="small"
+                  variant="secondary"
+                  sx={{ marginLeft: 1 }}
+                  onClick={exitDraftToFileIndexing}
+                >
+                  {t_i18n('Exit draft and configure file indexing')}
+                </Button>
+              )}
+              {!visibleFileIndexing.includes(fileIndexingOutsideDraft) && (
+                <span>&nbsp;{t_i18n('Please contact your administrator.')}</span>
+              )}
             </AlertTitle>
           </Alert>
         )}
