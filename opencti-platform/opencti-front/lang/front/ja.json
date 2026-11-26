@@ -7016,5 +7016,6 @@
   "The entity type of the fintel template cannot change": "FINTELテンプレートのエンティティタイプは変更できません",
   "The filters of the widgets are malformed": "ウィジェットのフィルターの形式が正しくありません",
   "Becomes the default fintel design of the platform.": "プラットフォームのデフォルトのフィンテルデザインになります。",
-  "Becomes the default FINTEL template of its entity type.": "エンティティタイプのデフォルトのFINTELテンプレートになります。"
+  "Becomes the default FINTEL template of its entity type.": "エンティティタイプのデフォルトのFINTELテンプレートになります。",
+  "A template with the same name already exists in its entity type": "同じエンティティタイプに同じ名前のテンプレートが既に存在します"
 }

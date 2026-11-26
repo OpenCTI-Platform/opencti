@@ -7016,5 +7016,6 @@
   "The entity type of the fintel template cannot change": "El tipo de entidad de la plantilla FINTEL no puede cambiar",
   "The filters of the widgets are malformed": "Los filtros de los widgets están mal formados",
   "Becomes the default fintel design of the platform.": "Se convierte en el diseño Fintel predeterminado de la plataforma.",
-  "Becomes the default FINTEL template of its entity type.": "Se convierte en la plantilla FINTEL predeterminada de su tipo de entidad."
+  "Becomes the default FINTEL template of its entity type.": "Se convierte en la plantilla FINTEL predeterminada de su tipo de entidad.",
+  "A template with the same name already exists in its entity type": "Ya existe una plantilla con el mismo nombre para su tipo de entidad"
 }

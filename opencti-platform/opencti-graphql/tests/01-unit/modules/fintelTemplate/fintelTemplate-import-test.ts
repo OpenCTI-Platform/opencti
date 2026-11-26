@@ -191,11 +191,22 @@ describe('Fintel template import', () => {
     expect(await importFintelTemplate(context, user, exported, overwrite)).toMatchObject({ status: 'skipped', code: 'unchanged' });
   });
 
-  it('creates a template whatever the names of the others: two templates can have the same name', async () => {
+  it('creates a template whatever the names of the others, two templates can have the same name, and says so when its entity type has one', async () => {
+    const sameName = 'A template with the same name already exists in its entity type';
+    const otherPlatform = { ...configuration, standard_id: 'finteltemplate--00000000-0000-5000-8000-000000000000' };
     withTemplates(reportFintelTemplate);
-    expect(await importFintelTemplate(context, user, { ...configuration, standard_id: 'finteltemplate--00000000-0000-5000-8000-000000000000' }, overwrite))
-      .toMatchObject({ status: 'created', exists: false });
+    expect(await importFintelTemplate(context, user, otherPlatform, overwrite)).toMatchObject({ status: 'created', exists: false, reason: sameName });
     expect(addInput()).toMatchObject({ name: 'Executive Summary', standard_id: 'finteltemplate--00000000-0000-5000-8000-000000000000' });
+    // A copy of a template that does not exist keeps its name as well
+    expect(await importFintelTemplate(context, user, otherPlatform, copy)).toMatchObject({ status: 'created', exists: false, copyName: 'Executive Summary', reason: sameName });
+    // The same name in another entity type is another name
+    expect(await importFintelTemplate(context, user, { ...otherPlatform, settings_types: ['Grouping'] }, overwrite)).toMatchObject({ status: 'created', reason: undefined });
+
+    // Two items of the same import that take the same name: the second one says so in the preview, as the real import creates both
+    withTemplates();
+    const reservedNames = new Set<string>();
+    expect(await importFintelTemplate(context, user, configuration, { ...overwrite, dryRun: true, reservedNames })).toMatchObject({ reason: undefined });
+    expect(await importFintelTemplate(context, user, otherPlatform, { ...overwrite, dryRun: true, reservedNames })).toMatchObject({ reason: sameName });
   });
 
   it('refuses a template that exists when it is added', async () => {

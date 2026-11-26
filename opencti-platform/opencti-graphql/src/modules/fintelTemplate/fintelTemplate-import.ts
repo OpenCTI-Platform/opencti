@@ -40,6 +40,10 @@ export type FintelTemplateImportResult = ConfigImportResult<FintelTemplateImport
 
 const refused = configImportRefusal<FintelTemplateImportConfiguration, FintelTemplateImportCode>;
 
+// A template created under a name that another template of its entity type has: allowed, as two templates can have the same name (a template
+// is found by its standard id, which is random: the built-in templates of two platforms are two templates), but said, as the two cannot be told apart
+export const FINTEL_TEMPLATE_SAME_NAME_REASON = 'A template with the same name already exists in its entity type';
+
 // The names of the templates of an entity type are apart from the ones of another type: each type has its own templates
 export const fintelTemplateImportKey = (settingsType: string, name: string) => `${settingsType}/${name}`;
 
@@ -203,8 +207,10 @@ export const importFintelTemplate = async (
     if (!name) {
       return refused('failed', 'name_conflict', 'Fintel template name already exists', !!existing, data);
     }
+    // A template that does not exist yet keeps its name, taken or not: said when it is
+    const sameName = !existing && await isNameTaken(context, user, settingsType, name, options);
     reservedNames?.add(fintelTemplateImportKey(settingsType, name));
-    const reason = name === data.name ? undefined : `Added as "${configImportReasonValue(name)}"`;
+    const reason = name === data.name ? (sameName ? FINTEL_TEMPLATE_SAME_NAME_REASON : undefined) : `Added as "${configImportReasonValue(name)}"`;
     if (!dryRun) {
       await createFintelTemplate(context, user, data, widgets, {
         name,
@@ -215,11 +221,13 @@ export const importFintelTemplate = async (
     return { status: 'created', exists: !!existing, configuration: data, copyName: name, reason };
   }
   if (!existing) {
+    // Read before the name is reserved: an earlier item of the same dry run that takes it counts, the template itself does not
+    const sameName = await isNameTaken(context, user, settingsType, data.name, options);
     reservedNames?.add(fintelTemplateImportKey(settingsType, data.name));
     if (!dryRun) {
       await createFintelTemplate(context, user, data, widgets, { name: data.name, isDefault: data.default === true, standardId: data.standard_id });
     }
-    return { status: 'created', exists: false, configuration: data };
+    return { status: 'created', exists: false, configuration: data, reason: sameName ? FINTEL_TEMPLATE_SAME_NAME_REASON : undefined };
   }
   // The entity type of a template is never edited: the same template is never one of another type
   if (existing.settings_types?.[0] !== settingsType) {

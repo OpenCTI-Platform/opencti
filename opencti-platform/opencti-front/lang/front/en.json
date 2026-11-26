@@ -7016,5 +7016,6 @@
   "The entity type of the fintel template cannot change": "The entity type of the fintel template cannot change",
   "The filters of the widgets are malformed": "The filters of the widgets are malformed",
   "Becomes the default fintel design of the platform.": "Becomes the default fintel design of the platform.",
-  "Becomes the default FINTEL template of its entity type.": "Becomes the default FINTEL template of its entity type."
+  "Becomes the default FINTEL template of its entity type.": "Becomes the default FINTEL template of its entity type.",
+  "A template with the same name already exists in its entity type": "A template with the same name already exists in its entity type"
 }
