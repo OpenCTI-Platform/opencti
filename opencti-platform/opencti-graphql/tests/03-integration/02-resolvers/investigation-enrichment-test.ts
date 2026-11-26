@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import gql from 'graphql-tag';
 import * as rabbitmq from '../../../src/modules/connector/connector-rabbitmq';
-import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { connectorDelete, registerConnector } from '../../../src/modules/connector/connector-domain';
 import { askElementEnrichmentForConnectors } from '../../../src/domain/stixCoreObject';
@@ -689,6 +689,69 @@ describe('Enrichments linked to an investigation', () => {
       const workId = await startEnrichment(editableInvestigationId);
       await expect(editWorkInvestigationStatus(testContext, analyst, workId, 'DONE' as any)).rejects.toThrow('Work is not completed yet');
       expect(await statusOf(workId)).toBeUndefined();
+    });
+  });
+
+  describe('deletion', () => {
+    const DELETE_WORK = gql`mutation WorkDelete($id: ID!) { workEdit(id: $id) { delete } }`;
+
+    const startEnrichment = async (investigationId?: string) => {
+      const [work]: any[] = await askElementEnrichmentForConnectors(testContext, ADMIN_USER, enriched.id, [INV_CONNECTOR_A], { investigationId });
+      workIds.push(work.id);
+      return work.id as string;
+    };
+
+    const exists = async (workId: string) => !!(await loadWorkById(testContext, ADMIN_USER, workId));
+
+    it('should let an editor of the investigation delete its work', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await deleteWork(testContext, analyst, workId);
+      expect(await exists(workId)).toBe(false);
+    });
+
+    it('should refuse a view-only member of the investigation', async () => {
+      const workId = await startEnrichment(viewOnlyInvestigationId);
+      await expect(deleteWork(testContext, analyst, workId)).rejects.toThrow('You are not allowed to do this.');
+      expect(await exists(workId)).toBe(true);
+    });
+
+    it('should refuse an editor without the enrichment capability', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      const withoutEnrichment = { ...analyst, capabilities: analyst.capabilities.filter((c: any) => c.name !== 'KNOWLEDGE_KNENRICHMENT') };
+      await expect(deleteWork(testContext, withoutEnrichment, workId)).rejects.toThrow('You are not allowed to do this.');
+      expect(await exists(workId)).toBe(true);
+    });
+
+    it('should refuse a connector manager who cannot update investigations, through GraphQL', async () => {
+      const workId = await startEnrichment(editableInvestigationId);
+      await queryAsUserIsExpectedForbidden(USER_CONNECTOR, { query: DELETE_WORK, variables: { id: workId } });
+      expect(await exists(workId)).toBe(true);
+    });
+
+    it('should refuse a user with both capabilities who is not a member, as for an unknown investigation', async () => {
+      const notSharedId = await createWorkspace('investigation', 'Enrichment investigation (not shared)');
+      try {
+        const workId = await startEnrichment(notSharedId);
+        expect(analyst.capabilities.map((c: any) => c.name)).toEqual(expect.arrayContaining(['INVESTIGATION_INUPDATE', 'KNOWLEDGE_KNENRICHMENT']));
+        await expect(deleteWork(testContext, analyst, workId)).rejects.toThrow('Investigation not found');
+        expect(await exists(workId)).toBe(true);
+      } finally {
+        await queryAsAdmin({ query: DELETE_WORKSPACE, variables: { id: notSharedId } });
+      }
+    });
+
+    it('should let a connector manager delete a work outside any investigation, through GraphQL', async () => {
+      const workId = await startEnrichment();
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: DELETE_WORK, variables: { id: workId } });
+      expect(await exists(workId)).toBe(false);
+    });
+
+    it('should let anyone allowed to delete works delete the work of a deleted investigation', async () => {
+      const deletedId = await createWorkspace('investigation', 'Enrichment investigation (deleted before its work)', 'view');
+      const workId = await startEnrichment(deletedId);
+      await queryAsAdmin({ query: DELETE_WORKSPACE, variables: { id: deletedId } });
+      await deleteWork(testContext, analyst, workId);
+      expect(await exists(workId)).toBe(false);
     });
   });
 });
