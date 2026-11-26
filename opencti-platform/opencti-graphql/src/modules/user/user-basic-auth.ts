@@ -35,14 +35,11 @@ const isTwoFactorApplied = (settings: TwoFactorSettings, account: TwoFactorAccou
   return !!settings.otp_mandatory || !!account?.otp_activated;
 };
 
-// Checked before the password, after checkApiBasicAuthAllowed and with the same effects: the password of an account
-// with two-factor authentication is never checked through Basic auth, and its attempts are never counted.
-// The account is only loaded when needed: with the switch on, and when two-factor authentication is not mandatory
-export const checkApiBasicAuthTwoFactor = async (settings: TwoFactorSettings, loadAccount: () => Promise<TwoFactorAccount | undefined>) => {
-  if (!isAuthenticationSecureByDefault()) {
-    return;
-  }
-  if (isTwoFactorApplied(settings, settings.otp_mandatory ? undefined : await loadAccount())) {
+// Called by login() on the account it loads (undefined for an unknown email), before the lockout and the password,
+// with the same effects as checkApiBasicAuthAllowed: the password of an account with two-factor authentication
+// is never checked through Basic auth, and its attempts are never counted
+export const checkApiBasicAuthTwoFactor = (settings: TwoFactorSettings, account: TwoFactorAccount | undefined) => {
+  if (isAuthenticationSecureByDefault() && isTwoFactorApplied(settings, account)) {
     throw ForbiddenAccess('Two-factor authentication applies to this account: API Basic authentication cannot ask for it, use an API token');
   }
 };

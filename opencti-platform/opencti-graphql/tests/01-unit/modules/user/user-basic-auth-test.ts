@@ -63,7 +63,7 @@ describe('app:authentication:secure_by_default', () => {
   });
 });
 
-// Before the password: refused without checking it, like a disabled Basic auth
+// Called by login() on the account it loads, before the password: refused without checking it, like a disabled Basic auth
 describe('checkApiBasicAuthTwoFactor', () => {
   afterEach(() => {
     conf.clear(SWITCH);
@@ -74,32 +74,28 @@ describe('checkApiBasicAuthTwoFactor', () => {
       conf.set(SWITCH, true);
     });
 
-    it('should refuse an account with two-factor authentication', async () => {
-      await expect(checkApiBasicAuthTwoFactor({}, async () => ({ otp_activated: true }))).rejects.toThrow(USE_API_TOKEN);
+    it('should refuse an account with two-factor authentication', () => {
+      expect(() => checkApiBasicAuthTwoFactor({}, { otp_activated: true })).toThrow(USE_API_TOKEN);
     });
 
-    // Applies to every account: no need to load it
-    it('should refuse any account without loading it when two-factor authentication is mandatory', async () => {
-      const loadAccount = vi.fn();
-      await expect(checkApiBasicAuthTwoFactor({ otp_mandatory: true }, loadAccount)).rejects.toThrow(USE_API_TOKEN);
-      expect(loadAccount).not.toHaveBeenCalled();
+    it('should refuse any account when two-factor authentication is mandatory, an unknown email included', () => {
+      expect(() => checkApiBasicAuthTwoFactor({ otp_mandatory: true }, { otp_activated: false })).toThrow(USE_API_TOKEN);
+      expect(() => checkApiBasicAuthTwoFactor({ otp_mandatory: true }, undefined)).toThrow(USE_API_TOKEN);
     });
 
-    it('should accept an account without two-factor authentication', async () => {
-      await expect(checkApiBasicAuthTwoFactor({ otp_mandatory: false }, async () => ({ otp_activated: false }))).resolves.toBeUndefined();
+    it('should accept an account without two-factor authentication', () => {
+      expect(() => checkApiBasicAuthTwoFactor({ otp_mandatory: false }, { otp_activated: false })).not.toThrow();
     });
 
     // login() refuses it, as any unknown email
-    it('should accept an unknown email', async () => {
-      await expect(checkApiBasicAuthTwoFactor({}, async () => undefined)).resolves.toBeUndefined();
+    it('should accept an unknown email', () => {
+      expect(() => checkApiBasicAuthTwoFactor({}, undefined)).not.toThrow();
     });
   });
 
   describe('switch off', () => {
-    it('should accept any account without loading it', async () => {
-      const loadAccount = vi.fn();
-      await expect(checkApiBasicAuthTwoFactor({ otp_mandatory: true }, loadAccount)).resolves.toBeUndefined();
-      expect(loadAccount).not.toHaveBeenCalled();
+    it('should accept any account', () => {
+      expect(() => checkApiBasicAuthTwoFactor({ otp_mandatory: true }, { otp_activated: true })).not.toThrow();
     });
   });
 });
@@ -207,23 +203,30 @@ describe('authenticateUserByBasicAuth with the setting', () => {
     expect(Engine.elLoadBy).toHaveBeenCalled();
   });
 
-  it('should refuse a BYPASS user before loading the account when two-factor authentication is mandatory and the switch is on', async () => {
+  // The same refusal with a wrong password: the password is never checked
+  it('should refuse a BYPASS user before checking the password when two-factor authentication is mandatory and the switch is on', async () => {
     conf.set(SWITCH, true);
-    mockSettings({ api_basic_auth_enabled: true, otp_mandatory: true });
+    mockAccount({ otp_activated: false }, { otp_mandatory: true });
+    await expect(authenticateUserByBasicAuth(context, req, wrongCredentials)).rejects.toThrow(USE_API_TOKEN);
     await expect(authenticateUserByBasicAuth(context, req, credentials)).rejects.toThrow(USE_API_TOKEN);
-    expect(Engine.elLoadBy).not.toHaveBeenCalled();
-    expect(Cache.getEntitiesMapFromCache).not.toHaveBeenCalled();
   });
 
-  // The same refusal with a wrong password: the password is never checked, and login() never reached
   it('should refuse a BYPASS user with two-factor authentication before checking the password when the switch is on', async () => {
     conf.set(SWITCH, true);
     mockAccount({ otp_activated: true });
     await expect(authenticateUserByBasicAuth(context, req, wrongCredentials)).rejects.toThrow(USE_API_TOKEN);
     await expect(authenticateUserByBasicAuth(context, req, credentials)).rejects.toThrow(USE_API_TOKEN);
-    // Loaded once per request to check it, never a second time by login()
+    // Loaded once per request
     expect(Engine.elLoadBy).toHaveBeenCalledTimes(2);
-    expect(Cache.getEntitiesMapFromCache).not.toHaveBeenCalled();
+  });
+
+  // The check uses the account that login() loads: no second query
+  it('should load the account once for an accepted request when the switch is on', async () => {
+    conf.set(SWITCH, true);
+    mockAccount({ id: 'no-two-factor-user-id', otp_activated: false });
+    const user = await authenticateUserByBasicAuth(context, req, credentials);
+    expect(user.id).toEqual('no-two-factor-user-id');
+    expect(Engine.elLoadBy).toHaveBeenCalledTimes(1);
   });
 
   it('should accept a BYPASS user with two-factor authentication and warn when the switch is off', async () => {
