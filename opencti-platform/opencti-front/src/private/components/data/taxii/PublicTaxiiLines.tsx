@@ -2,7 +2,7 @@ import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay'
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import { styled } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
+import Tag from '@common/tag/Tag';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItem from '@mui/material/ListItem';
 import { Tooltip } from '@mui/material';
@@ -74,15 +74,9 @@ const dataColumns: DataColumns = {
     width: '20%',
     isSortable: false,
     render: (node, { t }) => (
-      <Chip
-        sx={{
-          fontSize: 12,
-          height: 20,
-          maxWidth: 120,
-          display: 'table-cell',
-        }}
-        color="success"
-        variant="outlined"
+      <Tag
+        maxWidth={120}
+        severity="low"
         label={t('Started')}
       />
     ),

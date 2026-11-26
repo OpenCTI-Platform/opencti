@@ -11,8 +11,8 @@ import { emptyFilterGroup } from '../../../../../../utils/filters/filtersUtils';
 interface EntityStixCoreRelationshipsForStixCyberObservableProps {
   entityId: string;
   entityLink: string;
-  defaultStartTime: string;
-  defaultStopTime: string;
+  defaultStartTime?: string;
+  defaultStopTime?: string;
   relationshipTypes: string[];
   isRelationReversed: boolean;
 }

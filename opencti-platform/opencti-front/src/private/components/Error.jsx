@@ -9,6 +9,8 @@ import { useFormatter } from '../../components/i18n';
 import withRouter from '../../utils/compat_router/withRouter';
 import { getGraphQLResponseErrors } from '../../relay/graphQLResponseErrors';
 import { logger } from '../../utils/logging/logger';
+import { isReloadingForStaleChunk } from '../../utils/staleChunkReload';
+import StaleChunkReloadGate from './StaleChunkReloadGate';
 
 // --- Region UI errors components
 // -------------------------------
@@ -63,7 +65,7 @@ class ErrorBoundaryComponent extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     const isNetworkError = this.state.error?.data?.res ?? this.state.error?.res;
-    if (!isNetworkError) {
+    if (!isNetworkError && !isReloadingForStaleChunk(error)) {
       logger.error('React component tree crashed', {
         eventName: 'opencti.frontend.component_crashed',
         error,
@@ -80,6 +82,14 @@ class ErrorBoundaryComponent extends React.Component {
   }
 
   render() {
+    return (
+      <StaleChunkReloadGate error={this.state.error}>
+        {this.renderContent()}
+      </StaleChunkReloadGate>
+    );
+  }
+
+  renderContent() {
     if (this.state.error) {
       const types = map((e) => e.extensions?.code, getGraphQLResponseErrors(this.state.error));
       // Specific error catching

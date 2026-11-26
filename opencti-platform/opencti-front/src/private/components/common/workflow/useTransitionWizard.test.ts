@@ -58,10 +58,7 @@ vi.mock('../../drafts/useSwitchDraft', () => ({
   default: () => ({ exitDraft: mockExitDraft }),
 }));
 
-vi.mock('../../../../utils/hooks/useGranted', () => ({
-  default: () => false,
-  KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS: 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
-}));
+vi.mock('./useCanBypassMandatoryFields', () => ({ default: () => false }));
 
 vi.mock('../form/OpenVocabField', () => ({ default: () => null }));
 vi.mock('../../../../components/i18n', () => ({

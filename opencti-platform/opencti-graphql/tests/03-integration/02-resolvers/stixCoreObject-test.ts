@@ -76,6 +76,26 @@ describe('stixCoreObjectsDistributionByEntity', () => {
     expect(distribution.length).toEqual(6);
   });
 
+  it('should scope a given regardingOf filter to the entity', async () => {
+    // Keys come as arrays from the API: the entity id must still be injected in the regardingOf filter,
+    // otherwise every object having a "uses" relationship with anything would be counted
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    expect(malware).toBeDefined();
+    const distribution = await stixCoreObjectsDistributionByEntity(testContext, ADMIN_USER, {
+      objectId: malware!.internal_id,
+      field: 'entity_type',
+      operation: 'count',
+      filters: {
+        mode: 'and',
+        filters: [{ key: ['regardingOf'], values: [{ key: 'relationship_type', values: ['uses'] }] }],
+        filterGroups: [],
+      },
+    });
+    const aggregationMap = new Map(distribution.map((i: { label: string; value: number }) => [i.label, i.value]));
+    // Paradise Ransomware uses 2 attack patterns and is used by 1 intrusion set
+    expect(aggregationMap).toEqual(new Map([['Attack-Pattern', 2], ['Intrusion-Set', 1]]));
+  });
+
   it('should support limit option', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware).toBeDefined();
@@ -693,5 +713,125 @@ describe('StixCoreObjects export resolvers', () => {
       const applicantFile = await expectOnlyVisibleToApplicant(exportContext, isGeneratedFile);
       expect(applicantFile?.metaData?.creator_id).toEqual(applicantId);
     });
+  });
+});
+
+describe('regardingOf on the channel side of publishes', () => {
+  const CHANNEL_TYPE = 'Twitter';
+  const CHANNEL_ADD_QUERY = gql`
+    mutation ChannelAdd($input: ChannelAddInput!) {
+      channelAdd(input: $input) { id }
+    }
+  `;
+  const CHANNEL_DELETE_QUERY = gql`
+    mutation ChannelDelete($id: ID!) {
+      channelDelete(id: $id)
+    }
+  `;
+  const MEDIA_CONTENT_ADD_QUERY = gql`
+    mutation MediaContentAdd($input: MediaContentAddInput) {
+      stixCyberObservableAdd(type: "Media-Content", MediaContent: $input) { id }
+    }
+  `;
+  const OBSERVABLE_DELETE_QUERY = gql`
+    mutation ObservableDelete($id: ID!) {
+      stixCyberObservableEdit(id: $id) { delete }
+    }
+  `;
+  const RELATION_ADD_QUERY = gql`
+    mutation RelationAdd($input: StixCoreRelationshipAddInput!) {
+      stixCoreRelationshipAdd(input: $input) { id }
+    }
+  `;
+  const CHANNELS_QUERY = gql`
+    query Channels($filters: FilterGroup) {
+      stixCoreObjects(filters: $filters, first: 50) {
+        edges { node { id ... on Channel { channel_types } } }
+      }
+    }
+  `;
+  const DISTRIBUTION_QUERY = gql`
+    query ChannelTypesDistribution($filters: FilterGroup) {
+      stixCoreObjectsDistribution(field: "channel_types", operation: count, filters: $filters) {
+        label
+        value
+      }
+    }
+  `;
+  let publishingChannelId: string;
+  let otherChannelId: string;
+  let mediaContentId: string;
+
+  const channelFilters = (regardingOfFilter: any) => ({
+    mode: 'and',
+    filters: [{ key: ['entity_type'], values: ['Channel'] }, regardingOfFilter],
+    filterGroups: [],
+  });
+  const dynamicRegardingOf = () => ({
+    key: ['dynamicRegardingOf'],
+    values: [
+      { key: 'relationship_type', values: ['publishes'] },
+      {
+        key: 'dynamic',
+        values: [{
+          mode: 'and',
+          filters: [{ key: ['entity_type'], values: ['Media-Content'] }, { key: ['ids'], values: [mediaContentId] }],
+          filterGroups: [],
+        }],
+      },
+    ],
+  });
+  const regardingOf = () => ({
+    key: ['regardingOf'],
+    values: [{ key: 'id', values: [mediaContentId] }, { key: 'relationship_type', values: ['publishes'] }],
+  });
+
+  beforeAll(async () => {
+    const publishingChannel = await queryAsAdminWithSuccess({
+      query: CHANNEL_ADD_QUERY,
+      variables: { input: { name: 'regarding-of-publishing-channel', channel_types: [CHANNEL_TYPE] } },
+    });
+    publishingChannelId = publishingChannel.data?.channelAdd.id;
+    const otherChannel = await queryAsAdminWithSuccess({
+      query: CHANNEL_ADD_QUERY,
+      variables: { input: { name: 'regarding-of-other-channel', channel_types: [CHANNEL_TYPE] } },
+    });
+    otherChannelId = otherChannel.data?.channelAdd.id;
+    const mediaContent = await queryAsAdminWithSuccess({
+      query: MEDIA_CONTENT_ADD_QUERY,
+      variables: { input: { url: 'https://regarding-of-publishes.test/media' } },
+    });
+    mediaContentId = mediaContent.data?.stixCyberObservableAdd.id;
+    await queryAsAdminWithSuccess({
+      query: RELATION_ADD_QUERY,
+      variables: { input: { fromId: publishingChannelId, toId: mediaContentId, relationship_type: 'publishes' } },
+    });
+  });
+
+  afterAll(async () => {
+    await queryAsAdminWithSuccess({ query: CHANNEL_DELETE_QUERY, variables: { id: publishingChannelId } });
+    await queryAsAdminWithSuccess({ query: CHANNEL_DELETE_QUERY, variables: { id: otherChannelId } });
+    await queryAsAdminWithSuccess({ query: OBSERVABLE_DELETE_QUERY, variables: { id: mediaContentId } });
+  });
+
+  it('should list only the channel publishing the media content', async () => {
+    for (const filter of [regardingOf(), dynamicRegardingOf()]) {
+      const result = await queryAsAdminWithSuccess({ query: CHANNELS_QUERY, variables: { filters: channelFilters(filter) } });
+      expect(result.data?.stixCoreObjects.edges.map((e: any) => e.node)).toEqual([{ id: publishingChannelId, channel_types: [CHANNEL_TYPE] }]);
+    }
+  });
+
+  it('should distribute the channel types of the channels publishing the media content', async () => {
+    const direct = await queryAsAdminWithSuccess({
+      query: DISTRIBUTION_QUERY,
+      variables: { filters: channelFilters({ key: ['ids'], values: [publishingChannelId] }) },
+    });
+    for (const filter of [regardingOf(), dynamicRegardingOf()]) {
+      const result = await queryAsAdminWithSuccess({ query: DISTRIBUTION_QUERY, variables: { filters: channelFilters(filter) } });
+      const distribution = result.data?.stixCoreObjectsDistribution;
+      expect(distribution).toHaveLength(1);
+      expect(distribution[0].value).toEqual(1);
+      expect(distribution).toEqual(direct.data?.stixCoreObjectsDistribution);
+    }
   });
 });

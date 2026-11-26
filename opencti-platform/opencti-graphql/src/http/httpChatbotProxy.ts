@@ -10,7 +10,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
-import { isBrowserSessionRequest, setCookieError } from './httpUtils';
+import { errorBody, getRequestId, isBrowserSessionRequest, isUserFacingError, safeErrorMessage, SERVER_ERROR_MESSAGE, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
 import { getXtmOneIdentity, issueXtmJwt } from '../domain/xtm-auth';
 import type { AuthContext } from '../types/user';
@@ -63,6 +63,18 @@ const detailToText = (detail: unknown, fallback: string): string => {
     if (typeof nested === 'string' && nested.trim()) return nested.trim();
   }
   return fallback;
+};
+
+// XTM One answers a 4xx with a `detail` written for the user (quota, validation, access, AI disabled).
+// A 5xx, or an answer without detail, can name internal components: the client gets a generic message
+// and the full error is logged with the request id (NIST SP 800-53 SI-11).
+const UPSTREAM_ERROR_MESSAGE = 'The request to XTM One failed';
+const upstreamErrorText = (status: number, detail: unknown): string => {
+  if (status >= 400 && status < 500) {
+    const text = detailToText(detail, '');
+    if (text) return text;
+  }
+  return UPSTREAM_ERROR_MESSAGE;
 };
 
 // ── HTTP client (proxy-aware) ────────────────────────────────────────────
@@ -171,8 +183,8 @@ export const getChatbotConfig = async (req: Express.Request, res: Express.Respon
       xtm_one_configured: configured,
     });
   } catch (e: unknown) {
-    logApp.error('Error in chatbot config', { cause: e });
-    res.status(503).send({ status: 'error', error: (e as Error).message });
+    logApp.error('Error in chatbot config', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -195,9 +207,8 @@ export const getChatbotAgents = async (req: Express.Request, res: Express.Respon
 
     res.json(agents);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot agents', { cause: e });
-    const { message } = e as Error;
-    res.status(503).send({ status: 'error', error: message });
+    logApp.error('Error in chatbot agents', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -217,15 +228,16 @@ export const postChatbotSession = async (req: Express.Request, res: Express.Resp
     });
     res.json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot session', { cause: e });
+    logApp.error('Error in chatbot session', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     if (httpErr) {
       setCookieError(res, message);
-      res.status(httpErr.status).send({ status: httpErr.status, error: message });
+      const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
+      res.status(httpErr.status).send({ status: httpErr.status, error, request_id: getRequestId(res) });
     } else {
       setCookieError(res, message);
-      res.status(503).send({ status: 503, error: message });
+      res.status(503).send({ status: 503, error: safeErrorMessage(e), request_id: getRequestId(res) });
     }
   }
 };
@@ -247,14 +259,12 @@ export const getChatbotSessions = async (req: Express.Request, res: Express.Resp
     });
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot sessions list', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot sessions list', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    // Surface the upstream `detail` / `message` (e.g. FastAPI validation
-    // errors) instead of the generic "Request failed with status
-    // code N", so failures are actionable in the UI and logs.
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    // Surface the upstream `detail` / `message` of a 4xx (e.g. FastAPI validation
+    // errors) instead of the generic "Request failed with status code N".
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -288,11 +298,10 @@ export const deleteChatbotSession = async (req: Express.Request, res: Express.Re
       res.status(response.status).end();
     }
   } catch (e: unknown) {
-    logApp.error('Error in chatbot session delete', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot session delete', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -319,14 +328,13 @@ export const postChatbotMessageSteer = async (req: Express.Request, res: Express
     });
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot steer', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot steer', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
     if (httpErr) {
-      const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
-      res.status(httpErr.status).send({ status: 'error', error: detail });
+      const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
+      res.status(httpErr.status).send({ status: 'error', error, request_id: getRequestId(res) });
     } else {
-      res.status(503).send({ status: 'error', error: message });
+      res.status(503).send(errorBody(res, e));
     }
   }
 };
@@ -368,14 +376,13 @@ export const postChatbotMessageApprove = async (req: Express.Request, res: Expre
     });
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot tool approval', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot tool approval', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
     if (httpErr) {
-      const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
-      res.status(httpErr.status).send({ status: 'error', error: detail });
+      const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
+      res.status(httpErr.status).send({ status: 'error', error, request_id: getRequestId(res) });
     } else {
-      res.status(503).send({ status: 'error', error: message });
+      res.status(503).send(errorBody(res, e));
     }
   }
 };
@@ -422,11 +429,10 @@ export const getChatbotPendingApprovals = async (req: Express.Request, res: Expr
     });
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot pending approvals', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot pending approvals', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -447,11 +453,10 @@ export const getChatbotPrompts = async (req: Express.Request, res: Express.Respo
     });
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot prompts list', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot prompts list', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -473,11 +478,10 @@ export const getChatbotQuota = async (req: Express.Request, res: Express.Respons
     });
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot quota', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot quota', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -524,11 +528,10 @@ export const postChatbotMessageFeedback = async (req: Express.Request, res: Expr
     );
     res.status(response.status).json(response.data);
   } catch (e: unknown) {
-    logApp.error('Error in chatbot message feedback', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot message feedback', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -558,11 +561,10 @@ export const deleteChatbotMessageFeedback = async (req: Express.Request, res: Ex
       res.status(response.status).end();
     }
   } catch (e: unknown) {
-    logApp.error('Error in chatbot message feedback delete', { cause: e });
-    const { message } = e as Error;
+    logApp.error('Error in chatbot message feedback delete', { cause: e, request_id: getRequestId(res) });
     const httpErr = getResponseError(e);
-    const detail = httpErr?.data?.detail ?? httpErr?.data?.message ?? message;
-    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error: detail });
+    const error = httpErr ? upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message) : safeErrorMessage(e);
+    res.status(httpErr ? httpErr.status : 503).send({ status: 'error', error, request_id: getRequestId(res) });
   }
 };
 
@@ -609,16 +611,15 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
     });
 
     response.data.on('error', (error: Error) => {
-      logApp.error('Stream error in chatbot proxy', { cause: error });
+      logApp.error('Stream error in chatbot proxy', { cause: error, request_id: getRequestId(res) });
       if (!res.headersSent) {
-        const { message } = error;
-        res.status(500).send({ status: 'error', error: message });
+        res.status(500).send({ status: 'error', error: SERVER_ERROR_MESSAGE, request_id: getRequestId(res) });
       } else {
         res.end();
       }
     });
   } catch (e: unknown) {
-    logApp.error('Error in chatbot proxy', { cause: e });
+    logApp.error('Error in chatbot proxy', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
 
     const httpErr = getResponseError(e);
@@ -627,7 +628,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
 
       // For streaming responses, httpErr.data may be a stream, not parsed JSON.
       // Try to extract the detail from the response body.
-      let detail = message;
+      let detail: unknown;
       try {
         if (typeof httpErr.data === 'object' && httpErr.data !== null) {
           if ('detail' in httpErr.data) {
@@ -639,11 +640,11 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
               chunks.push(Buffer.from(chunk));
             }
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
-            detail = body.detail ?? message;
+            detail = body.detail;
           }
         }
       } catch {
-        // If parsing fails, fall back to the error message
+        // If parsing fails, fall back to the generic error message.
       }
 
       // Return errors as SSE stream so the chatbot displays
@@ -654,7 +655,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
       res.setHeader('Connection', 'keep-alive');
       res.status(200);
 
-      const detailText = detailToText(detail, message);
+      const detailText = upstreamErrorText(code, detail);
       const errorContent = code === 429
         ? `⚠️ **Quota exceeded** — ${detailText}`
         : `⚠️ **Error** — ${detailText}`;
@@ -663,7 +664,7 @@ export const postChatbotMessage = async (req: Express.Request, res: Express.Resp
       res.end();
     } else {
       setCookieError(res, message);
-      res.status(503).send({ status: 503, error: message });
+      res.status(503).send({ status: 503, error: safeErrorMessage(e), request_id: getRequestId(res) });
     }
   }
 };
@@ -711,15 +712,15 @@ export const postChatbotUpload = async (req: Express.Request, res: Express.Respo
     }
     res.json({ file_ids: fileIds });
   } catch (e: unknown) {
-    logApp.error('Error in chatbot upload', { cause: e });
+    logApp.error('Error in chatbot upload', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
     if (message?.includes('maximum size limit')) {
       res.status(413).json({ error: message });
     } else {
       const httpErr = getResponseError(e);
       if (httpErr) {
-        const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
-        res.status(httpErr.status).json({ error: detail });
+        const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
+        res.status(httpErr.status).json({ error, request_id: getRequestId(res) });
       } else {
         res.status(503).json({ error: 'XTM One is unreachable' });
       }
@@ -759,8 +760,8 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     try {
       await checkDraftInContext(context);
     } catch (draftErr: unknown) {
-      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr });
-      res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+      logApp.warn('Chatbot file download rejected due to invalid draft context', { cause: draftErr, request_id: getRequestId(res) });
+      res.status(400).json({ error: isUserFacingError(draftErr) ? (draftErr as Error).message : 'Invalid draft context' });
       return;
     }
 
@@ -798,15 +799,15 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
     });
 
     response.data.on('error', (error: Error) => {
-      logApp.error('Stream error in chatbot file download proxy', { cause: error });
+      logApp.error('Stream error in chatbot file download proxy', { cause: error, request_id: getRequestId(res) });
       if (!res.headersSent) {
-        res.status(500).send({ status: 'error', error: error.message });
+        res.status(500).send({ status: 'error', error: SERVER_ERROR_MESSAGE, request_id: getRequestId(res) });
       } else {
         res.end();
       }
     });
   } catch (e: unknown) {
-    logApp.error('Error in chatbot file download proxy', { cause: e });
+    logApp.error('Error in chatbot file download proxy', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     setCookieError(res, message);
@@ -816,7 +817,7 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
       // With responseType 'stream' the error body may arrive as a stream, so
       // handle both the parsed-object and stream cases (matches the
       // `postChatbotMessage` error path).
-      let detail = message;
+      let detail: unknown;
       try {
         if (typeof httpErr.data === 'object' && httpErr.data !== null) {
           if ('detail' in httpErr.data) {
@@ -827,13 +828,13 @@ export const getChatbotFileDownload = async (req: Express.Request, res: Express.
               chunks.push(Buffer.from(chunk));
             }
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
-            detail = body.detail ?? message;
+            detail = body.detail;
           }
         }
       } catch {
         // If parsing fails, fall back to the generic error message.
       }
-      res.status(httpErr.status).json({ error: detail });
+      res.status(httpErr.status).json({ error: upstreamErrorText(httpErr.status, detail), request_id: getRequestId(res) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
@@ -881,11 +882,11 @@ const upstreamDetail = async ({ data }: HttpResponseError, fallback: string): Pr
 };
 
 /** An upstream refusal (unknown artifact, render not finished) answers the user; only the rest is a platform failure. */
-const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null) => {
+const logArtifactFailure = (message: string, cause: unknown, httpErr: HttpResponseError | null, requestId: string | undefined) => {
   if (httpErr && httpErr.status < 500) {
-    logApp.warn(message, { cause, status: httpErr.status });
+    logApp.warn(message, { cause, status: httpErr.status, request_id: requestId });
   } else {
-    logApp.error(message, { cause });
+    logApp.error(message, { cause, request_id: requestId });
   }
 };
 
@@ -894,8 +895,8 @@ const artifactHeaders = async (req: Express.Request, res: Express.Response, cont
   try {
     await checkDraftInContext(context);
   } catch (draftErr: unknown) {
-    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr });
-    res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+    logApp.warn('Chatbot artifact request rejected due to invalid draft context', { cause: draftErr, request_id: getRequestId(res) });
+    res.status(400).json({ error: isUserFacingError(draftErr) ? (draftErr as Error).message : 'Invalid draft context' });
     return null;
   }
   const headers = await generateBasicHeaders(req, context);
@@ -930,11 +931,11 @@ export const getChatbotArtifact = async (req: Express.Request, res: Express.Resp
     if (signal?.aborted) return;
     const { message } = e as Error;
     const httpErr = getResponseError(e);
-    logArtifactFailure('Error in chatbot artifact read', e, httpErr);
+    logArtifactFailure('Error in chatbot artifact read', e, httpErr, getRequestId(res));
     if (httpErr) {
       const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
-      res.status(httpErr.status).json({ error: detailToText(detail, message) });
+      res.status(httpErr.status).json({ error: upstreamErrorText(httpErr.status, detail), request_id: getRequestId(res) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
@@ -977,25 +978,25 @@ export const postChatbotArtifactDownload = async (req: Express.Request, res: Exp
     response.data.pipe(res);
     response.data.on('error', (error: Error) => {
       if (signal?.aborted) return;
-      logApp.error('Stream error in chatbot artifact download proxy', { cause: error });
+      logApp.error('Stream error in chatbot artifact download proxy', { cause: error, request_id: getRequestId(res) });
       if (res.headersSent) {
         // Ending a chunked response would hand the browser a truncated file as complete.
         res.destroy();
       } else {
         // The file's headers would mislabel the JSON error, which a `content-encoding` makes unreadable.
         ARTIFACT_FORWARD_HEADERS.forEach((header) => res.removeHeader(header));
-        res.status(500).send({ status: 'error', error: error.message });
+        res.status(500).send({ status: 'error', error: SERVER_ERROR_MESSAGE, request_id: getRequestId(res) });
       }
     });
   } catch (e: unknown) {
     if (signal?.aborted) return;
     const { message } = e as Error;
     const httpErr = getResponseError(e);
-    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr);
+    logArtifactFailure('Error in chatbot artifact download proxy', e, httpErr, getRequestId(res));
     if (httpErr) {
       const detail = await upstreamDetail(httpErr, message);
       if (signal?.aborted) return;
-      res.status(httpErr.status).json({ error: detailToText(detail, message) });
+      res.status(httpErr.status).json({ error: upstreamErrorText(httpErr.status, detail), request_id: getRequestId(res) });
     } else {
       res.status(503).json({ error: 'XTM One is unreachable' });
     }
@@ -1083,17 +1084,17 @@ export const postAgentMessage = async (req: Express.Request, res: Express.Respon
       res.json({ content: response.data?.content ?? '', status: 'success' });
     }
   } catch (e: unknown) {
-    logApp.error('Error in agent message proxy', { cause: e });
+    logApp.error('Error in agent message proxy', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
     if (message?.includes('maximum size limit')) {
       res.status(413).json({ error: message });
     } else {
       const httpErr = getResponseError(e);
       if (httpErr) {
-        logApp.error('XTM One error response', { status: httpErr.status, data: JSON.stringify(httpErr.data) });
-        const detail = httpErr.data?.detail ?? httpErr.data?.message ?? message;
+        logApp.error('XTM One error response', { status: httpErr.status, data: JSON.stringify(httpErr.data), request_id: getRequestId(res) });
+        const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
         setCookieError(res, message);
-        res.status(200).json({ content: '', status: 'error', error: detail, code: httpErr.status });
+        res.status(200).json({ content: '', status: 'error', error, code: httpErr.status, request_id: getRequestId(res) });
       } else {
         const userMessage = 'XTM One is unreachable';
         setCookieError(res, userMessage);
@@ -1209,8 +1210,8 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     try {
       await checkDraftInContext(context);
     } catch (draftErr: unknown) {
-      logApp.warn('Agent stream rejected due to invalid draft context', { cause: draftErr });
-      res.status(400).json({ error: (draftErr as Error)?.message || 'Invalid draft context' });
+      logApp.warn('Agent stream rejected due to invalid draft context', { cause: draftErr, request_id: getRequestId(res) });
+      res.status(400).json({ error: isUserFacingError(draftErr) ? (draftErr as Error).message : 'Invalid draft context' });
       return;
     }
 
@@ -1324,20 +1325,20 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
     });
     response.data.on('error', (error: Error) => {
       streamErrored = true;
-      logApp.error('Stream error in agent stream proxy', { cause: error });
+      logApp.error('Stream error in agent stream proxy', { cause: error, request_id: getRequestId(res) });
       if (!res.headersSent) {
-        res.status(500).send({ status: 'error', error: error.message });
+        res.status(500).send({ status: 'error', error: SERVER_ERROR_MESSAGE, request_id: getRequestId(res) });
       } else {
         res.end();
       }
     });
   } catch (e: unknown) {
-    logApp.error('Error in agent stream proxy', { cause: e });
+    logApp.error('Error in agent stream proxy', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
     const httpErr = getResponseError(e);
     if (httpErr) {
       // For streaming responses, httpErr.data may be a stream, not parsed JSON.
-      let detail = message;
+      let detail: unknown;
       try {
         if (typeof httpErr.data === 'object' && httpErr.data !== null) {
           if ('detail' in httpErr.data) {
@@ -1348,17 +1349,17 @@ export const postAgentMessageStream = async (req: Express.Request, res: Express.
               chunks.push(Buffer.from(chunk));
             }
             const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
-            detail = body.detail ?? message;
+            detail = body.detail;
           }
         }
       } catch {
-        // If parsing fails, fall back to the error message
+        // If parsing fails, fall back to the generic error message.
       }
       setCookieError(res, message);
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.status(200);
-      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${detailToText(detail, message)}` })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'error', content: `⚠️ **Error** — ${upstreamErrorText(httpErr.status, detail)}` })}\n\n`);
       res.end();
     } else {
       const userMessage = 'XTM One is unreachable';
@@ -1391,6 +1392,7 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
         cguStatus: settings.filigran_chatbot_ai_cgu_status,
         isLicenseValidated,
         chatbotUrl: XTM_ONE_CHATBOT_URL,
+        request_id: getRequestId(res),
       });
       res.status(400).json({ error: 'Chatbot is not enabled' });
       return;
@@ -1455,22 +1457,23 @@ export const getLegacyChatbotProxy = async (req: Express.Request, res: Express.R
     });
 
     response.data.on('error', (error: Error) => {
-      logApp.error('Stream error in legacy chatbot proxy', { cause: error });
+      logApp.error('Stream error in legacy chatbot proxy', { cause: error, request_id: getRequestId(res) });
       if (!res.headersSent) {
-        res.status(500).send({ status: 'error', error: error.message });
+        res.status(500).send({ status: 'error', error: SERVER_ERROR_MESSAGE, request_id: getRequestId(res) });
       } else {
         res.end();
       }
     });
   } catch (e: unknown) {
-    logApp.error('Error in legacy chatbot proxy', { cause: e });
+    logApp.error('Error in legacy chatbot proxy', { cause: e, request_id: getRequestId(res) });
     const { message } = e as Error;
 
     const httpErr = getResponseError(e);
     if (httpErr) {
-      res.status(httpErr.status).send({ status: httpErr.status, error: message });
+      const error = upstreamErrorText(httpErr.status, httpErr.data?.detail ?? httpErr.data?.message);
+      res.status(httpErr.status).send({ status: httpErr.status, error, request_id: getRequestId(res) });
     } else {
-      res.status(503).send({ status: 503, error: message });
+      res.status(503).send({ status: 503, error: safeErrorMessage(e), request_id: getRequestId(res) });
     }
     setCookieError(res, message);
   }

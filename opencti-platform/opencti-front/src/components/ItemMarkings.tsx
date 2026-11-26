@@ -33,8 +33,7 @@ const ChipMarking = ({
   const theme = useTheme<Theme>();
 
   // A predefined marking (TLP, PAP, DR/NP/SF/CD) takes the tone every XTM Platform
-  // module draws for it (pastel by default in OpenCTI, standard when the user turns
-  // pastel off). A custom
+  // module draws for it, in the single design-system chip style. A custom
   // marking keeps its administrator's colour whenever it can be seen.
   const predefined = markingTone(markingDefinition.definition);
   const stored = markingDefinition.x_opencti_color;

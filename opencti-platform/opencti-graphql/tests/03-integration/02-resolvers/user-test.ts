@@ -1,7 +1,10 @@
 import gql from 'graphql-tag';
 import bcrypt from 'bcryptjs';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { v4 as uuidv4 } from 'uuid';
 import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
+import { patchAttribute } from '../../../src/database/middleware';
+import { organizationAdminRemoveDeletedUser } from '../../../src/modules/organization/organization-domain';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../src/database/utils';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -1279,14 +1282,36 @@ describe('User has no settings capability and is organization admin query behavi
     expect(queryResult.data.userEdit.relationDelete.id).toEqual(userInternalId);
   });
   it('should user deleted', async () => {
-    // Delete user
-    await queryAsUser(USER_EDITOR, {
-      query: DELETE_QUERY,
+    // Make the user an administrator of the organization, next to USER_EDITOR
+    await queryAsAdminWithSuccess({
+      query: ORGA_ADMIN_ADD_QUERY, // +1 update event of organization
+      variables: { id: testOrganizationId, memberId: userInternalId },
+    });
+    // Delete user, as an organization administrator that cannot edit authorized_authorities
+    await queryAsUserWithSuccess(USER_EDITOR, {
+      query: DELETE_QUERY, // +1 update event of organization (administrator removed)
       variables: { id: userInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult.data.user).toBeNull();
+    // Verify the deleted user is no longer an administrator of the organization, and the other one still is
+    const organization = await elLoadById(testContext, SYSTEM_USER, testOrganizationId) as unknown as { authorized_authorities?: string[] };
+    expect(organization.authorized_authorities).not.toContain(userInternalId);
+    expect(organization.authorized_authorities).toContain(userEditorId);
+  });
+  it('should not restore an administrator when two deleted administrators are removed at the same time', async () => {
+    type OrganizationAuthorities = { authorized_authorities?: string[] };
+    const before = await elLoadById(testContext, SYSTEM_USER, testOrganizationId) as unknown as OrganizationAuthorities;
+    const authorities = before.authorized_authorities ?? [];
+    const deletedAdministratorIds = [uuidv4(), uuidv4()];
+    await patchAttribute(testContext, SYSTEM_USER, testOrganizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION, {
+      authorized_authorities: [...authorities, ...deletedAdministratorIds], // +1 update event of organization
+    });
+    // +2 update events of organization, one per removed administrator
+    await Promise.all(deletedAdministratorIds.map((id) => organizationAdminRemoveDeletedUser(testContext, id)));
+    const after = await elLoadById(testContext, SYSTEM_USER, testOrganizationId) as unknown as OrganizationAuthorities;
+    expect(after.authorized_authorities).toEqual(authorities);
   });
 });
 

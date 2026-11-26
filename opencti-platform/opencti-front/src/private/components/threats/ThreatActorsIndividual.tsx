@@ -27,6 +27,10 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNFORMINTAKE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
+import { Box, Stack } from '@mui/material';
+import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
+import OpenAevRowMark from '../common/xtm/counterpart/openaev/OpenAevRowMark';
+import OpenCrqRowMark from '../common/xtm/counterpart/opencrq/OpenCrqRowMark';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
@@ -138,6 +142,13 @@ const ThreatActorsIndividual = () => {
     const dataColumns = {
       name: {
         percentWidth: 15,
+        render: (data: { id: string; name: string; draftVersion?: unknown }) => (
+          <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, maxWidth: '100%' }}>
+            <Box sx={{ minWidth: 0 }}>{defaultRender(data.name, !!data.draftVersion)}</Box>
+            <OpenAevRowMark objectId={data.id} />
+            <OpenCrqRowMark objectId={data.id} />
+          </Stack>
+        ),
       },
       threat_actor_types: {
         label: 'Type',

@@ -151,6 +151,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
             <StixDomainObjectHeader
               entityType="Campaign"
               stixDomainObject={campaign}
+              xtmCounterpartId={campaign.id}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CampaignEdition campaignId={campaign.id} />

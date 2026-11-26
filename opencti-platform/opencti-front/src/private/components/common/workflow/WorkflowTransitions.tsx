@@ -326,7 +326,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   return (
     <>
       <Box data-testid="workflow-transitions-actions" sx={{ display: 'contents' }}>
-        {divergence}
         {!transitionButtons && transitionCount > 1 ? (
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
@@ -400,6 +399,8 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
             ))}
           </>
         )}
+        {/* After the buttons, so that it wraps under them instead of pushing them to a new line */}
+        {divergence}
       </Box>
       {wizard && (
         <Formik<TransitionFormValues>

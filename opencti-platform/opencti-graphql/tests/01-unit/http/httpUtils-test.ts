@@ -8,14 +8,21 @@ import {
   clientErrorResponse,
   decodeOidcState,
   encodeOidcState,
+  errorBody,
+  errorResponse,
+  getRequestId,
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
+  requestIdMiddleware,
+  resolveRequestId,
+  safeErrorMessage,
+  SERVER_ERROR_MESSAGE,
 } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
 import { logApp } from '../../../src/config/conf';
-import { FunctionalError } from '../../../src/config/errors';
+import { DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../src/config/errors';
 import type { Request, Response } from 'express';
 import type { Server } from 'node:http';
 
@@ -84,6 +91,7 @@ describe('buildHelmetParameters coverage', () => {
 
   it('should most secure option works fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(false);
+    vi.spyOn(httpConfig, 'isScriptSnippetConfigured').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(false);
     vi.spyOn(httpConfig, 'isUpgradeInsecureRequestsEnabled').mockReturnValue(true);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('');
@@ -99,8 +107,8 @@ describe('buildHelmetParameters coverage', () => {
           frameSrc: ["'self'"],
           imgSrc: ["'self'", 'data:', 'blob:', 'https://*'],
           manifestSrc: ["'self'", 'data:', 'https://*'],
-          objectSrc: ["'self'", 'data:', 'https://*'],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
+          objectSrc: ["'none'"],
+          scriptSrc: ["'self'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           upgradeInsecureRequests: [],
@@ -127,8 +135,8 @@ describe('buildHelmetParameters coverage', () => {
           frameAncestors: "'none'",
           imgSrc: ["'self'", 'data:', 'blob:', 'https://*'],
           manifestSrc: ["'self'", 'data:', 'https://*'],
-          objectSrc: ["'self'", 'data:', 'https://*'],
-          scriptSrc: ["'self'", "'unsafe-inline'"],
+          objectSrc: ["'none'"],
+          scriptSrc: ["'self'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
           upgradeInsecureRequests: [],
@@ -148,6 +156,7 @@ describe('buildHelmetParameters coverage', () => {
 
   it('should less secure options work fine', () => {
     vi.spyOn(httpConfig, 'isDevMode').mockReturnValue(true);
+    vi.spyOn(httpConfig, 'isScriptSnippetConfigured').mockReturnValue(true);
     vi.spyOn(httpConfig, 'isUnsecureHttpResourceAllowed').mockReturnValue(true);
     vi.spyOn(httpConfig, 'isUpgradeInsecureRequestsEnabled').mockReturnValue(false);
     vi.spyOn(httpConfig, 'getPublicAuthorizedDomainsFromConfiguration').mockReturnValue('https://myctidomain.com');
@@ -162,7 +171,7 @@ describe('buildHelmetParameters coverage', () => {
           frameSrc: ["'self'"],
           imgSrc: ["'self'", 'data:', 'blob:', 'https://*', 'http://*'],
           manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-          objectSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          objectSrc: ["'none'"],
           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
@@ -190,7 +199,7 @@ describe('buildHelmetParameters coverage', () => {
           frameAncestors: "'none'",
           imgSrc: ["'self'", 'data:', 'blob:', 'https://*', 'http://*'],
           manifestSrc: ["'self'", 'data:', 'https://*', 'http://*'],
-          objectSrc: ["'self'", 'data:', 'https://*', 'http://*'],
+          objectSrc: ["'none'"],
           scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
           scriptSrcAttr: ["'none'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
@@ -606,6 +615,11 @@ describe('httpUtils: logMalformedRequest', () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
+  it('should carry the request id returned to the caller', () => {
+    logMalformedRequest(mockRequest({ res: { locals: { requestId: 'req-42' } } }), uploadError());
+    expect(loggedMeta().request_id).toBe('req-42');
+  });
+
   it('should default to the http message and accept a caller supplied one', () => {
     logMalformedRequest(mockRequest(), uploadError());
     expect(infoSpy.mock.calls[0][0]).toBe('Malformed http request call');
@@ -731,5 +745,67 @@ describe('httpUtils: logMalformedRequest', () => {
 
     expect(JSON.stringify(loggedMeta())).not.toContain('hunter2');
     expect(loggedMeta().body).toBeUndefined();
+  });
+});
+
+describe('httpUtils: request id', () => {
+  it('should reuse a safe incoming request id', () => {
+    expect(resolveRequestId('abc-123_DEF.456')).toBe('abc-123_DEF.456');
+  });
+
+  it('should generate a uuid when there is no incoming request id', () => {
+    expect(resolveRequestId(undefined)).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  it('should not reuse an incoming request id that could inject the logs', () => {
+    const injected = 'abc\n{"level":"info"}';
+    expect(resolveRequestId(injected)).not.toBe(injected);
+    expect(resolveRequestId('a'.repeat(129))).not.toBe('a'.repeat(129));
+    expect(resolveRequestId(['abc', 'def'])).not.toBe('abc');
+  });
+
+  it('should set the request id on the response and in its header', () => {
+    const req = { headers: { 'x-request-id': 'from-the-proxy' } } as unknown as Request;
+    const res = { locals: {}, setHeader: vi.fn() } as unknown as Response;
+    const next = vi.fn();
+    requestIdMiddleware(req, res, next);
+    expect(getRequestId(res)).toBe('from-the-proxy');
+    expect(res.setHeader).toHaveBeenCalledWith('X-Request-ID', 'from-the-proxy');
+    expect(next).toHaveBeenCalled();
+  });
+});
+
+describe('httpUtils: error messages', () => {
+  it('should keep the message of the errors written for the caller', () => {
+    expect(safeErrorMessage(FunctionalError('Name is required'))).toBe('Name is required');
+    expect(safeErrorMessage(ForbiddenAccess())).toBe('You are not allowed to do this.');
+    expect(safeErrorMessage(ResourceNotFoundError('Catalog logo not found'))).toBe('Catalog logo not found');
+    expect(safeErrorMessage(DraftLockedError('Could not find draft workspace'))).toBe('Could not find draft workspace');
+  });
+
+  it('should hide the message of a platform failure', () => {
+    expect(safeErrorMessage(DatabaseError('connect ECONNREFUSED 10.0.0.5:9200'))).toBe(SERVER_ERROR_MESSAGE);
+    expect(safeErrorMessage(new Error('ENOENT: no such file or directory, open /opt/opencti/config'))).toBe(SERVER_ERROR_MESSAGE);
+    expect(safeErrorMessage(undefined)).toBe(SERVER_ERROR_MESSAGE);
+  });
+
+  it('should build an error body with the request id', () => {
+    const res = { locals: { requestId: 'req-1' } } as unknown as Response;
+    expect(errorBody(res, new Error('internal'))).toEqual({ status: 'error', error: SERVER_ERROR_MESSAGE, request_id: 'req-1' });
+  });
+
+  it('should answer a caller mistake with the message of clientErrorResponse', () => {
+    const parseError = Object.assign(new Error('Unexpected token } in JSON at position 12'), { status: 400, type: 'entity.parse.failed' });
+    expect(errorResponse(parseError, 'req-2')).toEqual({
+      status: 400,
+      body: { status: 'error', error: 'Invalid json in request body', request_id: 'req-2' },
+    });
+  });
+
+  it('should answer any other error with a generic 500', () => {
+    expect(errorResponse(new Error('connect ECONNREFUSED 10.0.0.5:6379'), 'req-3')).toEqual({
+      status: 500,
+      body: { status: 'error', error: SERVER_ERROR_MESSAGE, request_id: 'req-3' },
+    });
   });
 });

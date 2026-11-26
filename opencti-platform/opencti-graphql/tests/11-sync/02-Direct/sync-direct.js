@@ -1,10 +1,18 @@
 import { expect } from 'vitest';
 import * as R from 'ramda';
-import { ADMIN_API_TOKEN, ADMIN_USER, createHttpClient, DATA_FILE_TEST, executeExternalQuery, SYNC_DIRECT_START_REMOTE_URI, SYNC_TEST_REMOTE_URI } from '../../utils/testQuery';
+import {
+  ADMIN_API_TOKEN,
+  ADMIN_USER,
+  createTokenHttpClient,
+  DATA_FILE_TEST,
+  executeExternalQuery,
+  SYNC_DIRECT_START_REMOTE_URI,
+  SYNC_TEST_REMOTE_URI,
+} from '../../utils/testQuery';
 import { checkPostSyncContent, checkPreSyncContent, REPORT_QUERY, SYNC_CREATION_QUERY, SYNC_START_QUERY, UPLOADED_FILE_SIZE, waitForRemoteSync } from '../sync-utils';
 
 export const syncDirect = async () => {
-  const client = createHttpClient();
+  const client = createTokenHttpClient(ADMIN_API_TOKEN);
   // Pre check
   const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
   // The report file is uploaded once before all the syncs, see uploadReportFile in sync-utils.js

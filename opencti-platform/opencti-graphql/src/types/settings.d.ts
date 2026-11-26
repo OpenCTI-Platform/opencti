@@ -80,6 +80,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_backend_is_reachable?: boolean;
   xtm_hub_available_news_feed_types?: string[];
   xtm_hub_commercial_model?: XtmHubCommercialModel;
+  xtm_hub_organization_name?: string;
   platform_ai_enabled: boolean;
   platform_notifier_auto_trigger_assignee?: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
@@ -109,5 +110,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   local_auth_lockout_final_action?: LocalAuthLockoutFinalAction;
   local_auth_lockout_window?: number;
   local_auth_lockout_duration?: number;
+  // Absent on the platforms created before it existed, which keep API Basic authentication enabled
+  api_basic_auth_enabled?: boolean;
   smtp_configuration?: SmtpConfiguration;
 }

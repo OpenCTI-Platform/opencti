@@ -295,6 +295,21 @@ describe('PDF table layout', () => {
     }
   });
 
+  it.each([4, 8, 12])('shows the markings and the page number in the footer of Fintel exports with %i columns', async (columnCount) => {
+    const html = `<table><thead><tr>${'<th>Header</th>'.repeat(columnCount)}</tr></thead><tbody><tr>${'<td>Value</td>'.repeat(columnCount)}</tr></tbody></table>`;
+    const pdf = await htmlToPdfReport('Report', html, 'Template', ['TLP:RED'], null, { includeCoverPage: false, includeBackPage: false });
+    const document = await getDocument({ data: new Uint8Array(await pdf.getBuffer()) }).promise;
+    try {
+      expect(document.numPages).toBe(1);
+      const page = await document.getPage(1);
+      const texts = (await page.getTextContent()).items.filter((item) => 'str' in item).map((item) => item.str);
+      expect(texts).toContain('TLP:RED');
+      expect(texts).toContain('1 / 1');
+    } finally {
+      await document.loadingTask.destroy();
+    }
+  });
+
   it('reduces row height by allocating more width to descriptive content', async () => {
     const description = 'The investigation identified suspicious activity affecting several systems across the organization. '.repeat(3);
     const html = `<table><thead><tr><th>ID</th><th>Description</th><th>Status</th></tr></thead><tbody><tr><td>42</td><td>${description}</td><td>Open</td></tr></tbody></table><p>EndMarker</p>`;

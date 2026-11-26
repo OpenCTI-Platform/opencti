@@ -13,9 +13,12 @@ import {
   CUSTOM_FIELD_SELECT_VALUES_SUBFILTER,
   CUSTOM_FIELD_STRING_VALUE_SUBFILTER,
   ID_SUBFILTER,
+  NESTED_SUB_FILTER_OPERATORS,
   IDS_FILTER,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
@@ -45,19 +48,26 @@ import {
   WORKFLOW_FILTER,
   X_OPENCTI_WORKFLOW_ID,
 } from './filtering-constants';
-import { ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
+import { BadUserInputError, ForbiddenAccess, FunctionalError, ResourceNotFoundError, UnsupportedError } from '../../config/errors';
 import { ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI, ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../modules/organization/organization-types';
-import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import {
+  isEmptyField,
+  isNotEmptyField,
+  READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_RELATIONSHIPS_INDICES,
+  READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+} from '../../database/utils';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from '../../schema/general';
 import { addFilter } from './filtering-utils';
-import type { BasicStoreBase, BasicWorkflowStatus } from '../../types/store';
+import type { BasicStoreBase, BasicStoreRelation, BasicWorkflowStatus } from '../../types/store';
 import { getPirWithAccessCheck } from '../../modules/pir/pir-checkPirAccess';
-import { authorizedMembers, type ComplexAttribute } from '../../schema/attribute-definition';
+import { authorizedMembers, type ComplexAttribute, type NestedObjectAttribute } from '../../schema/attribute-definition';
 import { isMetricsName } from '../../modules/metrics/metrics-utils';
-import { isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { isGenericNestedFilterAttribute, isObjectAttribute, schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { getCustomFieldDefinitionByNameOrAlias, getCustomFieldValueField } from '../../modules/customField/custom-field-cache';
-import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION } from '../../database/engine';
+import { elFindByIds, elList, elPaginate, ES_MAX_PAGINATION, ROLE_FROM, ROLE_TO, UNIMPACTED_ENTITIES_ROLE } from '../../database/engine';
 import { computeQueryIndices } from '../../database/engine-indices';
 import { keepMostRestrictiveTypes } from '../../schema/schemaUtils';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
@@ -69,6 +79,44 @@ import { ENTITY_TYPE_STATUS } from '../../schema/internalObject';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../schema/stixMetaObject';
 import { IDS_ATTRIBUTES } from '../../domain/attribute-utils';
 import { pushAll } from '../arrayUtil';
+import type { FiltersWithNested } from '../../database/middleware-loader';
+
+// The entities on an unimpacted side of a relationship (e.g. the channel of a 'publishes') have no rel_ denormalization,
+// so they are resolved from the relationships targeting the given ids
+const resolveUnimpactedSideIds = async (
+  context: AuthContext,
+  user: AuthUser,
+  types: string[],
+  ids: string[],
+  inferredValues: string[],
+  allowedSides: string[],
+) => {
+  let relationshipIndices = READ_RELATIONSHIPS_INDICES;
+  if (inferredValues.includes('true')) {
+    relationshipIndices = [READ_INDEX_INFERRED_RELATIONSHIPS];
+  } else if (inferredValues.includes('false')) {
+    relationshipIndices = READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
+  }
+  const sideIds = new Set<string>();
+  for (let index = 0; index < types.length; index += 1) {
+    const type = types[index];
+    const sides = allowedSides.filter((side) => UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`));
+    for (let sideIndex = 0; sideIndex < sides.length; sideIndex += 1) {
+      const side = sides[sideIndex];
+      const relationships = await elList<BasicStoreRelation>(context, user, relationshipIndices, {
+        types: [type],
+        baseData: true,
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: [side === ROLE_FROM ? RELATION_TO_FILTER : RELATION_FROM_FILTER], values: ids }],
+          filterGroups: [],
+        },
+      });
+      relationships.forEach((relationship) => sideIds.add(side === ROLE_FROM ? relationship.fromId : relationship.toId));
+    }
+  }
+  return Array.from(sideIds);
+};
 
 export const adaptFilterToRegardingOfFilterKey = async (
   context: AuthContext,
@@ -105,6 +153,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
     }
   }
   let ids = idParameter?.values ?? [];
+  const accessibleIds: string[] = [];
   // Limit the number of possible ids in the regardingOf
   if (ids.length > ES_MAX_PAGINATION) {
     throw UnsupportedError('Too much ids specified', { size: ids.length, max: ES_MAX_PAGINATION });
@@ -112,6 +161,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
   if (ids.length > 0) {
     // Keep ids the user has access to
     const filteredEntities = await elFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+    pushAll(accessibleIds, filteredEntities.map((n) => n.id));
     ids = noRegardingOfFilterIdsCheck
       ? ids // if noRegardingOfFilterIdsCheck=true, we keep all the ids, even if the user has not access to them
       : filteredEntities.map((n) => n.id);
@@ -142,6 +192,7 @@ export const adaptFilterToRegardingOfFilterKey = async (
     if (relatedEntities.length > 0) {
       const relatedIds = relatedEntities.map((n) => n.id);
       pushAll(ids, relatedIds);
+      pushAll(accessibleIds, relatedIds);
     } else {
       ids.push('<invalid id>'); // To force empty result in the query result
     }
@@ -161,6 +212,19 @@ export const adaptFilterToRegardingOfFilterKey = async (
       ? buildRefRelationKey('*', '*')
       : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
     regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids, postFilteringTag });
+    const inferredValues = inferredParameter?.values ?? [];
+    const directionForced = filter.values.find((i) => i.key === INSTANCE_REGARDING_OF_DIRECTION_FORCED)?.values?.[0] ?? false;
+    const directionReverse = filter.values.find((i) => i.key === INSTANCE_REGARDING_OF_DIRECTION_REVERSE)?.values?.[0] ?? false;
+    let allowedSides = [ROLE_FROM, ROLE_TO];
+    if (directionForced) {
+      allowedSides = directionReverse ? [ROLE_FROM] : [ROLE_TO];
+    }
+    const unimpactedSideIds = accessibleIds.length > 0
+      ? await resolveUnimpactedSideIds(context, user, types ?? [], accessibleIds, inferredValues, allowedSides)
+      : [];
+    if (unimpactedSideIds.length > 0) {
+      regardingFilters.push({ key: ['internal_id'], operator: filter.operator, mode, values: unimpactedSideIds, postFilteringTag });
+    }
   }
   return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
 };
@@ -619,6 +683,45 @@ const adaptFilterForMetricsFilterKeys = async (filter: Filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+/**
+ * Adapts a filter on a filterable nested attribute (ex: coverage_information) into one nested filter:
+ * the values of the sub-filters must all match on the same nested element.
+ * - eq: at least one element matches all the sub-filters
+ * - not_nil: at least one element
+ * - nil: no element
+ * An eq filter without any sub-filter value does not filter, like any filter without value: null is returned.
+ */
+export const adaptFilterToGenericNestedFilterKey = (filter: Filter, attribute: NestedObjectAttribute): FiltersWithNested | null => {
+  const { operator, values } = filter;
+  const base = { key: [attribute.name], values: [], mode: FilterMode.Or, operator: FilterOperator.Eq };
+  if (operator === FilterOperator.Nil) {
+    return { ...base, nested: [], negateNested: true };
+  }
+  if (operator === FilterOperator.NotNil) {
+    return { ...base, nested: [] };
+  }
+  if (operator && operator !== FilterOperator.Eq) {
+    throw BadUserInputError('Unsupported operator on a nested filter key', { key: attribute.name, operator });
+  }
+  const nested = [];
+  for (const subFilter of values as unknown as { key: string; values?: string[]; operator?: FilterOperator }[]) {
+    const mapping = attribute.mappings.find((m) => m.name === subFilter.key && m.isFilterable);
+    if (!mapping) {
+      throw BadUserInputError('Unknown sub-filter key on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key });
+    }
+    // Sub-filters come in the values of the filter ([Any!]!): GraphQL does not check their operator as it does for the filter.
+    // An operator the nested query does not implement would otherwise be run as an equality by the engine.
+    const subOperator = subFilter.operator ?? FilterOperator.Eq;
+    if (!NESTED_SUB_FILTER_OPERATORS.includes(subOperator)) {
+      throw BadUserInputError('Unsupported sub-filter operator on a nested filter key', { key: attribute.name, subFilterKey: subFilter.key, operator: subOperator });
+    }
+    if (subFilter.values && subFilter.values.length > 0) {
+      nested.push({ key: subFilter.key, values: subFilter.values, operator: subOperator });
+    }
+  }
+  return nested.length > 0 ? { ...base, nested } : null;
+};
+
 // An entity without a value for a custom field has no element for it in custom_field_values.
 // Negative operators are therefore applied as "no element matches the positive operator",
 // so that such entities are returned.
@@ -1001,7 +1104,14 @@ export const completeSpecialFilterKeys = async (
           filterGroups: [],
         });
       } else if (definition.format === 'nested') {
-        finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
+        if (isGenericNestedFilterAttribute(definition)) {
+          const nestedFilter = adaptFilterToGenericNestedFilterKey(filter, definition);
+          if (nestedFilter) {
+            finalFilters.push(nestedFilter);
+          }
+        } else {
+          finalFilters.push({ key, operator: filter.operator, nested: filter.values, mode: filter.mode, values: [] });
+        }
       } else {
         throw UnsupportedError('Object attribute format is not filterable', { format: definition.format });
       }

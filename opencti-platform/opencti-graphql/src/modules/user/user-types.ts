@@ -68,7 +68,6 @@ export interface BasicStoreEntityUser extends BasicStoreEntity {
   bootstrap_wizard_skipped?: boolean;
   submenu_auto_collapse: boolean;
   monochrome_labels: boolean;
-  pastel_colours?: boolean;
   unsubscribed_news_feed_types: Array<string>;
   user_confidence_level: ConfidenceLevel | null;
   user_service_account: boolean;

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { BaseSyntheticEvent, Dispatch, useState } from 'react';
+import { BaseSyntheticEvent, Dispatch, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { identitySearchCreatorsSearchQuery, identitySearchIdentitiesSearchQuery } from '@components/common/identities/IdentitySearch';
 import { stixDomainObjectsLinesSearchQuery } from '@components/common/stix_domain_objects/StixDomainObjectsLines';
@@ -38,6 +38,7 @@ import { useSearchEntitiesSchemaSCOSearchQuery$data } from './__generated__/useS
 import type { Theme } from '../../components/Theme';
 import useAttributes, { containerTypes } from '../hooks/useAttributes';
 import { contextFilters, entityTypesFilters, FilterSearchContext, getFilterDefinitionFromFilterKeysMap, ME_FILTER_VALUE } from './filtersUtils';
+import { buildMembersOptions, rankOptions } from './SearchEntitiesUtil';
 import { useSearchEntitiesDashboardsQuery$data } from './__generated__/useSearchEntitiesDashboardsQuery.graphql';
 import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
@@ -356,13 +357,26 @@ const useSearchEntities = ({
     },
   ];
 
+  // keeps the first copy of each option (same value in the same group)
+  const withoutDuplicates = (options: EntityValue[]) => options.filter(
+    ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
+  );
+
+  // the new options replace their existing copies (e.g. to update their rank)
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
-    [key]: [...newEntities, ...(c[key] ?? [])].filter(
-      ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group)
-        === index,
-    ),
+    [key]: withoutDuplicates([...newEntities, ...(c[key] ?? [])]),
   }));
+
+  // only the new options not seen yet are added, the existing copies are kept
+  const addMissingEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
+    ...c,
+    [key]: withoutDuplicates([...(c[key] ?? []), ...newEntities]),
+  }));
+
+  // Id of the latest search of each filter key: a search runs on each typed character, and the answers can come back
+  // out of order
+  const latestSearchIds = useRef<Record<string, number>>({});
 
   const searchEntities = (
     filterKey: string,
@@ -382,6 +396,24 @@ const useSearchEntities = ({
       operator: 'eq',
     };
     setInputValues([newInputValue]);
+    // the options of a search for this term are ranked by relevance (rankOptions), the others stay alphabetical
+    const searchTerm = typeof event.target.value === 'string' ? event.target.value : '';
+    // An answer to a search for an older term of this key would put its results first, in its own relevance order: it is
+    // ignored. A late answer to an empty search only adds the options not seen yet: it may not be queried again
+    // (selecting a value clears the input without searching), but its unranked copies must not replace the ranked ones
+    // of the latest search. Only the queries sending the term go through this guard: the others (creators, schema
+    // types...) do not depend on the term, are not ranked, and may not be queried again (cached), so their answers are
+    // always kept.
+    // All the queries of a search share its id, as a key can query several sources (e.g. entities and members).
+    const searchId = (latestSearchIds.current[filterKey] ?? 0) + 1;
+    latestSearchIds.current[filterKey] = searchId;
+    const unionSetLatestEntities = (key: string, newEntities: EntityValue[]) => {
+      if (latestSearchIds.current[filterKey] === searchId) {
+        unionSetEntities(key, newEntities);
+      } else if (!searchTerm.trim()) {
+        addMissingEntities(key, newEntities);
+      }
+    };
 
     // fetches vocabularies by categories and add them to the set
     const buildOptionsFromVocabularySearchQuery = (key: string, filterCategories: string[]) => {
@@ -394,8 +426,11 @@ const useSearchEntities = ({
       };
       fetchQuery(vocabularySearchQuery, {
         filters,
-        search: event.target.value !== 0 ? event.target.value : '',
+        search: searchTerm,
         first: 10,
+        // the vocabularies are ordered by their configured order by default, even when searched: when a term is typed,
+        // order them by relevance, as getOptionsFromEntities keeps the order of the search
+        ...(searchTerm.trim() ? { orderBy: '_score', orderMode: 'desc' } : {}),
       })
         .toPromise()
         .then((data) => {
@@ -405,7 +440,7 @@ const useSearchEntities = ({
               value: n?.node.name,
               type: 'Vocabulary',
             })));
-          unionSetEntities(key, entityValues);
+          unionSetLatestEntities(key, rankOptions(entityValues, searchTerm));
         });
     };
 
@@ -425,14 +460,14 @@ const useSearchEntities = ({
             type: 'Label',
             color: node.color ?? undefined,
           }));
-          unionSetEntities(key, [
+          unionSetLatestEntities(key, [
             {
               label: t_i18n('No label'),
               value: null,
               type: 'Label',
               color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
             },
-            ...objectLabelEntities,
+            ...rankOptions(objectLabelEntities, searchTerm),
           ]);
         });
     };
@@ -466,7 +501,7 @@ const useSearchEntities = ({
             value: n?.node.id,
             type: 'Kill-Chain-Phase',
           }));
-          unionSetEntities(key, killChainPhaseEntities);
+          unionSetLatestEntities(key, rankOptions(killChainPhaseEntities, searchTerm));
         });
     };
 
@@ -488,7 +523,7 @@ const useSearchEntities = ({
             type: 'External-Reference',
             ...(group && { group }),
           }));
-          unionSetEntities(key, externalRefByEntities);
+          unionSetLatestEntities(key, rankOptions(externalRefByEntities, searchTerm));
         });
     };
 
@@ -515,6 +550,7 @@ const useSearchEntities = ({
         types: searchScope?.[key]?.filter((type) => type !== 'External-Reference') || entityTypes,
         search: event.target.value !== 0 ? event.target.value : '',
         count: 100,
+        filters: searchContext.searchFilters?.[key],
       })
         .toPromise()
         .then((data) => {
@@ -526,7 +562,7 @@ const useSearchEntities = ({
             type: node.entity_type,
             parentTypes: node.parent_types.flatMap((t) => (t || [])),
           }));
-          unionSetEntities(key, elementIdEntities);
+          unionSetLatestEntities(key, rankOptions(elementIdEntities, searchTerm));
         });
     };
 
@@ -546,7 +582,7 @@ const useSearchEntities = ({
             value: n.node.id,
             type: n.node.entity_type,
           }));
-          unionSetEntities(key, groups);
+          unionSetLatestEntities(key, rankOptions(groups, searchTerm));
         });
     };
 
@@ -567,7 +603,7 @@ const useSearchEntities = ({
             value: n.node.id,
             type: n.node.entity_type,
           }));
-          unionSetEntities(key, createdByEntities);
+          unionSetLatestEntities(key, rankOptions(createdByEntities, searchTerm));
         });
     };
 
@@ -580,33 +616,10 @@ const useSearchEntities = ({
       })
         .toPromise()
         .then((data) => {
-          const membersEntities = (
-            (data as ObjectAssigneeFieldMembersSearchQuery$data)?.members
-              ?.edges ?? []
-          ).map((n) => ({
-            label: n?.node.name,
-            value: n?.node.id,
-            type: n?.node.entity_type,
-            group: n?.node.entity_type,
-          }));
-          unionSetEntities(key, membersEntities);
           // add @me value for filters with user id as values, except in stix playbook components
-          if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
-            unionSetEntities(key, [meEntity]);
-          }
-          // system members are always users; only add them when the filter targets users
-          if (entityTypes.includes('User')) {
-            const membersSystems = (
-              (data as ObjectAssigneeFieldMembersSearchQuery$data)?.systemMembers
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: n?.node.entity_type,
-              group: n?.node.entity_type,
-            }));
-            unionSetEntities(key, membersSystems);
-          }
+          const meOption = searchContext.elementType !== 'Playbook-Stix-Component' ? meEntity : undefined;
+          // a single union keeps the searched members ahead of the unsearched system members
+          unionSetLatestEntities(key, buildMembersOptions(data as ObjectAssigneeFieldMembersSearchQuery$data, entityTypes, { meOption, searchTerm }));
         });
     };
 
@@ -795,7 +808,7 @@ const useSearchEntities = ({
                 value: n.node.id,
                 type: n.node.entity_type,
               }));
-              unionSetEntities('sightedBy', sightedByEntities);
+              unionSetLatestEntities('sightedBy', rankOptions(sightedByEntities, searchTerm));
             });
           break;
         case 'computed_reliability':
@@ -962,7 +975,19 @@ const useSearchEntities = ({
           break;
         case 'fromTypes':
         case 'toTypes':
-          // for source type and target type, we need:
+          // the search scope of the key, if any, restricts the types (e.g. the possible targets of a relationship type)
+          if (searchScope?.[filterKey]) {
+            unionSetEntities(
+              filterKey,
+              searchScope[filterKey].map((type) => ({
+                label: t_i18n(displayEntityTypeForTranslation(type)),
+                value: type,
+                type,
+              })).sort((a, b) => a.label.localeCompare(b.label)),
+            );
+            break;
+          }
+          // otherwise, for source type and target type, we need:
           // the observables
           // the stix domain objects
           // the stix core relationships
@@ -1055,7 +1080,7 @@ const useSearchEntities = ({
     } else {
       // case 2: build according to the filter type
       // depending on the filter type, fetch the right data and build the options list
-      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap);
+      const filterDefinition: FilterDefinition | undefined = getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap, parentFilterKey);
       const filterType = filterDefinition?.type ?? 'undefined';
       switch (filterType) {
         case 'vocabulary':
@@ -1111,10 +1136,7 @@ const useSearchEntities = ({
                     value: n.node.id,
                     type: 'Trigger',
                   }));
-                  unionSetEntities(
-                    filterKey,
-                    triggers,
-                  );
+                  unionSetLatestEntities(filterKey, rankOptions(triggers, searchTerm));
                 });
             } else if (idEntityTypes.includes('StatusTemplate')) {
               fetchQuery(StatusTemplateFieldQuery, {

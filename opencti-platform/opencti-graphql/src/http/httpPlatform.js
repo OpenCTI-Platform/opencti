@@ -36,7 +36,9 @@ import {
   sanitizeReferer,
   setCookieError,
   decodeOidcState,
-  clientErrorResponse,
+  errorBody,
+  errorResponse,
+  getRequestId,
   isClientRequestError,
   logMalformedRequest,
   isResponseWorthCompressing,
@@ -63,15 +65,19 @@ import {
   postChatbotMessageFeedback,
   deleteChatbotMessageFeedback,
 } from './httpChatbotProxy';
-import { PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
+import { AuthType, PROVIDERS } from '../modules/authenticationProvider/providers-configuration';
 import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
+import { AuthenticationFailure } from '../config/errors';
 import { getMaxPayloadBodySize } from './httpConfig';
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
 const publicDir = DEV_MODE ? '../opencti-front/dist' : 'public';
+
+// The passport routes serve the redirect-based providers (SSO) only: the form providers are served by the login form
+const isServedByPassportRoutes = (provider) => PROVIDERS.some((p) => p.provider === provider && p.type === AuthType.AUTH_SSO);
 
 const publishFileDownload = async (executeContext, auth, file) => {
   const { filename, entity_id } = file.metaData;
@@ -99,6 +105,12 @@ const publishFileRead = async (executeContext, auth, file) => {
   });
 };
 
+// The file is indexed but its content is missing from the object storage.
+const sendMissingStorageFile = (res, fileId) => {
+  logApp.warn('[FILE STORAGE] Indexed file is missing from storage', { fileId });
+  res.type('json').status(404).send({ status: 'error', error: 'File not found' });
+};
+
 export const decodeStoragePath = (fileParts = []) => fileParts
   .map((part) => {
     try {
@@ -111,6 +123,8 @@ export const decodeStoragePath = (fileParts = []) => fileParts
 
 // -- File download
 export const handleStorageGet = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const context = await createAuthenticatedContext(req, res, 'storage_get');
     if (!context.user) {
@@ -122,20 +136,27 @@ export const handleStorageGet = async (req, res) => {
     await checkDraftInContext(context);
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
+    stream = await downloadFile(data.id);
+    if (!stream) {
+      sendMissingStorageFile(res, data.id);
+      return;
+    }
     // If file is attach to a specific instance, we need to contr
     await publishFileDownload(context, context.user, data);
-    const stream = await downloadFile(data.id);
     res.attachment(file);
     stream.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
-    logApp.error('Error getting storage get file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting storage get file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
 // -- File view
 export const handleStorageView = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const context = await createAuthenticatedContext(req, res, 'storage_view');
     if (!context.user) {
@@ -147,6 +168,11 @@ export const handleStorageView = async (req, res) => {
     await checkDraftInContext(context);
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
+    stream = await downloadFile(data.id);
+    if (!stream) {
+      sendMissingStorageFile(res, data.id);
+      return;
+    }
     await publishFileRead(context, context.user, data);
     res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
     res.set('Content-Security-Policy', 'sandbox');
@@ -157,17 +183,19 @@ export const handleStorageView = async (req, res) => {
     } else {
       res.set('Content-type', data.metaData.mimetype);
     }
-    const stream = await downloadFile(data.id);
     stream.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
-    logApp.error('Error getting storage view file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
 // -- Embedded file loader
 export const handleStorageViewEmbedded = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const [_, id, __, rawFilename] = Object.values(req.params);
 
@@ -191,6 +219,11 @@ export const handleStorageViewEmbedded = async (req, res) => {
 
     const file = `embedded/${element.entity_type}/${id}/${filename}`;
     const data = await loadFile(context, context.user, file);
+    stream = await downloadFile(data.id);
+    if (!stream) {
+      sendMissingStorageFile(res, data.id);
+      return;
+    }
     await publishFileRead(context, context.user, data);
     res.set('Content-disposition', createContentDisposition(data.name, { type: 'inline' }));
     res.set('Content-Security-Policy', 'sandbox');
@@ -201,13 +234,12 @@ export const handleStorageViewEmbedded = async (req, res) => {
     } else {
       res.set('Content-type', data.metaData.mimetype);
     }
-
-    const stream = await downloadFile(data.id);
     stream.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
-    logApp.error('Error getting storage view file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -237,13 +269,15 @@ export const handleStorageHtml = async (req, res) => {
     }
   } catch (e) {
     setCookieError(res, e.message);
-    logApp.error('Error getting html file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting html file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
 // -- Encrypted view
 export const handleStorageEncrypted = async (req, res) => {
+  // Opened before the activity is published: release it if anything fails before it is consumed.
+  let stream;
   try {
     const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
     if (!context.user) {
@@ -256,16 +290,22 @@ export const handleStorageEncrypted = async (req, res) => {
     const file = decodeStoragePath(req.params.file);
     const data = await loadFile(context, context.user, file);
     const { metaData: { filename } } = data;
+    stream = await downloadFile(file);
+    if (!stream) {
+      sendMissingStorageFile(res, file);
+      return;
+    }
     await publishFileDownload(context, context.user, data);
     const archive = ZipEncrypted({ zlib: { level: 8 }, encryptionMethod: 'aes256', password: nconf.get('app:artifact_zip_password') });
-    archive.append(await downloadFile(file), { name: filename });
+    archive.append(stream, { name: filename });
     await archive.finalize();
     res.attachment(`${filename}.zip`);
     archive.pipe(res);
   } catch (e) {
+    stream?.destroy();
     setCookieError(res, e.message);
-    logApp.error('Error getting encrypted file', { cause: e });
-    res.status(503).send({ status: 'error', error: e.message });
+    logApp.error('Error getting encrypted file', { cause: e, request_id: getRequestId(res) });
+    res.status(503).send(errorBody(res, e));
   }
 };
 
@@ -383,8 +423,8 @@ const createApp = async (app, schema) => {
       await CERT_PROVIDER.reqLoginHandler(req, res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth by cert', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error auth by cert', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -394,8 +434,8 @@ const createApp = async (app, schema) => {
       await HEADERS_PROVIDER.reqLoginHandler(req, res);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth by headers', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error auth by headers', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -429,7 +469,8 @@ const createApp = async (app, schema) => {
                   // When logout is implemented for strategy
                   if (error) {
                     setCookieError(res, 'Error generating logout uri');
-                    res.status(503).send({ status: 'error', error: error.message });
+                    logApp.error('Error generating logout uri', { cause: error, request_id: getRequestId(res) });
+                    res.status(503).send(errorBody(res, error));
                   } else {
                     logApp.debug('[LOGOUT] Remote logout ok');
                     res.redirect(request);
@@ -454,8 +495,8 @@ const createApp = async (app, schema) => {
       }
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error logout', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error logout', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -463,7 +504,7 @@ const createApp = async (app, schema) => {
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     try {
       const { provider } = req.params;
-      const strategy = passport._strategy(provider);
+      const strategy = isServedByPassportRoutes(provider) ? passport._strategy(provider) : undefined;
       if (!strategy) {
         setCookieError(res, `Unknown authentication provider '${provider}'`);
         logApp.info('Unknown authentication provider', { provider });
@@ -497,8 +538,8 @@ const createApp = async (app, schema) => {
       )(req, res, next);
     } catch (e) {
       setCookieError(res, e.message);
-      logApp.error('Error auth provider', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error auth provider', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -529,6 +570,10 @@ const createApp = async (app, schema) => {
     });
 
     try {
+      if (!isServedByPassportRoutes(provider)) {
+        logApp.info('Authentication provider not served by the callback route', { provider });
+        throw AuthenticationFailure();
+      }
       const context = executionContext(`${provider}_strategy`);
       const logged = await callbackLogin();
       // Check the IP whitelist before the session login: a rejected login must never be authenticated,
@@ -573,7 +618,10 @@ const createApp = async (app, schema) => {
           if (!initialized) {
             res.status(503).send({ status: 'error', error: 'Health monitoring not initialized yet' });
           } else if (!isHealthy) {
-            res.status(503).send({ status: 'error', error: failures.join(', '), ...(withDetails ? { dependencies } : {}) });
+            // The failures carry the raw error of each dependency (hosts, ports): only the operator asking
+            // for the details with the access key gets them, the health monitor logs them anyway.
+            const error = withDetails ? failures.join(', ') : 'Some dependencies are unavailable';
+            res.status(503).send({ status: 'error', error, ...(withDetails ? { dependencies } : {}) });
           } else if (withDetails) {
             const { es_used_size, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
             res.status(200).send({ status: 'success', dependencies, es_used_size, s3_used_size, queue_consumers });
@@ -585,8 +633,8 @@ const createApp = async (app, schema) => {
         }
       }
     } catch (e) {
-      logApp.error('Error in health check', { cause: e });
-      res.status(503).send({ status: 'error', error: e.message });
+      logApp.error('Error in health check', { cause: e, request_id: getRequestId(res) });
+      res.status(503).send(errorBody(res, e));
     }
   });
 
@@ -657,14 +705,15 @@ const createApp = async (app, schema) => {
     // graphql-upload patches res.send to wait for the request to close; no-op otherwise. Must
     // cover the 500 below too, or an unread multipart body holds that answer back the same way.
     req.resume();
+    const requestId = getRequestId(res);
+    const { status, body } = errorResponse(err, requestId);
     if (isClientRequestError(err)) {
       logMalformedRequest(req, err);
-      const { status, body } = clientErrorResponse(err);
-      res.status(status).send(body);
-      return;
+    } else {
+      logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer, request_id: requestId });
     }
-    logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
-    res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
+    // The stack only helps a developer running the platform locally.
+    res.status(status).send(DEV_MODE && status === 500 ? { ...body, error: err.stack } : body);
   });
 
   return { sseMiddleware };

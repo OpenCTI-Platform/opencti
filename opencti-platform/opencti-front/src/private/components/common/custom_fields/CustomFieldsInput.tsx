@@ -22,6 +22,7 @@ import {
 import DateTimePicker from '../../../../components/common/input/DateTimePicker';
 import MarkdownFieldBase from '../../../../components/fields/markdownField/MarkdownFieldBase';
 import { useFormatter } from '../../../../components/i18n';
+import { isImeComposing } from '../../../../utils/domEvent';
 import type { CustomFieldDef, CustomFieldValue } from '../../../../utils/customFields';
 import { CustomFieldsInputQuery } from './__generated__/CustomFieldsInputQuery.graphql';
 
@@ -108,7 +109,7 @@ const TextInputCustomField: FunctionComponent<{
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && onSubmit && localValue !== value) {
+    if (e.key === 'Enter' && !isImeComposing(e) && onSubmit && localValue !== value) {
       onSubmit(localValue);
     }
   };

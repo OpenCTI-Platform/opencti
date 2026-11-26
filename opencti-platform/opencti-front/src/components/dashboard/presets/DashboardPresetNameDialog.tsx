@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import Button from '@common/button/Button';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Input, Text } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
+import { isImeComposing } from '../../../utils/domEvent';
 import type { DashboardPreset } from '../dashboard-types';
 
 export const DASHBOARD_PRESET_NAME_MAX_LENGTH = 200;
@@ -75,7 +76,7 @@ const DashboardPresetNameDialog = ({ open, existingPresets, preset, onConfirm, o
               error={name !== '' ? error : undefined}
               onChange={(event) => setName(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter') {
+                if (event.key === 'Enter' && !isImeComposing(event)) {
                   event.preventDefault();
                   handleConfirm();
                 }

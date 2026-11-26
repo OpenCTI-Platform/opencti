@@ -8,7 +8,7 @@ import graphqlLoaderPluginPkg from '@luckycatfactory/esbuild-graphql-loader';
 import nativeNodePlugin from './plugin/native.node.plugin.ts';
 import nodeGypBuildShimPlugin from './plugin/node-gyp-build-shim.plugin.ts';
 import { generateEsmPlugin } from './plugin/generate-esm-plugin.ts';
-import { BUILD_ENTRY_POINTS } from './entry-points.ts';
+import { BUILD_ENTRY_POINTS, BUILD_INJECTED_MODULES } from './entry-points.ts';
 
 // Both plugins are CommonJS. Their published types describe the factory as the
 // module's default export, while the ESM interop wrapper puts it one level deeper.
@@ -60,6 +60,7 @@ const buildOptions = {
     }),
   ],
   entryPoints,
+  inject: BUILD_INJECTED_MODULES,
   entryNames: '[name]',
   bundle: true,
   platform: 'node',

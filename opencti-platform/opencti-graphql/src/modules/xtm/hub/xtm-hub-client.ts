@@ -11,6 +11,8 @@ export interface RefreshRegistrationStatusResult {
   status: RegistrationStatus;
   // Null when the hub does not return it (unreachable hub, error, unknown value).
   commercialModel: HubCommercialModel | null;
+  // Name of the hub organization the platform is registered in. Null when the hub does not return it.
+  organizationName: string | null;
 }
 
 interface HubGraphQLError {
@@ -21,15 +23,18 @@ interface HubGraphQLError {
 interface HubRefreshAnswer {
   status?: RegistrationStatus;
   commercialModel?: unknown;
+  organizationName?: unknown;
   errors?: HubGraphQLError[];
 }
 
-const INACTIVE_REFRESH_RESULT: RefreshRegistrationStatusResult = { status: 'inactive', commercialModel: null };
+const INACTIVE_REFRESH_RESULT: RefreshRegistrationStatusResult = { status: 'inactive', commercialModel: null, organizationName: null };
 
 // The input coercion error a hub older than the edition refresh (graphql-js 16) returns for the unknown field.
 const PLATFORM_CONTRACT_UNKNOWN_FIELD = 'Field "platformContract" is not defined by type "RefreshPlatformRegistrationConnectivityStatusInput"';
 // The validation error a hub older than the commercial model refresh (graphql-js 16) returns for the unknown selected field.
 const COMMERCIAL_MODEL_UNKNOWN_FIELD = 'Cannot query field "commercialModel" on type';
+// The validation error a hub older than the organization name refresh returns for the unknown selected field.
+const ORGANIZATION_NAME_UNKNOWN_FIELD = 'Cannot query field "organizationName" on type';
 const isFieldRejected = (errors: HubGraphQLError[] | undefined, fieldError: string) => (errors ?? [])
   .some((error) => typeof error?.message === 'string' && error.message.includes(fieldError));
 
@@ -40,6 +45,7 @@ const hubErrorCodes = (errors?: HubGraphQLError[]) => (errors ?? [])
 
 let isPlatformContractFallbackLogged = false;
 let isCommercialModelFallbackLogged = false;
+let isOrganizationNameFallbackLogged = false;
 
 // The hub answers with its own CommercialModel enum: a value this platform does not know yet is ignored rather than stored.
 const toCommercialModel = (value: unknown): HubCommercialModel | null => {
@@ -49,6 +55,20 @@ const toCommercialModel = (value: unknown): HubCommercialModel | null => {
   const commercialModel = value.toLowerCase();
   return commercialModel === 'saas' || commercialModel === 'other' ? commercialModel : null;
 };
+
+const toOrganizationName = (value: unknown): string | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const organizationName = value.trim();
+  return organizationName.length > 0 ? organizationName : null;
+};
+
+interface RefreshSelection {
+  withPlatformContract: boolean;
+  withCommercialModel: boolean;
+  withOrganizationName: boolean;
+}
 
 export interface ProvisionedNewsFeedItem {
   id: string;
@@ -89,13 +109,20 @@ export const xtmHubClient = {
     platformVersion: string;
     platformContract: HubPlatformContract;
   }): Promise<RefreshRegistrationStatusResult> => {
-    const buildQuery = (withCommercialModel: boolean) => `
+    const buildQuery = ({ withCommercialModel, withOrganizationName }: RefreshSelection) => {
+      const selectedFields = [
+        'status',
+        ...(withCommercialModel ? ['commercialModel'] : []),
+        ...(withOrganizationName ? ['organizationName'] : []),
+      ];
+      return `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
         refreshPlatformRegistrationConnectivityStatus(input: $input) {
-          status${withCommercialModel ? '\n          commercialModel' : ''}
+          ${selectedFields.join('\n          ')}
         }
       }
     `;
+    };
 
     const input = {
       platformId,
@@ -108,12 +135,17 @@ export const xtmHubClient = {
       trusted: true,
       responseType: 'json',
     });
-    const refresh = async (withPlatformContract: boolean, withCommercialModel: boolean): Promise<HubRefreshAnswer> => {
-      const variables = { input: withPlatformContract ? { ...input, platformContract } : input };
+    const refresh = async (selection: RefreshSelection): Promise<HubRefreshAnswer> => {
+      const variables = { input: selection.withPlatformContract ? { ...input, platformContract } : input };
       try {
-        const response = await httpClient.post('/graphql-api', { query: buildQuery(withCommercialModel), variables });
+        const response = await httpClient.post('/graphql-api', { query: buildQuery(selection), variables });
         const refreshed = response.data?.data?.refreshPlatformRegistrationConnectivityStatus;
-        return { status: refreshed?.status, commercialModel: refreshed?.commercialModel, errors: response.data?.errors };
+        return {
+          status: refreshed?.status,
+          commercialModel: refreshed?.commercialModel,
+          organizationName: refreshed?.organizationName,
+          errors: response.data?.errors,
+        };
       } catch (error) {
         const errors = getResponseError(error)?.data?.errors;
         if (!errors) {
@@ -125,31 +157,46 @@ export const xtmHubClient = {
 
     // A hub older than this platform rejects the fields it does not know yet: drop each one in turn rather than
     // reporting a healthy registration as lost connectivity.
-    const attempt = async (withPlatformContract: boolean, withCommercialModel: boolean): Promise<RefreshRegistrationStatusResult> => {
-      const { status, commercialModel, errors } = await refresh(withPlatformContract, withCommercialModel);
+    const attempt = async (selection: RefreshSelection): Promise<RefreshRegistrationStatusResult> => {
+      const { status, commercialModel, organizationName, errors } = await refresh(selection);
       if (status) {
-        return { status, commercialModel: withCommercialModel ? toCommercialModel(commercialModel) : null };
+        return {
+          status,
+          commercialModel: selection.withCommercialModel ? toCommercialModel(commercialModel) : null,
+          organizationName: selection.withOrganizationName ? toOrganizationName(organizationName) : null,
+        };
       }
-      if (withCommercialModel && isFieldRejected(errors, COMMERCIAL_MODEL_UNKNOWN_FIELD)) {
-        if (!isCommercialModelFallbackLogged) {
+      // graphql-js reports every unknown selected field at once: drop all the rejected ones in a single retry.
+      const isOrganizationNameRejected = selection.withOrganizationName && isFieldRejected(errors, ORGANIZATION_NAME_UNKNOWN_FIELD);
+      const isCommercialModelRejected = selection.withCommercialModel && isFieldRejected(errors, COMMERCIAL_MODEL_UNKNOWN_FIELD);
+      if (isOrganizationNameRejected || isCommercialModelRejected) {
+        if (isCommercialModelRejected && !isCommercialModelFallbackLogged) {
           logApp.warn('[XTMH] XTM Hub does not expose the commercial model yet, refreshing the connectivity without it');
           isCommercialModelFallbackLogged = true;
         }
-        return attempt(withPlatformContract, false);
+        if (isOrganizationNameRejected && !isOrganizationNameFallbackLogged) {
+          logApp.warn('[XTMH] XTM Hub does not expose the organization name yet, refreshing the connectivity without it');
+          isOrganizationNameFallbackLogged = true;
+        }
+        return attempt({
+          ...selection,
+          withCommercialModel: selection.withCommercialModel && !isCommercialModelRejected,
+          withOrganizationName: selection.withOrganizationName && !isOrganizationNameRejected,
+        });
       }
-      if (withPlatformContract && isFieldRejected(errors, PLATFORM_CONTRACT_UNKNOWN_FIELD)) {
+      if (selection.withPlatformContract && isFieldRejected(errors, PLATFORM_CONTRACT_UNKNOWN_FIELD)) {
         if (!isPlatformContractFallbackLogged) {
           logApp.warn('[XTMH] XTM Hub does not accept the platform edition yet, refreshing the connectivity without it');
           isPlatformContractFallbackLogged = true;
         }
-        return attempt(false, withCommercialModel);
+        return attempt({ ...selection, withPlatformContract: false });
       }
       logApp.warn('XTM Hub sent an error', { codes: hubErrorCodes(errors) });
       return INACTIVE_REFRESH_RESULT;
     };
 
     try {
-      return await attempt(true, true);
+      return await attempt({ withPlatformContract: true, withCommercialModel: true, withOrganizationName: true });
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return INACTIVE_REFRESH_RESULT;

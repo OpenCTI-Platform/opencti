@@ -33,7 +33,7 @@ import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/sch
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import { dayFormat, escape, monthFormat, now, prepareDate, sinceNowInMinutes, utcDate, yearFormat } from '../../../src/utils/format';
-import { READ_DATA_INDICES } from '../../../src/database/utils';
+import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../../src/database/utils';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
@@ -48,7 +48,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organiza
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
-import { generateInternalId } from '../../../src/schema/identifier';
+import { generateAliasesId, generateInternalId } from '../../../src/schema/identifier';
 import { mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
 import { entitiesCounter, relationsCounter } from './entityCountHelper';
 
@@ -865,6 +865,38 @@ describe('Create entities', () => {
 
     readAttackPattern = await internalLoadById(testContext, ADMIN_USER, createdAttackPattern.id);
     expect(readAttackPattern).toBeUndefined();
+  });
+
+  it('should keep previous name as alias when name and aliases are replaced together', async () => {
+    const previousName = 'Ingress Tool Transfer TEST';
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, { name: previousName, x_mitre_id: 'T99105' }, ENTITY_TYPE_ATTACK_PATTERN);
+    await updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, [
+      { key: 'name', value: ['T99105'] },
+      { key: 'aliases', value: [previousName] },
+    ]);
+    const readAttackPattern = await storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    expect(readAttackPattern.name).toEqual('T99105');
+    expect(readAttackPattern.aliases).toEqual([previousName]);
+    expect(readAttackPattern.i_aliases_ids).toEqual(generateAliasesId([previousName], readAttackPattern));
+    await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+  });
+
+  it('should merge added and removed aliases with existing ones when renaming', async () => {
+    const input = { name: 'Alias Operations TEST', x_mitre_id: 'T99106', aliases: ['Base Alias'] };
+    const createdAttackPattern = await createEntity(testContext, ADMIN_USER, input, ENTITY_TYPE_ATTACK_PATTERN);
+    const loadAttackPattern = () => storeLoadById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
+    const update = (inputs) => updateAttribute(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN, inputs);
+    await update([{ key: 'name', value: ['T99106'] }, { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_ADD }]);
+    let readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.aliases.sort()).toEqual(['Base Alias', 'Extra Alias'].sort());
+    await update([{ key: 'name', value: ['T99106 Final'] }, { key: 'aliases', value: ['Extra Alias'], operation: UPDATE_OPERATION_REMOVE }]);
+    readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.aliases).toEqual(['Base Alias']);
+    await update([{ key: 'name', value: ['t99106 final'] }, { key: 'aliases', value: ['T99106 Final', 'Base Alias'] }]);
+    readAttackPattern = await loadAttackPattern();
+    expect(readAttackPattern.name).toEqual('t99106 final');
+    expect(readAttackPattern.aliases).toEqual(['Base Alias']);
+    await deleteElementById(testContext, ADMIN_USER, createdAttackPattern.id, ENTITY_TYPE_ATTACK_PATTERN);
   });
 
   // prerequisite to proper restoration after logical delete: we can createEntity with a fixed internal_id

@@ -8,12 +8,12 @@ import StixCoreRelationshipCreationFromEntityHeader from '@components/common/sti
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
-import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
+import AdministrativeAreaKnowledge, { ADMINISTRATIVE_AREA_OBSERVABLES_RELATIONSHIP_TYPES } from './AdministrativeAreaKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import { RootAdministrativeAreaQuery } from './__generated__/RootAdministrativeAreaQuery.graphql';
@@ -45,7 +45,7 @@ const subscription = graphql`
 `;
 
 const administrativeAreaQuery = graphql`
-  query RootAdministrativeAreaQuery($id: String!) {
+  query RootAdministrativeAreaQuery($id: String!, $observablesFilters: FilterGroup) {
     administrativeArea(id: $id) {
       id
       entity_type
@@ -58,7 +58,7 @@ const administrativeAreaQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...AdministrativeArea_administrativeArea
       ...AdministrativeAreaKnowledge_administrativeArea
       ...FileImportViewer_entity
@@ -126,6 +126,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }: Roo
                     'observables',
                   ]}
                   data={administrativeArea}
+                  observablesRelationshipTypes={ADMINISTRATIVE_AREA_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -218,7 +219,7 @@ const RootAdministrativeArea = () => {
   };
   const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(
     administrativeAreaQuery,
-    { id: administrativeAreaId },
+    { id: administrativeAreaId, observablesFilters: buildObservablesKnowledgeBarFilters(ADMINISTRATIVE_AREA_OBSERVABLES_RELATIONSHIP_TYPES) },
   );
   return (
     <>

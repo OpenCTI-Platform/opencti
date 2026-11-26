@@ -45,6 +45,27 @@ export const checkDashboardConfigurationImport = (type: string, parsedData: Conf
   }
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Decodes the manifest of a dashboard or of a custom view that comes from a file, when what the platform reads of it without checking holds:
+ * the manifest and its widgets are objects, and the data selection of a widget is a list of objects. Undefined otherwise (not base64 json included),
+ * so that an import can refuse the item with a reason instead of failing on it. What else the manifest holds (the variables) is for the caller to check.
+ */
+export const readManifestWithValidWidgets = (encoded: string): Record<string, unknown> | undefined => {
+  try {
+    const manifest = fromB64(encoded);
+    if (!isRecord(manifest)) {
+      return undefined;
+    }
+    const { widgets } = manifest;
+    const isValidWidget = (widget: unknown) => isRecord(widget) && Array.isArray(widget.dataSelection) && widget.dataSelection.every(isRecord);
+    return widgets === undefined || (isRecord(widgets) && Object.values(widgets).every(isValidWidget)) ? manifest : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 /**
  * Resolves a single saved filter reference within a data selection:
  * Replaces the saved filter id with the actual inline filters and removes the saved filter reference.

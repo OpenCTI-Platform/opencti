@@ -8,14 +8,14 @@ import StixCoreRelationshipCreationFromEntityHeader from '@components/common/sti
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Vulnerability from './Vulnerability';
-import VulnerabilityKnowledge from './VulnerabilityKnowledge';
+import VulnerabilityKnowledge, { VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES } from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
 import FileManager from '../../common/files/FileManager';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectKnowledgeBar, { buildObservablesKnowledgeBarFilters } from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -44,7 +44,7 @@ const subscription = graphql`
 `;
 
 const vulnerabilityQuery = graphql`
-  query RootVulnerabilityQuery($id: String!) {
+  query RootVulnerabilityQuery($id: String!, $observablesFilters: FilterGroup) {
     vulnerability(id: $id) {
       id
       draftVersion {
@@ -58,7 +58,7 @@ const vulnerabilityQuery = graphql`
       x_opencti_graph_data
       currentUserAccessRight
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
-      ...StixCoreObjectKnowledgeBar_stixCoreObject
+      ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(observablesFilters: $observablesFilters)
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
       ...FileImportViewer_entity
@@ -128,6 +128,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                     'infrastructures',
                   ]}
                   data={vulnerability}
+                  observablesRelationshipTypes={VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES}
                 />
               )}
             />
@@ -142,6 +143,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
             <StixDomainObjectHeader
               entityType="Vulnerability"
               stixDomainObject={vulnerability}
+              xtmCounterpartId={vulnerability.id}
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
@@ -217,6 +219,7 @@ const Root = () => {
   const { vulnerabilityId } = useParams() as { vulnerabilityId: string };
   const queryRef = useQueryLoading<RootVulnerabilityQuery>(vulnerabilityQuery, {
     id: vulnerabilityId,
+    observablesFilters: buildObservablesKnowledgeBarFilters(VULNERABILITY_OBSERVABLES_RELATIONSHIP_TYPES),
   });
 
   return (

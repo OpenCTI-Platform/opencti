@@ -10,6 +10,7 @@ import { Chip, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@fili
 import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent, useEffect, useRef } from 'react';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { isStixObjectTypes } from '../../../utils/filters/filtersUtils';
+import { filterEntityOptions } from '../../../utils/filters/SearchEntitiesUtil';
 import { useFormatter } from '../../i18n';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterEntityOption from './FilterEntityOption';
@@ -123,6 +124,8 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       getOptionLabel={(option) => option.label ?? ''}
       noOptionsText={t_i18n('No available options')}
       options={options}
+      // getOptionsFromEntities orders the groups by their first shown option: it must know the filter used here
+      filterOptions={filterEntityOptions}
       disableClearable={disabled}
       // Distinct icon + label from the "Clear search" button rendered in
       // the input's endAdornment, since this one clears the whole selection.

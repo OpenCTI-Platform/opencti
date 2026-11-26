@@ -3,6 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
+import { getRequestId, isUserFacingError, safeErrorMessage } from '../http/httpUtils';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
@@ -65,7 +66,7 @@ import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { resolvePublicUser } from '../modules/dataSharing/dataSharing-utils';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../http/httpServer-draft';
-import { resolveUserByIdFromCache } from '../modules/user/user-domain';
+import { endStreamSessionOverMaxLifetime, resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { EVENT_CURRENT_VERSION, sanitizeStreamEventOrigin } from '../database/stream/stream-utils';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { extractStixRepresentative } from '../database/stix-representative';
@@ -165,6 +166,10 @@ export const refreshStreamUser = async (req, { isPublicUser = false } = {}) => {
   if (!isPublicUser && !isUserAccountActive(cachedUser)) {
     return { error: 'the account of the user is no longer active' };
   }
+  // A stream authenticated by a session ends with it, when the session reaches its maximum lifetime
+  if (!isPublicUser && await endStreamSessionOverMaxLifetime(context, req)) {
+    return { error: 'the session of the user reached its maximum lifetime' };
+  }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isInsidePlatformOrganization = isUserInPlatformOrganization(cachedUser, settings);
   // The users cache gives a new object for a user whenever it changes: comparing them catches any change
@@ -238,7 +243,9 @@ export const authenticate = async (req, res, next) => {
       sendErrorStatus(req, res, 401);
     }
   } catch (err) {
-    res.statusMessage = `Error in stream: ${err.message}`;
+    // The status text reaches the client: the error itself stays in the log (NIST SP 800-53 SI-11).
+    logApp.error('Error in stream authentication', { cause: err, request_id: getRequestId(res) });
+    res.statusMessage = 'Error in stream';
     sendErrorStatus(req, res, 500);
   }
 };
@@ -349,7 +356,8 @@ export const authenticateForPublic = async (req, res, next) => {
         context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       }
     } catch (e) {
-      res.statusMessage = e.message ?? 'Public stream configuration error';
+      logApp.error('Error in public stream configuration', { cause: e, request_id: getRequestId(res) });
+      res.statusMessage = isUserFacingError(e) ? e.message : 'Public stream configuration error';
       sendErrorStatus(req, res, 500);
       return;
     }
@@ -727,7 +735,8 @@ const createSseMiddleware = () => {
       await initBroadcasting(req, res, client, processor);
       await processor.start(startStreamId);
     } catch (err) {
-      res.statusMessage = `Error in stream: ${err.message}`;
+      logApp.error('Error in stream', { cause: err, request_id: getRequestId(res) });
+      res.statusMessage = 'Error in stream';
       sendErrorStatus(req, res, 500);
     }
   };
@@ -748,7 +757,8 @@ const createSseMiddleware = () => {
         sendErrorStatus(req, res, 401);
       }
     } catch (err) {
-      res.statusMessage = `Error in connection management: ${err.message}`;
+      logApp.error('Error in stream connection management', { cause: err, request_id: getRequestId(res) });
+      res.statusMessage = 'Error in connection management';
       sendErrorStatus(req, res, 500);
     }
   };
@@ -1198,9 +1208,10 @@ const createSseMiddleware = () => {
           logApp.info('[STREAM] Client disconnected during processing', { cause: err, id, type: 'live' });
           return;
         }
-        logApp.error('[STREAM] Processing error', { cause: err, id, type: 'live' });
+        const requestId = getRequestId(res);
+        logApp.error('[STREAM] Processing error', { cause: err, id, type: 'live', request_id: requestId });
         if (channel.connected()) {
-          await channel.sendEvent(undefined, 'error', { stream: id, message: err.message });
+          await channel.sendEvent(undefined, 'error', { stream: id, message: safeErrorMessage(err), request_id: requestId });
         }
       }
     } catch (e) {
