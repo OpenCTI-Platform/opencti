@@ -219,12 +219,16 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
 
+  // The request of the preview in flight: unsubscribing aborts it in the browser, and the backend stops computing when the connection closes
+  const previewRequestRef = useRef<{ unsubscribe: () => void } | null>(null);
   useEffect(() => {
     let active = true;
-    fetchQuery<ConfigPresetImportPreviewQuery>(environment, configPresetImportPreviewQuery, { file_id: session.file_id }, { fetchPolicy: 'network-only' })
-      .toPromise()
-      .then((data) => {
-        if (active && data) {
+    previewRequestRef.current = fetchQuery<ConfigPresetImportPreviewQuery>(environment, configPresetImportPreviewQuery, { file_id: session.file_id }, { fetchPolicy: 'network-only' })
+      .subscribe({
+        next: (data) => {
+          if (!active || !data) {
+            return;
+          }
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
           if (!hasLoadedRef.current) {
@@ -234,10 +238,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
             setImportModes(toConfigImportModes(session.selections));
           }
-        }
-      })
-      .catch((err) => {
-        if (active) {
+        },
+        error: (err: Error) => {
+          if (!active) {
+            return;
+          }
           const reason = getConfigPresetErrorReason(err);
           if (reason === 'file_missing') {
             onFileMissing();
@@ -247,12 +252,20 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             // A reload that fails (after a license change) leaves the preview that is shown: the error is only notified
             handleError(err);
           }
-        }
+        },
       });
     return () => {
       active = false;
+      // A preview that is no longer wanted (the dialog is closed, the file is replaced, the preview is read again) stops being computed
+      previewRequestRef.current?.unsubscribe();
     };
   }, [environment, session.file_id, reloadCount]);
+
+  // Cancels the preview that is loading and starts over: the pending zip is deleted, so is what was read of it
+  const handleCancelLoading = () => {
+    previewRequestRef.current?.unsubscribe();
+    onStartOver();
+  };
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
@@ -453,7 +466,12 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     );
   }
   if (!preview) {
-    return <Spinner label={t_i18n('Loading')} />;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(2) }}>
+        <Spinner label={t_i18n('Loading')} />
+        <Button variant="secondary" onClick={handleCancelLoading}>{t_i18n('Cancel')}</Button>
+      </div>
+    );
   }
   const itemsCount = preview.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0);
   // The row of an item, in the list of its type and in the sub-view of a type that is listed page by page

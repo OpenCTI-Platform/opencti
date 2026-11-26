@@ -1,7 +1,7 @@
 import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import type { BasicStoreSettings } from '../../../types/settings';
-import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../config/errors';
+import { ClientAbortError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../config/errors';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../../utils/access';
 import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -103,6 +103,14 @@ export const publishConfigPresetImportAction = async (user: AuthUser, contextDat
 };
 
 // The upload, the preview and the import are BYPASS only and refused in a draft context
+// A preview or a dry run whose caller went away (the browser cancelled the request) stops at the next item, instead of computing for nobody.
+// A real import is detached from its request, its context has no signal: it never stops here.
+export const throwIfConfigPresetRequestAborted = (context: AuthContext) => {
+  if (context.requestAbortSignal?.aborted) {
+    throw ClientAbortError('The preview was cancelled');
+  }
+};
+
 export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {
   if (!isUserHasCapability(user, BYPASS)) {
     throw ForbiddenAccess();

@@ -11,7 +11,13 @@ import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../int
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import { CONFIG_PRESET_FIRST_PAGE_SIZE } from '../export/configPreset-export-domain';
-import { checkConfigPresetImportAccess, configPresetImportMode, getConfigPresetFamilyModes, getConfigPresetPlatformId } from './configPreset-import-utils';
+import {
+  checkConfigPresetImportAccess,
+  configPresetImportMode,
+  getConfigPresetFamilyModes,
+  getConfigPresetPlatformId,
+  throwIfConfigPresetRequestAborted,
+} from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
 import { dropConfigPresetImportCache, getConfigPresetImportIndex, getConfigPresetImportSnapshot, setConfigPresetImportIndex } from './configPreset-import-cache';
 import {
@@ -240,6 +246,7 @@ export const computeConfigPresetItems = async (
   await prepareConfigPresetItems(context, user, items, plan, familiesAvailability);
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
+    throwIfConfigPresetRequestAborted(context);
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
     const mode = configPresetImportMode(modes, items[i].type, items[i].id, defaultMode);
     results.push({ item: items[i], computed: await computeConfigPresetItem(context, user, family, items[i], plan, mode, familiesAvailability.get(family.id)) });

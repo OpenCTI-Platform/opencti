@@ -492,6 +492,25 @@ describe('ConfigPresetImportWizard', () => {
       expect(await screen.findByRole('button', { name: 'Upload a configuration bundle' })).toBeInTheDocument();
     });
 
+    it('cancels a preview that is loading: the request is aborted, the zip is deleted and the upload comes back', async () => {
+      const rendered = await renderWizard(session());
+      // Nothing answered yet: the loader has a way out
+      expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewQuery');
+      await rendered.user.click(await screen.findByRole('button', { name: 'Cancel' }));
+      // No confirmation: nothing was selected. The preview request is no longer pending, and the session is cleared with its file
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
+      expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
+      await resolve(rendered, 'ConfigPresetImportWizardClearMutation', {});
+      expect(await screen.findByRole('button', { name: 'Upload a configuration bundle' })).toBeInTheDocument();
+    });
+
+    it('aborts the preview request when the wizard is closed while it loads', async () => {
+      const rendered = await renderWizard(session());
+      expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewQuery');
+      rendered.unmount();
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
+    });
+
     it('goes back to the upload step when the file is missing', async () => {
       const rendered = await renderWizard(session());
       await reject(rendered, 'ConfigPresetImportPreviewQuery', 'file_missing');

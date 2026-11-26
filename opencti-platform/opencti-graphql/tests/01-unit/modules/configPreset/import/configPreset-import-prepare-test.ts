@@ -80,6 +80,29 @@ describe('Config preset import: what the importers do at the end', () => {
   });
 });
 
+describe('Config preset compute: a request that was cancelled', () => {
+  const items = [bundleItem('labels', 'a'), bundleItem('labels', 'b'), bundleItem('labels', 'c')];
+
+  it('stops at the next item, and a context without a signal (a real import) never stops', async () => {
+    const controller = new AbortController();
+    const compute = vi.spyOn(family('labels').importer!, 'compute').mockImplementation(async (_context, _user, item) => {
+      if (item.id === 'a') {
+        controller.abort();
+      }
+      return computedItem;
+    });
+    vi.spyOn(family('labels').importer!, 'prepare').mockResolvedValue(undefined);
+    const availability = new Map([['labels', true]]);
+    await expect(computeConfigPresetItems({ ...context, requestAbortSignal: controller.signal }, user, items, { availability })).rejects.toMatchObject({
+      extensions: { code: 'CLIENT_ABORT_ERROR' },
+    });
+    expect(compute).toHaveBeenCalledTimes(1);
+    compute.mockClear();
+    expect(await computeConfigPresetItems(context, user, items, { availability })).toHaveLength(3);
+    expect(compute).toHaveBeenCalledTimes(3);
+  });
+});
+
 describe('Config preset preview: the dependencies of the items', () => {
   const dependencyPath = (id: string) => `platform_settings/branding/${id}.json`;
   const themes = [bundleItem('branding', 'theme-a', dependencyPath('theme-a')), bundleItem('branding', 'theme-b', dependencyPath('theme-b')), bundleItem('branding', 'theme-c', dependencyPath('theme-c'))];
