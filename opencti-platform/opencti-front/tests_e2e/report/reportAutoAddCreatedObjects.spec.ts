@@ -82,7 +82,8 @@ test.describe('Objects created from a container panel are added to the container
     await observableForm.validateBulk(3);
     await observableForm.submit();
 
-    await expect(addObservablesPage.getAddedMessage()).toContainText('2 observables added to the');
+    // After a bulk creation, the confirmation is a line of the bulk result dialog, not a message
+    await expect(observableForm.getBulkResult('2 observables added to the Report')).toBeVisible();
     await observableForm.closeBulk();
     await addObservablesPage.getCloseObservablesListButton().click();
     await expect(containerObservablesPage.getObservableInContainer(`IPv4 address ${ips[0]}`)).toBeVisible();
@@ -98,7 +99,7 @@ test.describe('Objects created from a container panel are added to the container
     await openNewReportObservablesPanel(page, `Auto add undo ${nowTime}`);
     await addObservablesPage.createNewIPV4Observable(ip);
     await addObservablesPage.getUndoButton().click();
-    await expect(page.getByRole('alert')).toContainText('Removed from the');
+    await expect(addObservablesPage.getMessage()).toContainText('Removed from the');
     await addObservablesPage.getCloseObservablesListButton().click();
     await expect(containerObservablesPage.getObservableInContainer(`IPv4 address ${ip}`)).toBeHidden();
 

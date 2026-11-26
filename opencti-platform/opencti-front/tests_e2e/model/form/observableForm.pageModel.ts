@@ -38,6 +38,11 @@ export default class ObservableFormPage {
     return this.bulkLocator.getByRole('button', { name: 'Cancel', exact: true }).click();
   }
 
+  // A line of the bulk result, e.g. "2 observables created"
+  getBulkResult(text: string) {
+    return this.bulkLocator.getByText(text);
+  }
+
   closeBulk() {
     return this.bulkLocator.getByRole('button', { name: 'Close', exact: true }).click();
   }
