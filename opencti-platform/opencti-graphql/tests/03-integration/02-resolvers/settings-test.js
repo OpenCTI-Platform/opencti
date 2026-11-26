@@ -480,10 +480,15 @@ const ME_LOGIN_HISTORY_QUERY = gql`
 
 describe('Settings resolver login history', () => {
   let settingsInternalId;
-  const editLoginHistoryCount = (value) => queryAsAdmin({
-    query: EDIT_LOGIN_HISTORY_QUERY,
-    variables: { id: settingsInternalId, input: [{ key: 'platform_login_history_count', value: [value] }] },
-  });
+  const editLoginHistoryCount = async (value) => {
+    const queryResult = await queryAsAdmin({
+      query: EDIT_LOGIN_HISTORY_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_login_history_count', value: [value] }] },
+    });
+    // The login history reads the count from the settings cache
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    return queryResult;
+  };
 
   beforeAll(async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
