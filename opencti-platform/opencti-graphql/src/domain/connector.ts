@@ -11,7 +11,7 @@ import { now } from '../utils/format';
 import { elLoadById } from '../database/engine';
 import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import { isPublicDashboardUser, isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import {
   type ConnectorHealthMetrics,
   delEditContext,
@@ -92,6 +92,9 @@ const sanitizeContainerName = (label: string): string => {
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
+  if (isPublicDashboardUser(user)) {
+    return null;
+  }
   const work = await elLoadById<Work>(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
   if (work) return connector(context, user, work.connector_id);
   return null;

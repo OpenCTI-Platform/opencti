@@ -7,7 +7,11 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../../../src/modules/publicDashboa
 import { createUploadFromTestDataFile, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { toB64 } from '../../../src/utils/base64';
 import * as rabbitmq from '../../../src/database/rabbitmq';
-import { deleteWork } from '../../../src/domain/work';
+import { createWork, deleteWork } from '../../../src/domain/work';
+import { connector as loadConnector } from '../../../src/database/repository';
+import { createEntity, deleteElementById } from '../../../src/database/middleware';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
+import { externalReferenceAddRelation } from '../../../src/domain/externalReference';
 
 const LIST_QUERY = gql`
   query publicDashboards(
@@ -946,6 +950,8 @@ describe('PublicDashboard resolver', () => {
           const pushToConnector = vi.spyOn(rabbitmq, 'pushToConnector').mockResolvedValue(true);
           let fileId;
           let workId;
+          let externalReferenceId;
+          let importWorkId;
           await queryAsAdmin({
             query: gql`
               mutation RegisterConnector($input: RegisterConnectorInput) {
@@ -974,6 +980,17 @@ describe('PublicDashboard resolver', () => {
               variables: { id: franceId, connectorId: enrichmentConnectorId },
             });
             workId = enrichmentData.stixCoreObjectEdit.askEnrichment.id;
+            const externalReference = await createEntity(
+              testContext,
+              ADMIN_USER,
+              { source_name: 'public-dashboard-import.txt', url: `/storage/get/${fileId}`, fileId },
+              ENTITY_TYPE_EXTERNAL_REFERENCE,
+            );
+            externalReferenceId = externalReference.id;
+            await externalReferenceAddRelation(testContext, ADMIN_USER, externalReferenceId, { fromId: franceId, relationship_type: 'external-reference' });
+            const enrichmentConnector = await loadConnector(testContext, ADMIN_USER, enrichmentConnectorId);
+            const importWork = await createWork(testContext, ADMIN_USER, enrichmentConnector, 'Public dashboard import', fileId);
+            importWorkId = importWork.id;
 
             const { data: privateData } = await queryAsAdmin({
               query: gql`
@@ -982,6 +999,7 @@ describe('PublicDashboard resolver', () => {
                     connectors { id }
                     importFiles { edges { node { id } } }
                     jobs { id connector { id } }
+                    externalReferences { edges { node { id importFiles { edges { node { id works { id connector { id } } } } } } } }
                   }
                 }
               `,
@@ -990,6 +1008,10 @@ describe('PublicDashboard resolver', () => {
             expect(privateData.administrativeArea.connectors.map((c) => c.id)).toContain(enrichmentConnectorId);
             expect(privateData.administrativeArea.importFiles.edges.map((e) => e.node.id)).toContain(fileId);
             expect(privateData.administrativeArea.jobs.map((j) => j.id)).toContain(workId);
+            const privateReference = privateData.administrativeArea.externalReferences.edges.find((e) => e.node.id === externalReferenceId);
+            const privateReferenceFile = privateReference.node.importFiles.edges.find((e) => e.node.id === fileId);
+            const privateImportWork = privateReferenceFile.node.works.find((w) => w.id === importWorkId);
+            expect(privateImportWork.connector.id).toEqual(enrichmentConnectorId);
 
             const { data } = await queryAsAdmin({
               query: gql`
@@ -1012,6 +1034,29 @@ describe('PublicDashboard resolver', () => {
                               manager_connector_logs
                             }
                           }
+                          externalReferences {
+                            edges {
+                              node {
+                                id
+                                importFiles {
+                                  edges {
+                                    node {
+                                      id
+                                      works {
+                                        id
+                                        connector {
+                                          id
+                                          connector_state
+                                          manager_contract_configuration { key value }
+                                          manager_connector_logs
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
                         }
                       }
                     }
@@ -1028,10 +1073,19 @@ describe('PublicDashboard resolver', () => {
               expect(node.exportFiles.edges).toEqual([]);
               expect(node.jobs).toEqual([]);
             });
+            const publicFrance = data.publicStixCoreObjects.edges.find((e) => e.node.id === franceId);
+            const publicReference = publicFrance.node.externalReferences.edges.find((e) => e.node.id === externalReferenceId);
+            expect(publicReference.node.importFiles.edges).toEqual([]);
           } finally {
             pushToConnector.mockRestore();
             if (workId) {
               await deleteWork(testContext, ADMIN_USER, workId);
+            }
+            if (importWorkId) {
+              await deleteWork(testContext, ADMIN_USER, importWorkId);
+            }
+            if (externalReferenceId) {
+              await deleteElementById(testContext, ADMIN_USER, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
             }
             if (fileId) {
               await queryAsAdmin({
