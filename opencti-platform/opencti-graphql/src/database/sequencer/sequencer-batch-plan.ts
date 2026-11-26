@@ -17,6 +17,7 @@
 // Cycles are broken by (phase, arrival) order; a parked intent always has a deadline.
 import { intentEndpointIds, intentOwnIds } from './sequencer-intent';
 import type { SequencerIntent } from './sequencer-intent';
+import { getDraftContext } from '../../utils/draftContext';
 
 export interface CoalesceGroup {
   leader: SequencerIntent;
@@ -61,9 +62,28 @@ export const classifyPhase = (intent: SequencerIntent): number => {
   return endpointIsRelation ? 2 : 1;
 };
 
+// A Date by its instant, any other non plain object (an upload, a promise) by its identity: an
+// object walk reads them all as {}, and two inputs differing only there would coalesce (task 0040,
+// review 2026-11-25: the absorbed intent's dates never applied). GraphQL input objects have a null
+// prototype and are walked.
+const objectIds = new WeakMap<object, number>();
+let lastObjectId = 0;
+const objectIdOf = (value: object): number => {
+  let id = objectIds.get(value);
+  if (id === undefined) {
+    lastObjectId += 1;
+    id = lastObjectId;
+    objectIds.set(value, id);
+  }
+  return id;
+};
+
 const stableStringify = (value: any): string => {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
+  if (value instanceof Date) return `d${value.getTime()}`;
   if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) return `o${objectIdOf(value)}`;
   const keys = Object.keys(value).sort();
   return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
 };
@@ -154,7 +174,32 @@ interface ChainStep {
   norm?: string;
 }
 
-const normOf = (intent: SequencerIntent): string => `${intent.kind}:${intent.type}:${stableStringify(intent.input)}`;
+// Besides the input, what makes an apply differ (task 0040 review 2026-11-25): the user (each upsert records
+// its creator_id under its own confidence), the opts, and the context the apply and its failure path read
+// (replay freshness, full sync, previous standard id, draft, create-only form import, retention of a missing
+// reference, the reject-twice of an unresolved optional ref while the worker retry number is at most 2,
+// middleware.ts createRelationRaw), and the origin its events carry (the connector, the playbook: pycti sets the
+// playbook per object, the playbook manager skips the events of its own playbook). An intent absorbed by a leader
+// differing there would never apply as itself.
+// Absorbed intents still follow their leader's member annotations (memberRefIds, memberWaitAttempts) in the
+// routing below: a declared member classified dead is retained (deferMissingRefs, equal by the norm) or
+// stripped and reconciled, never dropped.
+const rejectsOptionalRefsOf = (intent: SequencerIntent): boolean => {
+  const retry: any = intent.user?.origin?.call_retry_number;
+  return retry !== undefined && retry !== null && retry !== '' && !!retry && retry <= 2;
+};
+const applyContextOf = (intent: SequencerIntent) => ({
+  applicant: intent.user?.origin?.applicant_id ?? null,
+  playbook: intent.user?.origin?.playbook_id ?? null,
+  eventId: intent.context?.eventId ?? null,
+  synchronizedUpsert: !!intent.context?.synchronizedUpsert,
+  previousStandard: intent.context?.previousStandard ?? null,
+  draft: getDraftContext(intent.context, intent.user) ?? null,
+  formSubmission: intent.context?.form_submission === true,
+  deferMissingRefs: !!intent.context?.deferMissingRefs,
+  rejectsOptionalRefs: rejectsOptionalRefsOf(intent),
+});
+const normOf = (intent: SequencerIntent): string => `${intent.kind}:${intent.type}:${intent.user?.id ?? ''}:${stableStringify(intent.opts ?? {})}:${stableStringify(applyContextOf(intent))}:${stableStringify(intent.input)}`;
 
 interface Chain {
   steps: ChainStep[];
@@ -346,6 +391,34 @@ export const orderApplicable = (groups: { leader: SequencerIntent; absorbed: Seq
   return order;
 };
 
+// task 0040 lead 36: the lane of a key is a FIFO, so the deferrals of one key go to it oldest first (arrivedAt, then
+// batch index), each key keeping its positions in the list. A companion waiting on the same queued producer as its
+// older head took its step-1 slot ahead of it: both woke on the landing and the newer write applied first
+// (review 2026-11-25). The batch index alone is not the age: the loop puts a fresh arrival ahead of the parked set.
+const inArrivalOrderPerKey = <D extends { intent: SequencerIntent }>(
+  deferrals: D[],
+  batch: SequencerIntent[],
+  resolveId: (id: string) => string | null,
+): D[] => {
+  const batchIndex = new Map(batch.map((intent, index) => [intent.id, index]));
+  const positionsByKey = new Map<string, number[]>();
+  deferrals.forEach(({ intent }, position) => {
+    const key = canonicalKey(intent, resolveId);
+    const positions = positionsByKey.get(key);
+    if (positions) positions.push(position);
+    else positionsByKey.set(key, [position]);
+  });
+  const ordered = [...deferrals];
+  positionsByKey.forEach((positions) => {
+    const entries = positions.map((position) => deferrals[position]).sort((a, b) => a.intent.arrivedAt - b.intent.arrivedAt
+      || (batchIndex.get(a.intent.id) ?? 0) - (batchIndex.get(b.intent.id) ?? 0));
+    positions.forEach((position, rank) => {
+      ordered[position] = entries[rank];
+    });
+  });
+  return ordered;
+};
+
 export const buildBatchPlan = (
   batch: SequencerIntent[],
   resolveId: (id: string) => string | null,
@@ -356,7 +429,13 @@ export const buildBatchPlan = (
   // absorbs into its step; a different norm appends a chain step when fold-safe, else
   // defers to the next batch (residual).
   const chainsByKey = new Map<string, Chain>();
-  const deferred: { intent: SequencerIntent; reason: DeferReason; waitingOn?: string[] }[] = [];
+  type Deferral = { intent: SequencerIntent; reason: DeferReason; waitingOn?: string[] };
+  // residual deferrals of step 1, in batch order, ahead of the group deferrals; a companion's slot is filled once it
+  // is routed (empty when it parks)
+  const residual: (Deferral | null)[] = [];
+  const deferred: Deferral[] = [];
+  // task 0040 lead 36: same-key intents refused by their chain (not expired), routed after the plan
+  const companions: { intent: SequencerIntent; reason: DeferReason; slot: number }[] = [];
   let chainedSteps = 0;
   batch.forEach((intent) => {
     const key = canonicalKey(intent, resolveId);
@@ -372,9 +451,12 @@ export const buildBatchPlan = (
     }
     // lazy norms: still inside this loop, before any dead strip mutates an input
     const norm = normOf(intent);
+    // task 0040 lead 36: an expired intent never joins a fresh leader (nor the reverse): it would park again past
+    // its deadline with the group
+    const expired = forceDirect.has(intent.id);
     const sameStep = chain.steps.find((step) => {
       step.norm ??= normOf(step.leader);
-      return step.norm === norm;
+      return step.norm === norm && forceDirect.has(step.leader.id) === expired;
     });
     if (sameStep) {
       sameStep.absorbed.push(intent);
@@ -392,7 +474,13 @@ export const buildBatchPlan = (
       else if (!isFoldable(intent)) reason = 'self_not_foldable';
       else if (!chain.resolvedTarget) reason = 'unresolved_target';
       else reason = 'head_not_foldable';
-      deferred.push({ intent, reason });
+      // task 0040 lead 36: an expired one goes to its lane at once; the others are routed once the plan is known
+      if (forceDirect.has(intent.id)) {
+        residual.push({ intent, reason });
+      } else {
+        companions.push({ intent, reason, slot: residual.length });
+        residual.push(null);
+      }
     }
   });
   // explode chains into plan groups, step order preserved; chainPrev[i] = the group index
@@ -409,7 +497,7 @@ export const buildBatchPlan = (
   // lane and lands in a later batch. A container waiting for it waits for a certain producer,
   // not for a declared member still unseen (which would burn its bounded member wait: two such
   // passes behind a busy relation target stripped the container's refs, multi-writer diag).
-  const deferredOwnIds = new Set(deferred.flatMap(({ intent }) => intentOwnIds(intent)));
+  const deferredOwnIds = new Set([...residual.filter((entry) => entry !== null), ...companions].flatMap(({ intent }) => intentOwnIds(intent)));
   const inFlight = (id: string) => deferredOwnIds.has(id) || (options.queueHas?.(id) ?? false);
   const planOptions: BatchPlanOptions = { ...options, queueHas: inFlight };
   // 2. producers: candidate ids of every leader (absorbed assert the same target). Chain
@@ -432,28 +520,23 @@ export const buildBatchPlan = (
   const groupClass = new Map<number, 'parked' | 'defer' | 'final'>();
   const deferReasonByGroup = new Map<number, DeferReason>();
   const waitingByGroup = new Map<number, string[]>();
-  groups.forEach((group, index) => {
-    if (forceDirect.has(group.leader.id)) return; // expired: apply as-is, no deps, no parking
-    // P2 chain edge: each step orders after its predecessor (its diff basis is the
-    // predecessor's in-memory result); the parking fixpoint below parks a whole chain
-    // when its head parks
-    if (chainPrev[index] >= 0) edges[index].add(chainPrev[index]);
+  // The dependencies of one intent against this batch (D2 + s9.8.2 certainty rules), without side effect: the
+  // routing of a group applies them below; a companion is classified the same way (task 0040 lead 36).
+  // self: the group the intent leads (its own producer), -1 for a companion
+  const dependenciesOf = (intent: SequencerIntent, self: number) => {
+    const edgesTo: number[] = [];
     const parkIds: string[] = [];
     const finalIds: string[] = [];
     const deadSoftIds: string[] = [];
+    const waiting: string[] = [];
     let defer: DeferReason | null = null;
     const onMissing = (id: string, soft: boolean) => {
-      const cls = classifyMissing(group.leader, id, planOptions);
+      const cls = classifyMissing(intent, id, planOptions);
       if (cls === 'member_wait') {
         defer = 'member_wait'; // dominates queued_producer: this pass counts an attempt
       } else if (cls === 'queued_producer') {
         defer = defer ?? 'queued_producer';
-        const waiting = waitingByGroup.get(index);
-        if (waiting) {
-          waiting.push(id);
-        } else {
-          waitingByGroup.set(index, [id]);
-        }
+        waiting.push(id);
       } else if (cls === 'member_dead') {
         // s9.10.2: a dead SOFT ref is stripped (the container survives without the edge
         // that could never exist). A dead HARD ref (relation endpoint) condemns the intent
@@ -464,7 +547,7 @@ export const buildBatchPlan = (
         // (3,330 relationships lost on one full-mix run); it parks with the deadline instead,
         // then applies as today (reject, worker retry ladder).
         if (soft) deadSoftIds.push(id);
-        else if (group.leader.context?.deferMissingRefs) finalIds.push(id);
+        else if (intent.context?.deferMissingRefs) finalIds.push(id);
         else parkIds.push(id);
       } else if (!soft) {
         parkIds.push(id); // external hard: park with deadline, today's healing path
@@ -472,20 +555,20 @@ export const buildBatchPlan = (
         parkIds.push(id); // D2 v3 (opt-in): external soft park
       } // external soft, default: apply as today (may reject at apply, worker retries)
     };
-    hardDependencyIds(group.leader).forEach((id) => {
+    hardDependencyIds(intent).forEach((id) => {
       if (resolveId(id)) return;
       const producer = producers.get(id);
-      if (producer !== undefined && producer !== index) {
-        edges[index].add(producer);
+      if (producer !== undefined && producer !== self) {
+        edgesTo.push(producer);
       } else if (producer === undefined) {
         onMissing(id, false);
       }
     });
-    softDependencyIds(group.leader).forEach((id) => {
+    softDependencyIds(intent).forEach((id) => {
       if (resolveId(id)) return;
       const producer = producers.get(id);
-      if (producer !== undefined && producer !== index) {
-        edges[index].add(producer); // order after the in-batch producer
+      if (producer !== undefined && producer !== self) {
+        edgesTo.push(producer); // order after the in-batch producer
       } else if (producer === undefined) {
         // Auto-created families skip the missing path only when nothing is in flight for
         // them (the D2 v1 lesson above). Since the single wave per chunk (2026-09-24) pycti's
@@ -494,10 +577,21 @@ export const buildBatchPlan = (
         // in-chunk member, waits for its producer like any other (probe 2026-09-24: 86
         // course-of-action label refs per MITRE run applied with the producer still queued
         // and were stripped, then reconciled one intent per cycle).
-        const producerInFlight = inFlight(id) || group.leader.memberRefIds?.has(id);
+        const producerInFlight = inFlight(id) || intent.memberRefIds?.has(id);
         if (!isAutoCreatedRef(id) || producerInFlight) onMissing(id, true);
       }
     });
+    return { edgesTo, parkIds, finalIds, deadSoftIds, waiting, defer: defer as DeferReason | null };
+  };
+  groups.forEach((group, index) => {
+    if (forceDirect.has(group.leader.id)) return; // expired: apply as-is, no deps, no parking
+    // P2 chain edge: each step orders after its predecessor (its diff basis is the
+    // predecessor's in-memory result); the parking fixpoint below parks a whole chain
+    // when its head parks
+    if (chainPrev[index] >= 0) edges[index].add(chainPrev[index]);
+    const { edgesTo, parkIds, finalIds, deadSoftIds, waiting, defer } = dependenciesOf(group.leader, index);
+    edgesTo.forEach((dep) => edges[index].add(dep));
+    if (waiting.length > 0) waitingByGroup.set(index, waiting);
     // s9.10.2 strip point: a group not condemned by a hard dead ref sheds its dead soft
     // refs HERE, before routing, so whatever path it takes (apply now, defer, park) it
     // travels clean (absorbed re-enter individually on defer: strip them too, their
@@ -562,9 +656,36 @@ export const buildBatchPlan = (
       group.absorbed.forEach((a) => parked.push({ intent: a, missing }));
     }
   });
+  // task 0040 lead 36: a same-key intent refused by its chain waits the way it would as a head: on a queued producer
+  // or a declared member (their own bounds), or parked on a missing reference with no producer in sight or behind
+  // an in-batch producer that does not apply; otherwise in its lane with its reason. Its park clock is kept
+  // (sequencer-park-book.ts). Sent to its lane while blocked, it came back first in the next batch, became the head
+  // and parked while the former head went to the lane: the two alternated every cycle until their deadlines (review
+  // 2026-11-25: two connectors asserting one relationship, staggered arrivals, a head blocked behind a parked
+  // in-batch producer, same-key reports); sent there while its producer was queued, it waited behind the lane's
+  // B10 head on its park clock instead of its B10 bound.
+  companions.forEach(({ intent, reason, slot }) => {
+    const { edgesTo, parkIds, finalIds, waiting, defer } = dependenciesOf(intent, -1);
+    const blockedBy = edgesTo.find((dep) => !applicable[dep]);
+    if (finalIds.length > 0) {
+      residual[slot] = { intent, reason }; // condemned as a head next batch, where the retention path applies
+    } else if (defer === 'queued_producer') {
+      residual[slot] = { intent, reason: defer, waitingOn: waiting };
+    } else if (defer === 'member_wait') {
+      intent.memberWaitAttempts = (intent.memberWaitAttempts ?? 0) + 1; // a pass, as for a head: bounded
+      residual[slot] = { intent, reason: defer };
+    } else if (parkIds.length > 0) {
+      parked.push({ intent, missing: parkIds });
+    } else if (blockedBy !== undefined) {
+      parked.push({ intent, missing: missingByGroup.get(blockedBy) ?? groups[blockedBy].leader.candidateIds.slice(0, 1) });
+    } else {
+      residual[slot] = { intent, reason };
+    }
+  });
   // 4. topological order among applicable groups, (phase, arrival) priority, cycles broken
   // by taking the lowest-priority remaining node. Kahn over a binary min-heap; phase and
   // arrival read once per group, here (the step-3 dead strip can change the phase)
   const order = orderApplicable(groups, edges, applicable);
-  return { order, deferred, parked, finalMissing, strippedDead, chainedSteps };
+  const deferrals = [...residual.filter((entry): entry is Deferral => entry !== null), ...deferred];
+  return { order, deferred: inArrivalOrderPerKey(deferrals, batch, resolveId), parked, finalMissing, strippedDead, chainedSteps };
 };

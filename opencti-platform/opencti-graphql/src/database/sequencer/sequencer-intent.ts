@@ -54,6 +54,11 @@ export interface SequencerIntent {
   // task 0040 no-op tag: its no-op memo entry existed when it was queued (a hint, sequencer-noop-memo.ts
   // isLikelyNoop): it takes no slot in the batch caps under noop_tag_caps
   likelyNoop?: boolean;
+  // task 0040 lead 36: the park clock (sequencer-park-book.ts), set at the first park and kept on every path back
+  // into a batch (lane, carry, failed producer); `expired` once the intent is forced direct, for good
+  parkedAt?: number;
+  parkDeadline?: number;
+  expired?: boolean;
   // stripSink: the loop's per-apply sink, set on the applying context (sequencer-strip-sink.ts);
   // noopSink: the elements the apply upserted without change, by internal id (sequencer-noop-memo.ts)
   apply: (stripSink?: StrippedRef[], noopSink?: Map<string, object>) => Promise<any>;

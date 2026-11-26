@@ -47,6 +47,7 @@ import { bumpLockStamps, lockedResources, readLockStamps } from '../redis';
 import { SequencerWriteBuffer, setCurrentWriteBuffer } from './sequencer-write-buffer';
 import { SEQUENCER_CONFIG } from './sequencer-config';
 import { DeferredLanes } from './sequencer-lanes';
+import { ParkBook } from './sequencer-park-book';
 import { sequencerMetrics } from './sequencer-metrics';
 import type { BatchPhase } from './sequencer-metrics';
 import { SequencerQueue } from './sequencer-queue';
@@ -773,12 +774,6 @@ const relationEndpointIds = (groups: CoalesceGroup[]): string[] => groups
 const creatableIds = (input: Record<string, any>) => creatableNestedIds(input, (id) => sequencerIdentityMap.resolveInternalId(id) !== null);
 const ownLockKeys = (groups: CoalesceGroup[]): string[] => computeOwnLockKeys(groups, peekInstanceIds, relationOwnIds, creatableIds, relationDedupKey);
 
-interface ParkedIntent {
-  intent: SequencerIntent;
-  deadline: number;
-  parkedAt: number;
-}
-
 // Stage E: a successful apply is only PENDING until the batch's writes are flushed and
 // refreshed: its promise resolves (and its outcome counts as applied/coalesced) at commit,
 // so workers act strictly after ES visibility. Apply-time exceptions still reject immediately.
@@ -960,7 +955,8 @@ const runBatchLoop = async () => {
   const laneAdmitCap = Math.max(1, Math.floor(SEQUENCER_CONFIG.maxBatchSize * SEQUENCER_CONFIG.deferredReadmitRatio));
   // own ids only (fix 2026-09-21): a settled relation does not wake the waiters of its endpoints
   const settledIds = (intents: SequencerIntent[]): string[] => intents.flatMap((i) => intentOwnIds(i));
-  let parked: ParkedIntent[] = [];
+  // task 0040 lead 36: the parked set; each intent carries its park clock (sequencer-park-book.ts)
+  const parkBook = new ParkBook(SEQUENCER_CONFIG.parkDeadlineMs);
   let rootFailureSamples = 0; // s9.9.3 bounded root-attribution sampling
   // resolve-ahead: intents grabbed from the queue during the previous batch's commit,
   // their identity-map entries already warmed; they enter this cycle's batch first-class
@@ -968,9 +964,9 @@ const runBatchLoop = async () => {
   let currentBatch: SequencerIntent[] = [];
   loopSnapshot = () => ({
     batchIds: new Set(currentBatch.flatMap((i) => intentOwnIds(i))),
-    parkedIds: new Set(parked.flatMap((p) => intentOwnIds(p.intent))),
+    parkedIds: new Set(parkBook.intents().flatMap((i) => intentOwnIds(i))),
     carriedIds: new Set(carried.flatMap((i) => intentOwnIds(i))),
-    parked: parked.length,
+    parked: parkBook.size(),
     batch: currentBatch.length,
     lanes: lanes.size(),
     hasLaneResident: (id: string) => lanes.hasResident(id),
@@ -989,8 +985,7 @@ const runBatchLoop = async () => {
     carried.forEach((intent) => batch.push(intent));
     carried = [];
     if (batch.length === 0 && queue.size() === 0) {
-      const nearestDeadline = parked.length > 0
-        ? Math.min(...parked.map((p) => p.deadline)) : null;
+      const nearestDeadline = parkBook.nearestDeadline();
       const first = nearestDeadline === null
         ? await queue.take()
         : await queue.takeWithTimeout(nearestDeadline - Date.now());
@@ -999,9 +994,7 @@ const runBatchLoop = async () => {
         batch.push(first);
       }
     }
-    const parkedInBatch = parked;
-    parked = [];
-    parkedInBatch.forEach((p) => batch.push(p.intent));
+    parkBook.take().forEach((intent) => batch.push(intent));
     // Gather window (§2.6): when service rate ~ arrival rate the self-clocking fixed point
     // collapses to ~1-intent batches (batchD-b measured mean 1.3), which voids coalescing,
     // in-batch ordering and pre-resolution amortization. A bounded wait before the drain
@@ -1077,12 +1070,12 @@ const runBatchLoop = async () => {
     }
     // 3. plan: phases, dependency order, parking, coalescing
     const now = Date.now();
-    const parkedMeta = new Map(parkedInBatch.map((p) => [p.intent.id, p]));
-    const forceDirect = new Set<string>();
-    parkedInBatch.forEach((p) => {
-      if (p.deadline <= now) forceDirect.add(p.intent.id);
+    // past their park deadline, or B10: waited too long in a lane; either way for good, apply as-is
+    const { forceDirect, newlyExpired } = parkBook.expire(batch, exhaustedIds, now);
+    newlyExpired.forEach(({ intent, waitedMs }) => {
+      sequencerMetrics.intent('expired', intent.kind);
+      sequencerMetrics.parked(waitedMs / 1000);
     });
-    exhaustedIds.forEach((id) => forceDirect.add(id)); // B10: waited too long, apply as-is
     // retry-gap option 1: creations to RETAIN (pending intents) instead of rejecting, settled
     // after the apply phase, once persisted (a chunk ack must never outrun the recorded debt)
     const deferrals: { intent: SequencerIntent; absorbed: SequencerIntent[]; missing: string[]; err: unknown }[] = [];
@@ -1245,26 +1238,12 @@ const runBatchLoop = async () => {
         });
       }
     });
-    plan.parked.forEach(({ intent }) => {
-      const known = parkedMeta.get(intent.id);
-      if (known) {
-        parked.push(known); // keeps the original deadline
-      } else {
-        // v3.1: deadline anchored at PARK time (anchoring at arrivedAt pre-consumed the
-        // window for intents that lived in lanes or retries first: 95% expired in ~0.35 s)
-        sequencerMetrics.intent('parked', intent.kind);
-        parked.push({ intent, deadline: now + SEQUENCER_CONFIG.parkDeadlineMs, parkedAt: now });
-      }
-    });
-    parkedMeta.forEach((p) => {
-      if (forceDirect.has(p.intent.id)) {
-        sequencerMetrics.intent('expired', p.intent.kind);
-        sequencerMetrics.parked((now - p.parkedAt) / 1000);
-      } else if (!parked.find((x) => x.intent.id === p.intent.id)) {
-        // unparked: its reference resolved in this batch
-        sequencerMetrics.parked((now - p.parkedAt) / 1000);
-      }
-    });
+    // v3.1: deadline anchored at PARK time (anchoring at arrivedAt pre-consumed the window for intents that
+    // lived in lanes or retries first: 95% expired in ~0.35 s); task 0040 lead 36: at the FIRST park only
+    const parkRouting = parkBook.route(plan, now);
+    parkRouting.fresh.forEach((intent) => sequencerMetrics.intent('parked', intent.kind));
+    // unparked: it left its park wait (its reference resolved: it applies, or it waits in its lane)
+    parkRouting.unparked.forEach(({ waitedMs }) => sequencerMetrics.parked(waitedMs / 1000));
     if (plan.order.length === 0) {
       await settleDeferrals(); // dead-member retentions of a cycle with nothing to apply
       sequencerMetrics.batchCommitted(0);
@@ -1415,18 +1394,13 @@ const runBatchLoop = async () => {
         const unresolved: unknown = (err as any)?.extensions?.data?.unresolvedIds ?? (err as any)?.data?.unresolvedIds;
         return Array.isArray(unresolved) && unresolved.length > 0 ? unresolved.map(String) : hardRefIds(leader);
       };
-      const known = parkedMeta.get(leader.id);
-      const deadline = known?.deadline ?? (Date.now() + SEQUENCER_CONFIG.parkDeadlineMs);
-      if (SEQUENCER_CONFIG.parkSoftRefs && isMissingRef && !forceDirect.has(leader.id) && deadline > Date.now()) {
-        classifyMissing(missingIds(), 'parked');
-        const parkedAt = known?.parkedAt ?? Date.now();
-        sequencerMetrics.intent('parked', leader.kind);
-        parked.push({ intent: leader, deadline, parkedAt });
-        absorbed.forEach((a) => {
-          sequencerMetrics.intent('parked', a.kind);
-          parked.push({ intent: a, deadline, parkedAt });
-        });
-        return;
+      if (SEQUENCER_CONFIG.parkSoftRefs && isMissingRef && !forceDirect.has(leader.id)) {
+        const { parked, fresh } = parkBook.parkAfterFailure(leader, absorbed, Date.now());
+        if (parked) {
+          classifyMissing(missingIds(), 'parked');
+          fresh.forEach((intent) => sequencerMetrics.intent('parked', intent.kind));
+          return;
+        }
       }
       // retry-gap option 1: past its deadline, a creation still missing a hard reference is
       // RETAINED (pending intents store) when the caller asked for it, instead of failing

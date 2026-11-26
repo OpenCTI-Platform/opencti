@@ -13,12 +13,16 @@ const intentOf = (args: {
   context?: Record<string, any>;
   opts?: Record<string, any>;
   memberRefIds?: Set<string>;
+  user?: string;
+  retry?: string | number;
+  origin?: Record<string, any>;
+  userDraft?: string;
 }) => {
   const intent = buildIntent({
     kind: args.kind,
     type: args.type ?? (args.kind === 'entity' ? 'Malware' : 'uses'),
     input: args.input ?? {},
-    user: { id: 'u', origin: { applicant_id: 'conn1' } } as unknown as AuthUser,
+    user: { id: args.user ?? 'u', origin: { applicant_id: 'conn1', call_retry_number: args.retry, ...args.origin }, draft_context: args.userDraft } as unknown as AuthUser,
     context: (args.context ?? {}) as unknown as AuthContext,
     opts: args.opts ?? {},
     candidateIds: args.candidateIds ?? [],
@@ -51,6 +55,305 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
     expect(plan.order[0].absorbed).toEqual([b]);
     expect(plan.deferred).toEqual([{ intent: c, reason: 'unresolved_target' }]);
     expect(plan.chainedSteps).toBe(0);
+  });
+
+  // GraphQL coerced inputs: null prototype objects, a DateTime as a Date, an Upload as a Promise
+  const graphqlInput = (fields: Record<string, any>) => Object.assign(Object.create(null), fields);
+  const resolveSector = (id: string) => (id === 'identity--sector' ? 'intSector' : null);
+
+  it('never coalesces inputs differing only by a date, even by 1 ms: the absorbed one would never apply (2026-11-25)', () => {
+    const sector = (created: string) => intentOf({ kind: 'entity', type: 'Sector', input: graphqlInput({ name: 'Technology', created: new Date(created) }), candidateIds: ['identity--sector'] });
+    const first = sector('2020-06-01T00:00:00.001Z');
+    const older = sector('2018-03-01T00:00:00.000Z');
+    const sameInstant = sector('2020-06-01T00:00:00.001Z');
+    const oneMsLater = sector('2020-06-01T00:00:00.002Z');
+    // resolved target: each other date is its own chain step, applied in arrival order; the same instant coalesces
+    const resolved = buildBatchPlan([first, older, sameInstant, oneMsLater], resolveSector);
+    expect(resolved.order.map((g) => g.leader)).toEqual([first, older, oneMsLater]);
+    expect(resolved.order[0].absorbed).toEqual([sameInstant]); // the only kill of a Date read as {}
+    expect(resolved.chainedSteps).toBe(2);
+    expect(resolved.deferred).toEqual([]);
+    // unresolved target: no basis to chain on, the other date waits for a later batch
+    const fresh = [sector('2020-06-01T00:00:00.000Z'), sector('2018-03-01T00:00:00.000Z')];
+    const unresolved = buildBatchPlan(fresh, noResolve);
+    expect(unresolved.order.map((g) => g.leader)).toEqual([fresh[0]]);
+    expect(unresolved.order[0].absorbed).toEqual([]);
+    expect(unresolved.deferred).toEqual([{ intent: fresh[1], reason: 'unresolved_target' }]);
+  });
+
+  it('compares a nested date by its instant in a GraphQL input (null prototype objects, lists)', () => {
+    const malware = (at: string) => intentOf({ kind: 'entity', input: graphqlInput({ name: 'm', killChainPhases: [graphqlInput({ phase_name: 'p', at: [new Date(at)] })] }), candidateIds: ['identity--sector'] });
+    const a = malware('2020-06-01T00:00:00.000Z');
+    const same = malware('2020-06-01T00:00:00.000Z');
+    const other = malware('2021-06-01T00:00:00.000Z');
+    const plan = buildBatchPlan([a, same, other], resolveSector);
+    expect(plan.order.map((g) => g.leader)).toEqual([a, other]);
+    expect(plan.order[0].absorbed).toEqual([same]);
+  });
+
+  it('never coalesces relations differing only by a date (start_time makes another relationship): the second is deferred', () => {
+    const uses = (startTime: string) => intentOf({ kind: 'relation', input: graphqlInput({ fromId: 'malware--a', toId: 'attack-pattern--b', start_time: new Date(startTime) }), candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'] });
+    const first = uses('2019-01-01T00:00:00.000Z');
+    const same = uses('2019-01-01T00:00:00.000Z');
+    const other = uses('2021-01-01T00:00:00.000Z');
+    const resolved = buildBatchPlan([first, same, other], (id: string) => `int-${id}`);
+    expect(resolved.order.map((g) => g.leader)).toEqual([first]);
+    expect(resolved.order[0].absorbed).toEqual([same]);
+    expect(resolved.deferred).toEqual([{ intent: other, reason: 'relation' }]);
+    // endpoints missing: the group parks (its absorbed follows it), the other start_time parks with them (lead 36)
+    const missing = buildBatchPlan([first, same, other], noResolve);
+    expect(missing.order).toEqual([]);
+    expect(missing.parked).toEqual([first, same, other].map((intent) => ({ intent, missing: ['malware--a', 'attack-pattern--b'] })));
+    expect(missing.deferred).toEqual([]);
+  });
+
+  describe('same-key relations behind a parked head (task 0040 lead 36)', () => {
+    const relationOf = (user: string) => intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], user });
+    const fromOnly = (id: string) => (id === 'malware--a' ? 'int-a' : null);
+
+    it('parks a companion with its parked head on the head missing ids; an expired companion goes to its lane', () => {
+      const mitre = relationOf('mitre');
+      const misp = relationOf('misp');
+      const opencti = relationOf('opencti');
+      const plan = buildBatchPlan([mitre, misp, opencti], fromOnly, new Set([opencti.id]));
+      expect(plan.order).toEqual([]);
+      expect(plan.parked).toEqual([{ intent: mitre, missing: ['attack-pattern--b'] }, { intent: misp, missing: ['attack-pattern--b'] }]);
+      expect(plan.deferred).toEqual([{ intent: opencti, reason: 'relation' }]);
+    });
+
+    // a companion waits the way it would as the head of the next batch: in its lane when nothing blocks it, on its
+    // own bound (queued producer, declared member), or parked on its own missing ids
+    it('sends a companion to its lane when nothing blocks it (its head applies, or parks on a ref of its own)', () => {
+      const applied = buildBatchPlan([relationOf('mitre'), relationOf('misp')], (id) => `int-${id}`);
+      expect(applied.deferred.map((d) => d.reason)).toEqual(['relation']);
+      // the head parks on its own soft ref (parkSoftRefs), the endpoints exist: the companion can apply on its own
+      const softHead = intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b', createdBy: 'identity--x' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], referencedIds: ['identity--x'], user: 'mitre' });
+      const soft = buildBatchPlan([softHead, relationOf('misp')], (id) => (id === 'identity--x' ? null : `int-${id}`), new Set(), { parkSoftRefs: true });
+      expect(soft.parked).toEqual([{ intent: softHead, missing: ['identity--x'] }]);
+      expect(soft.deferred.map((d) => d.reason)).toEqual(['relation']);
+    });
+
+    it('parks a blocked companion whatever its head does: expired and applying as-is, condemned, waiting for a member', () => {
+      const head = relationOf('mitre');
+      const misp = relationOf('misp');
+      const expired = buildBatchPlan([head, misp], fromOnly, new Set([head.id]));
+      expect(expired.order.map((g) => g.leader)).toEqual([head]);
+      expect(expired.parked).toEqual([{ intent: misp, missing: ['attack-pattern--b'] }]);
+      const memberHead = (attempts: number) => {
+        const intent = intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], user: 'mitre', memberRefIds: new Set(['attack-pattern--b']), context: { deferMissingRefs: true } });
+        intent.memberWaitAttempts = attempts;
+        return intent;
+      };
+      // the companion declares no member: the endpoint is external to it
+      const companion = () => intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], user: 'misp', context: { deferMissingRefs: true } });
+      const finalHead = memberHead(2);
+      const finalCompanion = companion();
+      const final = buildBatchPlan([finalHead, finalCompanion], fromOnly);
+      expect(final.finalMissing.map((f) => f.intent)).toEqual([finalHead]);
+      expect(final.parked).toEqual([{ intent: finalCompanion, missing: ['attack-pattern--b'] }]);
+      const waitingCompanion = companion();
+      const waiting = buildBatchPlan([memberHead(0), waitingCompanion], fromOnly);
+      expect(waiting.deferred.map((d) => d.reason)).toEqual(['member_wait']);
+      expect(waiting.parked).toEqual([{ intent: waitingCompanion, missing: ['attack-pattern--b'] }]);
+    });
+
+    it('defers a companion on its own bound: a queued producer (with what it waits on), a declared member (a pass counted)', () => {
+      const queued = buildBatchPlan([relationOf('mitre'), relationOf('misp')], fromOnly, new Set(), { queueHas: (id) => id === 'attack-pattern--b' });
+      expect(queued.deferred.map((d) => [d.reason, d.waitingOn])).toEqual([['queued_producer', ['attack-pattern--b']], ['queued_producer', ['attack-pattern--b']]]);
+      expect(queued.parked).toEqual([]);
+      const member = intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], user: 'misp', memberRefIds: new Set(['attack-pattern--b']) });
+      const plan = buildBatchPlan([relationOf('mitre'), member], fromOnly);
+      expect(plan.deferred).toEqual([{ intent: member, reason: 'member_wait' }]);
+      expect(member.memberWaitAttempts).toBe(1);
+      // condemned as a head (dead member, retention): its lane, the next batch rejects or retains it
+      const dead = intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], user: 'misp', memberRefIds: new Set(['attack-pattern--b']), context: { deferMissingRefs: true } });
+      dead.memberWaitAttempts = 2;
+      expect(buildBatchPlan([relationOf('mitre'), dead], fromOnly).deferred).toEqual([{ intent: dead, reason: 'relation' }]);
+      // condemned even with another missing endpoint: its lane, not a park
+      const both = (user: string, members?: Set<string>) => intentOf({ kind: 'relation', input: { fromId: 'malware--x', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix', 'malware--x', 'attack-pattern--b'], user, memberRefIds: members, context: { deferMissingRefs: true } });
+      const condemned = both('misp', new Set(['attack-pattern--b']));
+      condemned.memberWaitAttempts = 2;
+      const mixed = buildBatchPlan([both('mitre'), condemned], noResolve);
+      expect(mixed.deferred).toEqual([{ intent: condemned, reason: 'relation' }]);
+    });
+
+    it('defers a companion on a queued producer before any external missing ref (B10 first, as for a head)', () => {
+      const withRef = intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b', createdBy: 'identity--y' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], referencedIds: ['identity--y'], user: 'misp' });
+      const plan = buildBatchPlan([relationOf('mitre'), withRef], fromOnly, new Set(), { queueHas: (id) => id === 'identity--y' });
+      expect(plan.deferred).toEqual([{ intent: withRef, reason: 'queued_producer', waitingOn: ['identity--y'] }]);
+    });
+
+    it('defers the writes of one key to their lane in arrival order, whatever each waits on (lead 38)', () => {
+      const waitingOf = () => intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b', createdBy: 'identity--y' }, candidateIds: ['relationship--stix', 'malware--a', 'attack-pattern--b'], referencedIds: ['identity--y'], user: 'mitre' });
+      const resolve = (id: string) => (id === 'identity--y' ? null : `int-${id}`);
+      const options = { queueHas: (id: string) => id === 'identity--y' };
+      // the waiting head arrived first: the newer ready write queues behind it (the lane FIFO keeps the order; the
+      // wait is the latency cost accepted in round 7), never ahead of it
+      const olderWaiting = waitingOf();
+      const newerReady = relationOf('misp');
+      expect(buildBatchPlan([olderWaiting, newerReady], resolve, new Set(), options).deferred)
+        .toEqual([{ intent: olderWaiting, reason: 'queued_producer', waitingOn: ['identity--y'] }, { intent: newerReady, reason: 'relation' }]);
+      // the ready write arrived first but comes second in the batch (the loop puts a parked or carried intent after a
+      // fresh one): it goes first, not behind the newer waiting head
+      const olderReady = relationOf('misp');
+      const newerWaiting = waitingOf();
+      expect(buildBatchPlan([newerWaiting, olderReady], resolve, new Set(), options).deferred)
+        .toEqual([{ intent: olderReady, reason: 'relation' }, { intent: newerWaiting, reason: 'queued_producer', waitingOn: ['identity--y'] }]);
+    });
+
+    it('keeps the chain steps of one target in their order in the lane, whatever each waits on (round 7)', () => {
+      // a resolved target, two different inputs chained: the first waits on a queued producer, the second on a declared
+      // member; released out of order, the older write would land last
+      const first = intentOf({ kind: 'entity', input: { name: 'M', description: 'old', createdBy: 'identity--q' }, candidateIds: ['malware--a'], referencedIds: ['identity--q'] });
+      const second = intentOf({ kind: 'entity', input: { name: 'M', description: 'new', objectMarking: ['marking-definition--m'] }, candidateIds: ['malware--a'], referencedIds: ['marking-definition--m'], memberRefIds: new Set(['marking-definition--m']) });
+      const plan = buildBatchPlan([first, second], (id) => (id === 'malware--a' ? 'int-a' : null), new Set(), { queueHas: (id) => id === 'identity--q' });
+      expect(plan.chainedSteps).toBe(1);
+      expect(plan.deferred.map((d) => [d.intent, d.reason])).toEqual([[first, 'queued_producer'], [second, 'member_wait']]);
+    });
+
+    it('parks a companion behind an in-batch producer that does not apply (fixpoint), on that producer missing ids', () => {
+      const producer = () => intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--q', 'malware--a', 'attack-pattern--b'], user: 'q' });
+      const toQ = (user: string) => intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'relationship--q' }, candidateIds: ['relationship--s', 'malware--a', 'relationship--q'], user });
+      const q = producer();
+      const head = toQ('c0');
+      const other = toQ('c1');
+      const plan = buildBatchPlan([q, head, other], fromOnly);
+      expect(plan.order).toEqual([]);
+      expect(plan.parked).toEqual([q, head, other].map((intent) => ({ intent, missing: ['attack-pattern--b'] })));
+      // same-key reports of two connectors behind the parked relation
+      const report = (user: string) => intentOf({ kind: 'entity', type: 'Report', input: { objects: ['relationship--q'] }, candidateIds: ['report--r'], referencedIds: ['relationship--q'], user });
+      const q2 = producer();
+      const first = report('c0');
+      const second = report('c1');
+      const reports = buildBatchPlan([q2, first, second], fromOnly);
+      expect(reports.parked).toEqual([q2, first, second].map((intent) => ({ intent, missing: ['attack-pattern--b'] })));
+      expect(reports.deferred).toEqual([]);
+    });
+
+    it('routes each companion on its own head (two keys, one head applies, the other parks)', () => {
+      const pair = (from: string, to: string, user: string) => intentOf({ kind: 'relation', input: { fromId: from, toId: to }, candidateIds: [`relationship--${from}`, from, to], user });
+      const appliedHead = pair('malware--a', 'attack-pattern--ok', 'mitre');
+      const appliedCompanion = pair('malware--a', 'attack-pattern--ok', 'misp');
+      const parkedHead = pair('malware--a', 'attack-pattern--b', 'mitre');
+      const parkedCompanion = pair('malware--a', 'attack-pattern--b', 'misp');
+      const plan = buildBatchPlan([appliedHead, parkedHead, appliedCompanion, parkedCompanion], (id) => (id === 'attack-pattern--b' ? null : `int-${id}`));
+      expect(plan.order.map((g) => g.leader)).toEqual([appliedHead]);
+      expect(plan.deferred).toEqual([{ intent: appliedCompanion, reason: 'relation' }]);
+      expect(plan.parked).toEqual([{ intent: parkedHead, missing: ['attack-pattern--b'] }, { intent: parkedCompanion, missing: ['attack-pattern--b'] }]);
+    });
+
+    it('never absorbs an expired intent under a fresh leader with the same norm, nor the reverse (C3)', () => {
+      const fresh = relationOf('mitre');
+      const expired = relationOf('mitre');
+      const plan = buildBatchPlan([fresh, expired], fromOnly, new Set([expired.id]));
+      expect(plan.parked).toEqual([{ intent: fresh, missing: ['attack-pattern--b'] }]);
+      expect(plan.deferred).toEqual([{ intent: expired, reason: 'relation' }]);
+      const expiredFirst = relationOf('mitre');
+      const freshSecond = relationOf('mitre');
+      const reverse = buildBatchPlan([expiredFirst, freshSecond], fromOnly, new Set([expiredFirst.id]));
+      expect(reverse.order).toEqual([{ leader: expiredFirst, absorbed: [], dependsOn: [] }]);
+      expect(reverse.parked).toEqual([{ intent: freshSecond, missing: ['attack-pattern--b'] }]);
+      const bothExpired = [relationOf('mitre'), relationOf('mitre')];
+      expect(buildBatchPlan(bothExpired, fromOnly, new Set(bothExpired.map((i) => i.id))).order[0].absorbed).toEqual([bothExpired[1]]);
+    });
+
+    it('counts a parked companion as an in-flight producer: a container waiting for it does not burn its member wait', () => {
+      const head = relationOf('mitre');
+      const companion = intentOf({ kind: 'relation', input: { fromId: 'malware--a', toId: 'attack-pattern--b' }, candidateIds: ['relationship--misp', 'malware--a', 'attack-pattern--b'], user: 'misp' });
+      const report = intentOf({ kind: 'entity', type: 'Report', input: { objects: ['relationship--misp'] }, candidateIds: ['report--r'], referencedIds: ['relationship--misp'], memberRefIds: new Set(['relationship--misp']) });
+      const plan = buildBatchPlan([head, companion, report], fromOnly);
+      expect(plan.parked.map((p) => p.intent)).toEqual([head, companion]);
+      expect(plan.deferred).toEqual([{ intent: report, reason: 'queued_producer', waitingOn: ['relationship--misp'] }]);
+      expect(report.memberWaitAttempts ?? 0).toBe(0);
+    });
+  });
+
+  it('never coalesces inputs differing only by an upload: the same promise coalesces, another one does not', () => {
+    const shared = Promise.resolve({ filename: 'a.pdf' });
+    const malware = (file: Promise<any>) => intentOf({ kind: 'entity', input: graphqlInput({ name: 'same', file }), candidateIds: ['identity--sector'] });
+    const first = malware(shared);
+    const again = malware(shared);
+    const other = malware(Promise.resolve({ filename: 'a.pdf' }));
+    const plan = buildBatchPlan([first, again, other], resolveSector);
+    expect(plan.order.map((g) => g.leader)).toEqual([first, other]);
+    expect(plan.order[0].absorbed).toEqual([again]);
+  });
+
+  it('never coalesces equal inputs of two users: each upsert records its user under its own confidence', () => {
+    const sector = (user: string) => intentOf({ kind: 'entity', type: 'Sector', input: graphqlInput({ name: 'Technology' }), candidateIds: ['identity--sector'], user });
+    const mitre = sector('mitre');
+    const mitreAgain = sector('mitre');
+    const misp = sector('misp');
+    const resolved = buildBatchPlan([mitre, mitreAgain, misp], resolveSector);
+    expect(resolved.order.map((g) => g.leader)).toEqual([mitre, misp]);
+    expect(resolved.order[0].absorbed).toEqual([mitreAgain]);
+    const unresolved = buildBatchPlan([sector('mitre'), sector('misp')], noResolve);
+    expect(unresolved.deferred.map((d) => d.reason)).toEqual(['unresolved_target']);
+  });
+
+  it('never coalesces inputs differing only by an upload in a list', () => {
+    const malware = (file: Promise<any>) => intentOf({ kind: 'entity', input: graphqlInput({ name: 'same', files: [file] }), candidateIds: ['identity--sector'] });
+    const first = malware(Promise.resolve({ filename: 'a.pdf' }));
+    const other = malware(Promise.resolve({ filename: 'a.pdf' }));
+    const plan = buildBatchPlan([first, other], resolveSector);
+    expect(plan.order.map((g) => g.leader)).toEqual([first, other]);
+  });
+
+  describe('opts and apply context in the norm (task 0040 review 2026-11-25)', () => {
+    type Variant = { opts?: Record<string, any>; context?: Record<string, any>; retry?: string | number; origin?: Record<string, any>; userDraft?: string };
+    const sector = (variant: Variant) => intentOf({ kind: 'entity', type: 'Sector', input: graphqlInput({ name: 'Technology' }), candidateIds: ['identity--sector'], ...variant });
+    // what the second intent becomes: a chain step on the resolved target, or the deferral a refused chain gives
+    const pathOf = (a: Variant, b: Variant) => {
+      const plain = sector(a);
+      const differing = sector(b);
+      const plan = buildBatchPlan([plain, differing], resolveSector);
+      if (plan.order.some((g) => g.absorbed.includes(differing))) return 'absorbed';
+      if (plan.order.some((g) => g.leader === differing)) return 'step';
+      return plan.deferred.find((d) => d.intent === differing)?.reason;
+    };
+
+    it.each([
+      ['opts value', { opts: { complete: true } }, { opts: { complete: false } }, 'step'],
+      ['nested opts value', { opts: { nested: { a: 1 } } }, { opts: { nested: { a: 2 } } }, 'step'],
+      ['replay event id', { context: { eventId: '1-0' } }, { context: { eventId: '2-0' } }, 'self_not_foldable'],
+      ['full sync', { context: { synchronizedUpsert: true } }, { context: { synchronizedUpsert: false } }, 'head_not_foldable'],
+      ['previous standard id', { context: { previousStandard: 'identity--old' } }, { context: { previousStandard: 'identity--older' } }, 'step'],
+      ['draft', { context: { draft_context: 'draft1' } }, { context: { draft_context: 'draft2' } }, 'step'],
+      ['create-only form import', { context: { form_submission: true } }, { context: { form_submission: false } }, 'step'],
+      // a chunk-path intent (retained on a missing reference) under an HTTP leader (rejected)
+      ['missing reference retention', { context: { deferMissingRefs: true } }, { context: { deferMissingRefs: false } }, 'step'],
+      // an unresolved optional ref rejects while the worker retry number is at most 2 (strip-and-reconcile off)
+      ['reject-twice retry', { retry: '0' }, { retry: '5' }, 'step'],
+      ['reject-twice retry at its bound', { retry: '2' }, { retry: '3' }, 'step'],
+      // the resubmit fallback sets the number 0: `retryNumber &&` does not reject; pycti sends the string '0'
+      ['reject-twice retry 0 as a number', { retry: 0 }, { retry: '0' }, 'step'],
+      ['user draft', { userDraft: 'draft1' }, { userDraft: 'draft2' }, 'step'],
+      ['connector (applicant)', { origin: { applicant_id: 'conn1' } }, { origin: { applicant_id: 'conn2' } }, 'step'],
+      ['playbook', { origin: { playbook_id: 'pb1' } }, { origin: { playbook_id: 'pb2' } }, 'step'],
+    ] as [string, Variant, Variant, string][])('never absorbs an intent differing by its %s', (_, a, b, path) => {
+      expect(pathOf(a, b)).toBe(path);
+    });
+
+    it.each([
+      ['same opts and context', { opts: { complete: true, nested: { a: 1 } }, context: { deferMissingRefs: true, form_submission: true } }, { opts: { nested: { a: 1 }, complete: true }, context: { form_submission: true, deferMissingRefs: true } }],
+      ['false and absent flags', { context: { deferMissingRefs: false, synchronizedUpsert: false, form_submission: false } }, {}],
+      // the user by its id: another attempt of the same connector is the same apply
+      ['retry numbers on the same side of 2', { retry: '0' }, { retry: '1' }],
+      ['retry numbers up to 2', { retry: '1' }, { retry: '2' }],
+      // the apply reads form_submission === true only
+      ['a form flag that is not true', { context: { form_submission: 'yes' } }, {}],
+    ] as [string, Variant, Variant][])('still coalesces with %s', (_, a, b) => {
+      expect(pathOf(a, b)).toBe('absorbed');
+    });
+  });
+
+  it('still coalesces equal GraphQL inputs (null prototype objects, nested too) by their content', () => {
+    const of = () => intentOf({ kind: 'entity', input: graphqlInput({ name: 'same', killChainPhases: [graphqlInput({ phase_name: 'p' })] }), candidateIds: ['malware--a'] });
+    const a = of();
+    const b = of();
+    const plan = buildBatchPlan([a, b], noResolve);
+    expect(plan.order.map((g) => g.leader)).toEqual([a]);
+    expect(plan.order[0].absorbed).toEqual([b]);
   });
 
   it('keys an unknown entity on its standard id: twins asserted under two STIX ids share one chain, the second defers (2026-09-21)', () => {

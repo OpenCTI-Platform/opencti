@@ -6,6 +6,12 @@ import type { SequencerIntent } from '../../../src/database/sequencer/sequencer-
 
 // Oracle for the step-4 Kahn order and the lazy coalescing norm: the planner as of b48f3c0250,
 // copied below (comments dropped), must give the same plan as the current one on random batches.
+// The reference keeps the former norm (kind, type, input) and the former lane deferral of a same-key intent its
+// chain refuses (task 0040 lead 36 routes it as a head would: the comparison allows exactly that difference): on batches whose intents share one user, opts and
+// context, the current norm (task 0040, 2026-11-25: user, opts and apply context added) must coalesce exactly as it
+// did. On batches where they vary, the current planner must never absorb across them. The random inputs hold plain
+// data only, so the Date / non plain object rendering of the planner is not exercised here. Two task 0040 rules
+// are carried into the reference, marked where they are.
 
 // ---- reference: buildBatchPlan before the rewrite ----
 const stableStringify = (value: any): string => {
@@ -111,7 +117,8 @@ const buildBatchPlanOld = (
       });
       return;
     }
-    const sameStep = chain.steps.find((step) => step.norm === norm);
+    // task 0040 lead 36 rule, carried into the reference: no absorption across expiry
+    const sameStep = chain.steps.find((step) => step.norm === norm && forceDirect.has(step.leader.id) === forceDirect.has(intent.id));
     if (sameStep) {
       sameStep.absorbed.push(intent);
     } else if (chain.foldEligible && isFoldable(intent) && !forceDirect.has(intent.id)) {
@@ -302,8 +309,23 @@ interface Scenario {
   options: BatchPlanOptions;
 }
 
-const scenario = (seed: number): Scenario => {
+// shared: every intent of the batch has the same user, opts and context (drawn once); varied: drawn per intent,
+// over every field of the current norm
+const scenario = (seed: number, shared = true): Scenario => {
   const rnd = lcg(seed);
+  const applyOf = () => ({
+    user: { id: rnd() < 0.7 ? 'u' : 'v', origin: { call_retry_number: rnd() < 0.8 ? '0' : '5' } },
+    opts: rnd() < 0.05 ? { references: ['ref'] } : (rnd() < 0.1 ? { complete: true } : {}),
+    context: {
+      eventId: rnd() < 0.05 ? 'evt' : undefined,
+      synchronizedUpsert: rnd() < 0.05,
+      previousStandard: rnd() < 0.05 ? 'malware--old' : undefined,
+      draft_context: rnd() < 0.05 ? 'draft' : undefined,
+      form_submission: rnd() < 0.05,
+      deferMissingRefs: rnd() < 0.5,
+    },
+  });
+  const sharedApply = shared ? applyOf() : null;
   const pick = <T>(values: T[]): T => values[Math.floor(rnd() * values.length)];
   const n = 1 + Math.floor(rnd() * 90);
   const targets = 1 + Math.floor(rnd() * Math.max(1, n / 2));
@@ -323,9 +345,7 @@ const scenario = (seed: number): Scenario => {
     const r = rnd();
     const base: any = {
       id: `intent-${i}`,
-      user: { id: 'u' },
-      opts: rnd() < 0.05 ? { references: ['ref'] } : {},
-      context: { eventId: rnd() < 0.05 ? 'evt' : undefined, deferMissingRefs: rnd() < 0.5 },
+      ...structuredClone(sharedApply ?? applyOf()),
       arrivedAt: 1000 + Math.floor((i + rnd() * 30) / tie),
       source: 's',
       sizeBytes: 1,
@@ -392,15 +412,91 @@ const shapeOf = (plan: BatchPlan, batch: SequencerIntent[]) => JSON.stringify({
   strippedDead: plan.strippedDead.map((p) => [p.intent.id, p.stripped]),
   chainedSteps: plan.chainedSteps,
   intents: batch.map((i) => [i.input, i.referencedIds, i.memberRefIds ? [...i.memberRefIds] : null, i.memberWaitAttempts, i.deadStrippedRefs]),
+  ids: batch.map((i) => i.id),
 });
+
+// Lead 38: the lane of a key is a FIFO, so a plan defers the writes of one key oldest first (arrivedAt, then batch
+// index), companions included. Returns the keys whose deferrals are out of that order.
+const lanesOutOfArrivalOrder = (plan: BatchPlan, batch: SequencerIntent[], resolveId: (id: string) => string | null): string[] => {
+  const index = new Map(batch.map((intent, i) => [intent.id, i]));
+  const age = (intent: SequencerIntent) => [intent.arrivedAt, index.get(intent.id) ?? 0];
+  const last = new Map<string, number[]>();
+  const wrong = new Set<string>();
+  plan.deferred.forEach(({ intent }) => {
+    const key = canonicalKey(intent, resolveId);
+    const [arrivedAt, position] = age(intent);
+    const previous = last.get(key);
+    if (previous && (previous[0] > arrivedAt || (previous[0] === arrivedAt && previous[1] > position))) wrong.add(key);
+    last.set(key, [arrivedAt, position]);
+  });
+  return [...wrong];
+};
 
 const planBoth = (seed: number) => {
   const a = scenario(seed);
   const b = scenario(seed);
+  const plan = buildBatchPlan(b.batch, b.resolveId, b.forceDirect, b.options);
   return {
     expected: shapeOf(buildBatchPlanOld(a.batch, a.resolveId, a.forceDirect, a.options), a.batch),
-    actual: shapeOf(buildBatchPlan(b.batch, b.resolveId, b.forceDirect, b.options), b.batch),
+    actual: shapeOf(plan, b.batch),
+    // the lane key of each intent, for the per-lane deferrals
+    keys: new Map(b.batch.map((intent) => [intent.id, canonicalKey(intent, b.resolveId)])),
+    outOfOrder: lanesOutOfArrivalOrder(plan, b.batch, b.resolveId),
   };
+};
+
+// The one difference the task 0040 lead 36 rule may make: a same-key intent the reference defers to its lane for a
+// residual reason (its chain refused it) waits as a head would, parked or deferred on its own bound (a member wait
+// then counts a pass). Everything else must be identical. Returns the companions so routed.
+const RESIDUAL: ReadonlySet<string> = new Set(['relation', 'unresolved_target', 'self_not_foldable', 'head_not_foldable']);
+const compareModuloCompanions = (expectedShape: string, actualShape: string, keys: Map<string, string>) => {
+  const expected = JSON.parse(expectedShape);
+  const actual = JSON.parse(actualShape);
+  const companions = new Set<string>();
+  const memberPasses = new Set<string>();
+  const problems: string[] = [];
+  const expectedDeferred = new Map<string, any[]>(expected.deferred.map((d: any[]) => [d[0], d]));
+  actual.parked.forEach(([id, missing]: any[]) => {
+    const was = expectedDeferred.get(id);
+    if (!was || !RESIDUAL.has(was[1])) return;
+    companions.add(id);
+    if (missing.length === 0) problems.push(`companion ${id} parked on nothing`);
+  });
+  actual.deferred.forEach(([id, reason]: any[]) => {
+    const was = expectedDeferred.get(id);
+    if (was && RESIDUAL.has(was[1]) && (reason === 'queued_producer' || reason === 'member_wait')) companions.add(id);
+    if (was && RESIDUAL.has(was[1]) && reason === 'member_wait') memberPasses.add(id);
+  });
+  // per lane key, the reference's deferrals (their order is checked apart: arrival order, lead 38; the reference put
+  // a residual deferral ahead of older group deferrals of its key)
+  const lanes = (deferred: any[][]) => {
+    const byKey = new Map<string, string[]>();
+    deferred.filter((d) => !companions.has(d[0])).forEach((d) => {
+      const key = keys.get(d[0]) as string;
+      byKey.set(key, [...(byKey.get(key) ?? []), JSON.stringify(d)].sort());
+    });
+    return byKey;
+  };
+  const expectedLanes = lanes(expected.deferred);
+  const actualLanes = lanes(actual.deferred);
+  new Set([...expectedLanes.keys(), ...actualLanes.keys()]).forEach((key) => {
+    if (JSON.stringify(actualLanes.get(key) ?? []) !== JSON.stringify(expectedLanes.get(key) ?? [])) problems.push(`lane ${key} deferrals`);
+  });
+  const strip = (shape: any) => ({
+    ...shape,
+    deferred: shape.deferred.filter((d: any[]) => !companions.has(d[0])).map((d: any[]) => JSON.stringify(d)).sort(),
+    parked: shape.parked.filter((p: any[]) => !companions.has(p[0])),
+    intents: shape.intents.map((i: any[]) => [i[0], i[1], i[2], i[4]]),
+  });
+  if (JSON.stringify(strip(expected)) !== JSON.stringify(strip(actual))) problems.push('plan differs');
+  // a companion deferred on a member wait counts its pass, exactly one more; nobody else
+  const batchIds: string[] = actual.ids;
+  actual.intents.forEach((i: any[], index: number) => {
+    const before = expected.intents[index][3] ?? 0;
+    const after = i[3] ?? 0;
+    if (after !== before && !(after === before + 1 && memberPasses.has(batchIds[index]))) problems.push(`attempts of ${batchIds[index]}`);
+  });
+  return { problems, companions: companions.size };
 };
 
 // ---- reference: step 4 alone (bench-topo.mjs orderOld) ----
@@ -492,19 +588,43 @@ describe('sequencer batch plan oracle (Kahn order, lazy norm)', () => {
     expect(orderApplicable([], [], [])).toEqual([]);
   });
 
-  it('whole plan identical to the former planner on 3,000 random batches', () => {
+  it('whole plan identical to the former planner on 3,000 random batches sharing one user, opts and context', () => {
     let ordered = 0;
     let stripped = 0;
+    let absorbed = 0;
+    let companions = 0;
     for (let seed = 1; seed <= 3000; seed += 1) {
-      const { expected, actual } = planBoth(seed);
-      expect(actual, `seed ${seed}`).toBe(expected);
+      const { expected, actual, keys, outOfOrder } = planBoth(seed);
+      const compared = compareModuloCompanions(expected, actual, keys);
+      expect(compared.problems, `seed ${seed}`).toEqual([]);
+      expect(outOfOrder, `seed ${seed}`).toEqual([]);
+      companions += compared.companions;
       const parsed = JSON.parse(expected);
       ordered += parsed.order.length;
       stripped += parsed.strippedDead.length;
+      absorbed += parsed.order.reduce((n: number, g: any[]) => n + g[1].length, 0);
     }
     // the generator reaches the paths it is meant to cover
     expect(ordered).toBeGreaterThan(10000);
     expect(stripped).toBeGreaterThan(100);
+    expect(absorbed).toBeGreaterThan(1000);
+    expect(companions).toBeGreaterThan(100); // the lead 36 rule at work
+  });
+
+  it('never absorbs across users, opts or apply context, and defers same-key writes in arrival order, on 3,000 random batches where they vary', () => {
+    const applyOf = (intent: SequencerIntent) => JSON.stringify([intent.user.id, intent.user.origin?.call_retry_number, intent.opts, intent.context]);
+    let absorbed = 0;
+    for (let seed = 1; seed <= 3000; seed += 1) {
+      const { batch, resolveId, forceDirect, options } = scenario(seed, false);
+      const plan = buildBatchPlan(batch, resolveId, forceDirect, options);
+      plan.order.forEach((group) => {
+        group.absorbed.forEach((intent) => expect(applyOf(intent), `seed ${seed}`).toBe(applyOf(group.leader)));
+        absorbed += group.absorbed.length;
+      });
+      // users that differ make same-key companions: their lane order (lead 38)
+      expect(lanesOutOfArrivalOrder(plan, batch, resolveId), `seed ${seed}`).toEqual([]);
+    }
+    expect(absorbed).toBeGreaterThan(100);
   });
 
   it('orders a container emptied by the dead strip as phase 0, as the former planner did', () => {
