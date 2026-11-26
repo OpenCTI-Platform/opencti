@@ -306,6 +306,36 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(first.references).toEqual(second.references);
   });
 
+  it('warns instead of waiting for references when the panel is gone before the objects are added', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning').mockImplementation(() => {});
+    const handle = React.createRef<ReferencesHandle>();
+    const { unmount } = testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
+
+    act(() => handle.current?.onCreated(observable('o1')));
+    unmount();
+    await flushBatch();
+
+    expect(addObjectToContainer).not.toHaveBeenCalled();
+    expect(notifyWarning).toHaveBeenCalledOnce();
+    expect(notifyWarning.mock.calls[0][0]).toContain('created but not added to the');
+  });
+
+  it('warns when the panel is gone while the references dialog is open', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning').mockImplementation(() => {});
+    const handle = React.createRef<ReferencesHandle>();
+    const { unmount } = testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
+
+    act(() => handle.current?.onCreated(observable('o1')));
+    await flushBatch();
+    expect(screen.getByText('Reference modification')).toBeInTheDocument();
+    unmount();
+    await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+
+    expect(addObjectToContainer).not.toHaveBeenCalled();
+    expect(notifyWarning).toHaveBeenCalledOnce();
+    expect(notifyWarning.mock.calls[0][0]).toContain('created but not added to the');
+  });
+
   it('asks references once for batches waiting at the same time', async () => {
     const handle = React.createRef<ReferencesHandle>();
     testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });

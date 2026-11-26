@@ -153,6 +153,11 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      // The references dialog is gone with the panel: a request waiting for it is cancelled
+      const resolve = referencesResolverRef.current;
+      referencesResolverRef.current = null;
+      pendingReferencesRef.current = null;
+      resolve?.(null);
     };
   }, []);
 
@@ -162,7 +167,9 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
   };
 
   // A request made while the dialog is open waits for that dialog: one set of references for all of them
+  // Without the panel, there is no dialog to ask them: the request is cancelled
   const askReferences = () => {
+    if (!mountedRef.current) return Promise.resolve(null);
     if (!pendingReferencesRef.current) {
       pendingReferencesRef.current = new Promise<References | null>((resolve) => {
         referencesResolverRef.current = resolve;
