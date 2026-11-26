@@ -1,5 +1,5 @@
 import { environment, getStoppingState, logApp, setStoppingState } from './config/conf';
-import platformInit, { checkFeatureFlags, checkGraphqlSecurity, checkHttpSecurity, checkTlsVerification } from './initialization';
+import platformInit, { checkAuthenticationSecurity, checkFeatureFlags, checkGraphqlSecurity, checkHttpSecurity, checkTlsVerification } from './initialization';
 import { checkOutboundRequests } from './utils/internal-destination';
 import cacheManager from './manager/cacheManager';
 import { shutdownRedisClients } from './database/redis';
@@ -43,6 +43,7 @@ const doPlatformStart = async () => {
     checkTlsVerification();
     checkGraphqlSecurity();
     checkHttpSecurity();
+    checkAuthenticationSecurity();
     try {
       checkDefaultCredentials();
     } catch (credentialsError) {

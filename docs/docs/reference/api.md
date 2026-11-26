@@ -27,6 +27,7 @@ Basic authentication is controlled by the **Allow API Basic authentication** swi
 
 - A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled.
 - While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated: a GraphQL request gets the error `You must be logged in to do this.`
+- Basic authentication never asks for the second factor. With `app:authentication:secure_by_default` (see [configuration](../deployment/configuration.md)), it is refused the same way to the accounts that two-factor authentication applies to: use an API token for scripts, TAXII clients and feeds.
 
 ### Generate a token
 
