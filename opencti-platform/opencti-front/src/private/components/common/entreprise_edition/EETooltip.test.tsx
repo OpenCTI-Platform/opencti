@@ -2,7 +2,8 @@ import { act, fireEvent, screen } from '@testing-library/react';
 import React, { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
-import EETooltip from './EETooltip';
+import EETooltip, { renderFeedbackRequest } from './EETooltip';
+import EERequestContext from './EERequestContext';
 import EETooltipBase from './EETooltipBase';
 
 // Gated paths (no Enterprise Edition, or AI not configured): EETooltip wraps
@@ -100,7 +101,20 @@ describe('EETooltip', () => {
     expect(await screen.findByText('Feedback form')).toBeInTheDocument();
   });
 
-  it('sends a non-admin to their administrator, without the feedback form, in its base form', async () => {
+  it('gives a non-admin the request form the app provides, in its base form', async () => {
+    const { user } = testRender(
+      <EERequestContext.Provider value={renderFeedbackRequest}>
+        <EETooltipBase title="Some AI feature" forAi>
+          <button type="button">Ask AI</button>
+        </EETooltipBase>
+      </EERequestContext.Provider>,
+    );
+
+    await user.click(screen.getByText('Ask AI'));
+    expect(await screen.findByText('Feedback form')).toBeInTheDocument();
+  });
+
+  it('sends a non-admin to their administrator when the app provides no request form, in its base form', async () => {
     const { user } = testRender(
       <EETooltipBase title="Some AI feature" forAi>
         <button type="button">Ask AI</button>

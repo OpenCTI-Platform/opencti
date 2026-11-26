@@ -25,6 +25,8 @@ import DraftToolbar from './components/drafts/DraftToolbar';
 import { TooltipProvider } from '@filigran/design-system';
 import { TOOLTIP_DELAY_MS } from './components/nav/topBarConstants';
 import { ChatbotProvider } from './components/chatbox/ChatbotContext';
+import EERequestContext from './components/common/entreprise_edition/EERequestContext';
+import { renderFeedbackRequest } from './components/common/entreprise_edition/EETooltip';
 import useTopBanner from '../utils/hooks/useTopBanner';
 
 const HomeDashboard = lazy(() => import('./components/HomeDashboard'));
@@ -111,67 +113,69 @@ const Index = ({ settings }: IndexProps) => {
     // controls such as the import button also render on their own screens.
     <TooltipProvider delayDuration={TOOLTIP_DELAY_MS}>
       <ChatbotProvider>
-        <SystemBanners settings={settings} />
-        <TopBannersManager />
-        {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
-        <SettingsMessagesBanner />
-        <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
-        {!isForcePasswordChangeRoute && <ConfigPresetBootstrapWizard settings={settings} />}
-        <Box
-          sx={{
-            display: 'flex',
-            marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
-            marginBottom: bannerHeight,
-          }}
-        >
-          <CssBaseline />
-          {!isForcePasswordChangeRoute && <TopBar />}
-          {!isForcePasswordChangeRoute && <NavBar />}
-          <Message />
-          <NewsFeedToastManager />
-          <Stack component="main" tabIndex={-1} sx={mainSx}>
-            <Box sx={boxSx}>
-              <Suspense fallback={<Loader />}>
-                <Routes>
-                  <Route
-                    path="/"
-                    element={draftContext?.id
-                      ? (
-                          <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
-                        )
-                      : boundaryWrapper(HomeDashboard)}
-                  />
-                  <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
-                  <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
-                  <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
-                  <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
-                  <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
-                  <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
-                  <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
-                  <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
-                  <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
-                  <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
-                  <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
-                  <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
-                  <Route path="/data/*" element={boundaryWrapper(RootData)} />
-                  <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
-                  {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
-                  <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
-                  <Route path="/news-feed" element={boundaryWrapper(RootNewsFeed)} />
-                  <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
-                  <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
-                  <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
-                  <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
-                  <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
-                  <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
-                  <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
-                  <Route path="/*" element={<NoMatch />} />
-                </Routes>
-              </Suspense>
-            </Box>
-            {!isForcePasswordChangeRoute && <DraftToolbar />}
-          </Stack>
-        </Box>
+        <EERequestContext.Provider value={renderFeedbackRequest}>
+          <SystemBanners settings={settings} />
+          <TopBannersManager />
+          {((settings.platform_session_idle_timeout ?? 0) > 0 || (settings.platform_session_timeout ?? 0) > 0) && <TimeoutLock />}
+          <SettingsMessagesBanner />
+          <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
+          {!isForcePasswordChangeRoute && <ConfigPresetBootstrapWizard settings={settings} />}
+          <Box
+            sx={{
+              display: 'flex',
+              marginTop: `calc(${topBannerHeight}px + ${bannerHeight})`,
+              marginBottom: bannerHeight,
+            }}
+          >
+            <CssBaseline />
+            {!isForcePasswordChangeRoute && <TopBar />}
+            {!isForcePasswordChangeRoute && <NavBar />}
+            <Message />
+            <NewsFeedToastManager />
+            <Stack component="main" tabIndex={-1} sx={mainSx}>
+              <Box sx={boxSx}>
+                <Suspense fallback={<Loader />}>
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={draftContext?.id
+                        ? (
+                            <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
+                          )
+                        : boundaryWrapper(HomeDashboard)}
+                    />
+                    <Route path="/search/*" element={boundaryWrapper(RootSearch)} />
+                    <Route path="/id/:id" element={boundaryWrapper(StixObjectOrStixRelationship)} />
+                    <Route path="/search_bulk" element={boundaryWrapper(RootSearchBulk)} />
+                    <Route path="/analyses/*" element={boundaryWrapper(RootAnalyses)} />
+                    <Route path="/cases/*" element={boundaryWrapper(RootCases)} />
+                    <Route path="/events/*" element={boundaryWrapper(RootEvents)} />
+                    <Route path="/threats/*" element={boundaryWrapper(RootThreats)} />
+                    <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
+                    <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
+                    <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
+                    <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
+                    <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
+                    <Route path="/data/*" element={boundaryWrapper(RootData)} />
+                    <Route path="/integrations/*" element={boundaryWrapper(RootIntegrations)} />
+                    {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
+                    <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
+                    <Route path="/news-feed" element={boundaryWrapper(RootNewsFeed)} />
+                    <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
+                    <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
+                    <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
+                    <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
+                    <Route path="/change-password" element={boundaryWrapper(ForcePasswordChange)} />
+                    <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
+                    <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
+                    <Route path="/*" element={<NoMatch />} />
+                  </Routes>
+                </Suspense>
+              </Box>
+              {!isForcePasswordChangeRoute && <DraftToolbar />}
+            </Stack>
+          </Box>
+        </EERequestContext.Provider>
       </ChatbotProvider>
     </TooltipProvider>
   );

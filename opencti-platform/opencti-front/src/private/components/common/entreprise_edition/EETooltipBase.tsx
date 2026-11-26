@@ -4,7 +4,7 @@ import Dialog from '@common/dialog/Dialog';
 import { Tooltip, TooltipProps } from '@mui/material';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
-import { ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactElement, ReactNode, useContext, useEffect, useRef, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
 import useAI from '../../../../utils/hooks/useAI';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -12,6 +12,7 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 import EnterpriseEditionAgreement from './EnterpriseEditionAgreement';
 import { onActivationKey } from '../../../../utils/domEvent';
+import EERequestContext, { EERequest } from './EERequestContext';
 
 const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
   return (
@@ -99,14 +100,15 @@ export interface EETooltipBaseProps {
   title?: string;
   forAi?: boolean;
   // What a non-admin gets when activating the gate without Enterprise Edition. Defaults to
-  // a dialog sending them to their administrator, which keeps this module free of the
-  // feedback form: that form renders a markdown field, whose AI button uses this gate.
-  renderNonAdminRequest?: (open: boolean, onClose: () => void) => ReactNode;
+  // the one the app provides through EERequestContext (the feedback form), then to a dialog
+  // sending them to their administrator when nothing is provided (isolated tests).
+  renderNonAdminRequest?: EERequest;
 }
 
 /**
- * The Enterprise Edition gate without the feedback form. Use EETooltip, unless the gated
- * control is reachable from the feedback form itself (the AI button of the text fields).
+ * The Enterprise Edition gate without a static import of the feedback form. Use EETooltip,
+ * unless the gated control is reachable from the feedback form itself (the AI button of the
+ * text fields).
  */
 const EETooltipBase = ({
   children,
@@ -115,6 +117,8 @@ const EETooltipBase = ({
   renderNonAdminRequest,
 }: EETooltipBaseProps) => {
   const { t_i18n } = useFormatter();
+  const providedRequest = useContext(EERequestContext);
+  const nonAdminRequest = renderNonAdminRequest ?? providedRequest;
   const [requestOpen, setRequestOpen] = useState(false);
   const [openConfigAI, setOpenConfigAI] = useState(false);
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
@@ -168,7 +172,7 @@ const EETooltipBase = ({
           onClose={() => setRequestOpen(false)}
           settingsId={settingsId}
         />
-      ) : renderNonAdminRequest ? renderNonAdminRequest(requestOpen, () => setRequestOpen(false)) : (
+      ) : nonAdminRequest ? nonAdminRequest(requestOpen, () => setRequestOpen(false), title) : (
         <MessageDialog
           open={requestOpen}
           onClose={() => setRequestOpen(false)}
