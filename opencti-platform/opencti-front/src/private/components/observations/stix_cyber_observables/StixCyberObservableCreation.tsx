@@ -9,10 +9,8 @@ import { ListItemButton, Stack } from '@mui/material';
 import List from '@mui/material/List';
 import ListItemText from '@mui/material/ListItemText';
 import { styled, useTheme } from '@mui/material/styles';
-import { Field, Form, Formik } from 'formik';
-import PropTypes from 'prop-types';
-import { dissoc, filter, fromPairs, includes, map, pipe, pluck, propOr, toPairs } from 'ramda';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Field, Form, Formik, FormikConfig } from 'formik';
+import React, { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
@@ -25,11 +23,12 @@ import BulkTextModalButton from '../../../../components/fields/BulkTextField/Bul
 import MarkdownField from '../../../../components/fields/markdownField/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { splitMultilines } from '../../../../utils/String';
 import { parse } from '../../../../utils/Time';
 import { convertMarking } from '../../../../utils/edition';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useBulkCommit from '../../../../utils/hooks/useBulkCommit';
@@ -44,7 +43,17 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { CreatedObject } from '../../common/containers/useContainerObjects';
+import type { DefaultValue } from '../../settings/sub_types/entity_setting/entitySetting';
+import type { DefaultMarking } from '../../settings/marking_definitions/markingDefinition.types';
 import { stixCyberObservablesLinesAttributesQuery, stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
+import {
+  StixCyberObservableCreationMutation,
+  StixCyberObservableCreationMutation$data,
+  StixCyberObservableCreationMutation$variables,
+} from './__generated__/StixCyberObservableCreationMutation.graphql';
+import { StixCyberObservablesLinesSubTypesQuery$data } from './__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
+import { StixCyberObservablesLinesAttributesQuery$data } from './__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 
 const ContextualCreateButton = styled(IconButton)({
   position: 'fixed',
@@ -237,6 +246,65 @@ const SCO_DEFAULT_FIELD = [
   { type: 'X509-Certificate', field: 'hashes_MD5' },
 ];
 
+// Form fields sent at the root of the mutation, or only used to build the hashes: not part of the observable input
+const NOT_OBSERVABLE_INPUT_FIELDS = [
+  'x_opencti_description',
+  'x_opencti_score',
+  'createdBy',
+  'objectMarking',
+  'objectLabel',
+  'externalReferences',
+  'createIndicator',
+  'hashes_MD5',
+  'hashes_SHA-1',
+  'hashes_SHA-256',
+  'hashes_SHA-512',
+];
+
+const HASH_ALGORITHMS = ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'];
+
+export type CreatedObservable = NonNullable<StixCyberObservableCreationMutation$data['stixCyberObservableAdd']>;
+
+// The attributes of the observable type are added to the form at run time
+interface ObservableFormValues {
+  x_opencti_description: string;
+  x_opencti_score: number | string;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: FieldOption[];
+  createIndicator: boolean;
+  file: File | null | undefined;
+  obsContent?: FieldOption;
+  [attribute: string]: unknown;
+}
+
+interface StixCyberObservableCreationProps {
+  contextual: boolean;
+  open?: boolean;
+  handleClose?: () => void;
+  type?: string;
+  display?: boolean;
+  speeddial?: boolean;
+  inputValue?: string | null;
+  paginationKey?: string;
+  paginationOptions?: unknown;
+  controlledDialStyles?: CSSProperties;
+  defaultCreatedBy?: DefaultValue | null;
+  defaultMarkingDefinitions?: readonly DefaultMarking[];
+  isFromBulkRelation?: boolean;
+  onCompleted?: (observable: CreatedObservable | null) => void;
+  // Called for each observable created, also for each one of a bulk creation
+  onCreated?: (object: CreatedObject, options?: { withIndicator?: boolean }) => void;
+  stixCyberObservableTypes?: string[];
+}
+
+// The text of a form field, e.g. the values of a bulk creation
+const fieldText = (values: ObservableFormValues, key: string | null): string => {
+  const value = key ? values[key] : undefined;
+  return typeof value === 'string' ? value : '';
+};
+
 const StixCyberObservableCreation = ({
   contextual,
   open = false,
@@ -254,27 +322,27 @@ const StixCyberObservableCreation = ({
   onCompleted = () => {},
   onCreated,
   stixCyberObservableTypes = undefined,
-}) => {
-  const theme = useTheme();
+}: StixCyberObservableCreationProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { isDeferredMode } = useDeferredCreation();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const { booleanAttributes, dateAttributes, multipleAttributes, numberAttributes, ignoredAttributes } = useAttributes();
-  const [status, setStatus] = useState({ open: false, type: type ?? null });
-  const inputObsType = useMemo(() => status?.type?.replace(/(?:^|-|_)(\w)/g, (_, l) => l.toUpperCase()), [status]);
+  const [status, setStatus] = useState<{ open: boolean; type: string | null }>({ open: false, type: type ?? null });
+  const inputObsType = useMemo(() => status?.type?.replace(/(?:^|-|_)(\w)/g, (_, l) => l.toUpperCase()) ?? '', [status]);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [progressBarOpen, setProgressBarOpen] = useState(false);
 
-  const [bulkSelectedKey, setBulkSelectedKey] = useState(null);
+  const [bulkSelectedKey, setBulkSelectedKey] = useState<string | null>(null);
   const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
   // Store the latest created observable for callback
-  const lastCreatedObservableRef = React.useRef(null);
+  const lastCreatedObservableRef = useRef<CreatedObservable | null>(null);
 
   useEffect(() => {
     setBulkSelectedKey(bulkConf?.keys.length === 1 ? bulkConf.keys[0] : null);
   }, [bulkConf]);
 
-  const [commit] = useApiMutation(
+  const [commit] = useApiMutation<StixCyberObservableCreationMutation>(
     stixCyberObservableMutation,
     undefined,
     { successMessage: `${t_i18n('entity_Observable')} ${t_i18n('successfully created')}` },
@@ -286,7 +354,7 @@ const StixCyberObservableCreation = ({
     bulkCurrentCount,
     BulkResult,
     resetBulk,
-  } = useBulkCommit({
+  } = useBulkCommit<StixCyberObservableCreationMutation>({
     type: 'observables',
     commit,
     relayUpdater: (store, response) => {
@@ -312,12 +380,36 @@ const StixCyberObservableCreation = ({
 
   const handleOpen = () => setStatus({ open: true, type: status.type });
   const localHandleClose = () => setStatus({ open: false, type: type ?? null });
-  const selectType = (selected) => setStatus({ open: status.open, type: selected });
+  const selectType = (selected: string | null) => setStatus({ open: status.open, type: selected });
 
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
+  // The observable input: the attributes of the observable type, converted to what the API expects
+  const buildObservableInput = (formValues: ObservableFormValues) => {
+    const hashes = HASH_ALGORITHMS
+      .map((algorithm) => ({ algorithm, hash: fieldText(formValues, `hashes_${algorithm}`) }))
+      .filter(({ hash }) => hash.length > 0);
+    const hasHashFields = HASH_ALGORITHMS.some((algorithm) => !!formValues[`hashes_${algorithm}`]);
+    const withHashes: Record<string, unknown> = hasHashFields ? { ...formValues, hashes } : { ...formValues };
+    return Object.fromEntries(Object.entries(withHashes)
+      .filter(([key]) => !NOT_OBSERVABLE_INPUT_FIELDS.includes(key))
+      .map(([key, value]) => {
+        let converted = value;
+        if (dateAttributes.includes(key)) {
+          converted = converted ? parse(converted as string).format() : null;
+        }
+        if (numberAttributes.includes(key)) {
+          converted = converted ? parseInt(String(converted), 10) : null;
+        }
+        if (multipleAttributes.includes(key)) {
+          converted = converted ? String(converted).split(',') : null;
+        }
+        return [key, converted];
+      }));
+  };
+
+  const onSubmit: FormikConfig<ObservableFormValues>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     let adaptedValues = [values];
     if (bulkConf && bulkSelectedKey) {
-      const allValues = splitMultilines(values[bulkSelectedKey]);
+      const allValues = splitMultilines(fieldText(values, bulkSelectedKey));
       adaptedValues = allValues.map((v) => ({
         ...values,
         [bulkSelectedKey]: v,
@@ -325,79 +417,20 @@ const StixCyberObservableCreation = ({
     }
 
     const finalValues = adaptedValues.map((val) => {
-      let adaptedValue = val;
-      // Potential dicts
-      if (
-        adaptedValue.hashes_MD5
-        || adaptedValue['hashes_SHA-1']
-        || adaptedValue['hashes_SHA-256']
-        || adaptedValue['hashes_SHA-512']
-      ) {
-        adaptedValue.hashes = [];
-        if (adaptedValue.hashes_MD5.length > 0) {
-          adaptedValue.hashes.push({
-            algorithm: 'MD5',
-            hash: adaptedValue.hashes_MD5,
-          });
-        }
-        if (adaptedValue['hashes_SHA-1'].length > 0) {
-          adaptedValue.hashes.push({
-            algorithm: 'SHA-1',
-            hash: adaptedValue['hashes_SHA-1'],
-          });
-        }
-        if (adaptedValue['hashes_SHA-256'].length > 0) {
-          adaptedValue.hashes.push({
-            algorithm: 'SHA-256',
-            hash: adaptedValue['hashes_SHA-256'],
-          });
-        }
-        if (adaptedValue['hashes_SHA-512'].length > 0) {
-          adaptedValue.hashes.push({
-            algorithm: 'SHA-512',
-            hash: adaptedValue['hashes_SHA-512'],
-          });
-        }
-      }
-      adaptedValue = pipe(
-        dissoc('x_opencti_description'),
-        dissoc('x_opencti_score'),
-        dissoc('createdBy'),
-        dissoc('objectMarking'),
-        dissoc('objectLabel'),
-        dissoc('externalReferences'),
-        dissoc('createIndicator'),
-        dissoc('hashes_MD5'),
-        dissoc('hashes_SHA-1'),
-        dissoc('hashes_SHA-256'),
-        dissoc('hashes_SHA-512'),
-        toPairs,
-        map((n) => (includes(n[0], dateAttributes)
-          ? [n[0], n[1] ? parse(n[1]).format() : null]
-          : n)),
-        map((n) => (includes(n[0], numberAttributes)
-          ? [n[0], n[1] ? parseInt(n[1], 10) : null]
-          : n)),
-        map((n) => (includes(n[0], multipleAttributes)
-          ? [n[0], n[1] ? n[1].split(',') : null]
-          : n)),
-        fromPairs,
-      )(adaptedValue);
-
-      const singularValue = {
+      const singularValue: Record<string, unknown> = {
         type: status.type,
         x_opencti_description:
           values.x_opencti_description.length > 0
             ? values.x_opencti_description
             : null,
-        x_opencti_score: parseInt(values.x_opencti_score, 10),
-        createdBy: propOr(null, 'value', values.createdBy),
-        objectMarking: pluck('value', values.objectMarking),
-        objectLabel: pluck('value', values.objectLabel),
-        externalReferences: pluck('value', values.externalReferences),
+        x_opencti_score: parseInt(String(values.x_opencti_score), 10),
+        createdBy: values.createdBy?.value ?? null,
+        objectMarking: values.objectMarking.map(({ value }) => value),
+        objectLabel: values.objectLabel.map(({ value }) => value),
+        externalReferences: values.externalReferences.map(({ value }) => value),
         createIndicator: values.createIndicator,
         [inputObsType]: {
-          ...adaptedValue,
+          ...buildObservableInput(val),
           ...buildCreationFilesInput(),
           obsContent: values.obsContent?.value,
         },
@@ -405,7 +438,8 @@ const StixCyberObservableCreation = ({
       if (values.file) {
         singularValue.file = values.file;
       }
-      return singularValue;
+      // The observable input is keyed by the observable type, only known at run time
+      return singularValue as unknown as StixCyberObservableCreationMutation$variables;
     });
 
     bulkCommit({
@@ -449,7 +483,7 @@ const StixCyberObservableCreation = ({
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}
         variables={{ type: 'Stix-Cyber-Observable' }}
-        render={({ props }) => {
+        render={({ props }: { props: StixCyberObservablesLinesSubTypesQuery$data | null }) => {
           if (props && props.subTypes) {
             const subTypesEdges = props.subTypes.edges;
             const translatedOrderedList = subTypesEdges
@@ -487,13 +521,13 @@ const StixCyberObservableCreation = ({
       <QueryRenderer
         query={stixCyberObservablesLinesAttributesQuery}
         variables={{ elementType: [status.type] }}
-        render={({ props }) => {
+        render={({ props }: { props: StixCyberObservablesLinesAttributesQuery$data | null }) => {
           if (props && props.schemaAttributeNames) {
             const baseCreatedBy = defaultCreatedBy
               ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
               : undefined;
-            const baseMarkingDefinitions = defaultMarkingDefinitions.map((n) => convertMarking(n));
-            const initialValues = {
+            const baseMarkingDefinitions: FieldOption[] = defaultMarkingDefinitions.map((n) => convertMarking(n));
+            const initialValues: ObservableFormValues = {
               x_opencti_description: '',
               x_opencti_score: 50,
               createdBy: baseCreatedBy,
@@ -503,21 +537,17 @@ const StixCyberObservableCreation = ({
               createIndicator: false,
               file: undefined,
             };
-            const attributes = pipe(
-              map((n) => n.node),
-              filter(
-                (n) => !includes(n.value, ignoredAttributes)
-                  && !n.value.startsWith('i_'),
-              ),
-            )(props.schemaAttributeNames.edges);
-            let extraFieldsToValidate = null;
-            let requiredOneOfFields = [];
+            const attributes = props.schemaAttributeNames.edges
+              .map((n) => n.node)
+              .filter((n) => !ignoredAttributes.includes(n.value) && !n.value.startsWith('i_'));
+            let extraFieldsToValidate: Yup.ObjectShape | null = null;
+            let requiredOneOfFields: string[][] = [];
             for (const attribute of attributes) {
-              if (isVocabularyField(status.type, attribute.value)) {
+              if (isVocabularyField(status.type ?? undefined, attribute.value)) {
                 initialValues[attribute.value] = null;
-              } else if (includes(attribute.value, dateAttributes)) {
+              } else if (dateAttributes.includes(attribute.value)) {
                 initialValues[attribute.value] = null;
-              } else if (includes(attribute.value, booleanAttributes)) {
+              } else if (booleanAttributes.includes(attribute.value)) {
                 initialValues[attribute.value] = false;
               } else if (attribute.value === 'bic' || attribute.value === 'iban') {
                 initialValues.bic = '';
@@ -544,35 +574,36 @@ const StixCyberObservableCreation = ({
                 const sha1Regex = /(^[a-fA-F0-9]{40})(?:\n[a-fA-F0-9]{40}){0,49}$/i;
                 const sha256Regex = /(^[a-fA-F0-9]{64})(?:\n[a-fA-F0-9]{64}){0,49}$/i;
                 const sha512Regex = /(^[a-fA-F0-9]{128})(?:\n[a-fA-F0-9]{128}){0,49}$/i;
+                const noneIsFilled = (a: unknown, b: unknown, c: unknown, d: unknown) => !a && !b && !c && !d;
                 extraFieldsToValidate = {
                   hashes_MD5: Yup
                     .string().matches(md5Regex, t_i18n('MD5 values can only include A-F and 0-9, 32 characters'))
                     .when(['hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512', 'name'], {
-                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      is: noneIsFilled,
                       then: () => Yup.string().matches(md5Regex, t_i18n('MD5 values can only include A-F and 0-9, 32 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
                   'hashes_SHA-1': Yup
                     .string().matches(sha1Regex, t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters'))
                     .when(['hashes_MD5', 'hashes_SHA-256', 'hashes_SHA-512', 'name'], {
-                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      is: noneIsFilled,
                       then: () => Yup.string().matches(sha1Regex, t_i18n('SHA-1 values can only include A-F and 0-9, 40 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
                   'hashes_SHA-256': Yup
                     .string().matches(sha256Regex, t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters'))
                     .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-512', 'name'], {
-                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      is: noneIsFilled,
                       then: () => Yup.string().matches(sha256Regex, t_i18n('SHA-256 values can only include A-F and 0-9, 64 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
                   'hashes_SHA-512': Yup
                     .string().matches(sha512Regex, t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters'))
                     .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'name'], {
-                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      is: noneIsFilled,
                       then: () => Yup.string().matches(sha512Regex, t_i18n('SHA-512 values can only include A-F and 0-9, 128 characters')).required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
                   name: Yup
                     .string()
                     .when(['hashes_MD5', 'hashes_SHA-1', 'hashes_SHA-256', 'hashes_SHA-512'], {
-                      is: (a, b, c, d) => !a && !b && !c && !d,
+                      is: noneIsFilled,
                       then: () => Yup.string().required(t_i18n('MD5, SHA-1, SHA-256, SHA-512, or name is required')),
                     }),
                   file: Yup.mixed().when([], {
@@ -697,28 +728,21 @@ const StixCyberObservableCreation = ({
                 initialValues[attribute.value] = '';
               }
             }
-            const stixCyberObservableValidation = () => Yup.object().shape({
-              x_opencti_score: Yup.number().integer(t_i18n('The value must be an integer'))
-                .nullable()
-                .min(0, t_i18n('The value must be greater than or equal to 0'))
-                .max(100, t_i18n('The value must be less than or equal to 100')),
-              x_opencti_description: Yup.string().nullable(),
-              createIndicator: Yup.boolean(),
-            });
 
-            const stixCyberObservableValidationFinal = Yup.object().shape({
-              ...stixCyberObservableValidation,
-              ...extraFieldsToValidate,
-            }, requiredOneOfFields);
+            const stixCyberObservableValidationFinal = Yup.object().shape(
+              { ...extraFieldsToValidate },
+              // Pairs of fields that depend on each other; a single field has no dependency
+              requiredOneOfFields as [string, string][],
+            );
 
             if (isFromBulkRelation) {
               const foundEntityType = SCO_DEFAULT_FIELD.find((item) => item.type === status.type);
               if (foundEntityType) initialValues[foundEntityType.field] = inputValue;
             }
 
-            const isFieldInBulk = (name) => name === bulkSelectedKey;
+            const isFieldInBulk = (name: string) => name === bulkSelectedKey;
             return (
-              <Formik
+              <Formik<ObservableFormValues>
                 initialValues={initialValues}
                 validationSchema={stixCyberObservableValidationFinal}
                 onSubmit={onSubmit}
@@ -732,303 +756,309 @@ const StixCyberObservableCreation = ({
                   values,
                   resetForm,
                   errors,
-                }) => (
-                  <>
-                    {bulkConf && (
-                      <>
-                        <BulkTextModal
-                          title={t_i18n('Create multiple observables')}
-                          open={bulkOpen}
-                          onClose={() => setBulkOpen(false)}
-                          availableKeys={bulkConf?.keys.length > 1 ? bulkConf.keys : undefined}
-                          onSelectKey={(key) => setBulkSelectedKey(key || null)}
-                          selectedKey={bulkSelectedKey}
-                          onValidate={async (val) => {
-                            if (bulkSelectedKey) {
-                              await setFieldValue(bulkSelectedKey, val);
-                              if (splitMultilines(val).length > 1) {
-                                await setFieldValue('file', null);
+                }) => {
+                  const isBulkWithSeveralValues = !!bulkConf && !!bulkSelectedKey
+                    && splitMultilines(fieldText(values, bulkSelectedKey)).length > 1;
+                  return (
+                    <>
+                      {bulkConf && (
+                        <>
+                          <BulkTextModal
+                            title={t_i18n('Create multiple observables')}
+                            open={bulkOpen}
+                            onClose={() => setBulkOpen(false)}
+                            availableKeys={bulkConf.keys.length > 1 ? bulkConf.keys : undefined}
+                            onSelectKey={(key) => setBulkSelectedKey(key || null)}
+                            selectedKey={bulkSelectedKey ?? undefined}
+                            onValidate={async (val) => {
+                              if (bulkSelectedKey) {
+                                await setFieldValue(bulkSelectedKey, val);
+                                if (splitMultilines(val).length > 1) {
+                                  await setFieldValue('file', null);
+                                }
                               }
+                            }}
+                            formValue={fieldText(values, bulkSelectedKey)}
+                          />
+                          <ProgressBar
+                            open={progressBarOpen}
+                            value={(bulkCurrentCount / bulkCount) * 100}
+                            label={`${bulkCurrentCount}/${bulkCount}`}
+                            title={t_i18n('Create multiple observables')}
+                            onClose={() => {
+                              setProgressBarOpen(false);
+                              resetForm();
+                              resetBulk();
+                              localHandleClose();
+                            }}
+                          >
+                            <BulkResult
+                              variablesToString={(v) => {
+                                const observableInput = (v as unknown as Record<string, Record<string, unknown> | undefined>)[inputObsType];
+                                return String(observableInput?.[bulkSelectedKey ?? ''] ?? '');
+                              }}
+                            />
+                          </ProgressBar>
+                        </>
+                      )}
+                      <Form
+                        style={{
+                          margin: contextual ? `${theme.spacing(1)} 0 0 0` : `${theme.spacing(1)} 0`,
+                        }}
+                      >
+                        <div>
+                          <Field
+                            component={TextField}
+                            variant="outlined"
+                            name="x_opencti_score"
+                            label={t_i18n('Score')}
+                            fullWidth={true}
+                            type="number"
+                          />
+                          <Field
+                            component={MarkdownField}
+                            name="x_opencti_description"
+                            label={t_i18n('Description')}
+                            fullWidth={true}
+                            multiline={true}
+                            rows="4"
+                            style={{ marginTop: 20 }}
+                            autoPersistOnBlur={false}
+                            registerMarkdownImagesController={registerMarkdownImagesController}
+                            uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
+                          />
+                          {attributes.map((attribute) => {
+                            const isValueAttribute = attribute.value === 'value';
+                            const attributeLabel = isValueAttribute
+                              ? t_i18n('Value')
+                              : t_i18n(attribute.value);
+                            if (bulkConf && attribute.value === bulkSelectedKey) {
+                              return (
+                                <Field
+                                  component={BulkTextField}
+                                  variant="outlined"
+                                  name={attribute.value}
+                                  label={attributeLabel}
+                                  key={attribute.value}
+                                  required={isValueAttribute}
+                                  fullWidth={true}
+                                  style={{ marginTop: 20 }}
+                                  bulkType="observables"
+                                />
+                              );
                             }
-                          }}
-                          formValue={values[bulkSelectedKey] ?? ''}
-                        />
-                        <ProgressBar
-                          open={progressBarOpen}
-                          value={(bulkCurrentCount / bulkCount) * 100}
-                          label={`${bulkCurrentCount}/${bulkCount}`}
-                          title={t_i18n('Create multiple observables')}
-                          onClose={() => {
-                            setProgressBarOpen(false);
-                            resetForm();
-                            resetBulk();
-                            localHandleClose();
-                          }}
-                        >
-                          <BulkResult variablesToString={(v) => v[inputObsType][bulkSelectedKey]} />
-                        </ProgressBar>
-                      </>
-                    )}
-                    <Form
-                      style={{
-                        margin: contextual ? `${theme.spacing(1)} 0 0 0` : `${theme.spacing(1)} 0`,
-                      }}
-                    >
-                      <div>
-                        <Field
-                          component={TextField}
-                          variant="outlined"
-                          name="x_opencti_score"
-                          label={t_i18n('Score')}
-                          fullWidth={true}
-                          type="number"
-                        />
-                        <Field
-                          component={MarkdownField}
-                          name="x_opencti_description"
-                          label={t_i18n('Description')}
-                          fullWidth={true}
-                          multiline={true}
-                          rows="4"
-                          style={{ marginTop: 20 }}
-                          autoPersistOnBlur={false}
-                          registerMarkdownImagesController={registerMarkdownImagesController}
-                          uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
-                        />
-                        {attributes.map((attribute) => {
-                          const isValueAttribute = attribute.value === 'value';
-                          const attributeLabel = isValueAttribute
-                            ? t_i18n('Value')
-                            : t_i18n(attribute.value);
-                          if (bulkConf && attribute.value === bulkSelectedKey) {
+                            if (attribute.value === 'hashes') {
+                              return (
+                                <div key={attribute.value}>
+                                  <Field
+                                    component={isFieldInBulk('hashes_MD5') ? BulkTextField : TextField}
+                                    variant="outlined"
+                                    name="hashes_MD5"
+                                    label={t_i18n('hash_md5')}
+                                    fullWidth={true}
+                                    style={{ marginTop: 20 }}
+                                    bulkType="observables"
+                                  />
+                                  <Field
+                                    component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
+                                    variant="outlined"
+                                    name="hashes_SHA-1"
+                                    label={t_i18n('hash_sha-1')}
+                                    fullWidth={true}
+                                    style={{ marginTop: 20 }}
+                                    bulkType="observables"
+                                  />
+                                  <Field
+                                    component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
+                                    variant="outlined"
+                                    name="hashes_SHA-256"
+                                    label={t_i18n('hash_sha-256')}
+                                    fullWidth={true}
+                                    style={{ marginTop: 20 }}
+                                    bulkType="observables"
+                                  />
+                                  <Field
+                                    component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
+                                    variant="outlined"
+                                    name="hashes_SHA-512"
+                                    label={t_i18n('hash_sha-512')}
+                                    fullWidth={true}
+                                    style={{ marginTop: 20 }}
+                                    bulkType="observables"
+                                  />
+                                </div>
+                              );
+                            }
+                            const vocabularyCategory = fieldToCategory(status.type ?? undefined, attribute.value);
+                            if (vocabularyCategory) {
+                              return (
+                                <OpenVocabField
+                                  key={attribute.value}
+                                  label={t_i18n(attribute.value)}
+                                  type={vocabularyCategory}
+                                  name={attribute.value}
+                                  onChange={(name, value) => setFieldValue(name, value)}
+                                  containerStyle={fieldSpacingContainerStyle}
+                                  multiple={false}
+                                />
+                              );
+                            }
+                            if (dateAttributes.includes(attribute.value)) {
+                              return (
+                                <Field
+                                  component={DateTimePickerField}
+                                  key={attribute.value}
+                                  name={attribute.value}
+                                  withSeconds={true}
+                                  textFieldProps={{
+                                    label: attribute.value,
+                                    variant: 'outlined',
+                                    fullWidth: true,
+                                    style: { marginTop: 20 },
+                                  }}
+                                />
+                              );
+                            }
+                            if (numberAttributes.includes(attribute.value)) {
+                              return (
+                                <Field
+                                  component={TextField}
+                                  variant="outlined"
+                                  key={attribute.value}
+                                  name={attribute.value}
+                                  label={attribute.value}
+                                  fullWidth={true}
+                                  type="number"
+                                  className="mt-5"
+                                />
+                              );
+                            }
+                            if (booleanAttributes.includes(attribute.value)) {
+                              return (
+                                <Field
+                                  component={SwitchField}
+                                  type="checkbox"
+                                  key={attribute.value}
+                                  name={attribute.value}
+                                  label={attribute.value}
+                                  fullWidth={true}
+                                  containerstyle={{ marginTop: 20 }}
+                                />
+                              );
+                            }
+                            if (attribute.value === 'obsContent') {
+                              return (
+                                <ArtifactField
+                                  key={attribute.value}
+                                  attributeName={attribute.value}
+                                  onChange={setFieldValue}
+                                />
+                              );
+                            }
+                            if (
+                              attribute.value === 'name'
+                              && status.type === 'Autonomous-System'
+                            ) {
+                              const setDefaultAutonomousSystemId = (_: string, value: string) => {
+                                const match = value.match(/^as(\d+)$/i);
+                                if (match && !values.number) {
+                                  setFieldValue('number', parseInt(match[1], 10));
+                                }
+                              };
+                              return (
+                                <Field
+                                  component={TextField}
+                                  variant="outlined"
+                                  key={attribute.value}
+                                  name={attribute.value}
+                                  label={t_i18n(attribute.value)}
+                                  fullWidth={true}
+                                  className="mt-5"
+                                  onSubmit={setDefaultAutonomousSystemId}
+                                />
+                              );
+                            }
                             return (
                               <Field
-                                component={BulkTextField}
+                                component={TextField}
                                 variant="outlined"
+                                key={attribute.value}
                                 name={attribute.value}
                                 label={attributeLabel}
-                                key={attribute.value}
                                 required={isValueAttribute}
                                 fullWidth={true}
-                                style={{ marginTop: 20 }}
-                                bulkType="observables"
-                              />
-                            );
-                          }
-                          if (attribute.value === 'hashes') {
-                            return (
-                              <div key={attribute.value}>
-                                <Field
-                                  component={isFieldInBulk('hashes_MD5') ? BulkTextField : TextField}
-                                  variant="outlined"
-                                  name="hashes_MD5"
-                                  label={t_i18n('hash_md5')}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  bulkType="observables"
-                                />
-                                <Field
-                                  component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
-                                  variant="outlined"
-                                  name="hashes_SHA-1"
-                                  label={t_i18n('hash_sha-1')}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  bulkType="observables"
-                                />
-                                <Field
-                                  component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
-                                  variant="outlined"
-                                  name="hashes_SHA-256"
-                                  label={t_i18n('hash_sha-256')}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  bulkType="observables"
-                                />
-                                <Field
-                                  component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
-                                  variant="outlined"
-                                  name="hashes_SHA-512"
-                                  label={t_i18n('hash_sha-512')}
-                                  fullWidth={true}
-                                  style={{ marginTop: 20 }}
-                                  bulkType="observables"
-                                />
-                              </div>
-                            );
-                          }
-                          if (isVocabularyField(status.type, attribute.value)) {
-                            return (
-                              <OpenVocabField
-                                key={attribute.value}
-                                label={t_i18n(attribute.value)}
-                                type={fieldToCategory(
-                                  status.type,
-                                  attribute.value,
-                                )}
-                                name={attribute.value}
-                                onChange={(name, value) => setFieldValue(name, value)
-                                }
-                                containerStyle={fieldSpacingContainerStyle}
-                                multiple={false}
-                              />
-                            );
-                          }
-                          if (includes(attribute.value, dateAttributes)) {
-                            return (
-                              <Field
-                                component={DateTimePickerField}
-                                key={attribute.value}
-                                name={attribute.value}
-                                withSeconds={true}
-                                textFieldProps={{
-                                  label: attribute.value,
-                                  variant: 'outlined',
-                                  fullWidth: true,
-                                  style: { marginTop: 20 },
-                                }}
-                              />
-                            );
-                          }
-                          if (includes(attribute.value, numberAttributes)) {
-                            return (
-                              <Field
-                                component={TextField}
-                                variant="outlined"
-                                key={attribute.value}
-                                name={attribute.value}
-                                label={attribute.value}
-                                fullWidth={true}
-                                type="number"
                                 className="mt-5"
                               />
                             );
-                          }
-                          if (includes(attribute.value, booleanAttributes)) {
-                            return (
-                              <Field
-                                component={SwitchField}
-                                type="checkbox"
-                                key={attribute.value}
-                                name={attribute.value}
-                                label={attribute.value}
-                                fullWidth={true}
-                                containerstyle={{ marginTop: 20 }}
-                              />
-                            );
-                          }
-                          if (attribute.value === 'obsContent') {
-                            return (
-                              <ArtifactField
-                                key={attribute.value}
-                                attributeName={attribute.value}
-                                onChange={setFieldValue}
-                              />
-                            );
-                          }
-                          if (
-                            attribute.value === 'name'
-                            && status.type === 'Autonomous-System'
-                          ) {
-                            const setDefaultAutonomousSystemId = (_, value) => {
-                              const match = value.match(/^as(\d+)$/i);
-                              if (match && !values.number) {
-                                setFieldValue('number', parseInt(match[1], 10));
-                              }
-                            };
-                            return (
-                              <Field
-                                component={TextField}
-                                variant="outlined"
-                                key={attribute.value}
-                                name={attribute.value}
-                                label={t_i18n(attribute.value)}
-                                fullWidth={true}
-                                className="mt-5"
-                                onSubmit={setDefaultAutonomousSystemId}
-                              />
-                            );
-                          }
-                          return (
-                            <Field
-                              component={TextField}
-                              variant="outlined"
-                              key={attribute.value}
-                              name={attribute.value}
-                              label={attributeLabel}
-                              required={isValueAttribute}
-                              fullWidth={true}
-                              className="mt-5"
-                            />
-                          );
-                        })}
-                      </div>
-                      <CreatedByField
-                        name="createdBy"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
-                      <ObjectLabelField
-                        name="objectLabel"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                        values={values.objectLabel}
-                      />
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                      />
-                      <ExternalReferencesField
-                        name="externalReferences"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                        values={values.externalReferences}
-                      />
-                      <CustomFileUploader
-                        setFieldValue={setFieldValue}
-                        formikErrors={errors}
-                        disabled={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1}
-                        noFileSelectedLabel={bulkConf && bulkSelectedKey && splitMultilines(values[bulkSelectedKey]).length > 1
-                          ? t_i18n('File upload not allowed in bulk creation')
-                          : undefined
-                        }
-                      />
-                      {!isDeferredMode && (
-                        <Field
-                          component={SwitchField}
-                          type="checkbox"
-                          name="createIndicator"
-                          label={t_i18n('Create an indicator from this observable')}
-                          containerstyle={{ marginTop: 20 }}
+                          })}
+                        </div>
+                        <CreatedByField
+                          name="createdBy"
+                          style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
                         />
-                      )}
-                      <FormButtonContainer>
-                        {!isFromBulkRelation && (
+                        <ObjectLabelField
+                          name="objectLabel"
+                          style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
+                          values={values.objectLabel}
+                        />
+                        <ObjectMarkingField
+                          name="objectMarking"
+                          style={fieldSpacingContainerStyle}
+                        />
+                        <ExternalReferencesField
+                          name="externalReferences"
+                          style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
+                          values={values.externalReferences}
+                        />
+                        <CustomFileUploader
+                          setFieldValue={setFieldValue}
+                          formikErrors={{ file: typeof errors.file === 'string' ? errors.file : undefined }}
+                          disabled={isBulkWithSeveralValues}
+                          noFileSelectedLabel={isBulkWithSeveralValues
+                            ? t_i18n('File upload not allowed in bulk creation')
+                            : undefined
+                          }
+                        />
+                        {!isDeferredMode && (
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            name="createIndicator"
+                            label={t_i18n('Create an indicator from this observable')}
+                            containerstyle={{ marginTop: 20 }}
+                          />
+                        )}
+                        <FormButtonContainer>
+                          {!isFromBulkRelation && (
+                            <Button
+                              variant="secondary"
+                              onClick={() => selectType(null)}
+                              disabled={isSubmitting}
+                            >
+                              {t_i18n('Back')}
+                            </Button>
+                          )}
                           <Button
                             variant="secondary"
-                            onClick={() => selectType(null)}
+                            onClick={handleReset}
                             disabled={isSubmitting}
                           >
-                            {t_i18n('Back')}
+                            {t_i18n('Cancel')}
                           </Button>
-                        )}
-                        <Button
-                          variant="secondary"
-                          onClick={handleReset}
-                          disabled={isSubmitting}
-                        >
-                          {t_i18n('Cancel')}
-                        </Button>
-                        <Button
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                        >
-                          {t_i18n('Create')}
-                        </Button>
-                      </FormButtonContainer>
-                    </Form>
-                  </>
-                )}
+                          <Button
+                            onClick={submitForm}
+                            disabled={isSubmitting}
+                          >
+                            {t_i18n('Create')}
+                          </Button>
+                        </FormButtonContainer>
+                      </Form>
+                    </>
+                  );
+                }}
               </Formik>
             );
           }
@@ -1112,7 +1142,6 @@ const StixCyberObservableCreation = ({
               {!isFromBulkRelation && status.type
                 ? (
                     <BulkTextModalButton
-                      sx={{ marginRight: 0 }}
                       onClick={() => setBulkOpen(true)}
                       title={t_i18n('Create multiple observables')}
                       disabled={!bulkConf}
@@ -1134,35 +1163,6 @@ const StixCyberObservableCreation = ({
     return renderContextual();
   }
   return renderClassic();
-};
-
-StixCyberObservableCreation.propTypes = {
-  contextual: PropTypes.bool.isRequired,
-  open: PropTypes.bool,
-  handleClose: PropTypes.func,
-  type: PropTypes.string,
-  display: PropTypes.bool,
-  speeddial: PropTypes.bool,
-  inputValue: PropTypes.string,
-  paginationKey: PropTypes.string,
-  paginationOptions: PropTypes.any,
-  controlledDialStyles: PropTypes.object,
-  defaultCreatedBy: PropTypes.oneOfType([
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-    }),
-    PropTypes.oneOf([undefined]),
-  ]),
-  defaultMarkingDefinitions: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    }),
-  ),
-  isFromBulkRelation: PropTypes.bool,
-  onCompleted: PropTypes.func,
-  onCreated: PropTypes.func,
-  stixCyberObservableTypes: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default StixCyberObservableCreation;

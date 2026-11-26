@@ -144,50 +144,6 @@ const sharedUpdater = (
   }
 };
 
-const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
-  const choices = (queryData.sdoTypes?.edges ?? [])
-    .map((edge) => ({
-      label: t(`entity_${edge.node.label}`),
-      value: edge.node.label,
-      type: edge.node.label,
-    }));
-  const entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], choices);
-  return entitiesTypes.filter((n) => {
-    if (
-      !stixDomainObjectTypes
-      || stixDomainObjectTypes.length === 0
-      || stixDomainObjectTypes.includes('Stix-Domain-Object')
-    ) {
-      return !UNSUPPORTED_TYPES.includes(n.value);
-    }
-    if (
-      stixDomainObjectTypes.includes('Identity')
-      && IDENTITY_ENTITIES.includes(n.value)
-    ) {
-      return true;
-    }
-    if (
-      stixDomainObjectTypes.includes('Threat-Actor')
-      && THREAT_ACTOR_ENTITIES.includes(n.value)
-    ) {
-      return true;
-    }
-    if (
-      stixDomainObjectTypes.includes('Location')
-      && LOCATION_ENTITIES.includes(n.value)
-    ) {
-      return true;
-    }
-    if (
-      stixDomainObjectTypes.includes('Container')
-      && CONTAINER_ENTITIES.includes(n.value)
-    ) {
-      return true;
-    }
-    return !!stixDomainObjectTypes.includes(n.value);
-  });
-};
-
 const StixDomainPanel = ({
   queryRef,
   stixDomainObjectTypes,
@@ -207,8 +163,52 @@ const StixDomainPanel = ({
     queryRef,
   );
   const { isDeferredMode } = useDeferredCreation();
+
+  const buildEntityTypes = (queryData, stixDomainObjectTypes) => {
+    const choices = (queryData.sdoTypes?.edges ?? [])
+      .map((edge) => ({
+        label: t_i18n(`entity_${edge.node.label}`),
+        value: edge.node.label,
+        type: edge.node.label,
+      }));
+    const entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], choices);
+    return entitiesTypes.filter((n) => {
+      if (
+        !stixDomainObjectTypes
+        || stixDomainObjectTypes.length === 0
+        || stixDomainObjectTypes.includes('Stix-Domain-Object')
+      ) {
+        return !UNSUPPORTED_TYPES.includes(n.value);
+      }
+      if (
+        stixDomainObjectTypes.includes('Identity')
+        && IDENTITY_ENTITIES.includes(n.value)
+      ) {
+        return true;
+      }
+      if (
+        stixDomainObjectTypes.includes('Threat-Actor')
+        && THREAT_ACTOR_ENTITIES.includes(n.value)
+      ) {
+        return true;
+      }
+      if (
+        stixDomainObjectTypes.includes('Location')
+        && LOCATION_ENTITIES.includes(n.value)
+      ) {
+        return true;
+      }
+      if (
+        stixDomainObjectTypes.includes('Container')
+        && CONTAINER_ENTITIES.includes(n.value)
+      ) {
+        return true;
+      }
+      return !!stixDomainObjectTypes.includes(n.value);
+    });
+  };
+
   const availableEntityTypes = buildEntityTypes(
-    t_i18n,
     queryData,
     stixDomainObjectTypes,
   ).filter((n) => !isDeferredMode || !FORM_UNCREATABLE_TYPES.includes(n.value));
@@ -851,7 +851,8 @@ const StixDomainObjectCreation = ({
   paginationKey,
   paginationOptions,
   onCompleted,
-  onCreated,
+  // Optional: the cast keeps TypeScript from requiring it, or typing it as undefined
+  onCreated = /** @type {((object: any) => void) | undefined} */ (undefined),
   isFromBulkRelation,
 }) => {
   const [status, setStatus] = useState({ open: false, type: null });

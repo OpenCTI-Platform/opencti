@@ -239,12 +239,12 @@ interface StixCoreObjectsFieldProps {
 
 interface CreatedEntity {
   id: string;
-  name?: string;
-  observable_value?: string;
+  name?: string | null;
+  observable_value?: string | null;
   entity_type: string;
   representative?: {
-    main?: string;
-  };
+    main?: string | null;
+  } | null;
 }
 
 const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
@@ -762,8 +762,6 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
             speeddial={true}
             type={createEntityType ?? undefined}
             inputValue={currentSearchTerm}
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore JSX component without proper TypeScript types
             stixCyberObservableTypes={types || undefined}
             onCompleted={handleSCOEntityCreated}
           />

@@ -28,6 +28,7 @@ import {
 } from '../stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node.graphql';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import type { DefaultValue } from '../../settings/sub_types/entity_setting/entitySetting';
 import useAuth from '../../../../utils/hooks/useAuth';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
@@ -246,7 +247,7 @@ interface ContainerAddStixCoreObjectsProps {
   // Entity type of the container, named in the confirmation message
   containerType?: string;
   targetStixCoreObjectTypes: string[];
-  defaultCreatedBy?: unknown;
+  defaultCreatedBy?: DefaultValue | null;
   defaultMarkingDefinitions?: readonly DefaultMarking[];
   knowledgeGraph?: boolean;
   containerStixCoreObjects?: ContainerStixCoreObjects;
@@ -421,7 +422,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
         onCreated={onCreatedFromPanel}
       />
     );
@@ -484,7 +485,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
           speeddial={true}
           open={openCreateObservable}
           handleClose={() => handleCloseCreateObservable()}

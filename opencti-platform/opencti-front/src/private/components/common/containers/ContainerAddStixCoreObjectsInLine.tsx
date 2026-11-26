@@ -11,6 +11,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { removeEmptyFields } from '../../../../utils/utils';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import type { DefaultValue } from '../../settings/sub_types/entity_setting/entitySetting';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
@@ -73,7 +74,7 @@ interface ContainerAddStixCoreObjectsInLineProps {
   onAdd?: (node: { id: string }) => void;
   onDelete?: (node: { id: string }) => void;
   confidence?: number;
-  defaultCreatedBy?: unknown;
+  defaultCreatedBy?: DefaultValue | null;
   defaultMarkingDefinitions?: readonly DefaultMarking[];
   selectedText?: string;
   enableReferences?: boolean | undefined;
@@ -223,7 +224,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         handleClose={() => setOpenCreateObservable(false)}
         type={undefined}
         defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
         onCreated={onCreated}
       />
     </CreationFeedbackContext.Provider>
