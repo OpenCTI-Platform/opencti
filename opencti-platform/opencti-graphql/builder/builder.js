@@ -8,6 +8,7 @@ import graphqlLoaderPluginPkg from '@luckycatfactory/esbuild-graphql-loader';
 import nativeNodePlugin from './plugin/native.node.plugin.js';
 import nodeGypBuildShimPlugin from './plugin/node-gyp-build-shim.plugin.js';
 import { generateEsmPlugin } from './plugin/generate-esm-plugin.js';
+import { BUILD_ENTRY_POINTS, BUILD_INJECTED_MODULES } from './entry-points.js';
 
 const { default: importGlobPlugin } = importGlobPluginPkg;
 const { default: graphqlLoaderPlugin } = graphqlLoaderPluginPkg;
@@ -23,14 +24,7 @@ const entryPoints = [];
 if (scriptName) {
   entryPoints.push(scriptName);
 } else {
-  entryPoints.push(...[
-    'src/back.ts',
-    'src/lock/child-lock.manager.ts',
-    'script/script-clean-relations.js',
-    'script/script-insert-dataset.js',
-    'src/utils/safeEjs.worker.ts',
-    'src/utils/jsonPath.worker.ts'
-  ]);
+  entryPoints.push(...BUILD_ENTRY_POINTS);
 }
 
 // safeEjs evaluates the ejs sources inside its sandbox; inline them so the bundle needs no node_modules.
@@ -63,6 +57,7 @@ await esbuild.build({
     }),
   ],
   entryPoints,
+  inject: BUILD_INJECTED_MODULES,
   entryNames: '[name]',
   bundle: true,
   platform: 'node',
