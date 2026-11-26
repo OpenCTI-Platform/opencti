@@ -30,6 +30,18 @@ const EETooltipComponent = ({ children, ...tooltipProps }: TooltipProps) => {
   );
 };
 
+const MessageDialog = ({ open, onClose, title, message }: { open: boolean; onClose: () => void; title: string; message: string }) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Dialog open={open} onClose={onClose} size="small" title={title}>
+      <DialogContent>{message}</DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>{t_i18n('Close')}</Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
 // Anything a keyboard user can reach with Tab
 const TABBABLE_SELECTOR = 'a[href], button, input, select, textarea, summary, iframe, [tabindex], [contenteditable="true"]';
 
@@ -132,19 +144,12 @@ const EETooltipBase = ({
         >
           {children}
         </EEGate>
-        <Dialog
+        <MessageDialog
           open={openConfigAI}
           onClose={() => setOpenConfigAI(false)}
-          size="small"
           title={t_i18n('Enable AI powered platform')}
-        >
-          <DialogContent>
-            {t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.')}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpenConfigAI(false)}>{t_i18n('Close')}</Button>
-          </DialogActions>
-        </Dialog>
+          message={t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. You can open a support ticket to do so.')}
+        />
       </>
     );
   }
@@ -164,19 +169,12 @@ const EETooltipBase = ({
           settingsId={settingsId}
         />
       ) : renderNonAdminRequest ? renderNonAdminRequest(requestOpen, () => setRequestOpen(false)) : (
-        <Dialog
+        <MessageDialog
           open={requestOpen}
           onClose={() => setRequestOpen(false)}
-          size="small"
           title={t_i18n('Enterprise Edition')}
-        >
-          <DialogContent>
-            {t_i18n('Please ask your administrator to enable the Enterprise Edition.')}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setRequestOpen(false)}>{t_i18n('Close')}</Button>
-          </DialogActions>
-        </Dialog>
+          message={t_i18n('Please ask your administrator to enable the Enterprise Edition.')}
+        />
       )}
     </>
   );
