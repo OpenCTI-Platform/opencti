@@ -1,6 +1,6 @@
 import type { Widget, WidgetHost, WidgetParameters, WidgetPerspective } from './widget';
 import { getCurrentCategory } from './widgetUtils';
-import { isDraftWorkspaceFilterGroup } from '../filters/filtersUtils';
+import { isDraftWorkspaceFilterGroup, isFilterOnKey } from '../filters/filtersUtils';
 import type { FilterGroup } from '../filters/filtersHelpers-types';
 import type { FilterDefinition } from '../hooks/useAuth';
 import { dayStartDate, daysAgo, monthsAgo, parse } from '../Time';
@@ -76,18 +76,22 @@ export const isBreakdownField = (value?: string | null): value is string => {
 /**
  * Types every element of the dataset belongs to, read from a top level "entity type = ..." filter,
  * or "relationship type = ..." for relationships. Empty when the filters do not restrict the type for sure.
+ * Same rule as the public dashboards (getBreakdownEntityTypes in opencti-graphql/src/modules/publicDashboard/publicDashboard-breakdown.ts).
  */
 export const getBreakdownEntityTypes = (filters?: FilterGroup | null, perspective: WidgetPerspective = 'entities'): string[] => {
   const typeFilterKey = getBreakdownPerspective(perspective)?.typeFilterKey;
   if (!filters || !typeFilterKey) return [];
-  const isRestrictingGroup = filters.mode === 'and' || filters.filters.length + filters.filterGroups.length === 1;
-  const typeFilter = filters.filters.find((filter) => filter.key === typeFilterKey);
+  // Stored filters can miss their lists, and hold the key as a list (older or imported widgets)
+  const topFilters = filters.filters ?? [];
+  const isRestrictingGroup = filters.mode === 'and' || topFilters.length + (filters.filterGroups?.length ?? 0) === 1;
+  const typeFilter = topFilters.find((filter) => isFilterOnKey(filter, typeFilterKey));
+  const typeValues = typeFilter?.values ?? [];
   // Several types in "and" only keep the elements of every type, while a single one restricts the type whatever the mode
-  const isTypeIntersection = typeFilter?.mode === 'and' && typeFilter.values.length > 1;
+  const isTypeIntersection = typeFilter?.mode === 'and' && typeValues.length > 1;
   if (!isRestrictingGroup || !typeFilter || (typeFilter.operator && typeFilter.operator !== 'eq') || isTypeIntersection) {
     return [];
   }
-  return typeFilter.values.filter((value): value is string => typeof value === 'string');
+  return typeValues.filter((value): value is string => typeof value === 'string');
 };
 
 /**

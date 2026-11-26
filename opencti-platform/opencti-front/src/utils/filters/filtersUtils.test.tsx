@@ -14,6 +14,7 @@ import {
   getEntityTypeThreeFirstLevelsFilterValues,
   getSelectedOptions,
   isDraftWorkspaceFilterGroup,
+  isFilterOnKey,
   isFilterGroupFormatCorrect,
   isFilterGroupNotEmpty,
   isRegardingOfFilterWarning,
@@ -35,7 +36,7 @@ import {
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import { expectNoFrontendIds } from '../tests/filtersTestHelpers';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
-import { FilterGroup } from './filtersHelpers-types';
+import { Filter, FilterGroup } from './filtersHelpers-types';
 import { FilterDefinition } from '../hooks/useAuth';
 
 describe('Filters utils', () => {
@@ -1590,6 +1591,25 @@ describe('isDraftWorkspaceFilterGroup', () => {
   it('should return true when entity_type value is an object with id property', () => {
     const filters: FilterGroup = { mode: 'and', filters: [{ key: 'entity_type', values: [{ id: 'DraftWorkspace' }] }], filterGroups: [] };
     expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+
+  it('should return true when the entity_type key is stored as a list', () => {
+    const filters = { mode: 'and', filters: [{ key: ['entity_type'], values: ['DraftWorkspace'] }], filterGroups: [] } as unknown as FilterGroup;
+    expect(isDraftWorkspaceFilterGroup(filters)).toBe(true);
+  });
+
+  it('should return false, without throwing, when the stored filters or values are missing', () => {
+    expect(isDraftWorkspaceFilterGroup({ mode: 'and', filterGroups: [] } as unknown as FilterGroup)).toBe(false);
+    expect(isDraftWorkspaceFilterGroup({ mode: 'and', filters: [{ key: 'entity_type' }], filterGroups: [] } as unknown as FilterGroup)).toBe(false);
+  });
+});
+
+describe('isFilterOnKey', () => {
+  it('should read a key stored as a string or as a list', () => {
+    expect(isFilterOnKey({ key: 'entity_type', values: [] }, 'entity_type')).toBe(true);
+    expect(isFilterOnKey({ key: ['entity_type'], values: [] } as unknown as Filter, 'entity_type')).toBe(true);
+    expect(isFilterOnKey({ key: ['objectLabel'], values: [] } as unknown as Filter, 'entity_type')).toBe(false);
+    expect(isFilterOnKey({ key: 'objectLabel', values: [] }, 'entity_type')).toBe(false);
   });
 });
 

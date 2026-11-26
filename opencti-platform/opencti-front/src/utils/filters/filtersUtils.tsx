@@ -321,11 +321,23 @@ export const getStixFiltersDisplayedKeys = (availableFilterKeys: string[], filte
   return unavailableCustomFieldKeys.size > 0 ? [...availableFilterKeys, ...unavailableCustomFieldKeys] : availableFilterKeys;
 };
 
+/**
+ * Whether the filter is on the key: a stored filter can hold its key as a list, as the API types it
+ * (older or imported widgets), the same key.
+ */
+export const isFilterOnKey = (filter: Filter, key: string): boolean => {
+  return ([filter.key] as (string | string[])[]).flat().includes(key);
+};
+
+/**
+ * Whether the top level type filter of the group only selects draft workspaces, its values being strings or
+ * { id, value } objects. Stored filters can miss their lists (older or imported widgets): they hold none.
+ */
 export const isDraftWorkspaceFilterGroup = (filters: FilterGroup | null | undefined): boolean => {
-  if (!filters) return false;
-  const entityTypeFilter = filters.filters.find((f) => f.key === 'entity_type');
-  if (!entityTypeFilter || entityTypeFilter.values.length === 0) return false;
-  return entityTypeFilter.values.every((v) => {
+  const entityTypeFilter = (filters?.filters ?? []).find((f) => isFilterOnKey(f, 'entity_type'));
+  const values = entityTypeFilter?.values ?? [];
+  if (values.length === 0) return false;
+  return values.every((v) => {
     const val = typeof v === 'string' ? v : (v?.value ?? v?.id);
     return val === 'DraftWorkspace';
   });
@@ -776,10 +788,12 @@ export const normalizeFilterGroupForFrontend = (
     id: (filterGroup as unknown as FilterGroup)?.id ?? uuid(),
     filters: filterGroup?.filters?.map((f) => {
       const key = Array.isArray(f.key) ? f.key[0] : f.key;
+      // A stored filter can miss its values (older or imported widgets): it holds none
+      const storedValues = f.values ?? [];
       // build values
       let values: FilterValue[];
       if (key === 'dynamicRegardingOf') { // add id in dynamic regarding of subfilter for React rendering purposes
-        values = f.values.map((dynamicRegardingOfValue) => {
+        values = storedValues.map((dynamicRegardingOfValue) => {
           if (dynamicRegardingOfValue.key === 'dynamic') { // values with 'dynamic' key contains filters
             return {
               ...dynamicRegardingOfValue,
@@ -790,9 +804,9 @@ export const normalizeFilterGroupForFrontend = (
           }
         });
       } else if (isStandaloneDynamicKey(key)) { // the value IS the nested filter group
-        values = f.values.map((nestedGroup: GqlFilterGroup) => normalizeFilterGroupForFrontend(nestedGroup));
+        values = storedValues.map((nestedGroup: GqlFilterGroup) => normalizeFilterGroupForFrontend(nestedGroup));
       } else {
-        values = f.values.map((v) => v || 'todo: delete this');
+        values = storedValues.map((v) => v || 'todo: delete this');
       }
       // return the filter with normalized key and values, and add an id
       return {
