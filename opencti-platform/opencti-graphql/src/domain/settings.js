@@ -320,9 +320,16 @@ const buildAuthorizedSettingsKeys = (user) => {
 const PLATFORM_BOOTSTRAP_STATUS_KEY = 'platform_bootstrap_status';
 const PLATFORM_BOOTSTRAP_STATUSES = ['pending', 'completed'];
 
+// Only the XTM Hub enrollment writes them, whatever the capabilities of the caller:
+// another version would sign with a key XTM Hub does not hold
+const XTM_HUB_KEY_SETTINGS_KEYS = ['xtm_hub_key_version', 'xtm_hub_key_enrolled_at'];
+
 export const settingsEditField = async (context, user, settingsId, input) => {
   if (input.some((i) => i.key === PLATFORM_BOOTSTRAP_STATUS_KEY)) {
     throw ForbiddenAccess('The platform bootstrap status cannot be edited');
+  }
+  if (input.some((i) => XTM_HUB_KEY_SETTINGS_KEYS.includes(i.key))) {
+    throw ForbiddenAccess('The XTM Hub key settings cannot be edited');
   }
   // Only updateLocalAuth writes it: it checks the bounds and removes the hashes no longer needed
   if (input.some((i) => i.key === 'password_policy_history_count')) {
