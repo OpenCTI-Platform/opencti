@@ -3,13 +3,11 @@ import { Add } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
 import { FunctionComponent, Suspense, useRef, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
-import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { removeEmptyFields } from '../../../../utils/utils';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
@@ -61,53 +59,6 @@ type scoEdge = {
   node: {
     id: string;
   };
-};
-
-interface ContainerAddStixCreObjectsInLineLoaderProps {
-  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>;
-  containerId: string;
-  buildColumns: () => DataColumns;
-  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
-  knowledgeGraph?: boolean;
-  selectedElements: unknown[];
-  handleSelect: (o: { id: string }) => void;
-  handleDeselect: (o: { id: string }) => void;
-  helpers: PaginationLocalStorage['helpers'];
-  containerRef: HTMLDivElement;
-  enableReferences?: boolean;
-}
-
-const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
-  queryRef,
-  containerId,
-  buildColumns,
-  linesPaginationOptions,
-  knowledgeGraph,
-  selectedElements,
-  handleSelect,
-  handleDeselect,
-  helpers,
-  containerRef,
-  enableReferences,
-}) => {
-  const data = usePreloadedQuery(containerAddStixCoreObjectsLinesQuery, queryRef);
-  return (
-    <ContainerAddStixCoreObjectsLines
-      data={data}
-      containerId={containerId}
-      paginationOptions={linesPaginationOptions}
-      dataColumns={buildColumns()}
-      initialLoading={data === null}
-      knowledgeGraph={knowledgeGraph}
-      containerStixCoreObjects={selectedElements}
-      onAdd={handleSelect}
-      onDelete={handleDeselect}
-      setNumberOfElements={helpers.handleSetNumberOfElements}
-      containerRef={{ current: containerRef }}
-      enableReferences={enableReferences}
-      onLabelClick={helpers.handleAddFilter}
-    />
-  );
 };
 
 interface ContainerAddStixCoreObjectsInLineProps {
@@ -342,18 +293,18 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         >
           {(containerRef && queryRef) && (
             <Suspense>
-              <ContainerAddStixCreObjectsInLineLoader
+              <ContainerAddStixCoreObjectsLines
                 queryRef={queryRef}
                 containerId={containerId}
-                buildColumns={buildColumns}
-                linesPaginationOptions={linesPaginationOptions}
+                paginationOptions={linesPaginationOptions}
+                dataColumns={buildColumns()}
                 knowledgeGraph={knowledgeGraph}
-                selectedElements={selectedElements}
-                handleSelect={handleSelect}
-                handleDeselect={handleDeselect}
-                helpers={helpers}
-                containerRef={containerRef}
+                containerStixCoreObjects={selectedElements}
+                onAdd={handleSelect}
+                onDelete={handleDeselect}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
                 enableReferences={enableReferences}
+                onLabelClick={helpers.handleAddFilter}
               />
             </Suspense>
           )}
