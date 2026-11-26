@@ -6,8 +6,9 @@ import { XtmMark } from '../../common/xtm/counterpart/core/XtmMark';
 import { useFormatter } from '../../../../components/i18n';
 import { useState } from 'react';
 import Drawer from '../../common/drawer/Drawer';
-import { Stack, Typography } from '@mui/material';
+import { List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { OpenInNewOutlined } from '@mui/icons-material';
+import { distinctOpenAEVLinks } from './openAEVLinks';
 
 const fragment = graphql`
   fragment GoToOpenAEVDrawerFragment on SecurityCoverage {
@@ -23,20 +24,32 @@ interface GoToOpenAEVDrawerProps {
   data: GoToOpenAEVDrawerFragment$key;
 }
 
+// OpenAEV is a connected XTM product: its link opens in a new tab, like the XTM emblem's "Open in" buttons.
 const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const { results } = useFragment(fragment, data);
-  const instances = (results ?? []).filter((r) => !!r.external_uri);
+  const links = distinctOpenAEVLinks(results);
 
-  const handleBrowseLink = (externalUri: string) => {
-    window.open(externalUri, '_blank');
-    setOpen(false);
-  };
-
-  if (instances.length === 0) {
+  if (links.length === 0) {
     return null;
+  }
+
+  if (links.length === 1) {
+    return (
+      <Button
+        startIcon={<XtmMark src={openAevMark} />}
+        href={links[0].url}
+        target="_blank"
+        rel="noopener noreferrer"
+        variant="tertiary"
+        size="small"
+        sx={{ mt: 2 }}
+      >
+        {t_i18n('Go to OpenAEV')}
+      </Button>
+    );
   }
 
   return (
@@ -56,22 +69,25 @@ const GoToOpenAEVDrawer = ({ data }: GoToOpenAEVDrawerProps) => {
         onClose={() => setOpen(false)}
         title={t_i18n('Select the OpenAEV instance')}
       >
-        <Stack spacing={2}>
-          {instances.map((instance) => (
-            <Stack direction="row" key={instance.external_uri}>
-              <div style={{ flex: 1 }}>
-                <Typography>{instance.name}</Typography>
-                <Typography variant="body2">{instance.external_uri}</Typography>
-              </div>
-              <Button
-                onClick={() => handleBrowseLink(instance.external_uri!)}
-                startIcon={<OpenInNewOutlined fontSize="small" />}
-              >
-                {t_i18n('Browse the link')}
-              </Button>
-            </Stack>
+        <List disablePadding>
+          {links.map((link) => (
+            <ListItemButton
+              key={link.url}
+              component="a"
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={link.url}
+              divider
+              onClick={() => setOpen(false)}
+            >
+              <ListItemText primary={link.label} secondary={link.label === link.host ? undefined : link.host} />
+              <ListItemIcon sx={{ minWidth: 0, ml: 2 }}>
+                <OpenInNewOutlined fontSize="small" />
+              </ListItemIcon>
+            </ListItemButton>
           ))}
-        </Stack>
+        </List>
       </Drawer>
     </>
   );
