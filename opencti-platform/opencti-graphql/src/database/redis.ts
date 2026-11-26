@@ -997,6 +997,13 @@ export const redisReleaseLocalAuthAttempt = async (emailHash: string, attempt: {
   await getClientBase().eval(LOCAL_AUTH_LOCKOUT_RELEASE_SCRIPT, 2, keys.failures, keys.lock, attempt.attemptToken, attempt.windowId);
 };
 
+// Whether the lock is still the one this attempt set: an accepted login or an administrator deletes it,
+// and a later attempt can set another one once it is lifted
+export const redisHoldsLocalAuthLock = async (emailHash: string, attemptToken: string) => {
+  const lock = await getClientBase().get(localAuthLockoutKeys(emailHash).lock);
+  return !!lock && lock.endsWith(`:${attemptToken}`);
+};
+
 export const redisClearLocalAuthLockout = async (emailHash: string) => {
   const keys = localAuthLockoutKeys(emailHash);
   await getClientBase().del(keys.failures, keys.lock, keys.emailed);

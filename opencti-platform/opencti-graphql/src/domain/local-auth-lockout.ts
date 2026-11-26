@@ -8,7 +8,14 @@ import { v4 as uuid } from 'uuid';
 import { ACCOUNT_STATUSES, ENABLED_DEMO_MODE, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
+import {
+  type LocalAuthLockoutTimings,
+  type LocalAuthLockType,
+  redisClearLocalAuthLockout,
+  redisHoldsLocalAuthLock,
+  redisRecordLocalAuthAttempt,
+  redisReleaseLocalAuthAttempt,
+} from '../database/redis';
 import { LocalAuthLockoutFinalAction } from '../generated/graphql';
 import { publishUserAction, type UserLockSource } from '../listener/UserActionListener';
 import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from './local-auth-lockout-defaults';
@@ -166,7 +173,8 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
     // (below, the usual authentication failure). The attempt that reaches them publishes the lock in the activity,
     // and emails the administrators when the account exists.
     // If the check succeeds, release undoes this attempt only: its failure in its own window, and its lock,
-    // but never the failures of a later window nor the lock of a concurrent failure
+    // but never the failures of a later window nor the lock of a concurrent failure.
+    // holdsLock tells whether the lock set by this attempt is still there, for a failure settled later
     recordAttempt: async () => {
       const attemptToken = uuid();
       const { allowed, remainingMs, lockType, isFinal, windowId } = await redisRecordLocalAuthAttempt(emailHash, timings, attemptToken);
@@ -189,6 +197,7 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
           return LocalAuthLocked(lockType, remainingMs);
         },
         release: () => redisReleaseLocalAuthAttempt(emailHash, { attemptToken, windowId }),
+        holdsLock: () => redisHoldsLocalAuthLock(emailHash, attemptToken),
       };
     },
   };

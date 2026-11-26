@@ -2117,10 +2117,19 @@ export const login = async (
   const isPasswordChecked = !!user && !!dbPassword && !(lockout && isAccountDisabled(user));
   if (!user || !dbPassword || !isPasswordChecked || !bcrypt.compareSync(password, dbPassword)) {
     const settle = async () => {
-      if (user && attempt?.locksAccount) {
-        await lockAccountAfterFailedAttempts(user);
+      if (!attempt) {
+        return AuthenticationFailure();
       }
-      return attempt ? attempt.reject({ source, ip: sourceIp }) : AuthenticationFailure();
+      // A deferred failure is settled once the other providers answered: a login accepted or an administrator reset
+      // may have deleted its lock meanwhile, which must not come back. Without its lock (also below the max attempts),
+      // it is a usual failure. The account may also have become external (LDAP login), so it is reloaded before being locked
+      if (deferFailure && !(await attempt.holdsLock())) {
+        return AuthenticationFailure();
+      }
+      if (user && attempt.locksAccount) {
+        await lockAccountAfterFailedAttempts(deferFailure ? (await getUserByEmail(email)) ?? user : user);
+      }
+      return attempt.reject({ source, ip: sourceIp });
     };
     // The attempt is already counted, so that parallel guesses stay capped: only its consequences wait
     if (deferFailure && attempt) {
