@@ -4,6 +4,7 @@ import { MockPayloadGenerator } from 'relay-test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import XtmHubSettings from './XtmHubSettings';
+import { MESSAGING$ } from '../../../../relay/environment';
 
 // Loader has no accessible markup: expose each variant so the tests can tell
 // the card-level spinner from the page-level one.
@@ -69,6 +70,33 @@ describe('XtmHubSettings', () => {
     expect(screen.queryByTestId('loader-inElement')).not.toBeInTheDocument();
     expect(screen.queryByTestId('page-loader')).not.toBeInTheDocument();
     expect(screen.getByTestId('enterprise-edition-card')).toBeVisible();
+  });
+
+  it('shows an error and the last known settings when the connectivity check fails', async () => {
+    const notifyErrorSpy = vi.spyOn(MESSAGING$, 'notifyError').mockImplementation(() => {});
+    const { relayEnv } = renderExperienceLikePage();
+
+    // 1. The connectivity check fails: the card must not keep its spinner forever.
+    expect(relayEnv.mock.getMostRecentOperation().fragment.node.name).toBe('XtmHubSettingsCheckConnectivityMutation');
+    await act(async () => {
+      relayEnv.mock.rejectMostRecentOperation(new Error('Connectivity check failed'));
+    });
+    expect(notifyErrorSpy).toHaveBeenCalledWith('Unable to check XTM Hub connectivity. Please try again later.');
+
+    // 2. The card still loads its settings and shows them.
+    expect(relayEnv.mock.getMostRecentOperation().fragment.node.name).toBe('XtmHubSettingsQuery');
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Settings: () => ({
+          id: 'settings-id',
+          xtm_hub_registration_status: 'unregistered',
+          xtm_hub_backend_is_reachable: true,
+        }),
+      }));
+    });
+    expect(await screen.findByTestId('experience-xtm-hub-card')).toBeInTheDocument();
+    expect(screen.queryByTestId('loader-inElement')).not.toBeInTheDocument();
+    notifyErrorSpy.mockRestore();
   });
 
   describe('workspace', () => {
