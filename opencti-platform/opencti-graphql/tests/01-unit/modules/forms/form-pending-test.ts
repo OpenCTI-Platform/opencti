@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Readable } from 'stream';
 import '../../../../src/modules/index'; // registers the entity types and their attributes
+import { registerModules } from '../../../../src/composition-root';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import {
   countPooledCopies,
@@ -26,6 +27,8 @@ import { resolveMainEntityAuthorFromValues } from '../../../../src/modules/form/
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1-extensions';
 import type { FormSchemaDefinition } from '../../../../src/modules/form/form-types';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+
+registerModules();
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
   internalLoadById: vi.fn(),
