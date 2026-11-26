@@ -46,6 +46,7 @@ const configPresetPartialImportPreviewMutation = graphql`
           label
           translatable
           isDefault
+          existsAsDefault
           exists
           conflict
           serviceAccountRequired

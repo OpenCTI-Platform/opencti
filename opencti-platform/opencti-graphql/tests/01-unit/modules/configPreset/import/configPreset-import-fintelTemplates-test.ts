@@ -41,7 +41,7 @@ describe('Fintel templates import (registry)', () => {
   });
 
   it('computes the item with a dry run of the module, named with its entity type and marked as the default it is, the names of the preview reserved', async () => {
-    vi.mocked(importFintelTemplate).mockResolvedValue({ status: 'overwritten', exists: true });
+    vi.mocked(importFintelTemplate).mockResolvedValue({ status: 'overwritten', exists: true, existsAsDefault: true });
     const plan = previewPlan();
     const computed = await family.importer!.compute(context, user, item(configuration), plan, ConfigImportMode.Overwrite);
     expect(importFintelTemplate).toHaveBeenCalledWith(context, user, configuration, {
@@ -50,7 +50,7 @@ describe('Fintel templates import (registry)', () => {
       reservedNames: plan.fintelTemplateNames,
       renamedIds: plan.renamedFintelTemplateIds,
     });
-    expect(computed).toMatchObject({ label: 'Executive Summary (Report)', translatable: false, isDefault: true, status: 'overwritten', exists: true, conflict: true });
+    expect(computed).toMatchObject({ label: 'Executive Summary (Report)', translatable: false, isDefault: true, existsAsDefault: true, status: 'overwritten', exists: true, conflict: true });
   });
 
   it('reserves nothing during a real import: an item that fails leaves no name to the next ones, which read the platform', async () => {

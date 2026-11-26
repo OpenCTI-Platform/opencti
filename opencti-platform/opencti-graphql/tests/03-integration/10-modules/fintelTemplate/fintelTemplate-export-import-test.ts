@@ -38,7 +38,7 @@ const PARTIAL_PREVIEW_MUTATION = gql`
   mutation FintelTemplatePartialPreview($file: Upload!, $type: ID!, $scope: String) {
     configPresetPartialImportPreview(file: $file, type: $type, scope: $scope) {
       default_mode
-      type { key items { key label exists conflict isDefault } }
+      type { key items { key label exists existsAsDefault conflict isDefault } }
     }
   }
 `;
@@ -375,7 +375,7 @@ describe('Fintel templates: partial import from the page of an entity type', () 
     const reports = await preview('Report');
     expect(reports.data?.configPresetPartialImportPreview).toMatchObject({
       default_mode: 'COPY',
-      type: { key: 'fintelTemplates', items: [{ key: REPORT_ID, label: `${PARTIAL_REPORT} (Report)`, exists: false, conflict: false, isDefault: true }] },
+      type: { key: 'fintelTemplates', items: [{ key: REPORT_ID, label: `${PARTIAL_REPORT} (Report)`, exists: false, existsAsDefault: false, conflict: false, isDefault: true }] },
     });
   });
 
@@ -391,7 +391,8 @@ describe('Fintel templates: partial import from the page of an entity type', () 
 
   it('adds a copy of a template that already exists by default, as a partial import adds to the platform', async () => {
     const reports = await preview('Report');
-    expect(reports.data?.configPresetPartialImportPreview.type.items).toEqual([expect.objectContaining({ key: REPORT_ID, exists: true, conflict: true })]);
+    // Imported as the default of the reports by the previous import: the preview knows it is already the default here
+    expect(reports.data?.configPresetPartialImportPreview.type.items).toEqual([expect.objectContaining({ key: REPORT_ID, exists: true, existsAsDefault: true, conflict: true })]);
     const { data } = await partialImport([REPORT_ID], 'Report');
     expect(data?.configPresetPartialImport.results).toEqual([expect.objectContaining({ status: 'CREATED', reason: `Added as "${PARTIAL_REPORT} (1)"` })]);
     expect(await loadTemplate(`${PARTIAL_REPORT} (1)`)).toMatchObject({ default: false });

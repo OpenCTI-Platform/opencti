@@ -51,6 +51,8 @@ export interface ConfigPresetComputedItem {
   translatable: boolean;
   // Whether the item already exists on the platform
   exists: boolean;
+  // Whether the item already exists on the platform as its default (or the default of its entity type)
+  existsAsDefault?: boolean;
   // Whether the item conflicts with one of the platform (it exists, or another one has its name): the user chooses what to do with it
   conflict: boolean;
   // The values the preview shows of the item, when it shows some

@@ -74,6 +74,9 @@ type ConfigPresetImportItem {
     isDefault: Boolean!
     # The item already exists on the platform.
     exists: Boolean!
+    # The item already exists on the platform and is already its default (or the default of its entity type): importing it as the default changes
+    # nothing of the default. False for a type whose items have no default.
+    existsAsDefault: Boolean!
     # The item conflicts with one of the platform: it exists, or another one has its name. The dialog offers a choice of what to do with it.
     conflict: Boolean!
     fields: [ConfigPresetImportField!]!

@@ -92,20 +92,26 @@ describe('ConfigPresetPartialImport', () => {
           modes: ['OVERWRITE', 'COPY'],
           items: [
             // The default template of another platform: it does not exist here, a copy of it is the template itself
-            { key: 'finteltemplate--a', label: 'Executive Summary (Report)', translatable: false, isDefault: true, exists: false, conflict: false, ...noAccount },
-            { key: 'finteltemplate--b', label: 'Brief (Report)', translatable: false, isDefault: true, exists: true, conflict: true, ...noAccount },
-            { key: 'finteltemplate--c', label: 'Other (Report)', translatable: false, isDefault: false, exists: false, conflict: false, ...noAccount },
+            { key: 'finteltemplate--a', label: 'Executive Summary (Report)', translatable: false, isDefault: true, existsAsDefault: false, exists: false, conflict: false, ...noAccount },
+            { key: 'finteltemplate--b', label: 'Brief (Report)', translatable: false, isDefault: true, existsAsDefault: false, exists: true, conflict: true, ...noAccount },
+            { key: 'finteltemplate--c', label: 'Other (Report)', translatable: false, isDefault: false, existsAsDefault: false, exists: false, conflict: false, ...noAccount },
+            // The same bundle imported again: this one is already the default here
+            { key: 'finteltemplate--d', label: 'Same (Report)', translatable: false, isDefault: true, exists: true, existsAsDefault: true, conflict: true, ...noAccount },
           ],
         },
       }),
     });
     const becomes = 'Becomes the default FINTEL template of its entity type.';
     expect(screen.getByText(becomes)).toBeInTheDocument();
-    // The existing one is added as a copy by default: the entity type keeps its own default
-    expect(screen.getByText('Already exists · The entity type keeps its current default FINTEL template.')).toBeInTheDocument();
+    // The existing ones are added as a copy by default: the entity type keeps its own default
+    expect(screen.getAllByText('Already exists · The entity type keeps its current default FINTEL template.')).toHaveLength(2);
     await rendered.user.click(screen.getByRole('combobox', { name: 'Brief (Report): When it already exists' }));
     await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
     expect(screen.getByText(`Already exists · ${becomes}`)).toBeInTheDocument();
+    // Overwriting the template that already is the default says nothing of the default: it does not change
+    await rendered.user.click(screen.getByRole('combobox', { name: 'Same (Report): When it already exists' }));
+    await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+    expect(screen.getAllByText(`Already exists · ${becomes}`)).toHaveLength(1);
     // An item that is not imported changes nothing
     await rendered.user.click(screen.getByRole('checkbox', { name: 'Executive Summary (Report)' }));
     expect(screen.queryByText(becomes)).not.toBeInTheDocument();

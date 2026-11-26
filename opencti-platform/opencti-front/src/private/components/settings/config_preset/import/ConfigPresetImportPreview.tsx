@@ -72,6 +72,7 @@ const configPresetImportPreviewQuery = graphql`
           label
           translatable
           isDefault
+          existsAsDefault
           exists
           conflict
           isEnabled
@@ -494,7 +495,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             hasChoice,
             mode: importModes[configImportModeKey(type.key, item.key)],
           });
-          const shownDefaultNote = defaultNote?.kind === 'becomes' && (result?.code === CODE_UNCHANGED || result?.status === 'FAILED') ? undefined : defaultNote;
+          // A default the import does not write is not said: the item is skipped or fails. Without expected results yet, the note says what the import would do
+          const isWritten = !result || result.status === 'CREATED' || result.status === 'OVERWRITTEN';
+          const shownDefaultNote = defaultNote?.kind === 'becomes' && !isWritten ? undefined : defaultNote;
           const shownResult = result && isResultShown(result, hasChoice) ? result : null;
           // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
           const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);

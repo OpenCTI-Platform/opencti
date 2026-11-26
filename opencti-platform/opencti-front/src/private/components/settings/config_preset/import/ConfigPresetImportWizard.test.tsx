@@ -36,6 +36,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   translatable: true,
   isDefault: false,
   exists: true,
+  existsAsDefault: false,
   conflict: false,
   fields: [],
   credentials: [],
@@ -1359,6 +1360,28 @@ describe('ConfigPresetImportWizard', () => {
       await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
       expect(screen.queryByText(becomesDesign)).not.toBeInTheDocument();
       expect(screen.getByText('The platform keeps its current default fintel design.')).toBeInTheDocument();
+    });
+
+    it('says nothing of the default for a default item that already is the default here, though other values of it change', async () => {
+      const alreadyDefault = {
+        ...preview,
+        types: [...preview.types, previewType('fintelTemplates', 'Fintel templates', [
+          previewItem('finteltemplate--1', 'Executive Summary (Report)', { translatable: false, exists: true, existsAsDefault: true, conflict: true, isDefault: true }),
+        ], ['OVERWRITE', 'COPY'])],
+      };
+      await renderPreview(session(), [{ type: 'fintelTemplates', key: 'finteltemplate--1', status: 'OVERWRITTEN', reason: null }], alreadyDefault);
+      expect(screen.queryByText('Becomes the default FINTEL template of its entity type.')).not.toBeInTheDocument();
+    });
+
+    it('says nothing of the default for a default item the import skips, whatever the reason', async () => {
+      const withDefaultTemplate = {
+        ...preview,
+        types: [...preview.types, previewType('fintelTemplates', 'Fintel templates', [
+          previewItem('finteltemplate--1', 'Executive Summary (Report)', { translatable: false, exists: false, conflict: false, isDefault: true }),
+        ], ['OVERWRITE', 'COPY'])],
+      };
+      await renderPreview(session(), [{ type: 'fintelTemplates', key: 'finteltemplate--1', status: 'SKIPPED', reason: 'Requires Enterprise Edition', code: null }], withDefaultTemplate);
+      expect(screen.queryByText('Becomes the default FINTEL template of its entity type.')).not.toBeInTheDocument();
     });
 
     it('says nothing of the default for a default item the platform already has as it is', async () => {

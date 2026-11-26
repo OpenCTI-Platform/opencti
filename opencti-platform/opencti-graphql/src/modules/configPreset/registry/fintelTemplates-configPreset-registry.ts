@@ -55,7 +55,7 @@ const fintelTemplatesImporter: ConfigPresetImporter = {
       reservedNames: plan.fintelTemplateNames,
       renamedIds: plan.renamedFintelTemplateIds,
     });
-    return { ...toComputedItem(label, result), isDefault };
+    return { ...toComputedItem(label, result), isDefault, existsAsDefault: result.existsAsDefault };
   },
   apply: async (context, user, item, computed, mode) => toAppliedItem(await importFintelTemplate(context, user, item.configuration, { mode }), computed),
 };

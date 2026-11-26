@@ -216,6 +216,7 @@ export const buildConfigPresetImportTypes = (
         // The default theme is the one the platform item points to; any other default is said by the item itself
         isDefault: computed.isDefault ?? (family.id === 'branding' && defaultThemeId?.standard_id === item.id),
         exists: computed.exists,
+        existsAsDefault: computed.existsAsDefault ?? false,
         conflict: computed.conflict,
         fields: computed.fields ?? [],
         isEnabled: computed.isEnabled ?? null,

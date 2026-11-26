@@ -243,6 +243,15 @@ describe('Fintel template import', () => {
     expect(addFintelTemplate).not.toHaveBeenCalled();
   });
 
+  it('says whether the template already is the default of its entity type here, whatever the import does', async () => {
+    expect(await importFintelTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'created', existsAsDefault: false });
+    withExisting(reportFintelTemplate);
+    expect(await importFintelTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'skipped', existsAsDefault: true });
+    expect(await importFintelTemplate(context, user, configuration, copy)).toMatchObject({ status: 'created', existsAsDefault: true });
+    withExisting({ ...reportFintelTemplate, default: false } as BasicStoreEntityFintelTemplate);
+    expect(await importFintelTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'overwritten', existsAsDefault: false });
+  });
+
   it('refuses a template that exists when it is added', async () => {
     withExisting(reportFintelTemplate);
     expect(await importFintelTemplate(context, user, configuration, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });

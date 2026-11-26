@@ -37,6 +37,8 @@ export interface FintelTemplateImportOptions extends ConfigImportOptions {
 export type FintelTemplateImportResult = ConfigImportResult<FintelTemplateImportConfiguration, FintelTemplateImportCode> & {
   // The name of a copy: the one of the configuration, or the free one it takes when the template exists
   copyName?: string;
+  // The template exists here and is already the default of its entity type: importing it as the default changes nothing of the default
+  existsAsDefault?: boolean;
 };
 
 const refused = configImportRefusal<FintelTemplateImportConfiguration, FintelTemplateImportCode>;
@@ -166,32 +168,15 @@ const createFintelTemplate = (
   }, true);
 };
 
-// The one place where a fintel template is imported from a configuration bundle: validates, finds the template by its standard id and writes it.
-// A refusal is a result, not an error. A dry run decides the same result and writes nothing.
-// add: the template must not exist yet. overwrite: the template with the same standard id is patched, else it is created, whatever the names
-// of the other templates (two templates can have the same name). copy: the template is created, under a free name of its entity type and a new
-// standard id when its own exists.
-// The default template of its entity type in the bundle becomes the default of that type, unless it is added as a copy of a template that exists,
-// which is another template: as in the UI, the domain then takes the default away from the previous one, so the type keeps exactly one.
-// The ids of the filters of the widgets are converted to this platform's: a reference it does not have is kept as it is, as the file import does.
-export const importFintelTemplate = async (
+// The import of a template once it is valid and its template on this platform, if any, is read
+const importLoadedFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
-  configuration: unknown,
+  data: FintelTemplateImportConfiguration,
+  existing: BasicStoreEntityFintelTemplate | undefined,
   options: FintelTemplateImportOptions,
 ): Promise<FintelTemplateImportResult> => {
   const { mode, dryRun = false, reservedNames, renamedIds } = options;
-  const parsed = fintelTemplateImportSchema.safeParse(configuration);
-  if (!parsed.success) {
-    return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
-  }
-  const { data } = parsed;
-  // The entity types of a platform are not the ones of another (a newer version), and a bundle can be edited: a template of a type that has no
-  // FINTEL templates would be shown nowhere. The item fails, the others go on
-  if (!isFintelTemplateAvailableForEntityType(data.settings_types[0])) {
-    return refused('failed', 'entity_type', 'FINTEL templates are not available for this entity type', false, data);
-  }
-  const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, data.standard_id, ENTITY_TYPE_FINTEL_TEMPLATE);
   if (existing && mode === ConfigImportMode.Add) {
     return refused('failed', 'exists', 'Fintel template already exists', true, data);
   }
@@ -253,4 +238,34 @@ export const importFintelTemplate = async (
     await fintelTemplateEditField(context, user, existing.id, patch);
   }
   return { status: 'overwritten', exists: true, configuration: data };
+};
+
+// The one place where a fintel template is imported from a configuration bundle: validates, finds the template by its standard id and writes it.
+// A refusal is a result, not an error. A dry run decides the same result and writes nothing.
+// add: the template must not exist yet. overwrite: the template with the same standard id is patched, else it is created, whatever the names
+// of the other templates (two templates can have the same name). copy: the template is created, under a free name of its entity type and a new
+// standard id when its own exists.
+// The default template of its entity type in the bundle becomes the default of that type, unless it is added as a copy of a template that exists,
+// which is another template: as in the UI, the domain then takes the default away from the previous one, so the type keeps exactly one.
+// The ids of the filters of the widgets are converted to this platform's: a reference it does not have is kept as it is, as the file import does.
+export const importFintelTemplate = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: unknown,
+  options: FintelTemplateImportOptions,
+): Promise<FintelTemplateImportResult> => {
+  const parsed = fintelTemplateImportSchema.safeParse(configuration);
+  if (!parsed.success) {
+    return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
+  }
+  const { data } = parsed;
+  // The entity types of a platform are not the ones of another (a newer version), and a bundle can be edited: a template of a type that has no
+  // FINTEL templates would be shown nowhere. The item fails, the others go on
+  if (!isFintelTemplateAvailableForEntityType(data.settings_types[0])) {
+    return refused('failed', 'entity_type', 'FINTEL templates are not available for this entity type', false, data);
+  }
+  const existing = await storeLoadById<BasicStoreEntityFintelTemplate>(context, user, data.standard_id, ENTITY_TYPE_FINTEL_TEMPLATE);
+  const result = await importLoadedFintelTemplate(context, user, data, existing, options);
+  // Whether the template is already the default of its entity type here: a preview says nothing of a default the import does not change
+  return { ...result, existsAsDefault: existing?.default === true };
 };
