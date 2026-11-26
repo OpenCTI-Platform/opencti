@@ -111,6 +111,10 @@ export const throwIfConfigPresetRequestAborted = (context: AuthContext) => {
   }
 };
 
+// The context of what several requests share (the zip read for the snapshot, the index of a file): it is not tied to the request that started it.
+// A request that goes away (the browser cancelled it) must not make the request that joined the same read fail with it.
+export const detachConfigPresetImportContext = (context: AuthContext): AuthContext => ({ ...context, requestAbortSignal: undefined });
+
 export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {
   if (!isUserHasCapability(user, BYPASS)) {
     throw ForbiddenAccess();

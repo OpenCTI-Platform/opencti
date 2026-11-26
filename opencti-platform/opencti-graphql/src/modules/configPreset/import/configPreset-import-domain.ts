@@ -16,6 +16,7 @@ import {
   configPresetImportMode,
   getConfigPresetFamilyModes,
   getConfigPresetPlatformId,
+  detachConfigPresetImportContext,
   throwIfConfigPresetRequestAborted,
 } from './configPreset-import-utils';
 import { applyConfigPresetImportEvent, checkConfigPresetImportNotApplying } from './configPreset-import-session-domain';
@@ -142,7 +143,10 @@ export const readConfigPresetImportBundle = async (
   if (fresh) {
     return readConfigPresetBundle(await openZip());
   }
-  const snapshot = await getConfigPresetImportSnapshot(user.id, fileId, async () => createConfigPresetBundleSnapshot(await openZip()));
+  // The snapshot is shared by the requests that ask for it while it is read: its read is not the one of the first of them, which can be
+  // cancelled (and is, when the dialog closes) while another one waits for it
+  const readZip = () => loadConfigPresetImportZip(detachConfigPresetImportContext(context), user, fileId);
+  const snapshot = await getConfigPresetImportSnapshot(user.id, fileId, async () => createConfigPresetBundleSnapshot(await readZip()));
   return restoreConfigPresetBundle(snapshot, openZip);
 };
 
@@ -358,8 +362,10 @@ const loadConfigPresetImportIndex = (context: AuthContext, user: AuthUser, fileI
   if (kept) {
     return kept;
   }
-  // Reading the bundle creates the entry the index is kept in
-  const computing = readConfigPresetImportBundle(context, user, fileId).then(async (bundle) => (await computeConfigPresetImportPreviewTypes(context, user, bundle)).index);
+  // Reading the bundle creates the entry the index is kept in. The index is shared by the pages that ask for it: it is not tied to the request
+  // that started it, which can be cancelled while another one waits for it.
+  const shared = detachConfigPresetImportContext(context);
+  const computing = readConfigPresetImportBundle(shared, user, fileId).then(async (bundle) => (await computeConfigPresetImportPreviewTypes(shared, user, bundle)).index);
   setConfigPresetImportIndex(user.id, fileId, computing);
   return computing;
 };
