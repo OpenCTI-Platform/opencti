@@ -39,6 +39,7 @@ import {
 } from '../../../../src/modules/user/user-domain';
 import { verifyMfa } from '../../../../src/modules/auth/auth-domain';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
+import * as providersConfiguration from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { TokenDuration } from '../../../../src/generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import { buildActivityHistoryElements } from '../../../../src/manager/activityManager';
@@ -897,6 +898,55 @@ describe('Local authentication lockout', () => {
       }
       // The local lock exists, it is just not shown
       await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
+    });
+
+    describe('with force_local, the local is tried before the LDAP', () => {
+      beforeEach(() => {
+        vi.spyOn(providersConfiguration, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+      });
+
+      it('should let an LDAP user log in through LDAP while the local lock exists, and clear the lock', async () => {
+        await reachMaxAttempts(LOCKOUT_USER.email);
+        // The local refuses the locked email, the LDAP is tried next and is never blocked by the local lock
+        await sessionLoginAs(LOCKOUT_USER.email, 'ldap-password');
+        expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(0);
+        expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+      });
+
+      it('should forget the failed local attempt of an LDAP login', async () => {
+        await failLogin(LOCKOUT_USER.email, 1);
+        // The LDAP password fails locally first, then logs in through LDAP: the failures are cleared
+        await sessionLoginAs(LOCKOUT_USER.email, 'ldap-password');
+        expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+      });
+
+      it('should still return the generic error when both the local and the LDAP reject the password', async () => {
+        await expectBadCredentials(sessionLoginAs(UNKNOWN_EMAIL, WRONG_PASSWORD));
+        expect(await failuresOf(UNKNOWN_EMAIL)).toEqual(1);
+      });
+
+      it('should not lock an LDAP user one failure below the max attempts', async () => {
+        await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+        try {
+          await failLogin(LOCKOUT_USER.email, 2);
+          // The failed local check would reach the max attempts: it waits for the LDAP, which logs the user in
+          await sessionLoginAs(LOCKOUT_USER.email, 'ldap-password');
+          expect(await accountStatusOf(LOCKOUT_USER.email)).toEqual('Active');
+          expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(0);
+          expect(sendEmails).not.toHaveBeenCalled();
+        } finally {
+          if (await accountStatusOf(LOCKOUT_USER.email) !== 'Active') {
+            await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]);
+          }
+        }
+      });
+
+      it('should lock once both the local and the LDAP reject the password of the last attempt', async () => {
+        await failLogin(UNKNOWN_EMAIL, 2);
+        // The generic error, as another form provider exists, but the local failure counts and locks
+        await expectBadCredentials(sessionLoginAs(UNKNOWN_EMAIL, WRONG_PASSWORD));
+        await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
+      });
     });
   });
 
