@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import '../../../src/modules/index';
 import {
   capWeight,
   drainQueue,
@@ -37,9 +38,22 @@ const tagged = (intent: SequencerIntent) => Object.assign(intent, { likelyNoop: 
 
 const tokenOf = (seqNo: number, source: Record<string, any> = { url: 'u' }): NoopToken => noopTokenOf(seqNo, 1, source);
 
+// the recorded no-op of `intent` on target `targetId`, the target known by the intent's ids too
+const entryOf = (intent: SequencerIntent, targetId: string, token: NoopToken) => ({
+  key: noopMemoKey(intent) as string,
+  result: { internal_id: targetId },
+  targetId,
+  targetIndex: 'idx',
+  targetIds: [targetId, ...intent.candidateIds],
+  token,
+  targetDates: { created: null, modified: null },
+  recordedDates: {},
+  recordedIds: intent.candidateIds,
+});
+
 const memoWith = (intent: SequencerIntent, targetId: string, token: NoopToken) => {
   const memo = new NoopMemo(10);
-  memo.record({ key: noopMemoKey(intent) as string, result: { internal_id: targetId }, targetId, targetIndex: 'idx', targetIds: [targetId], token, targetDates: { created: null, modified: null } });
+  memo.record(entryOf(intent, targetId, token));
   return memo;
 };
 
@@ -59,12 +73,12 @@ describe('isLikelyNoop: the in-memory hint, no engine read', () => {
   it('should not move the entry in the LRU (a hint must not keep an entry the batch check would evict)', () => {
     const memo = new NoopMemo(2);
     const first = intentOf('first');
-    memo.record({ key: noopMemoKey(first) as string, result: {}, targetId: 'r1', targetIndex: 'idx', targetIds: ['r1'], token: tokenOf(1), targetDates: { created: null, modified: null } });
-    memo.record({ key: noopMemoKey(intentOf('second')) as string, result: {}, targetId: 'r2', targetIndex: 'idx', targetIds: ['r2'], token: tokenOf(1), targetDates: { created: null, modified: null } });
+    memo.record(entryOf(first, 'r1', tokenOf(1)));
+    memo.record(entryOf(intentOf('second'), 'r2', tokenOf(1)));
     expect(isLikelyNoop(first, memo, new Set(['External-Reference']))).toBe(true);
-    memo.record({ key: noopMemoKey(intentOf('third')) as string, result: {}, targetId: 'r3', targetIndex: 'idx', targetIds: ['r3'], token: tokenOf(1), targetDates: { created: null, modified: null } });
+    memo.record(entryOf(intentOf('third'), 'r3', tokenOf(1)));
     // the oldest one goes, read or not
-    expect(memo.has(noopMemoKey(first) as string)).toBe(false);
+    expect(memo.peek(noopMemoKey(first) as string)).toBeUndefined();
   });
 });
 

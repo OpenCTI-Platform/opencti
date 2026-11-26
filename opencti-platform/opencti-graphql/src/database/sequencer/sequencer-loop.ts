@@ -199,7 +199,7 @@ const recordNoop = (group: CoalesceGroup, result: any, basis: any, stripSink: St
     }
     return;
   }
-  const record = noopRecordOf(key, basis, result, basisVersions.get(basis.internal_id));
+  const record = noopRecordOf(key, leader, basis, result, basisVersions.get(basis.internal_id));
   if (record) noopRecords.push(record);
   else sequencerMetrics.mapEvent('noop_memo_no_version');
 };
@@ -1047,6 +1047,7 @@ const runBatchLoop = async () => {
         if (misses.ineligible > 0) sequencerMetrics.mapEvent('noop_memo_ineligible', misses.ineligible);
         if (misses.noEntry > 0) sequencerMetrics.mapEvent('noop_memo_no_entry', misses.noEntry);
         if (misses.datesChanged > 0) sequencerMetrics.mapEvent('noop_memo_dates_changed', misses.datesChanged);
+        if (misses.idsChanged > 0) sequencerMetrics.mapEvent('noop_memo_ids_changed', misses.idsChanged);
         if (misses.tokenChanged > 0) sequencerMetrics.mapEvent('noop_memo_token_changed', misses.tokenChanged);
         if (misses.inBatchWriter > 0) sequencerMetrics.mapEvent('noop_memo_inbatch_writer', misses.inBatchWriter);
         if (misses.hashMatches > 0) sequencerMetrics.mapEvent('noop_memo_hash_match', misses.hashMatches);
