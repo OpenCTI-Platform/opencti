@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { MutationParameters, SelectorStoreUpdater } from 'relay-runtime';
 import { UseMutationConfig, VariablesOf } from 'react-relay';
-import { Alert, Typography, List, ListItem, Tooltip } from '@mui/material';
+import { Alert, Typography, List, ListItem, Tooltip, LinearProgress } from '@mui/material';
 import { useFormatter } from '../../components/i18n';
+import { CreationFeedbackContext } from './useCreationFeedback';
 
 type ObjectType = 'entities' | 'observables' | 'files';
 
@@ -30,6 +31,7 @@ function useBulkCommit<M extends MutationParameters>({
   type = 'entities',
 }: UseBulkCommitArgs<M>) {
   const { t_i18n } = useFormatter();
+  const { bulkCreation } = useContext(CreationFeedbackContext);
 
   const [count, setCount] = useState(0);
   const [currentCount, setCurrentCount] = useState(0);
@@ -41,11 +43,13 @@ function useBulkCommit<M extends MutationParameters>({
     setCount(0);
     setCurrentCount(0);
     setInError([]);
+    bulkCreation?.onBulkEnd();
   };
 
   useEffect(() => {
     if (currentCount === count && count !== 0) {
       onBulkCompleted.current?.(count);
+      if (count > 1) bulkCreation?.onBulkCompleted();
     }
   }, [count, currentCount]);
 
@@ -62,6 +66,8 @@ function useBulkCommit<M extends MutationParameters>({
     }
 
     onBulkCompleted.current = onCompleted;
+    // A single object is not a bulk creation: it has no result dialog
+    if (variables.length > 1) bulkCreation?.onBulkStart();
     setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
@@ -88,6 +94,11 @@ function useBulkCommit<M extends MutationParameters>({
     observables: t_i18n('observables created'),
     files: t_i18n('files imported'),
   };
+
+  // Shown while the created objects are added to the surrounding container (files are never added to one)
+  const addingLabel = (containerType: string) => (type === 'observables'
+    ? t_i18n('Observables added to the {containerType}', { values: { containerType } })
+    : t_i18n('Entities added to the {containerType}', { values: { containerType } }));
 
   const errorLabel: Record<ObjectType, string> = {
     entities: t_i18n('entities not created'),
@@ -129,6 +140,29 @@ function useBulkCommit<M extends MutationParameters>({
               );
             })}
           </List>
+        </Alert>
+      )}
+      {/* After the creation's own result: the created objects are then added to the container */}
+      {bulkCreation?.progress && (bulkCreation.progress.inProgress || bulkCreation.progress.total > 0) && (
+        <div style={{ marginTop: 16 }}>
+          {bulkCreation.progress.inProgress && (
+            <Typography sx={{ color: 'text.disabled' }}>
+              {addingLabel(bulkCreation.containerType)}
+            </Typography>
+          )}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <LinearProgress
+              style={{ flex: 1 }}
+              variant="determinate"
+              value={bulkCreation.progress.total > 0 ? (bulkCreation.progress.done / bulkCreation.progress.total) * 100 : 0}
+            />
+            <Typography style={{ flexShrink: 0 }}>{`${bulkCreation.progress.done}/${bulkCreation.progress.total}`}</Typography>
+          </div>
+        </div>
+      )}
+      {bulkCreation?.resultMessage && !bulkCreation.progress?.inProgress && (
+        <Alert variant="outlined" sx={{ marginTop: 2 }}>
+          <Typography>{bulkCreation.resultMessage}</Typography>
         </Alert>
       )}
     </>

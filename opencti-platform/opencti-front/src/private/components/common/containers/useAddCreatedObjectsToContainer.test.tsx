@@ -68,6 +68,63 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(options.action.label).toBe('Undo');
   });
 
+  it('confirms a bulk creation in its result dialog instead of a message', async () => {
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.bulkCreation?.onBulkStart());
+    expect(hook.result.current.bulkCreation?.progress?.inProgress).toBe(true);
+    act(() => {
+      hook.result.current.onCreated(observable('o1'));
+      hook.result.current.onCreated(observable('o2'));
+      hook.result.current.bulkCreation?.onBulkCompleted();
+    });
+    await flushBatch();
+
+    expect(addObjectToContainer).toHaveBeenCalledTimes(2);
+    expect(notifySuccess).not.toHaveBeenCalled();
+    expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 2, total: 2, inProgress: false });
+    expect(hook.result.current.bulkCreation?.resultMessage).toContain('2 observables added to the');
+
+    act(() => hook.result.current.bulkCreation?.onBulkEnd());
+    expect(hook.result.current.bulkCreation?.progress).toBeNull();
+    expect(hook.result.current.bulkCreation?.resultMessage).toBeNull();
+  });
+
+  it('keeps a bulk creation in progress until all its creations are done', async () => {
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.bulkCreation?.onBulkStart());
+    act(() => hook.result.current.onCreated(observable('o1')));
+    await flushBatch();
+    // The first object is added, but other creations may still come
+    expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 1, total: 1, inProgress: true });
+
+    act(() => hook.result.current.bulkCreation?.onBulkCompleted());
+    await act(async () => { await vi.runAllTimersAsync(); });
+    expect(hook.result.current.bulkCreation?.progress?.inProgress).toBe(false);
+  });
+
+  it('shows the message when the bulk result dialog is closed before the objects are added', async () => {
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.bulkCreation?.onBulkStart());
+    act(() => {
+      hook.result.current.onCreated(observable('o1'));
+      hook.result.current.onCreated(observable('o2'));
+    });
+    act(() => hook.result.current.bulkCreation?.onBulkEnd());
+    await flushBatch();
+
+    expect(notifySuccess).toHaveBeenCalledOnce();
+    expect(notifySuccess.mock.calls[0][1].action.label).toBe('Undo');
+  });
+
+  it('gives no bulk feedback when nothing is added automatically', () => {
+    const hook = renderAddHook({ ...baseArgs(), disabled: true });
+
+    expect(hook.result.current.bulkCreation).toBeUndefined();
+  });
+
   it('batches creations arriving within the delay', async () => {
     const hook = renderAddHook(baseArgs());
 

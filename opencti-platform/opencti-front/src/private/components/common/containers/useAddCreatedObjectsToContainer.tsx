@@ -6,6 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { CreatedObject, useContainerObjects } from './useContainerObjects';
+import { BulkCreationFeedback } from '../../../../utils/hooks/useCreationFeedback';
 import { useAddCreatedObjectsToContainerIndicatorsQuery$data } from './__generated__/useAddCreatedObjectsToContainerIndicatorsQuery.graphql';
 
 /** The objects created within this delay of each other are added together, with a single message. */
@@ -52,6 +53,18 @@ interface CreatedObjectsBatchItem {
   withIndicator: boolean;
 }
 
+// A bulk creation in progress, from its start until its result dialog is closed
+interface BulkState {
+  // All its creations are done: no other object will come
+  creationsDone: boolean;
+  // Batches being added
+  flushing: number;
+  // Objects to add, and objects whose add is done (added or failed)
+  total: number;
+  done: number;
+  added: CreatedObject[];
+}
+
 interface References {
   commitMessage: string;
   references: string[];
@@ -84,6 +97,8 @@ const fetchIndicatorsBasedOn = async (observableId: string): Promise<CreatedObje
 
 /**
  * Adds the objects created from a container's add panel to the container, and confirms it with a message offering Undo.
+ * After a bulk creation, the confirmation is a line of the bulk result dialog instead: give `bulkCreation` to the creation forms
+ * through `CreationFeedbackContext`.
  * Render `referencesDialog` outside the panel's drawer: Undo keeps working once the drawer is closed.
  */
 export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToContainerArgs) => {
@@ -97,6 +112,9 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const referencesResolverRef = useRef<((references: References | null) => void) | null>(null);
   const [referencesDialogOpen, setReferencesDialogOpen] = useState(false);
+  const bulkRef = useRef<BulkState | null>(null);
+  const [bulkProgress, setBulkProgress] = useState<BulkCreationFeedback['progress']>(null);
+  const [bulkResultMessage, setBulkResultMessage] = useState<string | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -162,7 +180,19 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     }
   };
 
+  // The bulk result dialog cannot be closed while objects may still be added
+  const refreshBulkProgress = () => {
+    const bulk = bulkRef.current;
+    if (!bulk) return;
+    setBulkProgress({
+      done: bulk.done,
+      total: bulk.total,
+      inProgress: !bulk.creationsDone || timerRef.current !== null || bulk.flushing > 0,
+    });
+  };
+
   const flush = async () => {
+    const bulk = bulkRef.current;
     const batch = batchRef.current;
     batchRef.current = [];
     const { containerId, knowledgeGraph, paginationOptions, enableReferences, isInContainer, resolveObject } = argsRef.current;
@@ -175,8 +205,12 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     // An existing object returned by the creation (upsert) may already be in the container: it is neither added nor undone
     const toAdd = created.filter((object) => !isInContainer(object.id));
     if (toAdd.length === 0) {
-      if (created.length > 0) {
-        MESSAGING$.notifySuccess(t_i18n('Already in the {containerType}', { values: { containerType: containerLabel() } }));
+      const alreadyIn = t_i18n('Already in the {containerType}', { values: { containerType: containerLabel() } });
+      if (created.length > 0 && bulkRef.current) {
+        // The bulk result names what was added; this line only when nothing was
+        if (bulkRef.current.added.length === 0) setBulkResultMessage(alreadyIn);
+      } else if (created.length > 0) {
+        MESSAGING$.notifySuccess(alreadyIn);
       }
       return;
     }
@@ -189,12 +223,20 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       }
       references = given;
     }
+    if (bulk) {
+      bulk.total += toAdd.length;
+      refreshBulkProgress();
+    }
     const results = await Promise.allSettled(toAdd.map((object) => addObjectToContainer({
       containerId,
       objectId: object.id,
       knowledgeGraph,
       paginationOptions,
       ...references,
+    }).finally(() => {
+      if (!bulk) return;
+      bulk.done += 1;
+      refreshBulkProgress();
     })));
     const added: CreatedObject[] = [];
     const failed: CreatedObject[] = [];
@@ -203,6 +245,12 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       ? resolveObject(object.id).catch(() => object)
       : Promise.resolve(object))));
     resolvedAdded.forEach((object) => argsRef.current.onAdded(object));
+    // Read once the objects are added: if the bulk result dialog was closed meanwhile, the message below is shown
+    const bulkAdded = bulkRef.current?.added;
+    if (bulkAdded && added.length > 0) {
+      bulkAdded.push(...added);
+      setBulkResultMessage(addedMessage(bulkAdded));
+    }
     if (failed.length > 0) {
       // The message names the failure; the objects added anyway can be unticked in the panel
       MESSAGING$.notifyError(t_i18n('{entityType} created, but could not be added to the {containerType}', {
@@ -210,6 +258,8 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       }));
       return;
     }
+    // The bulk result dialog already confirms the creation: its line replaces the message
+    if (bulkAdded) return;
     MESSAGING$.notifySuccess(addedMessage(added), { action: { label: 'Undo', onClick: () => { undo(added); } } });
   };
 
@@ -217,10 +267,18 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     if (argsRef.current.disabled) return;
     batchRef.current.push({ object, withIndicator: !!options?.withIndicator });
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
+    timerRef.current = setTimeout(async () => {
       timerRef.current = null;
-      flush();
+      const bulk = bulkRef.current;
+      if (bulk) bulk.flushing += 1;
+      try {
+        await flush();
+      } finally {
+        if (bulk) bulk.flushing -= 1;
+        refreshBulkProgress();
+      }
     }, CREATED_OBJECTS_BATCH_DELAY_MS);
+    refreshBulkProgress();
   };
 
   const submitReferences: FormikConfig<ReferencesFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -252,5 +310,31 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     </Formik>
   ) : null;
 
-  return { onCreated, referencesDialog };
+  // Nothing is added automatically when disabled: the bulk result keeps its own lines
+  const bulkCreation: BulkCreationFeedback | undefined = args.disabled ? undefined : {
+    onBulkStart: () => {
+      bulkRef.current = { creationsDone: false, flushing: 0, total: 0, done: 0, added: [] };
+      setBulkResultMessage(null);
+      refreshBulkProgress();
+    },
+    onBulkCompleted: () => {
+      const bulk = bulkRef.current;
+      // After the last creation's onCreated, which its updater defers the same way
+      setTimeout(() => {
+        if (!bulk || bulkRef.current !== bulk) return;
+        bulk.creationsDone = true;
+        refreshBulkProgress();
+      }, 0);
+    },
+    onBulkEnd: () => {
+      bulkRef.current = null;
+      setBulkProgress(null);
+      setBulkResultMessage(null);
+    },
+    containerType: containerLabel(),
+    progress: bulkProgress,
+    resultMessage: bulkResultMessage,
+  };
+
+  return { onCreated, referencesDialog, bulkCreation };
 };

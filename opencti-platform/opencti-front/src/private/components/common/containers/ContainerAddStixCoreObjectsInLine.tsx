@@ -141,7 +141,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
     setSelectedElements((current) => current.filter((e) => e.node.id !== node.id));
     if (typeof onDelete === 'function') onDelete(node);
   };
-  const { onCreated, referencesDialog } = useAddCreatedObjectsToContainer({
+  const { onCreated, referencesDialog, bulkCreation } = useAddCreatedObjectsToContainer({
     containerId,
     containerType,
     knowledgeGraph,
@@ -194,7 +194,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
 
   // An element, not a component: a component declared here would be remounted, with the open creation form, at each render
   const header = (
-    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: true }}>
+    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: true, bulkCreation }}>
       <StixDomainObjectCreation
         display={false}
         inputValue=""

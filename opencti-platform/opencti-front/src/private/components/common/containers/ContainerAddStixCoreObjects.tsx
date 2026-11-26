@@ -301,7 +301,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
     current,
   ));
   // In content mapping, adding an object also maps the selected text: nothing is added automatically there
-  const { onCreated, referencesDialog } = useAddCreatedObjectsToContainer({
+  const { onCreated, referencesDialog, bulkCreation } = useAddCreatedObjectsToContainer({
     containerId,
     containerType,
     knowledgeGraph,
@@ -504,7 +504,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
   };
   // The panel confirms the creation and the add with a single message, except in content mapping
   const renderEntityCreation = (searchPaginationOptions: Omit<SearchPaginationOptions, 'count'>) => (
-    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: !mapping }}>
+    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: !mapping, bulkCreation }}>
       {renderEntityCreationForms(searchPaginationOptions)}
     </CreationFeedbackContext.Provider>
   );
