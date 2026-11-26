@@ -1,12 +1,22 @@
 import { describe, it, vi, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { initializeAuthenticationProviders } from '../../../../src/modules/authenticationProvider/providers';
+import passport from 'passport';
+import { initializeAuthenticationProviders, registerStrategy } from '../../../../src/modules/authenticationProvider/providers';
+import { registerAuthenticationProvider, unregisterAuthenticationProvider } from '../../../../src/modules/authenticationProvider/providers-env-deprecated';
+import { internalLoadById } from '../../../../src/database/middleware-loader';
+import type { BasicStoreEntityUser } from '../../../../src/modules/user/user-types';
 import { ADMIN_USER, testContext, USER_EDITOR } from '../../../utils/testQuery';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
 import * as mockProviderEnv from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { getSettings, getSettingsFromDatabase } from '../../../../src/domain/settings';
 import { buildAvailableProviders, updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../../../../src/domain/setting-auth';
 import { type ProviderConfiguration, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
-import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput, UserLoginInput } from '../../../../src/generated/graphql';
+import {
+  AuthenticationProviderType,
+  type CertAuthConfigInput,
+  type HeadersAuthConfigInput,
+  type LocalAuthConfigInput,
+  type UserLoginInput,
+} from '../../../../src/generated/graphql';
 import { findAllAuthenticationProvider } from '../../../../src/modules/authenticationProvider/authenticationProvider-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { elDeleteElements, elIndexElements } from '../../../../src/database/engine';
@@ -710,6 +720,109 @@ describe('Provider coverage', () => {
       // THEN any other user should also
       const userInputEditor: UserLoginInput = { email: USER_EDITOR.email, password: USER_EDITOR.password }; // from testQueryHelper
       await sessionLogin(reqContext, userInputEditor);
+    });
+
+    // #16131: a faulty LDAP must not block the local login when it is forced
+    describe('with a faulty LDAP', () => {
+      const LDAP_IDENTIFIER = 'ldap-faulty-test';
+      const FAKE_LDAP_IDENTIFIER = 'ldap-fake-test';
+      const adminInput: UserLoginInput = { email: 'admin@opencti.io', password: 'admin' }; // from test.json
+      const buildLdapProvider = (url: string) => ({
+        id: 'ldap-faulty-test-id',
+        internal_id: 'ldap-faulty-test-id',
+        name: 'LDAP faulty test',
+        description: '',
+        enabled: true,
+        identifier_override: LDAP_IDENTIFIER,
+        type: AuthenticationProviderType.Ldap,
+        configuration: {
+          url,
+          bind_dn: 'cn=hello',
+          search_base: 'dc=test',
+          search_filter: '(uid={{username}})',
+          group_base: 'dc=test',
+          group_filter: '(member={{dn}})',
+          allow_self_signed: false,
+          extra_conf: [],
+          user_info_mapping: { email_expr: 'mail', name_expr: 'givenName' },
+          groups_mapping: {
+            default_groups: [],
+            groups_expr: [],
+            groups_mapping: [],
+            auto_create_groups: false,
+            prevent_default_groups: false,
+            extend_platform_groups: false,
+          },
+          organizations_mapping: {
+            default_organizations: [],
+            organizations_expr: [],
+            organizations_mapping: [],
+            auto_create_organizations: false,
+          },
+        },
+      } as unknown as BasicStoreEntityAuthenticationProvider);
+      // A form provider that only accepts its own password, as an LDAP would
+      const registerFakeLdap = (user: BasicStoreEntityUser) => {
+        const strategy = new passport.Strategy() as passport.Strategy & passport.StrategyCreatedStatic;
+        strategy.authenticate = function authenticate(this: passport.StrategyCreated<passport.Strategy>, req: Express.Request) {
+          if (req.body.password === 'ldap-password') {
+            this.success(user);
+          } else {
+            this.fail({ message: 'Invalid username/password' });
+          }
+        };
+        registerAuthenticationProvider(FAKE_LDAP_IDENTIFIER, strategy, { name: 'Fake LDAP', type: 'FORM', strategy: 'LDAP', provider: FAKE_LDAP_IDENTIFIER });
+      };
+
+      beforeEach(async () => {
+        await setLocalAuthToEnabled(true);
+      });
+
+      afterEach(() => {
+        unregisterAuthenticationProvider(LDAP_IDENTIFIER);
+        unregisterAuthenticationProvider(FAKE_LDAP_IDENTIFIER);
+      });
+
+      it('should log in a local user with force_local when the LDAP url is invalid', async () => {
+        // GIVEN the LDAP of the issue: an url without scheme, rejected by the LDAP client at each login
+        vi.spyOn(mockProviderEnv, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+        await registerStrategy(buildLdapProvider('127.0.0.1'));
+
+        // THEN the local login still works
+        await sessionLogin(getMockAuthContextWithRequest(), adminInput);
+      });
+
+      it('should log in a local user with force_local when the LDAP never answers', async () => {
+        // GIVEN an LDAP on an unreachable host: the connection waits for the system timeout
+        vi.spyOn(mockProviderEnv, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+        await registerStrategy(buildLdapProvider('ldap://10.255.255.1:389'));
+
+        // THEN the local login does not wait for it
+        await sessionLogin(getMockAuthContextWithRequest(), adminInput);
+      }, 10_000);
+
+      it('should still try the local login when the LDAP url is invalid', async () => {
+        // GIVEN no force_local: the LDAP is tried first, and fails
+        vi.spyOn(mockProviderEnv, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(false);
+        await registerStrategy(buildLdapProvider('127.0.0.1'));
+
+        // THEN its failure does not stop the login: the local is tried next
+        await sessionLogin(getMockAuthContextWithRequest(), adminInput);
+      });
+
+      it('should still log in an LDAP user with force_local', async () => {
+        // GIVEN force_local and a working LDAP that knows the user with another password than the local one
+        vi.spyOn(mockProviderEnv, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+        const admin = await internalLoadById<BasicStoreEntityUser>(testContext, SYSTEM_USER, ADMIN_USER.id);
+        registerFakeLdap(admin);
+
+        // THEN the local login fails, and the LDAP is tried after it
+        await sessionLogin(getMockAuthContextWithRequest(), { email: adminInput.email, password: 'ldap-password' });
+
+        // THEN a wrong password for both is still rejected
+        await expect(sessionLogin(getMockAuthContextWithRequest(), { email: adminInput.email, password: 'wrong-password' }))
+          .rejects.toThrowError('Bad login or password');
+      });
     });
   });
 });

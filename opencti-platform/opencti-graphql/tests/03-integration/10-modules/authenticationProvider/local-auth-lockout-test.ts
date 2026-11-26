@@ -39,6 +39,7 @@ import {
 } from '../../../../src/modules/user/user-domain';
 import { verifyMfa } from '../../../../src/modules/auth/auth-domain';
 import { AuthType, EnvStrategyType, PROVIDERS } from '../../../../src/modules/authenticationProvider/providers-configuration';
+import * as providersConfiguration from '../../../../src/modules/authenticationProvider/providers-configuration';
 import { TokenDuration } from '../../../../src/generated/graphql';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_SETTINGS } from '../../../../src/schema/internalObject';
 import { buildActivityHistoryElements } from '../../../../src/manager/activityManager';
@@ -855,19 +856,29 @@ describe('Local authentication lockout', () => {
 
   describe('LDAP and other form providers', () => {
     const FAKE_LDAP = 'fake_ldap_lockout';
+    // A password that the fake LDAP rejects only once slowLdapAnswer resolves, as a slow LDAP would
+    const SLOW_WRONG_PASSWORD = 'slow-wrong-password';
+    let slowLdapAnswer: Promise<void>;
 
     beforeEach(() => {
-      // Form provider that validates the lockout user whatever the password
+      slowLdapAnswer = Promise.resolve();
+      // Form provider that validates the lockout and MFA users whatever the password
       class FakeLdapStrategy extends passport.Strategy {
         name = FAKE_LDAP;
 
         authenticate(req: Express.Request) {
-          const { username } = (req as unknown as { body: { username: string } }).body;
-          if (normalizeEmail(username) !== LOCKOUT_USER.email) {
+          const { username, password } = (req as unknown as { body: { username: string; password: string } }).body;
+          if (password === SLOW_WRONG_PASSWORD) {
+            void slowLdapAnswer.then(() => this.fail());
+            return;
+          }
+          const ldapUserIds: Record<string, string> = { [LOCKOUT_USER.email]: lockoutUserId, [MFA_USER.email]: mfaUserId };
+          const userId = ldapUserIds[normalizeEmail(username)];
+          if (!userId) {
             this.fail();
             return;
           }
-          this.success({ id: lockoutUserId, internal_id: lockoutUserId });
+          this.success({ id: userId, internal_id: userId });
         }
       }
       passport.use(FAKE_LDAP, new FakeLdapStrategy());
@@ -897,6 +908,108 @@ describe('Local authentication lockout', () => {
       }
       // The local lock exists, it is just not shown
       await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
+    });
+
+    describe('with force_local, the local is tried before the LDAP', () => {
+      beforeEach(() => {
+        vi.spyOn(providersConfiguration, 'isLocalAuthForcedEnabledFromEnv').mockReturnValue(true);
+      });
+
+      it('should let an LDAP user log in through LDAP while the local lock exists, and clear the lock', async () => {
+        await reachMaxAttempts(LOCKOUT_USER.email);
+        // The local refuses the locked email, the LDAP is tried next and is never blocked by the local lock
+        await sessionLoginAs(LOCKOUT_USER.email, 'ldap-password');
+        expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(0);
+        expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+      });
+
+      it('should forget the failed local attempt of an LDAP login', async () => {
+        await failLogin(LOCKOUT_USER.email, 1);
+        // The LDAP password fails locally first, then logs in through LDAP: the failures are cleared
+        await sessionLoginAs(LOCKOUT_USER.email, 'ldap-password');
+        expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
+      });
+
+      it('should still return the generic error when both the local and the LDAP reject the password', async () => {
+        await expectBadCredentials(sessionLoginAs(UNKNOWN_EMAIL, WRONG_PASSWORD));
+        expect(await failuresOf(UNKNOWN_EMAIL)).toEqual(1);
+      });
+
+      it('should not lock an LDAP user one failure below the max attempts', async () => {
+        await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+        try {
+          await failLogin(LOCKOUT_USER.email, 2);
+          // The failed local check would reach the max attempts: it waits for the LDAP, which logs the user in
+          await sessionLoginAs(LOCKOUT_USER.email, 'ldap-password');
+          expect(await accountStatusOf(LOCKOUT_USER.email)).toEqual('Active');
+          expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(0);
+          expect(sendEmails).not.toHaveBeenCalled();
+        } finally {
+          if (await accountStatusOf(LOCKOUT_USER.email) !== 'Active') {
+            await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]);
+          }
+        }
+      });
+
+      it('should lock once both the local and the LDAP reject the password of the last attempt', async () => {
+        await failLogin(UNKNOWN_EMAIL, 2);
+        // The generic error, as another form provider exists, but the local failure counts and locks
+        await expectBadCredentials(sessionLoginAs(UNKNOWN_EMAIL, WRONG_PASSWORD));
+        await expectLocked(login(UNKNOWN_EMAIL, WRONG_PASSWORD));
+      });
+
+      it('should only undo the failed local attempt of an LDAP login with MFA', async () => {
+        await failLogin(MFA_USER.email, 2);
+        // The failed local check reaches the max attempts, then the LDAP logs the user in.
+        // With MFA, only a valid code clears the lockout: the lock of this attempt is lifted, the earlier failures stay
+        await sessionLoginAs(MFA_USER.email, 'ldap-password');
+        expect(await getClientBase().exists(keysOf(MFA_USER.email).lock)).toEqual(0);
+        expect(await failuresOf(MFA_USER.email)).toEqual(2);
+      });
+
+      describe('when the lockout is cleared while a failure waits for a slow LDAP', () => {
+        let answerSlowLdap: () => void;
+
+        beforeEach(async () => {
+          slowLdapAnswer = new Promise((resolve) => {
+            answerSlowLdap = resolve;
+          });
+          await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_final_action: 'permanent' });
+        });
+
+        afterEach(async () => {
+          if (await accountStatusOf(LOCKOUT_USER.email) !== 'Active') {
+            await userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]);
+          }
+        });
+
+        // The last attempt fails locally and reaches the max attempts, then waits for the LDAP while clearLockout runs
+        const expectNoLockAfterClear = async (clearLockout: () => Promise<unknown>) => {
+          await failLogin(LOCKOUT_USER.email, 2);
+          const pendingLogin = sessionLoginAs(LOCKOUT_USER.email, SLOW_WRONG_PASSWORD);
+          for (let i = 0; i < 100 && !(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)); i += 1) {
+            await new Promise((resolve) => {
+              setTimeout(resolve, 20);
+            });
+          }
+          expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(1);
+          await clearLockout();
+          answerSlowLdap();
+          // The LDAP rejects the password too: a usual failure, the cleared lock does not come back
+          await expectBadCredentials(pendingLogin);
+          expect(await accountStatusOf(LOCKOUT_USER.email)).toEqual('Active');
+          expect(await getClientBase().exists(keysOf(LOCKOUT_USER.email).lock)).toEqual(0);
+          expect(sendEmails).not.toHaveBeenCalled();
+        };
+
+        it('should not lock the account after a login accepted meanwhile', async () => {
+          await expectNoLockAfterClear(() => sessionLoginAs(LOCKOUT_USER.email, 'ldap-password'));
+        });
+
+        it('should not lock the account after an administrator reset meanwhile', async () => {
+          await expectNoLockAfterClear(() => userEditField(testContext, ADMIN_USER, lockoutUserId, [{ key: 'account_status', value: ['Active'] }]));
+        });
+      });
     });
   });
 

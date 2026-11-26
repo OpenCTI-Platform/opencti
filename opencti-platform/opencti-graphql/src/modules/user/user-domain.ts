@@ -2094,11 +2094,21 @@ export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntity
 // countsAttempt is false for the login form when the local auth is disabled: the password cannot log in,
 // so its attempts must neither be counted nor lock an account that logs in with another provider
 // source tells where the attempt comes from (login form or Basic auth), for the activity event of a lock
+// A failed local login whose lockout consequences wait for the other form providers.
+// With force_local, the local is tried before them: an LDAP user then fails locally first, and that failure only counts
+// if every provider fails too. settle applies it (Locked account, lock event and emails) and returns the error to throw,
+// release undoes the attempt
+export class DeferredLocalAuthFailure extends Error {
+  constructor(readonly settle: () => Promise<Error>, readonly release: () => Promise<void>) {
+    super('Local authentication failed, its lockout is deferred');
+  }
+}
+
 export const login = async (
   email: string,
   password: string,
   sourceIp?: string,
-  { countsAttempt = true, source = 'form' }: { countsAttempt?: boolean; source?: UserLockSource } = {},
+  { countsAttempt = true, source = 'form', deferFailure = false }: { countsAttempt?: boolean; source?: UserLockSource; deferFailure?: boolean } = {},
 ) => {
   const user = await getUserByEmail(email);
   // Undefined when the local authentication lockout is disabled, and for the built-in admin
@@ -2116,10 +2126,26 @@ export const login = async (
   // A service account has no password to check.
   const isPasswordChecked = !!user && !!dbPassword && !(lockout && isAccountDisabled(user));
   if (!user || !dbPassword || !isPasswordChecked || !bcrypt.compareSync(password, dbPassword)) {
-    if (user && attempt?.locksAccount) {
-      await lockAccountAfterFailedAttempts(user);
+    const settle = async () => {
+      if (!attempt) {
+        return AuthenticationFailure();
+      }
+      // A deferred failure is settled once the other providers answered: a login accepted or an administrator reset
+      // may have deleted its lock meanwhile, which must not come back. Without its lock (also below the max attempts),
+      // it is a usual failure. The account may also have become external (LDAP login), so it is reloaded before being locked
+      if (deferFailure && !(await attempt.holdsLock())) {
+        return AuthenticationFailure();
+      }
+      if (user && attempt.locksAccount) {
+        await lockAccountAfterFailedAttempts(deferFailure ? (await getUserByEmail(email)) ?? user : user);
+      }
+      return attempt.reject({ source, ip: sourceIp });
+    };
+    // The attempt is already counted, so that parallel guesses stay capped: only its consequences wait
+    if (deferFailure && attempt) {
+      throw new DeferredLocalAuthFailure(settle, attempt.release);
     }
-    throw attempt ? await attempt.reject({ source, ip: sourceIp }) : AuthenticationFailure();
+    throw await settle();
   }
   // A right password is not a failure: its attempt is undone, the other failures are kept.
   // The caller clears the lockout once the login is fully accepted (IP whitelist, local auth enabled, API access, MFA)
@@ -2183,13 +2209,43 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   let loggedUser;
   // don't send error immediately until all providers have failed
   const deferredErrors: (() => void)[] = [];
-  // Try registered providers first
   const body = { username: input.email, password: input.password };
   const formProviders = R.filter((p) => p.type === 'FORM', PROVIDERS);
-  for (let index = 0; index < formProviders.length; index += 1) {
+  const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
+  // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
+  const isLocalAuthForced = isLocalAuthForcedEnabledFromEnv();
+  const isLocalAuthEnabled = isLocalAuthForced || !!settings.local_auth?.enabled;
+  let localError: unknown;
+  const tryLocal = async ({ deferFailure = false } = {}) => {
+    // The source IP is checked against the IP whitelist before the lockout counts the attempt.
+    // With the local auth disabled, only the built-in admin can log in here: the attempts are not counted
+    const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
+      passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
+        localError = err;
+        if (err || info) {
+          logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
+        }
+        resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
+      })({ body, ip: context.req?.ip, isLocalAuthEnabled, deferFailure });
+    });
+    if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
+      await checkIpWhitelistOnLogin(context.req?.ip, user.id);
+      // The right password already undid its own attempt in login(). With MFA, the other failures are kept
+      // until a valid MFA code, otherwise logging in again would reset them between MFA guesses
+      return sessionAuthenticateUser(context, context.req!, user, provider);
+    }
+    return undefined;
+  };
+  // force_local is a recovery mode: the local is tried first, so that a faulty provider (an LDAP that never answers) cannot block it.
+  // Its failure only counts in the lockout if the other form providers fail too
+  if (isLocalAuthForced) {
+    loggedUser = await tryLocal({ deferFailure: formProviders.length > 0 });
+  }
+  // Then the registered form providers (tried first, unless the local is forced)
+  for (let index = 0; !loggedUser && index < formProviders.length; index += 1) {
     const auth = formProviders[index];
     const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
-      passport.authenticate(auth.provider, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
+      const onResult = (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
         if (err || info) {
           // @ts-expect-error _strategy is an undocumented passport API
           const authLogger = passport._strategy(auth.provider).logger;
@@ -2200,7 +2256,14 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
           }
         }
         resolve({ user: authUser, provider: auth.provider });
-      })({ body });
+      };
+      // A provider can also throw, as an LDAP with an invalid url: it is a failure, the next one is tried
+      try {
+        passport.authenticate(auth.provider, {}, onResult)({ body });
+      } catch (err) {
+        logApp.warn('Form provider failed to authenticate', { cause: err, provider: auth.provider });
+        onResult(err, false, undefined);
+      }
     });
     // As soon as credential is validated, stop looking for another provider
     if (user) {
@@ -2212,31 +2275,18 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
       if (!loggedUser.otp_activated) {
         await clearLocalAuthLockout(input.email);
       }
-      break;
     }
   }
   // Try local is activated
-  const settings = await getSettings(context) as Pick<BasicStoreSettings, 'local_auth'>;
-  // Local auth can be force to be enabled in env with force_local, in which case any other configuration is bypass
-  const isLocalAuthEnabled = isLocalAuthForcedEnabledFromEnv() || !!settings.local_auth?.enabled;
-  let localError: unknown;
-  if (!loggedUser) {
-    // The source IP is checked against the IP whitelist before the lockout counts the attempt.
-    // With the local auth disabled, only the built-in admin can log in here: the attempts are not counted
-    const { user, provider } = await new Promise<PassportAuthenticationResult>((resolve) => {
-      passport.authenticate(LOCAL_STRATEGY_IDENTIFIER, {}, (err: unknown, authUser: BasicStoreEntityUser | false | undefined, info: unknown) => {
-        localError = err;
-        if (err || info) {
-          logApp.warn('Token authenticate error', { cause: err, info, provider: LOCAL_STRATEGY_IDENTIFIER });
-        }
-        resolve({ user: authUser, provider: LOCAL_STRATEGY_IDENTIFIER });
-      })({ body, ip: context.req?.ip, isLocalAuthEnabled });
-    });
-    if (user && (isLocalAuthEnabled || user.id === OPENCTI_ADMIN_UUID)) {
-      await checkIpWhitelistOnLogin(context.req?.ip, user.id);
-      // The right password already undid its own attempt in login(). With MFA, the other failures are kept
-      // until a valid MFA code, otherwise logging in again would reset them between MFA guesses
-      loggedUser = await sessionAuthenticateUser(context, context.req!, user, provider);
+  if (!loggedUser && !isLocalAuthForced) {
+    loggedUser = await tryLocal();
+  }
+  if (localError instanceof DeferredLocalAuthFailure) {
+    // Another provider logged the user in: the local failure is undone. Otherwise it counts, and can lock
+    if (loggedUser) {
+      await localError.release();
+    } else {
+      localError = await localError.settle();
     }
   }
   if (loggedUser) {

@@ -519,7 +519,7 @@ Enabling the **app:authentication:force_env** variable will remove any stored au
 
 #### Locked out of the platform, but a local account or administrator exists
 
-In case you have locked yourself out of the application, by disabling local authentication without verifying that you have another working strategy, there is a solution.
+In case you have locked yourself out of the application, by disabling local authentication without verifying that you have another working strategy, or by saving a faulty LDAP configuration that blocks the login form, there is a solution.
 
 This solution however relies on one of the following pre-requisites: 
 
@@ -535,6 +535,8 @@ Steps to unblock yourself:
 3. Restart your platform using this configuration.
 
 You should be able to log in via username and password. Once logged in, enable local authentication again in the authentication menu, then remove this variable from your configuration file.
+
+With this variable, the login form checks the local accounts first, then the other form authentications such as LDAP: a faulty LDAP cannot block a local account with its correct password, and LDAP users can still log in. A failed local check of an LDAP user only counts in the local authentication lockout if the LDAP rejects the password too.
 
 
 #### Locked out of the platform, no platform administrator or local account
