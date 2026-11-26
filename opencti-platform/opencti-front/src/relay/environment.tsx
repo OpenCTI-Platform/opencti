@@ -138,6 +138,43 @@ export const getDataID = (fieldValue: { id?: string } | null | undefined, typeNa
 };
 export const environment = new Environment({ network, store, getDataID });
 
+// Dev only: Relay only logs store id collisions in the console, which is easy to miss. Show each one once.
+if (import.meta.env.DEV) {
+  const typeCollision = /conflicting types `(\w+)` and `(\w+)`/;
+  const reported = new Set<string>();
+  const consoleError = console.error;
+  // Merged in one toast, as the message bus keeps the last message of a burst and the toast shows one, and delayed,
+  // as collisions found while the app boots come before the toast component listens.
+  // ponytail: fixed delay, a replayed message bus if a collision on boot ever comes after it
+  let pending: string[] = [];
+  const flush = () => {
+    MESSAGING$.notifyError(
+      <>
+        [dev] Relay store: {pending.join(' / ')}
+        <br />
+        Details in the console (filter &quot;conflicting&quot;), fix hints in relay/environment.tsx
+      </>,
+    );
+    pending = [];
+  };
+  const notifyOnce = (key: string, text: string) => {
+    if (!reported.has(key)) {
+      reported.add(key);
+      pending.push(text);
+      if (pending.length === 1) setTimeout(flush, 3000);
+    }
+  };
+  console.error = (...args: unknown[]) => {
+    consoleError(...args);
+    if (typeof args[0] !== 'string') return;
+    const types = typeCollision.exec(args[0]);
+    if (types) {
+      // fix: classify the type in namespacedTypenames or unkeyedTypenames
+      notifyOnce(`types:${types[1]}/${types[2]}`, `${types[1]} and ${types[2]} share an id`);
+    }
+  };
+}
+
 // Components
 interface QueryRendererProps {
   variables?: Record<string, unknown>;
