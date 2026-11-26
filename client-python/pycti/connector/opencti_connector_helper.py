@@ -37,7 +37,7 @@ import uuid
 from collections import deque
 from enum import Enum
 from queue import Queue
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import boto3
 import jwt
