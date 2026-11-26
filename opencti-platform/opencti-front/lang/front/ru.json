@@ -4493,7 +4493,7 @@
   "Playground": "Playground",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "Пожалуйста, добавьте квадратную скобку & к каждому значению между двойными кавычками (даже для уникального значения). Например: [\"значение1\", \"значение2\"]",
-  "Please ask your administrator to enable the Enterprise Edition.": "Попросите администратора включить корпоративную версию.",
+  "Please ask your administrator to enable the Enterprise Edition.": "Попросите администратора включить Enterprise Edition.",
   "Please choose a user responsible for data creation": "Пожалуйста, выберите пользователя, ответственного за создание данных",
   "Please connect your product so you can deploy resources": "Пожалуйста, подключите устройство, чтобы иметь возможность развертывать ресурсы",
   "Please contact an administrator": "Пожалуйста, свяжитесь с администратором",
