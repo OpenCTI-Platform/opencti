@@ -90,6 +90,20 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(hook.result.current.bulkCreation?.resultMessage).toBeNull();
   });
 
+  it('counts the objects added after a bulk creation, even a single one', async () => {
+    // The other creations of the bulk failed: one object only is added
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.bulkCreation?.onBulkStart());
+    act(() => {
+      hook.result.current.onCreated(observable('o1'));
+      hook.result.current.bulkCreation?.onBulkCompleted();
+    });
+    await flushBatch();
+
+    expect(hook.result.current.bulkCreation?.resultMessage).toContain('1 observables added to the');
+  });
+
   it('keeps a bulk creation in progress until all its creations are done', async () => {
     const hook = renderAddHook(baseArgs());
 

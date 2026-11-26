@@ -139,9 +139,10 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     resolve?.(references);
   };
 
-  const addedMessage = (added: CreatedObject[]) => {
+  // With a count even for a single object: the bulk result counts what was created the same way
+  const addedMessage = (added: CreatedObject[], withCount = false) => {
     const values = { containerType: containerLabel(), count: added.length };
-    if (added.length === 1) {
+    if (added.length === 1 && !withCount) {
       return t_i18n('{entityType} created and added to the {containerType}', {
         values: { ...values, entityType: t_i18n(`entity_${added[0].entity_type}`) },
       });
@@ -249,7 +250,7 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     const bulkAdded = bulkRef.current?.added;
     if (bulkAdded && added.length > 0) {
       bulkAdded.push(...added);
-      setBulkResultMessage(addedMessage(bulkAdded));
+      setBulkResultMessage(addedMessage(bulkAdded, true));
     }
     if (failed.length > 0) {
       // The message names the failure; the objects added anyway can be unticked in the panel
