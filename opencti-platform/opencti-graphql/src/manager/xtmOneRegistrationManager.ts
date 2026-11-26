@@ -1,6 +1,7 @@
 import conf, { logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { registerWithXtmOne, XTM_ONE_SCHEDULE_TIME } from '../modules/xtm/one/xtm-one';
+import { buildXtmOneHealthSnapshot } from '../modules/xtm/one/xtm-one-health';
 import type { ManagerDefinition } from './managerModule';
 import { registerManager } from './managerModule';
 
@@ -16,7 +17,7 @@ const BOOT_DELAY = 30_000; // 30 seconds — let the platform finish init
 export const xtmOneRegistrationManager = async () => {
   const context = executionContext('xtm_one_registration_manager');
   try {
-    await registerWithXtmOne(context, SYSTEM_USER);
+    await registerWithXtmOne(context, SYSTEM_USER, buildXtmOneHealthSnapshot);
   } catch (error: any) {
     logApp.warn('[XTM One] Registration manager error', { error: error.message });
   }

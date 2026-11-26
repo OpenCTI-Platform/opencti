@@ -89,7 +89,7 @@ describe('XTM One health snapshot', () => {
 
   it('should read the search engine health collected by the platform usage metrics manager', async () => {
     vi.mocked(getCachedRabbitmqMetrics).mockRejectedValue(new Error('broker unreachable'));
-    vi.mocked(getEntitiesListFromCache).mockResolvedValue([{ id: 'c1', internal_id: 'c1', name: 'MITRE', ingestion_health: { status: 'critical' } }]);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([{ id: 'c1', internal_id: 'c1', name: 'MITRE', ingestion_health: { status: 'critical' } }] as any);
     vi.mocked(getPlatformUsageMetrics).mockReturnValue({ ...noUsageMetrics, es_status: 'yellow', es_disk_used_percent: 87 });
 
     expect(await buildXtmOneHealthSnapshot(context, user)).toEqual({
