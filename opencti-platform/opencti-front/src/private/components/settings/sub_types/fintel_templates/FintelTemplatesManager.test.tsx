@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../../utils/tests/test-render';
 import FintelTemplatesManager from './FintelTemplatesManager';
@@ -7,6 +7,9 @@ import FintelTemplatesManager from './FintelTemplatesManager';
 const mocks = vi.hoisted(() => ({
   canImportFromBundle: false,
   fetchQuery: vi.fn(),
+  // What the read of the page gives back: resolved by default
+  refetchResult: () => Promise.resolve() as Promise<unknown>,
+  handleError: vi.fn(),
 }));
 
 vi.mock('../../../../../components/i18n', async (importOriginal) => ({
@@ -29,8 +32,9 @@ vi.mock('../../../../../relay/environment', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../relay/environment')>()),
   fetchQuery: (...args: unknown[]) => {
     mocks.fetchQuery(...args);
-    return { toPromise: () => Promise.resolve() };
+    return { toPromise: () => mocks.refetchResult() };
   },
+  handleError: (...args: unknown[]) => mocks.handleError(...args),
 }));
 
 vi.mock('../../../../../utils/hooks/useEnterpriseEdition', () => ({ default: () => true }));
@@ -107,5 +111,17 @@ describe('FintelTemplatesManager, the import of a template', () => {
     await user.click(screen.getByRole('button', { name: 'Import a template' }));
     await user.click(screen.getByRole('button', { name: 'Bundle imported' }));
     expect(mocks.fetchQuery).toHaveBeenCalledWith('subTypeQuery', { id: 'Report' }, { fetchPolicy: 'network-only' });
+    expect(mocks.handleError).not.toHaveBeenCalled();
+  });
+
+  it('says that the templates could not be read again, instead of leaving the failure unhandled', async () => {
+    mocks.canImportFromBundle = true;
+    const failure = new Error('Network error');
+    mocks.refetchResult = () => Promise.reject(failure);
+    const { user } = testRender(<FintelTemplatesManager />);
+    await user.click(screen.getByRole('button', { name: 'Import a template' }));
+    await user.click(screen.getByRole('button', { name: 'Bundle imported' }));
+    await waitFor(() => expect(mocks.handleError).toHaveBeenCalledWith(failure));
+    mocks.refetchResult = () => Promise.resolve();
   });
 });

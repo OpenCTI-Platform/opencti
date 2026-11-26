@@ -106,9 +106,10 @@ const FintelTemplatesManager = () => {
 
   const currentDefaultName = fintelTemplates?.edges.find(({ node }) => node.default)?.node.name;
 
-  // After the import of templates from a configuration bundle: the entity type is read again, its templates with it
+  // After the import of templates from a configuration bundle: the entity type is read again, its templates with it.
+  // A read that fails is said, as the other reads of this page are: the import itself is done
   const onBundleImported = () => {
-    fetchQuery<SubTypeQuery>(subTypeQuery, { id: subType.id }, { fetchPolicy: 'network-only' }).toPromise();
+    fetchQuery<SubTypeQuery>(subTypeQuery, { id: subType.id }, { fetchPolicy: 'network-only' }).toPromise().catch((err) => handleError(err));
   };
 
   return (
