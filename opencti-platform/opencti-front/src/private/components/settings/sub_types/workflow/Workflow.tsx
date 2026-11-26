@@ -584,7 +584,7 @@ const Workflow = ({
                   top: '40%',
                 }}
               >
-                <Typography variant="subtitle2" color={theme.palette.text.light}>
+                <Typography variant="subtitle2" color={theme.palette.text.light} sx={{ textAlign: 'center' }}>
                   {canMigrate
                     ? t_i18n('This type has legacy statuses: migrate them to start your workflow, or define a new one by adding a Status.')
                     : t_i18n('Start to define your workflow by adding a Status.')}
