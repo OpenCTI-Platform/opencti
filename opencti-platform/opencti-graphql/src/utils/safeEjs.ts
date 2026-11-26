@@ -678,18 +678,29 @@ interface SafeRealm {
 const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
   clone: sandbox.runInContext(`(value) => {
     const brand = Object.prototype.toString;
+    const translateError = (error) => {
+      let message = '';
+      let name = 'Error';
+      try {
+        if (error != null) {
+          message = error.message == null ? '' : String(error.message);
+          name = error.name == null ? 'Error' : String(error.name);
+        }
+      } catch { /* keep the defaults */ }
+      const translated = new Error(message);
+      translated.name = name;
+      return translated;
+    };
     const wrapFunction = (fn, seen) => {
       const wrapper = function (...args) {
-        const copies = new Map();
-        const receiver = this === globalThis ? undefined : clone(this, copies);
-        const copiedArgs = args.map((arg) => clone(arg, copies));
-        let result;
-        try { result = Reflect.apply(fn, receiver, copiedArgs); } catch (error) {
-          const translated = new Error(error == null ? '' : error.message);
-          translated.name = error == null ? 'Error' : error.name;
-          throw translated;
+        try {
+          const copies = new Map();
+          const receiver = this === globalThis ? undefined : clone(this, copies);
+          const copiedArgs = args.map((arg) => clone(arg, copies));
+          return clone(Reflect.apply(fn, receiver, copiedArgs), new Map());
+        } catch (error) {
+          throw translateError(error);
         }
-        return clone(result, new Map());
       };
       seen.set(fn, wrapper);
       return wrapper;

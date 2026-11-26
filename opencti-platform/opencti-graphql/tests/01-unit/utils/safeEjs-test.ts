@@ -996,6 +996,17 @@ describe('check safeRender with functions in data', () => {
     expect(safeRender(template, { fail: failWithNull })).toEqual('');
   });
 
+  it('should surface the message of an error thrown while reading the result of a data function', () => {
+    const data = {
+      read: () => ({
+        get value() {
+          throw new Error('unreadable');
+        },
+      }),
+    };
+    expect(safeRender('<% let m = "none"; try { read(); } catch (e) { m = e.message; } %><%= m %>', data)).toEqual('unreadable');
+  });
+
   it('should give a template callback the values a data function passes and return its result', () => {
     const data = { apply: (cb: (o: { v: number }) => unknown) => cb({ v: 41 }) };
     expect(safeRender('<%= apply((o) => o.v + 1) %>', data)).toEqual('42');
