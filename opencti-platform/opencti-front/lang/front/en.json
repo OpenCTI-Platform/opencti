@@ -4521,6 +4521,7 @@
   "Playground": "Playground",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]",
+  "Please ask your administrator to enable the Enterprise Edition.": "Please ask your administrator to enable the Enterprise Edition.",
   "Please choose a user responsible for data creation": "Please choose a user responsible for data creation",
   "Please connect your product so you can deploy resources": "Please connect your product so you can deploy resources",
   "Please contact an administrator": "Please contact an administrator",

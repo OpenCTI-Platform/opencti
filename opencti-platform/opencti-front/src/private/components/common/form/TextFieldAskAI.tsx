@@ -19,7 +19,7 @@ import React, { CSSProperties, FunctionComponent, useRef, useState } from 'react
 import { graphql } from 'react-relay';
 import { v4 as uuid } from 'uuid';
 import { useFormatter } from '../../../../components/i18n';
-import EETooltip from '../entreprise_edition/EETooltip';
+import EETooltipBase from '../entreprise_edition/EETooltipBase';
 import ValidateTermsOfUseDialog from '../../settings/ValidateTermsOfUseDialog';
 import useGranted, { SETTINGS_SETPARAMETERS } from '../../../../utils/hooks/useGranted';
 
@@ -293,7 +293,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const renderButton = () => {
     return (
       <>
-        <EETooltip forAi={true} title={tooltipTitle}>
+        <EETooltipBase forAi={true} title={tooltipTitle}>
           <span style={{ display: 'inline-flex' }}>
             <IconButton
               aria-label={t_i18n('Open menu')}
@@ -306,7 +306,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
               <FiligranIcon icon={LogoXtmOneIcon} size="small" />
             </IconButton>
           </span>
-        </EETooltip>
+        </EETooltipBase>
         <Menu
           id={menuId}
           anchorEl={menuOpen.anchorEl}

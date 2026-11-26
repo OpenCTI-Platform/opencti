@@ -258,6 +258,21 @@ export default defineConfig([
     },
   },
 
+  // The markdown fields are imported by most forms and pull in the AI, Enterprise
+  // Edition and feedback flows, which render forms of their own: an import cycle
+  // through them lets a module be handed out before its exports are assigned
+  // (vitest, isolate: false). Scoped: the whole front has many cycles and the rule
+  // parses every module the linted file reaches.
+  {
+    files: ['src/components/fields/markdownField/**'],
+    settings: {
+      'import/parsers': { '@typescript-eslint/parser': ['.ts', '.tsx', '.js', '.jsx'] },
+    },
+    rules: {
+      'import/no-cycle': ['error', { ignoreExternal: true }],
+    },
+  },
+
   // Playwright fixtures and the maintenance scripts run in Node, not in a browser, so
   // they see Node's globals rather than the browser ones the app code is checked against.
   {

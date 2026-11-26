@@ -4521,6 +4521,7 @@
   "Playground": "놀이 공간",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "각 값을 큰따옴표 사이에 대괄호 & 를 추가하세요(고유한 값인 경우에도). 예를 들어 [\"value1;, \"value2;]]",
+  "Please ask your administrator to enable the Enterprise Edition.": "관리자에게 Enterprise Edition을 활성화해 달라고 요청하세요.",
   "Please choose a user responsible for data creation": "데이터 생성 담당 사용자를 선택하세요",
   "Please connect your product so you can deploy resources": "리소스를 배포하려면 제품을 연결해 주세요",
   "Please contact an administrator": "관리자에게 문의하세요",

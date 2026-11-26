@@ -1,6 +1,6 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { CGUStatus, experienceFieldPatch } from '@components/settings/Experience';
+import { CGUStatus, experienceFieldPatch } from '@components/settings/ExperienceFieldPatch';
 import { DialogActions, FormControlLabel, Stack } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import React from 'react';

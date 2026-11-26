@@ -4521,6 +4521,7 @@
   "Playground": "Playground",
   "PLC": "PLC",
   "Please add square bracket & each value between double quotes (even for unique value). For example: [\"value1\", \"value2\"]": "请在双引号之间的每个值（即使是唯一值）加上方括号 &。例如[\"value1\", \"value2\"]",
+  "Please ask your administrator to enable the Enterprise Edition.": "请联系您的管理员启用企业版。",
   "Please choose a user responsible for data creation": "请选择负责创建数据的用户",
   "Please connect your product so you can deploy resources": "请连接您的产品，以便部署资源",
   "Please contact an administrator": "请联系管理员",
