@@ -87,7 +87,7 @@ In the **Request access** scope, a **Validator group** select sets the group of 
 
 ### Set up the workflow
 
-1. **Migrate the legacy statuses (optional).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The **Publish immediately** switch is on by default: the migrated workflow is published at once, and new requests follow it. Turn it off to review the result as a draft first. The migration replaces the current draft of the request access workflow, and asks for a confirmation when a draft already exists.
+1. **Migrate the legacy statuses (optional).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The **Publish immediately** switch is on by default: the migrated workflow is published at once, and new requests follow it. Turn it off to review the result as a draft first. The migration replaces the current draft of the request access workflow, and asks for a confirmation when a draft already exists. The button is only shown until a request access workflow is published: the migration never replaces a published workflow. If the publish fails, the migration is undone and the previous draft is restored, so you can fix the problem and retry.
 
     ![Migration of the request access statuses](assets/request-access/workflow-migration.jpg)
 

@@ -192,7 +192,7 @@ A transition that is blocked only by a condition on the entity, for example *has
 | **Unshare from organizations** | Removes organization sharing. Same behavior as above. |
 | **Update authorized members** | *Replaces* the authorized members of the entity. Dynamic members are available: author, creators, assignees, participants. Only on the types that support authorized members: Organization, Report, Note, Grouping, Incident response, Request for takedown, Request for information, and Draft. Publishing is refused on any other type. |
 | **Reset authorized members** | Removes the authorized members restriction of the entity, so it is no longer restricted to specific members. Same entity types as *Update authorized members*, and not combined with it on the same transition. |
-| **Comment** | Asks for a comment of up to 1,000 characters, optional or required. The comment is stored in the workflow history and notifies the entity's assignees and participants. |
+| **Comment** | Asks for a comment of up to 1,000 characters, optional or required. The comment is stored in the workflow history and notifies the entity's assignees and participants. A blank comment counts as no comment. A transition that does not ask for a comment refuses one sent through the API. |
 | **Validate draft** | Draft workflow only. See [Draft workflow](draft-workflow.md). |
 
 ### Actions on statuses
@@ -395,7 +395,7 @@ A [playbook](playbook-automation.md) component **Manipulate knowledge** can repl
 |---|---|
 | Create, edit, publish, restore a workflow | *Manage customization* |
 | Take a transition | *Update knowledge*, edit access to the entity, and matching transition conditions |
-| Skip a required comment or closing reason | *Bypass mandatory fields* |
+| Skip a required comment or closing reason | *Bypass mandatory fields*, granted outside drafts (a capability granted only inside a draft does not count) |
 | Bypass, clear a failed transition, edit the closing reason directly | *Bypass all capabilities* |
 
 ## Issues and troubleshooting
