@@ -7004,6 +7004,15 @@
   "Across the XTM Platform": "Across the XTM Platform",
   "Not found across the XTM Platform": "Not found across the XTM Platform",
   "Found": "Found",
+  "Import progress": "Import progress",
+  "Items to check ({count})": "Items to check ({count})",
   "Not found": "Not found",
-  "Unavailable": "Unavailable"
+  "The first {shown} of {count} are listed.": "The first {shown} of {count} are listed.",
+  "The first {shown} of {count} are listed. The report holds the complete list.": "The first {shown} of {count} are listed. The report holds the complete list.",
+  "Unavailable": "Unavailable",
+  "{count} created": "{count} created",
+  "{count} failed": "{count} failed",
+  "{count} overwritten": "{count} overwritten",
+  "{count} skipped": "{count} skipped",
+  "{count} up to date": "{count} up to date"
 }

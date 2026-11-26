@@ -35,7 +35,22 @@ const configPresetImportWizardQuery = graphql`
         }
       }
       total
-      results {
+      processed
+      type_counts {
+        type
+        type_label
+        type_index
+        group {
+          key
+          label
+        }
+        created
+        overwritten
+        unchanged
+        skipped
+        failed
+      }
+      problems {
         type
         key
         status
@@ -44,19 +59,18 @@ const configPresetImportWizardQuery = graphql`
         label
         translatable
         type_label
-        type_index
-        group {
-          key
-          label
-        }
+      }
+      recent {
+        type
+        key
+        status
+        reason
+        code
+        label
+        translatable
+        type_label
       }
       outcome
-      counts {
-        created
-        overwritten
-        skipped
-        failed
-      }
       report_id
       available_events
     }
@@ -74,7 +88,9 @@ const configPresetImportWizardApplyMutation = graphql`
     $service_accounts: [ConfigPresetItemServiceAccountInput!]
   ) {
     configPresetImport(file_id: $file_id, selections: $selections, dry_run: $dry_run, credentials: $credentials, service_accounts: $service_accounts) {
-      results {
+      # The results of the items are the expected ones of a dry run. A real import does not ask for them: the session holds the counts and the
+      # problems, the report the rest, and there are tens of thousands of them for a big bundle.
+      results @include(if: $dry_run) {
         type
         key
         status
@@ -215,7 +231,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
   const handleSimulate: ConfigPresetImportPreviewProps['onSimulate'] = (fileId, selections, itemOptions, { onCompleted, onError }) => {
     commitApply({
       variables: { file_id: fileId, selections, dry_run: true, ...itemOptions },
-      onCompleted: (response) => onCompleted(response.configPresetImport.results),
+      onCompleted: (response) => onCompleted(response.configPresetImport.results ?? []),
       onError,
     });
   };
