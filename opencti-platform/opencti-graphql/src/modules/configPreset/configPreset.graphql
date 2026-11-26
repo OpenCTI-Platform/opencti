@@ -82,6 +82,8 @@ type ConfigPresetImportItem {
     serviceAccountRequired: Boolean!
     # A setting that is on or off: whether the bundle turns it on, shown under its label. Null for an item that is not one, or a setting the bundle does not set.
     isEnabled: Boolean
+    # Why the platform cannot import the item, from the version it was exported with; null when it can. Imported, it is skipped with this reason.
+    incompatibility: String
     # Items imported with this one, whatever the selection.
     dependsOn: [ConfigPresetItemReference!]!
 }

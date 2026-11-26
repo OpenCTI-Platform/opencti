@@ -4691,6 +4691,7 @@ export type ConfigPresetImportItem = {
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
   fields: Array<ConfigPresetImportField>;
+  incompatibility?: Maybe<Scalars['String']['output']>;
   isDefault: Scalars['Boolean']['output'];
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
   key: Scalars['String']['output'];
@@ -45842,6 +45843,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
+  incompatibility?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

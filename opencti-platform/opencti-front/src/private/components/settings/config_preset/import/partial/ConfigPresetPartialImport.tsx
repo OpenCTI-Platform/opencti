@@ -11,7 +11,7 @@ import type { FieldOption } from '../../../../../../utils/field';
 import { type ConfigImportMode, isConfigImportMode } from '../../configImportMode';
 import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
-import ConfigPresetResultLine from '../ConfigPresetResultLine';
+import ConfigPresetResultLine, { translateReasons } from '../ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from '../ConfigPresetCredentialsDialog';
 import ConfigPresetCredentialsItemRow from '../ConfigPresetCredentialsItemRow';
 import ConfigPresetServiceAccountDialog from '../ConfigPresetServiceAccountDialog';
@@ -47,6 +47,7 @@ const configPresetPartialImportPreviewMutation = graphql`
           exists
           conflict
           serviceAccountRequired
+          incompatibility
           credentials {
             key
             description
@@ -308,7 +309,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
                   <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
                     <Checkbox
                       label={itemLabel(item)}
-                      description={item.conflict ? t_i18n('Already exists') : undefined}
+                      description={item.incompatibility ? translateReasons(t_i18n, item.incompatibility) : (item.conflict ? t_i18n('Already exists') : undefined)}
                       checked={isImported(item)}
                       disabled={importing}
                       onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}

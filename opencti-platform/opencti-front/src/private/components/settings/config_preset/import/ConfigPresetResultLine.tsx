@@ -166,6 +166,18 @@ const translateKnownReason = (t_i18n: Translate, reason: string): string | undef
   if (createdJsonMapper) {
     return t_i18n('JSON mapper created: {name}', { values: { name: createdJsonMapper } });
   }
+  const recentVersion = reason.match(/^Exported from a more recent platform: (.+)$/)?.[1];
+  if (recentVersion) {
+    return t_i18n('Exported from a more recent platform: {version}', { values: { version: recentVersion } });
+  }
+  const unsupportedVersion = reason.match(/^Exported from a version that is no longer supported: (.+) \(minimum (.+)\)$/);
+  if (unsupportedVersion) {
+    return t_i18n('Exported from a version that is no longer supported: {version} (minimum {minimum})', { values: { version: unsupportedVersion[1], minimum: unsupportedVersion[2] } });
+  }
+  const unreadableVersion = reason.match(/^Unreadable version: (.+)$/)?.[1];
+  if (unreadableVersion) {
+    return t_i18n('Unreadable version: {version}', { values: { version: unreadableVersion } });
+  }
   const unavailableConnector = reason.match(/^Connector not available on this platform: (.+)$/)?.[1];
   if (unavailableConnector) {
     return t_i18n('Connector not available on this platform: {image}', { values: { image: unavailableConnector } });

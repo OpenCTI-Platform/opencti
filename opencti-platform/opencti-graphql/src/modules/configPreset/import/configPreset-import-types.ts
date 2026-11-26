@@ -10,6 +10,8 @@ export const CONFIG_PRESET_REASON_BUNDLE_REFUSED = 'bundle_refused';
 // Why an item of a family that requires the Enterprise Edition is skipped on a platform without it: shown to the user as is (the front translates it)
 export const CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED = 'Requires Enterprise Edition';
 
+export const CONFIG_PRESET_CODE_INCOMPATIBLE_VERSION = 'incompatible_version';
+
 // What an import does with the items of a family that already exist, chosen by family: a family without a choice overwrites
 export const CONFIG_PRESET_DEFAULT_IMPORT_MODE = ConfigImportMode.Overwrite;
 
@@ -27,6 +29,8 @@ export interface ConfigPresetBundleItem {
   id: string;
   // Path in the zip
   path: string;
+  // The version the item was exported with, the one of the bundle when its file has none
+  openCTI_version?: string;
   configuration: ConfigPresetConfiguration;
   // The attachment of the item in the zip (the values of an exclusion list): absent when the item has none, or when the zip lacks it
   attachment?: ConfigPresetBundleAttachment;

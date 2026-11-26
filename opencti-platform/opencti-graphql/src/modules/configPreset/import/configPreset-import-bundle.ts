@@ -60,7 +60,13 @@ const metadataSchema = z.object({
   bundle_name: z.string().nullish().transform((name) => name ?? null),
 });
 const dependenciesSchema = z.record(z.string(), z.record(z.string(), z.record(z.string(), z.string())));
-const itemFileSchema = z.object({ type: z.string(), id: z.string(), configuration: z.record(z.string(), z.unknown()), attachment: z.string().optional() });
+const itemFileSchema = z.object({
+  openCTI_version: z.string().optional(),
+  type: z.string(),
+  id: z.string(),
+  configuration: z.record(z.string(), z.unknown()),
+  attachment: z.string().optional(),
+});
 
 // A bundle from a more recent platform is refused; a -dev or -rc suffix is ignored and an unreadable version is refused.
 // Not isCompatibleVersionWithMinimal: it has no coerce and throws on a non-semver string.
@@ -176,7 +182,13 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
             if (items.some((item) => item.type === family.id && item.id === parsed.data.id)) {
               throw bundleRefused('The configuration bundle holds the same item twice', { type: parsed.data.type, id: parsed.data.id });
             }
-            items.push({ type: family.id, id: parsed.data.id, path: entry.path, configuration: parsed.data.configuration });
+            items.push({
+              type: family.id,
+              id: parsed.data.id,
+              path: entry.path,
+              openCTI_version: parsed.data.openCTI_version,
+              configuration: parsed.data.configuration,
+            });
             if (parsed.data.attachment) {
               attachmentPaths.set(entry.path, parsed.data.attachment);
             }
@@ -189,6 +201,10 @@ export const readConfigPresetBundle = async (zip: Buffer): Promise<ConfigPresetB
     throw bundleRefused(`The configuration bundle has no valid ${CONFIG_PRESET_METADATA_FILE}`);
   }
   checkBundleVersion(metadata.openCTI_version);
+  const bundleVersion = metadata.openCTI_version;
+  items.forEach((item) => {
+    item.openCTI_version ??= bundleVersion;
+  });
   // The attachment of an item is the entry of the zip at the path its JSON gives, never a path of the disk. A path that is no entry gives no
   // attachment, and an entry serves one item only.
   const claimed = new Set<string>();
