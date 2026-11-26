@@ -8,7 +8,7 @@ import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
 import { getManagerConfigurationFromCache } from '../modules/managerConfiguration/managerConfiguration-domain';
 import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfiguration-utils';
-import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
+import { isPublicDashboardUser, isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
 import { extractContentFrom } from '../utils/fileToContent';
@@ -208,6 +208,9 @@ export const batchFileMarkingDefinitions = async (context, user, files) => {
 };
 
 export const batchFileWorks = async (context, user, files) => {
+  if (isPublicDashboardUser(user)) {
+    return files.map(() => []);
+  }
   const getWorkForFileFn = async () => {
     const filters = {
       mode: FilterMode.And,
