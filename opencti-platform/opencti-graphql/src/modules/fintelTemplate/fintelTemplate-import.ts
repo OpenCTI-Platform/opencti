@@ -68,11 +68,13 @@ const prepareWidgets = async (context: AuthContext, user: AuthUser, widgets: Fin
   if (!widgets) {
     return undefined;
   }
+  // The variable names, with the reason of the platform: the schema has checked the shape of the selections the check reads
+  checkFintelTemplateWidgetsValidity(widgets as unknown as FintelTemplateWidgetAddInput[]);
   try {
-    checkFintelTemplateWidgetsValidity(widgets as unknown as FintelTemplateWidgetAddInput[]);
     // The conversion writes in the widgets: a copy, so that the configuration of the result stays the one of the bundle
     return await toImportedFintelTemplateWidgets(context, user, R.clone(widgets) as unknown as FintelTemplateWidgetFromImport[]);
   } catch (error) {
+    // Only the content of the filter groups is left unchecked by the schema: a group the conversion cannot walk is their fault
     if (error instanceof TypeError) {
       throw FunctionalError('The filters of the widgets are malformed');
     }

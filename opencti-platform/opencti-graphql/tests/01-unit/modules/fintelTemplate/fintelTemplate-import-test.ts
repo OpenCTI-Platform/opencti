@@ -82,6 +82,12 @@ describe('Fintel template import schema', () => {
     expect(parses([{ filters: '{"mode":"and","filters":[],"filterGroups":[]}' }])).toBe(false);
     expect(parses([{ dynamicFrom: [] }])).toBe(false);
     expect(parses([{ dynamicTo: 1 }])).toBe(false);
+    // The instance an attribute widget shows and its columns, read by the platform without checking
+    expect(parses([{ instance_id: 123 }])).toBe(false);
+    expect(parses([{ columns: {} }])).toBe(false);
+    expect(parses([{ columns: [null] }])).toBe(false);
+    expect(parses([{ columns: [{ label: 'Name', variableName: 1 }] }])).toBe(false);
+    expect(parses([{ instance_id: null, columns: null }])).toBe(true);
     // No filter, or none written: a widget of attributes of the instance has none
     expect(parses([{ filters: null, dynamicFrom: undefined }, { instance_id: 'SELF_ID' }])).toBe(true);
   });
@@ -168,6 +174,21 @@ describe('Fintel template import', () => {
     // The configuration of the result stays the one of the bundle
     const bundleSelection = expect.objectContaining({ filters: {} });
     expect(configuration.fintel_template_widgets).toEqual([expect.objectContaining({ widget: expect.objectContaining({ dataSelection: [bundleSelection] }) })]);
+  });
+
+  it('refuses a widget with the reason of what it breaks: its variables, or filters the conversion cannot walk, and fails on any other error', async () => {
+    const attributes = (columns: unknown[]) => [{ variable_name: 'attributes', widget: { type: 'attribute', dataSelection: [{ instance_id: 'SELF_ID', columns }] } }];
+    expect(await importFintelTemplate(context, user, { ...configuration, fintel_template_widgets: attributes([{ label: 'Name', attribute: 'name' }]) }, overwrite))
+      .toMatchObject({ status: 'failed', code: 'invalid', reason: 'Attributes should all have a variable name' });
+    // Refused before any conversion of its filters
+    expect(vi.mocked(convertWidgetsIds).mock.calls.filter(([, , , from]) => from === 'stix')).toHaveLength(0);
+
+    vi.mocked(convertWidgetsIds).mockRejectedValueOnce(new TypeError('Cannot read properties of undefined'));
+    expect(await importFintelTemplate(context, user, configuration, overwrite)).toMatchObject({ status: 'failed', code: 'invalid', reason: 'The filters of the widgets are malformed' });
+    // A failure of the platform is not the item's: it stays an error
+    vi.mocked(convertWidgetsIds).mockRejectedValueOnce(new Error('Elasticsearch timeout'));
+    await expect(importFintelTemplate(context, user, configuration, overwrite)).rejects.toThrow('Elasticsearch timeout');
+    expect(addFintelTemplate).not.toHaveBeenCalled();
   });
 
   it('stores no filter for a selection that has none, never the text of a null', async () => {

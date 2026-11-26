@@ -21,6 +21,10 @@ const fintelTemplateWidgetSchema = z.object({
   widget: z.looseObject({
     type: z.string(),
     dataSelection: z.array(z.looseObject({
+      // The instance an attribute widget shows: the one the template is applied to (SELF_ID), or a given entity by its standard id
+      instance_id: z.string().nullable().optional(),
+      // The attributes an attribute widget shows, each with the variable the template content reads it by
+      columns: z.array(z.looseObject({ variableName: z.string().nullable().optional() })).nullable().optional(),
       filters: widgetFiltersSchema,
       dynamicFrom: widgetFiltersSchema,
       dynamicTo: widgetFiltersSchema,
