@@ -1,6 +1,6 @@
-import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
-import { insertNode } from '../../../../utils/store';
+import { deleteNodeFromId, insertNode } from '../../../../utils/store';
 // The generated requests are imported directly: importing them from ContainerAddStixCoreObjectsLines would create an import cycle
 import relationAddMutation from './__generated__/ContainerAddStixCoreObjectsLinesRelationAddMutation.graphql';
 import relationDeleteMutation from './__generated__/ContainerAddStixCoreObjectsLinesRelationDeleteMutation.graphql';
@@ -28,12 +28,6 @@ export interface ContainerObjectMutationArgs {
   optimisticUpdater?: () => void;
 }
 
-// ID and count are not valid connection filters
-const connectionFilters = (paginationOptions?: Record<string, unknown>) => {
-  const { id: _, count: __, ...filters } = paginationOptions ?? {};
-  return filters;
-};
-
 /** Adds an object to a container (`object` ref), like ticking it in the container's add panel. */
 export const addObjectToContainer = ({
   containerId,
@@ -53,7 +47,7 @@ export const addObjectToContainer = ({
       insertNode(
         store,
         'Pagination_objects',
-        connectionFilters(paginationOptions),
+        paginationOptions,
         'containerEdit',
         containerId,
         'relationAdd',
@@ -79,13 +73,7 @@ export const removeObjectFromContainer = ({
     mutation: knowledgeGraph ? knowledgeGraphRelationDeleteMutation : relationDeleteMutation,
     variables: { id: containerId, toId: objectId, relationship_type: 'object', commitMessage, references },
     updater: knowledgeGraph ? undefined : (store: RecordSourceSelectorProxy) => {
-      const containerRecord = store.get(containerId);
-      const conn = containerRecord && ConnectionHandler.getConnection(
-        containerRecord,
-        'Pagination_objects',
-        connectionFilters(paginationOptions),
-      );
-      if (conn) ConnectionHandler.deleteNode(conn, objectId);
+      deleteNodeFromId(store, containerId, 'Pagination_objects', paginationOptions, objectId);
     },
     onCompleted: () => resolve(),
     onError: (error: Error) => reject(error),
