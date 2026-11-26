@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import userResolvers from '../../../../src/modules/user/user-resolver';
+import { findUserLoginHistory } from '../../../../src/modules/user/user-login-history';
 import { ENTITY_TYPE_USER } from '../../../../src/modules/user/user-types';
 import { ENTITY_TYPE_GROUP } from '../../../../src/schema/internalObject';
 
@@ -8,6 +9,11 @@ type FieldResolver<R> = (parent: unknown, args: unknown, context: unknown, info:
 const resolveField = <R>(resolver: unknown, parent: unknown, context: unknown = {}): R => {
   return (resolver as FieldResolver<R>)(parent, {}, context, {});
 };
+
+vi.mock('../../../../src/modules/user/user-login-history', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/user/user-login-history')>()),
+  findUserLoginHistory: vi.fn(async () => []),
+}));
 
 const meUserResolvers = userResolvers.MeUser as Record<string, unknown>;
 const memberResolvers = userResolvers.Member as Record<string, unknown>;
@@ -35,6 +41,19 @@ describe('User resolvers', () => {
       expect(resolveField(meUserResolvers.submenu_auto_collapse, { submenu_auto_collapse: false })).toEqual(false);
       expect(resolveField(meUserResolvers.monochrome_labels, { monochrome_labels: true })).toEqual(true);
       expect(resolveField(meUserResolvers.unsubscribed_news_feed_types, { unsubscribed_news_feed_types: ['alert'] })).toEqual(['alert']);
+    });
+  });
+
+  describe('MeUser login history', () => {
+    it('should read the logins of the authenticated user, never of the resolved user', async () => {
+      // A mutation such as otpUserDeactivation(id) resolves a MeUser of another user (B):
+      // the login history must still be the one of the caller (A)
+      const caller = { id: 'user-a' };
+      const resolvedUser = { id: 'user-b', entity_type: ENTITY_TYPE_USER };
+      const context = { user: caller };
+      await resolveField(meUserResolvers.login_history, resolvedUser, context);
+      expect(findUserLoginHistory).toHaveBeenCalledTimes(1);
+      expect(findUserLoginHistory).toHaveBeenCalledWith(context, caller);
     });
   });
 

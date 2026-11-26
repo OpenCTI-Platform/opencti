@@ -4,7 +4,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useHelper from '../../../utils/hooks/useHelper';
 import { ProfileLoginHistory_me$key } from './__generated__/ProfileLoginHistory_me.graphql';
 
 const profileLoginHistoryFragment = graphql`
@@ -26,10 +25,9 @@ interface ProfileLoginHistoryProps {
 // The last successful logins of the connected user, read from the activity log (Enterprise Edition)
 const ProfileLoginHistory: React.FC<ProfileLoginHistoryProps> = ({ me, loginHistoryCount }) => {
   const { t_i18n, fldt } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { login_history } = useFragment(profileLoginHistoryFragment, me);
-  if (!isFeatureEnable('LOGIN_HISTORY') || !isEnterpriseEdition || loginHistoryCount <= 0) {
+  if (!isEnterpriseEdition || loginHistoryCount <= 0) {
     return null;
   }
   const logins = login_history ?? [];

@@ -1,4 +1,4 @@
-import { isFeatureEnabled, logApp, LOGIN_HISTORY_FEATURE_FLAG } from '../../config/conf';
+import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { getEntityFromCache } from '../../database/cache';
 import { elRawSearch } from '../../database/engine';
@@ -25,11 +25,8 @@ export const isValidLoginHistoryCount = (value: unknown): value is number => {
   return Number.isInteger(value) && (value as number) >= 0 && (value as number) <= LOGIN_HISTORY_MAX_COUNT;
 };
 
-// The only reader of the setting: 0 when the feature flag is off or the stored value is not usable.
+// The only reader of the setting: 0 when it is not set or the stored value is not usable.
 export const readLoginHistoryCount = (settings: Pick<BasicStoreSettings, 'platform_login_history_count'> | null | undefined): number => {
-  if (!isFeatureEnabled(LOGIN_HISTORY_FEATURE_FLAG)) {
-    return 0;
-  }
   const value = settings?.platform_login_history_count;
   if (value === undefined || value === null) {
     return 0;
@@ -43,9 +40,6 @@ export const readLoginHistoryCount = (settings: Pick<BasicStoreSettings, 'platfo
 
 // Checks the values of a settings edit of the login history count. The edit values come as strings or numbers
 export const checkLoginHistoryCountEdit = (values: unknown[] | null | undefined) => {
-  if (!isFeatureEnabled(LOGIN_HISTORY_FEATURE_FLAG)) {
-    throw FunctionalError('The login history is not available');
-  }
   const [value] = values ?? [];
   const count = typeof value === 'string' && value.trim() !== '' ? Number(value) : value;
   if ((values ?? []).length !== 1 || !isValidLoginHistoryCount(count)) {

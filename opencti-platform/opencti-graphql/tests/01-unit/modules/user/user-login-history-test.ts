@@ -13,12 +13,11 @@ vi.mock('../../../../src/config/conf', async () => {
   const actual = await vi.importActual('../../../../src/config/conf');
   return {
     ...actual,
-    isFeatureEnabled: vi.fn(() => true),
     logApp: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
   };
 });
 
-import { isFeatureEnabled, logApp } from '../../../../src/config/conf';
+import { logApp } from '../../../../src/config/conf';
 import { getEntityFromCache } from '../../../../src/database/cache';
 import { elRawSearch } from '../../../../src/database/engine';
 import { isEnterpriseEditionFromSettings } from '../../../../src/enterprise-edition/ee';
@@ -37,7 +36,6 @@ const user = { id: 'user-1' } as any;
 describe('login history count', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
   });
 
   it('accepts integers from 0 to the maximum only', () => {
@@ -56,11 +54,6 @@ describe('login history count', () => {
     expect(logApp.warn).toHaveBeenCalledTimes(3);
   });
 
-  it('reads 0 when the feature flag is off', () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    expect(readLoginHistoryCount({ platform_login_history_count: 5 })).toBe(0);
-  });
-
   it('accepts an edit of an integer in the range, as a number or a string', () => {
     [[0], [5], ['5'], [String(LOGIN_HISTORY_MAX_COUNT)]].forEach((values) => expect(() => checkLoginHistoryCountEdit(values)).not.toThrow());
   });
@@ -70,17 +63,11 @@ describe('login history count', () => {
       expect(() => checkLoginHistoryCountEdit(values)).toThrow(`between 0 and ${LOGIN_HISTORY_MAX_COUNT}`);
     });
   });
-
-  it('refuses an edit when the feature flag is off', () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    expect(() => checkLoginHistoryCountEdit([5])).toThrow('not available');
-  });
 });
 
 describe('user login history', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(isEnterpriseEditionFromSettings).mockReturnValue(true);
     vi.mocked(getEntityFromCache).mockResolvedValue({ platform_login_history_count: 3 } as any);
   });
@@ -115,11 +102,10 @@ describe('user login history', () => {
     expect(elRawSearch).not.toHaveBeenCalled();
   });
 
-  it('reads nothing when the count is 0 or the feature flag is off', async () => {
+  it('reads nothing when the count is 0 or not set', async () => {
     vi.mocked(getEntityFromCache).mockResolvedValue({ platform_login_history_count: 0 } as any);
     expect(await findUserLoginHistory(context, user)).toEqual([]);
-    vi.mocked(getEntityFromCache).mockResolvedValue({ platform_login_history_count: 3 } as any);
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+    vi.mocked(getEntityFromCache).mockResolvedValue({} as any);
     expect(await findUserLoginHistory(context, user)).toEqual([]);
     expect(elRawSearch).not.toHaveBeenCalled();
   });

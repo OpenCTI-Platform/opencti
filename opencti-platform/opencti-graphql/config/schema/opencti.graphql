@@ -1582,7 +1582,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_messages: [SettingsMessage!]
   platform_session_max_concurrent: Int
   platform_session_presence_enabled: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
-  platform_login_history_count: Int @ff(flags: ["LOGIN_HISTORY"], softFail: true, defaultValue: "0")
+  platform_login_history_count: Int
   # False while several nodes serve the API: no session is then logged out when its last tab is closed
   platform_session_presence_supported: Boolean! @ff(flags: ["SESSION_PRESENCE"], softFail: true, defaultValue: "false")
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])

@@ -169,7 +169,7 @@ type MeUser implements BasicObject & InternalObject {
   unsubscribed_news_feed_types: [String!]
   can_manage_sensitive_config: Boolean
   draftContext: DraftWorkspace
-  login_history: [UserLogin!] @ff(flags: ["LOGIN_HISTORY"], softFail: true, defaultValue: "[]")
+  login_history: [UserLogin!]
 }
 
 type UserLogin {

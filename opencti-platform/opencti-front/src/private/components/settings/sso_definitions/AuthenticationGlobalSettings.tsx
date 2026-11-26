@@ -164,7 +164,8 @@ const AuthenticationGlobalSettingsContent = () => {
                   <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />
                 </>
               )}
-              {isFeatureEnable('LOGIN_HISTORY') && (
+              {/* The margin stays on a wrapper: a style on the field would move it off the design-system Input */}
+              <div style={{ marginTop: 20 }}>
                 <Field
                   component={TextField}
                   type="number"
@@ -175,11 +176,10 @@ const AuthenticationGlobalSettingsContent = () => {
                   label={t_i18n('Last logins shown in the user profile (0 to hide them)')}
                   fullWidth
                   disabled={!isEnterpriseEdition}
-                  style={{ marginTop: 20 }}
                   helperText={t_i18n('The logins are read from the activity log: available with the Enterprise Edition only.')}
                   onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
                 />
-              )}
+              </div>
             </Card>
           </Grid>
         </Grid>

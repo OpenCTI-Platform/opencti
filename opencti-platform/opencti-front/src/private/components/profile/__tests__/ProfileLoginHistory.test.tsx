@@ -5,14 +5,11 @@ import testRender from '../../../../utils/tests/test-render';
 import ProfileLoginHistory from '../ProfileLoginHistory';
 import { ProfileLoginHistory_me$key } from '../__generated__/ProfileLoginHistory_me.graphql';
 
-const flags = vi.hoisted(() => ({ loginHistory: true, enterpriseEdition: true }));
+const flags = vi.hoisted(() => ({ enterpriseEdition: true }));
 
 vi.mock('react-relay', async (importOriginal) => ({
   ...(await importOriginal<typeof import('react-relay')>()),
   useFragment: (_: unknown, ref: unknown) => ref,
-}));
-vi.mock('../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => flag === 'LOGIN_HISTORY' && flags.loginHistory }),
 }));
 vi.mock('../../../../utils/hooks/useEnterpriseEdition', () => ({
   default: () => flags.enterpriseEdition,
@@ -29,7 +26,6 @@ const LOGINS = [
 
 describe('ProfileLoginHistory', () => {
   beforeEach(() => {
-    flags.loginHistory = true;
     flags.enterpriseEdition = true;
   });
 
@@ -47,16 +43,11 @@ describe('ProfileLoginHistory', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
   });
 
-  it('is hidden when the count is 0, without Enterprise Edition or without the feature flag', () => {
+  it('is hidden when the count is 0 or without Enterprise Edition', () => {
     const { unmount } = testRender(<ProfileLoginHistory me={me(LOGINS)} loginHistoryCount={0} />);
     expect(screen.queryByText('Last logins')).not.toBeInTheDocument();
     unmount();
     flags.enterpriseEdition = false;
-    const second = testRender(<ProfileLoginHistory me={me(LOGINS)} loginHistoryCount={5} />);
-    expect(screen.queryByText('Last logins')).not.toBeInTheDocument();
-    second.unmount();
-    flags.enterpriseEdition = true;
-    flags.loginHistory = false;
     testRender(<ProfileLoginHistory me={me(LOGINS)} loginHistoryCount={5} />);
     expect(screen.queryByText('Last logins')).not.toBeInTheDocument();
   });

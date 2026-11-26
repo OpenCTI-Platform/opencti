@@ -39,7 +39,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 import { ENTITY_TYPE_WORKSPACE, WORK_INVESTIGATION_STATUS_VALUES } from '../workspace/workspace-types';
-import { LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, LOGIN_HISTORY_FEATURE_FLAG, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
+import { LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -265,7 +265,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'platform_notifier_auto_trigger_assignee', label: 'Auto-trigger notifications for assignees/participants', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_session_max_concurrent', label: 'Max concurrent sessions (0 equals no maximum)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_session_presence_enabled', label: 'Logout when the last tab is closed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: SESSION_PRESENCE_FEATURE_FLAG },
-    { name: 'platform_login_history_count', label: 'Number of last logins shown in the user profile', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOGIN_HISTORY_FEATURE_FLAG },
+    { name: 'platform_login_history_count', label: 'Number of last logins shown in the user profile', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'local_auth', label: 'Local authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'cert_auth', label: 'Client certificate authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'headers_auth', label: 'Header authentication configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
