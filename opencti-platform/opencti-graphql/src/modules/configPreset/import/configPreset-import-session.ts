@@ -125,12 +125,8 @@ const TRANSITIONS: ConfigPresetImportTransition[] = [
     to: 'APPLYING',
     apply: (session, { started_at, total, selections }) => ({ ...session!, status: 'APPLYING', started_at, total, selections, results: [] }),
   },
-  {
-    event: 'ITEM_PROCESSED',
-    from: 'APPLYING',
-    to: 'APPLYING',
-    apply: (session, { result }) => ({ ...session!, results: [...session!.results, result] }),
-  },
+  // The result of an item is appended to the list of its run (applyConfigPresetImportRunEvent): the session does not change
+  { event: 'ITEM_PROCESSED', from: 'APPLYING', to: 'APPLYING', apply: (session) => session },
   {
     event: 'FINISH',
     from: 'APPLYING',

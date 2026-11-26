@@ -57,11 +57,10 @@ describe('Config preset import session transitions', () => {
     refused(finished(), 'START', { started_at: 'x', total: 1, selections } as never);
   });
 
-  it('adds the result of each processed item while applying only', () => {
+  it('accepts the result of a processed item while applying only, and leaves the session as it is: the results have a list of their own', () => {
     const result = { type: 'messages', key: 'banner', status: 'OVERWRITTEN' as const, reason: null };
-    const progress = transition(applying(), 'ITEM_PROCESSED', { result })!;
-    expect(progress.results).toEqual([result]);
-    expect(transition(progress, 'ITEM_PROCESSED', { result })!.results).toHaveLength(2);
+    const session = applying();
+    expect(transition(session, 'ITEM_PROCESSED', { result })).toBe(session);
     refused(draft(), 'ITEM_PROCESSED', { result } as never);
   });
 

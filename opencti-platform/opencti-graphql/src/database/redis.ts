@@ -1392,6 +1392,33 @@ export const redisDeleteConfigPresetImportSession = async (userId: string) => {
   await getClientBase().del(configPresetImportSessionKey(userId));
 };
 
+// The results of the items of an import run, one list per user and run (its start date). The session keeps only its small fields:
+// a result is appended with one command, so the cost of a write does not grow with the number of results already stored.
+const configPresetImportResultsKey = (userId: string, startedAt: string) => `config_preset_import_results_${userId}_${startedAt}`;
+
+export const redisAppendConfigPresetImportResult = async (userId: string, startedAt: string, result: object) => {
+  const key = configPresetImportResultsKey(userId, startedAt);
+  await getClientBase().multi().rpush(key, JSON.stringify(result)).expire(key, CONFIG_PRESET_IMPORT_SESSION_TTL).exec();
+};
+
+// The results of a run in the order they were appended; an entry that cannot be parsed is skipped
+export const redisReadConfigPresetImportResults = async (userId: string, startedAt: string): Promise<object[]> => {
+  const raws = await getClientBase().lrange(configPresetImportResultsKey(userId, startedAt), 0, -1);
+  const results: object[] = [];
+  raws.forEach((raw) => {
+    try {
+      results.push(JSON.parse(raw));
+    } catch {
+      logApp.warn('[CONFIG PRESET] A result of the import could not be parsed', { user_id: userId });
+    }
+  });
+  return results;
+};
+
+export const redisDeleteConfigPresetImportResults = async (userId: string, startedAt: string) => {
+  await getClientBase().del(configPresetImportResultsKey(userId, startedAt));
+};
+
 // The running record of a real import: who, since when, how far. The other administrators read their banner from it.
 // The 24 h TTL is a safety net for a record left by a dead node, set in seconds on every write.
 const CONFIG_PRESET_IMPORT_RUNNING_KEY = 'config_preset_import_running';

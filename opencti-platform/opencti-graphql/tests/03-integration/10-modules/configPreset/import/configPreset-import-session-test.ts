@@ -6,7 +6,7 @@ import { ADMIN_USER, testContext, USER_EDITOR } from '../../../../utils/testQuer
 import { getClientBase, lockResource, redisSetConfigPresetImportSession } from '../../../../../src/database/redis';
 import { CONFIG_PRESET_IMPORT_LOCK_KEY } from '../../../../../src/modules/configPreset/import/configPreset-import-lock';
 import * as sessionDomain from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
-import { applyConfigPresetImportEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
+import { applyConfigPresetImportEvent, applyConfigPresetImportRunEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import * as fileStorage from '../../../../../src/database/file-storage';
 import * as rawFileStorage from '../../../../../src/database/raw-file-storage';
 import * as documentDomain from '../../../../../src/modules/internal/document/document-domain';
@@ -152,6 +152,74 @@ describe('Config preset import session', () => {
     const ttl = await getClientBase().ttl(`config_preset_import_session_${ADMIN_USER.id}`);
     expect(ttl).toBeGreaterThan(29 * 24 * 60 * 60);
     expect(ttl).toBeLessThanOrEqual(30 * 24 * 60 * 60);
+  });
+
+  describe('the results of a run', () => {
+    const startedAt = '2026-01-01T00:00:00.000Z';
+    const resultsKey = (at = startedAt) => `config_preset_import_results_${ADMIN_USER.id}_${at}`;
+    const result = (key: string) => ({ type: 'labels', key, status: 'CREATED' as const, reason: null });
+    const startRun = async () => {
+      await upload();
+      await applyConfigPresetImportEvent(testContext, ADMIN_USER, 'START', { started_at: startedAt, total: 3, selections: [] });
+    };
+    const storedSession = async () => JSON.parse((await getClientBase().get(`config_preset_import_session_${ADMIN_USER.id}`))!);
+
+    it('are appended to a list of their own, in order, and the stored session does not hold them', async () => {
+      await startRun();
+      const keys = ['a', 'b', 'c'];
+      for (let i = 0; i < keys.length; i += 1) {
+        expect(await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ITEM_PROCESSED', { result: result(keys[i]) })).toBe(true);
+      }
+      expect((await storedSession()).results).toEqual([]);
+      expect(await getClientBase().llen(resultsKey())).toBe(3);
+      const lock = await lockResource([CONFIG_PRESET_IMPORT_LOCK_KEY]);
+      try {
+        const session = await readSession();
+        expect(session.status).toEqual('APPLYING');
+        expect(session.results.map(({ key }: { key: string }) => key)).toEqual(keys);
+      } finally {
+        await lock.unlock();
+      }
+    });
+
+    it('keep the list with a TTL of 30 days, and after the end of the run', async () => {
+      await startRun();
+      await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ITEM_PROCESSED', { result: result('a') });
+      const ttl = await getClientBase().ttl(resultsKey());
+      expect(ttl).toBeGreaterThan(29 * 24 * 60 * 60);
+      await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'FINISH', { outcome: 'COMPLETED', counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 }, report_id: null });
+      const session = await readSession();
+      expect(session).toMatchObject({ status: 'FINISHED', outcome: 'COMPLETED' });
+      expect(session.results).toMatchObject([{ key: 'a' }]);
+    });
+
+    it('are read from the session of a version that stored them inside it', async () => {
+      await startRun();
+      const session = await storedSession();
+      await redisSetConfigPresetImportSession(ADMIN_USER.id, { ...session, status: 'FINISHED', outcome: 'COMPLETED', results: [result('old-1'), result('old-2')] });
+      expect((await readSession()).results).toMatchObject([{ key: 'old-1' }, { key: 'old-2' }]);
+    });
+
+    it('are skipped for a run that does not own the session, and no list is created', async () => {
+      await startRun();
+      const other = '2020-01-01T00:00:00.000Z';
+      expect(await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, other, 'ITEM_PROCESSED', { result: result('x') })).toBe(false);
+      expect(await getClientBase().exists(resultsKey(other))).toBe(0);
+    });
+
+    it('are deleted with the session, when it is closed, and when the import goes back to the draft', async () => {
+      await startRun();
+      await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ITEM_PROCESSED', { result: result('a') });
+      await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ABORT', undefined);
+      expect(await getClientBase().exists(resultsKey())).toBe(0);
+      expect(await readSession()).toMatchObject({ status: 'DRAFT', started_at: null, results: [] });
+      await applyConfigPresetImportEvent(testContext, ADMIN_USER, 'START', { started_at: startedAt, total: 1, selections: [] });
+      await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'ITEM_PROCESSED', { result: result('b') });
+      await applyConfigPresetImportRunEvent(testContext, ADMIN_USER, startedAt, 'FINISH', { outcome: 'COMPLETED', counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 }, report_id: null });
+      await queryAsAdminWithSuccess({ query: CLEAR_MUTATION, variables: { delete_file: true } });
+      expect(await getClientBase().exists(resultsKey())).toBe(0);
+      expect(await readSession()).toBeNull();
+    });
   });
 
   it('keeps a new upload when a previous one cannot be deleted', async () => {

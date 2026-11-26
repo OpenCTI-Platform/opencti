@@ -1,7 +1,14 @@
 import { logApp } from '../../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { deleteFile } from '../../../database/file-storage';
-import { redisDeleteConfigPresetImportSession, redisGetConfigPresetImportSession, redisSetConfigPresetImportSession } from '../../../database/redis';
+import {
+  redisAppendConfigPresetImportResult,
+  redisDeleteConfigPresetImportResults,
+  redisDeleteConfigPresetImportSession,
+  redisGetConfigPresetImportSession,
+  redisReadConfigPresetImportResults,
+  redisSetConfigPresetImportSession,
+} from '../../../database/redis';
 import { lockResources } from '../../../lock/master-lock';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import type { ConfigPresetSelectionInput } from '../../../generated/graphql';
@@ -12,6 +19,7 @@ import { readConfigPresetImportRunningRecord } from './configPreset-import-runni
 import {
   CONFIG_PRESET_IMPORT_SESSION_VERSION,
   type ConfigPresetImportGraphqlSession,
+  type ConfigPresetImportItemResult,
   type ConfigPresetImportSelection,
   type ConfigPresetImportSession,
   type ConfigPresetImportSessionEvent,
@@ -55,10 +63,34 @@ const deriveInterrupted = async (context: AuthContext, user: AuthUser, session: 
   }
 };
 
-// The session as the user sees it, with the derived status
-export const readConfigPresetImportSession = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetImportSession | null> => {
+// The session with its derived status, without its results: what the transitions read and write back, and what a caller that
+// only needs the status reads. The results of a run are not in the session but in a list of their own (see redis.ts).
+const readConfigPresetImportSessionState = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetImportSession | null> => {
   const stored = await readStoredSession(context, user);
   return stored ? deriveInterrupted(context, user, stored) : null;
+};
+
+// The session as the user sees it, with the derived status and its results. A session stored before the results had a list keeps
+// them inside it: they are read from there when the list is empty.
+export const readConfigPresetImportSession = async (context: AuthContext, user: AuthUser): Promise<ConfigPresetImportSession | null> => {
+  const session = await readConfigPresetImportSessionState(context, user);
+  if (!session || !session.started_at || session.results.length > 0) {
+    return session;
+  }
+  const results = await redisReadConfigPresetImportResults(user.id, session.started_at) as ConfigPresetImportItemResult[];
+  return { ...session, results };
+};
+
+// A run of the session that is gone (the session was deleted, or left the run it had) has no use for its results
+const dropConfigPresetImportResults = async (user: AuthUser, previous: ConfigPresetImportSession | null, next: ConfigPresetImportSession | null) => {
+  if (previous?.started_at && next?.started_at !== previous.started_at) {
+    try {
+      await redisDeleteConfigPresetImportResults(user.id, previous.started_at);
+    } catch (err) {
+      // The list expires with the session TTL anyway
+      logApp.warn('[CONFIG PRESET] The results of the previous import could not be deleted', { cause: err });
+    }
+  }
 };
 
 // The read-modify-write of a session of a user runs under a small per-user lock, so that a stale tab cannot overwrite applying
@@ -79,12 +111,14 @@ export const applyConfigPresetImportEvent = async <E extends ConfigPresetImportS
   payload: ConfigPresetImportSessionPayloads[E],
 ): Promise<ConfigPresetImportSession | null> => {
   return withSessionLock(user, async () => {
-    const next = transitionConfigPresetImportSession(await readConfigPresetImportSession(context, user), event, payload);
+    const previous = await readConfigPresetImportSessionState(context, user);
+    const next = transitionConfigPresetImportSession(previous, event, payload);
     if (next) {
       await redisSetConfigPresetImportSession(user.id, next);
     } else {
       await redisDeleteConfigPresetImportSession(user.id);
     }
+    await dropConfigPresetImportResults(user, previous, next);
     return next;
   });
 };
@@ -98,6 +132,17 @@ export const applyConfigPresetImportRunEvent = async <E extends ConfigPresetImpo
   event: E,
   payload: ConfigPresetImportSessionPayloads[E],
 ): Promise<boolean> => {
+  // The result of an item is appended to the list of its run: the session is not read, copied and written back for each item
+  // (its cost would grow with the number of results), and it is not changed, so no lock is needed. The run still has to own it.
+  if (event === 'ITEM_PROCESSED') {
+    const stored = await redisGetConfigPresetImportSession(user.id) as Partial<ConfigPresetImportSession> | null;
+    if (stored?.status !== 'APPLYING' || stored.started_at !== startedAt) {
+      logApp.warn('[CONFIG PRESET] Skipping the write of an import run that no longer owns the session', { user_id: user.id, event });
+      return false;
+    }
+    await redisAppendConfigPresetImportResult(user.id, startedAt, (payload as ConfigPresetImportSessionPayloads['ITEM_PROCESSED']).result);
+    return true;
+  }
   return withSessionLock(user, async () => {
     const session = await readStoredSession(context, user);
     if (session?.status !== 'APPLYING' || session.started_at !== startedAt) {
@@ -106,6 +151,7 @@ export const applyConfigPresetImportRunEvent = async <E extends ConfigPresetImpo
     }
     const next = transitionConfigPresetImportSession(session, event, payload);
     await redisSetConfigPresetImportSession(user.id, next!);
+    await dropConfigPresetImportResults(user, session, next);
     return true;
   });
 };
@@ -139,7 +185,7 @@ export const findConfigPresetImportSession = async (context: AuthContext, user: 
 
 // An upload while the import runs would delete the zip being imported
 export const checkConfigPresetImportNotApplying = async (context: AuthContext, user: AuthUser) => {
-  const status = (await readConfigPresetImportSession(context, user))?.status;
+  const status = (await readConfigPresetImportSessionState(context, user))?.status;
   if (status === 'APPLYING') {
     throw FunctionalError('An import is in progress', { event: 'UPLOAD', status });
   }
@@ -169,7 +215,7 @@ export const saveConfigPresetImportSession = async (
 // Start over (from draft) and Close (from finished): the session is deleted, and the pending zip with deleteFileToo
 export const clearConfigPresetImportSession = async (context: AuthContext, user: AuthUser, deleteFileToo: boolean) => {
   checkConfigPresetImportAccess(context, user);
-  const session = await readConfigPresetImportSession(context, user);
+  const session = await readConfigPresetImportSessionState(context, user);
   const event = session?.status === 'FINISHED' ? 'CLOSE' : 'START_OVER';
   await applyConfigPresetImportEvent(context, user, event, undefined);
   // The zip is replaced or deleted: what was kept of it is of no use any more
