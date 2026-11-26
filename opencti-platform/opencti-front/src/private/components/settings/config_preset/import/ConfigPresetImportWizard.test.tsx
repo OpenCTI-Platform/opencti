@@ -1337,6 +1337,41 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.queryByText('The platform keeps its current default theme.')).not.toBeInTheDocument();
     });
 
+    it('says that a default fintel design or template becomes the default when it is imported, and no longer once it is added as a copy', async () => {
+      const withDefaults = {
+        ...preview,
+        types: [
+          ...preview.types,
+          previewType('fintelDesigns', 'Fintel designs', [
+            previewItem('finteldesign--1', 'Filigran report', { translatable: false, exists: true, conflict: true, isDefault: true }),
+          ], ['OVERWRITE', 'COPY']),
+          // A template that does not exist here: a copy of it is the template itself, the default of its type
+          previewType('fintelTemplates', 'Fintel templates', [
+            previewItem('finteltemplate--1', 'Executive Summary (Report)', { translatable: false, exists: false, conflict: false, isDefault: true }),
+          ], ['OVERWRITE', 'COPY']),
+        ],
+      };
+      const rendered = await renderPreview(session(), [], withDefaults);
+      const becomesDesign = 'Becomes the default fintel design of the platform.';
+      expect(screen.getByText(becomesDesign)).toBeInTheDocument();
+      expect(screen.getByText('Becomes the default FINTEL template of its entity type.')).toBeInTheDocument();
+      await rendered.user.click(screen.getByRole('combobox', { name: 'Filigran report: When it already exists' }));
+      await rendered.user.click(await screen.findByRole('option', { name: 'Add as a copy' }));
+      expect(screen.queryByText(becomesDesign)).not.toBeInTheDocument();
+      expect(screen.getByText('The platform keeps its current default fintel design.')).toBeInTheDocument();
+    });
+
+    it('says nothing of the default for a default item the platform already has as it is', async () => {
+      const withDefaultDesign = {
+        ...preview,
+        types: [...preview.types, previewType('fintelDesigns', 'Fintel designs', [
+          previewItem('finteldesign--1', 'Filigran report', { translatable: false, exists: true, conflict: true, isDefault: true }),
+        ], ['OVERWRITE', 'COPY'])],
+      };
+      await renderPreview(session(), [{ type: 'fintelDesigns', key: 'finteldesign--1', status: 'SKIPPED', reason: 'Already up to date', code: 'unchanged' }], withDefaultDesign);
+      expect(screen.queryByText('Becomes the default fintel design of the platform.')).not.toBeInTheDocument();
+    });
+
     it('says that the entity type keeps its default fintel template when that template is added as a copy, with its own words', async () => {
       const withFintelTemplates = {
         ...preview,

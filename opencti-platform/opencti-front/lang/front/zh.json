@@ -7014,5 +7014,7 @@
   "Fintel template already exists": "FINTEL 模板已存在",
   "Fintel template name already exists": "FINTEL 模板名称已存在",
   "The entity type of the fintel template cannot change": "FINTEL 模板的实体类型不能更改",
-  "The filters of the widgets are malformed": "小组件的筛选条件格式不正确"
+  "The filters of the widgets are malformed": "小组件的筛选条件格式不正确",
+  "Becomes the default fintel design of the platform.": "成为平台的默认 Fintel 设计。",
+  "Becomes the default FINTEL template of its entity type.": "成为其实体类型的默认 FINTEL 模板。"
 }

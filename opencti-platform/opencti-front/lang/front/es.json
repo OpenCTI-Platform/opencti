@@ -7014,5 +7014,7 @@
   "Fintel template already exists": "La plantilla FINTEL ya existe",
   "Fintel template name already exists": "El nombre de la plantilla FINTEL ya existe",
   "The entity type of the fintel template cannot change": "El tipo de entidad de la plantilla FINTEL no puede cambiar",
-  "The filters of the widgets are malformed": "Los filtros de los widgets están mal formados"
+  "The filters of the widgets are malformed": "Los filtros de los widgets están mal formados",
+  "Becomes the default fintel design of the platform.": "Se convierte en el diseño Fintel predeterminado de la plataforma.",
+  "Becomes the default FINTEL template of its entity type.": "Se convierte en la plantilla FINTEL predeterminada de su tipo de entidad."
 }

@@ -11,6 +11,7 @@ import type { FieldOption } from '../../../../../../utils/field';
 import { type ConfigImportMode, isConfigImportMode } from '../../configImportMode';
 import ConfigPresetBundleFileSelect from '../ConfigPresetBundleFileSelect';
 import ConfigPresetImportModeSelect from '../ConfigPresetImportModeSelect';
+import useConfigPresetDefaultNote from '../useConfigPresetDefaultNote';
 import ConfigPresetResultLine from '../ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from '../ConfigPresetCredentialsDialog';
 import ConfigPresetCredentialsItemRow from '../ConfigPresetCredentialsItemRow';
@@ -44,6 +45,7 @@ const configPresetPartialImportPreviewMutation = graphql`
           key
           label
           translatable
+          isDefault
           exists
           conflict
           serviceAccountRequired
@@ -119,6 +121,7 @@ interface ConfigPresetPartialImportProps {
 // Generic: any screen can offer it for its own type, the backend imports any type that has an importer.
 const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProps> = ({ type, scope, itemsLabel, onImported, onBusyChange, onBack, onClose }) => {
   const { t_i18n } = useFormatter();
+  const defaultNoteOf = useConfigPresetDefaultNote();
   const theme = useTheme<Theme>();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -158,6 +161,16 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
   const isServiceAccountMissing = importedItems.some((item) => needsServiceAccount(item) && !serviceAccounts[item.key]);
   // The selected items, those a copy locks until their secrets are entered included: an overwrite keeps the stored ones and unlocks them
   const conflictKeys = partialImportConflictKeys(items, selected);
+  // Under the label: that the item exists, then what the import does to the default of the platform (or of the entity type)
+  const partialItemDescription = (item: PreviewItem) => {
+    const defaultNote = defaultNoteOf(preview?.type?.key ?? '', item, {
+      imported: isImported(item),
+      hasChoice: item.conflict && !!defaultMode && (preview?.type?.modes.length ?? 0) > 1,
+      mode: modeOf(item),
+    });
+    const parts = [item.conflict ? t_i18n('Already exists') : undefined, defaultNote?.text].filter(Boolean);
+    return parts.length > 0 ? parts.join(' · ') : undefined;
+  };
 
   // The preview of the file, every item selected
   const loadPreview = (value: File) => {
@@ -308,7 +321,7 @@ const ConfigPresetPartialImport: FunctionComponent<ConfigPresetPartialImportProp
                   <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1) }}>
                     <Checkbox
                       label={itemLabel(item)}
-                      description={item.conflict ? t_i18n('Already exists') : undefined}
+                      description={partialItemDescription(item)}
                       checked={isImported(item)}
                       disabled={importing}
                       onCheckedChange={() => setSelected(toggleSelectedKey(selected, item.key))}

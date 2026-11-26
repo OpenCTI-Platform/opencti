@@ -77,6 +77,40 @@ describe('ConfigPresetPartialImport', () => {
     expect(screen.queryByRole('combobox', { name: 'Night: When it already exists' })).not.toBeInTheDocument();
   });
 
+  it('says under a default fintel template whether it becomes the default of its entity type or the entity type keeps its own, as the mode changes', async () => {
+    const rendered = testRender(<ConfigPresetPartialImport type="fintelTemplates" scope="Report" itemsLabel="FINTEL templates" onClose={vi.fn()} />, { userContext });
+    await rendered.user.upload(screen.getByTestId('config-preset-partial-import-file'), new File(['zip'], 'bundle.zip', { type: 'application/zip' }));
+    await resolve(rendered, 'ConfigPresetPartialImportPreviewMutation', {
+      ConfigPresetPartialImportPreview: () => ({
+        bundle_name: null,
+        default_mode: 'COPY',
+        type: {
+          key: 'fintelTemplates',
+          label: 'Fintel templates',
+          description: '',
+          lockedByEnterpriseEdition: false,
+          modes: ['OVERWRITE', 'COPY'],
+          items: [
+            // The default template of another platform: it does not exist here, a copy of it is the template itself
+            { key: 'finteltemplate--a', label: 'Executive Summary (Report)', translatable: false, isDefault: true, exists: false, conflict: false, ...noAccount },
+            { key: 'finteltemplate--b', label: 'Brief (Report)', translatable: false, isDefault: true, exists: true, conflict: true, ...noAccount },
+            { key: 'finteltemplate--c', label: 'Other (Report)', translatable: false, isDefault: false, exists: false, conflict: false, ...noAccount },
+          ],
+        },
+      }),
+    });
+    const becomes = 'Becomes the default FINTEL template of its entity type.';
+    expect(screen.getByText(becomes)).toBeInTheDocument();
+    // The existing one is added as a copy by default: the entity type keeps its own default
+    expect(screen.getByText('Already exists · The entity type keeps its current default FINTEL template.')).toBeInTheDocument();
+    await rendered.user.click(screen.getByRole('combobox', { name: 'Brief (Report): When it already exists' }));
+    await rendered.user.click(await screen.findByRole('option', { name: 'Overwrite' }));
+    expect(screen.getByText(`Already exists · ${becomes}`)).toBeInTheDocument();
+    // An item that is not imported changes nothing
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Executive Summary (Report)' }));
+    expect(screen.queryByText(becomes)).not.toBeInTheDocument();
+  });
+
   it('says so when the bundle holds no item of the type, and cannot import', async () => {
     await renderWithPreview({ ...previewOf([]), type: null });
     expect(screen.getByText('This configuration bundle holds no themes.')).toBeInTheDocument();

@@ -7014,5 +7014,7 @@
   "Fintel template already exists": "Шаблон FINTEL уже существует",
   "Fintel template name already exists": "Шаблон FINTEL с таким именем уже существует",
   "The entity type of the fintel template cannot change": "Тип сущности шаблона FINTEL нельзя изменить",
-  "The filters of the widgets are malformed": "Фильтры виджетов имеют неверный формат"
+  "The filters of the widgets are malformed": "Фильтры виджетов имеют неверный формат",
+  "Becomes the default fintel design of the platform.": "Становится дизайном Fintel по умолчанию для платформы.",
+  "Becomes the default FINTEL template of its entity type.": "Становится шаблоном FINTEL по умолчанию для своего типа сущности."
 }
