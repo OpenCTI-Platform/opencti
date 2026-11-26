@@ -14,7 +14,7 @@ import { allFilesForPaths } from '../../../../src/modules/internal/document/docu
 import { MARKING_TLP_GREEN } from '../../../../src/schema/identifier';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
 import type { BasicStoreEntityMarkingDefinition } from '../../../../src/types/store';
-import { addFintelTemplate, fintelTemplateDelete } from '../../../../src/modules/fintelTemplate/fintelTemplate-domain';
+import { addFintelTemplate, fintelTemplateDelete, fintelTemplateEditField } from '../../../../src/modules/fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../../../../src/modules/fintelTemplate/fintelTemplate-types';
 
 // The real export and the real import engine on the fintel templates: a template is found by its standard id, its widgets point to what they
@@ -216,6 +216,94 @@ describe('Fintel templates: export and import of the real zip', () => {
     expect(copy.default).toBe(false);
     expect(markingValueOf(copy)).toBe(green.id);
     expect(await defaultsOf('Report')).toEqual([REPORT_NAME]);
+  });
+});
+
+describe('Fintel templates: an overwrite brings a template changed locally back to the bundle', () => {
+  const BUNDLE_NAME = `${PREFIX} overwritten`;
+  const OTHER_DEFAULT_NAME = `${PREFIX} other default`;
+  const UNPUBLISHED_NAME = `${PREFIX} unpublished`;
+  let green: { id: string; standard_id: string };
+  let givenReport: { id: string; standard_id: string };
+  const loadByStandardId = async (standardId: string) => (await allTemplates()).find((template) => template.standard_id === standardId)!;
+  const variableNamesOf = (template: BasicStoreEntityFintelTemplate) => template.fintel_template_widgets.map(({ variable_name }) => variable_name);
+
+  beforeAll(async () => {
+    vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
+    vi.spyOn(enterpriseEdition, 'isEnterpriseEdition').mockResolvedValue(true);
+    vi.spyOn(enterpriseEdition, 'isEnterpriseEditionUpToDate').mockResolvedValue(true);
+    green = await internalLoadById<BasicStoreEntityMarkingDefinition>(testContext, ADMIN_USER, MARKING_TLP_GREEN);
+    [givenReport] = await fullEntitiesList(testContext, ADMIN_USER, [ENTITY_TYPE_CONTAINER_REPORT], { first: 1 });
+  });
+
+  afterAll(async () => {
+    await deleteTestTemplates();
+    vi.restoreAllMocks();
+  });
+
+  afterEach(async () => {
+    await queryAsAdmin({ query: gql`mutation FintelTemplateOverwriteClear { configPresetImportSessionClear(delete_file: true) }` });
+    await getClientBase().del(`config_preset_import_session_${ADMIN_USER.id}`);
+    const history = await allFilesForPaths(testContext, ADMIN_USER, ['config_preset/history']);
+    for (let i = 0; i < history.length; i += 1) {
+      await deleteFile(testContext, ADMIN_USER, history[i].id, { forceDelete: true });
+    }
+  });
+
+  it('writes back the name, the published state, the whole list of widgets and the default of its entity type, taken back from another template', async () => {
+    await addFintelTemplate(testContext, ADMIN_USER, {
+      name: BUNDLE_NAME,
+      settings_types: ['Report'],
+      start_date: '2026-01-02T00:00:00.000Z',
+      default: true,
+      fintel_template_widgets: [markedWidget(green.id)],
+    }, true);
+    await addFintelTemplate(testContext, ADMIN_USER, { name: OTHER_DEFAULT_NAME, settings_types: ['Report'], default: false }, true);
+    const template = await loadTemplate(BUNDLE_NAME);
+    const otherDefault = await loadTemplate(OTHER_DEFAULT_NAME);
+    const { bundle } = await exportBundle([{ type: 'fintelTemplates', items: [template.standard_id] }]);
+
+    // Changed locally: renamed, unpublished, other widgets, and another template made the default of the reports
+    await fintelTemplateEditField(testContext, ADMIN_USER, template.id, [
+      { key: 'name', value: [`${PREFIX} renamed locally`] },
+      { key: 'start_date', value: [null] },
+      { key: 'fintel_template_widgets', value: [reportAttributesWidget(givenReport.id)] },
+    ]);
+    await fintelTemplateEditField(testContext, ADMIN_USER, otherDefault.id, [{ key: 'default', value: [true] }]);
+    const changed = await loadByStandardId(template.standard_id);
+    expect(changed).toMatchObject({ name: `${PREFIX} renamed locally`, default: false });
+    expect(changed.start_date ?? null).toBeNull();
+    expect(variableNamesOf(changed)).toEqual(['givenReport']);
+    expect(await defaultsOf('Report')).toEqual([OTHER_DEFAULT_NAME]);
+
+    const results = await runImport(bundle, [{ type: 'fintelTemplates' }], false);
+    expect(results.map(({ status }) => status)).toEqual(['OVERWRITTEN']);
+    const restored = await loadByStandardId(template.standard_id);
+    expect(restored.id).toBe(template.id);
+    expect(restored).toMatchObject({ name: BUNDLE_NAME, default: true });
+    expect(new Date(restored.start_date).toISOString()).toBe('2026-01-02T00:00:00.000Z');
+    // The list of widgets is the one of the bundle as a whole, its filter pointing to the marking by its id on this platform
+    expect(variableNamesOf(restored)).toEqual(['greenReports']);
+    expect(markingValueOf(restored)).toBe(green.id);
+    // The default of the reports is the template of the bundle, and only it: the other one lost it
+    expect(await defaultsOf('Report')).toEqual([BUNDLE_NAME]);
+    expect((await loadByStandardId(otherDefault.standard_id)).default).toBe(false);
+
+    // Back to the state of the bundle: nothing more to write
+    const again = await runImport(bundle, [{ type: 'fintelTemplates' }], false);
+    expect(again.map(({ status, code }) => `${status}:${code}`)).toEqual(['SKIPPED:unchanged']);
+  });
+
+  it('unpublishes a template published locally when the bundle has it not published', async () => {
+    await addFintelTemplate(testContext, ADMIN_USER, { name: UNPUBLISHED_NAME, settings_types: ['Grouping'], default: false }, true);
+    const template = await loadTemplate(UNPUBLISHED_NAME);
+    const { bundle } = await exportBundle([{ type: 'fintelTemplates', items: [template.standard_id] }]);
+    await fintelTemplateEditField(testContext, ADMIN_USER, template.id, [{ key: 'start_date', value: ['2026-03-01T00:00:00.000Z'] }]);
+    expect((await loadByStandardId(template.standard_id)).start_date).toBeTruthy();
+
+    const results = await runImport(bundle, [{ type: 'fintelTemplates' }], false);
+    expect(results.map(({ status }) => status)).toEqual(['OVERWRITTEN']);
+    expect((await loadByStandardId(template.standard_id)).start_date ?? null).toBeNull();
   });
 });
 
