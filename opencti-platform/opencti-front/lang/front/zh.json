@@ -3143,6 +3143,7 @@
   "Indicators": "攻击指标",
   "Indicators | Observations": "指标|观察结果",
   "Indicators composed with this observable": "由该可观测数据组成的攻击指标",
+  "indicators created": "创建的攻击指标",
   "indicators currently impacted by this rule": "目前受此规则影响的指标",
   "Indicators/observables generation": "指标/可观察的生成",
   "Individual": "个体",

@@ -239,6 +239,48 @@ describe('StixCyberObservable resolver standard behavior', () => {
     `;
     await queryAsAdminWithSuccess({ query: DELETE_STIX, variables: { id: internalId } });
   });
+  it('should stixCyberObservable creation return the indicator created with it', async () => {
+    const CREATE_WITH_INDICATOR_QUERY = gql`
+      mutation StixCyberObservableAddWithIndicator($createIndicator: Boolean, $DomainName: DomainNameAddInput) {
+        stixCyberObservableAdd(type: "Domain-Name", createIndicator: $createIndicator, DomainName: $DomainName) {
+          id
+          createdIndicator {
+            id
+            entity_type
+            pattern
+          }
+        }
+      }
+    `;
+    const variables = { createIndicator: true, DomainName: { value: 'created-indicator-test.com' } };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_WITH_INDICATOR_QUERY, variables });
+    const { id: observableId, createdIndicator } = created.data.stixCyberObservableAdd;
+    expect(createdIndicator).not.toBeNull();
+    expect(createdIndicator.entity_type).toEqual('Indicator');
+    expect(createdIndicator.pattern).toEqual("[domain-name:value = 'created-indicator-test.com']");
+
+    // Created again (upsert): the same indicator is returned
+    const upserted = await queryAsAdminWithSuccess({ query: CREATE_WITH_INDICATOR_QUERY, variables });
+    expect(upserted.data.stixCyberObservableAdd.id).toEqual(observableId);
+    expect(upserted.data.stixCyberObservableAdd.createdIndicator.id).toEqual(createdIndicator.id);
+
+    // Without createIndicator, no indicator is given
+    const withoutIndicator = await queryAsAdminWithSuccess({
+      query: CREATE_WITH_INDICATOR_QUERY,
+      variables: { ...variables, createIndicator: false },
+    });
+    expect(withoutIndicator.data.stixCyberObservableAdd.createdIndicator).toBeNull();
+
+    // Cleanup: delete the indicator and the observable
+    await queryAsAdminWithSuccess({
+      query: gql`mutation indicatorDelete($id: ID!) { indicatorDelete(id: $id) }`,
+      variables: { id: createdIndicator.id },
+    });
+    await queryAsAdminWithSuccess({
+      query: gql`mutation stixCyberObservableDelete($id: ID!) { stixCyberObservableEdit(id: $id) { delete } }`,
+      variables: { id: observableId },
+    });
+  });
 
   it('should stixCyberObservable network traffic created', async () => {
     // Create the stixCyberObservable

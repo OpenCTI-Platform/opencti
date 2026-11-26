@@ -252,6 +252,30 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(removeObjectFromContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
   });
 
+  it('adds the indicator created with an observable, and only that one', async () => {
+    const indicator: CreatedObject = { id: 'i1', entity_type: 'Indicator', parent_types: ['Stix-Domain-Object'] };
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.onCreated(observable('o1'), { indicator }));
+    await flushBatch();
+
+    expect(addObjectToContainer).toHaveBeenCalledTimes(2);
+    expect(addObjectToContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o1' }));
+    expect(addObjectToContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'i1' }));
+    expect(notifySuccess.mock.calls[0][0]).toContain('2 objects added to the');
+  });
+
+  it('gives the types of each object added, so that the container list keeps only its own types', async () => {
+    const indicator: CreatedObject = { id: 'i1', entity_type: 'Indicator', parent_types: ['Stix-Domain-Object'] };
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.onCreated(observable('o1'), { indicator }));
+    await flushBatch();
+
+    expect(addObjectToContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o1', objectTypes: ['IPv4-Addr', 'Stix-Cyber-Observable'] }));
+    expect(addObjectToContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'i1', objectTypes: ['Indicator', 'Stix-Domain-Object'] }));
+  });
+
   it('reports an add failure and keeps the others', async () => {
     vi.mocked(addObjectToContainer).mockImplementation(({ objectId }) => (objectId === 'o2' ? Promise.reject(new Error('denied')) : Promise.resolve()));
     const args = baseArgs();

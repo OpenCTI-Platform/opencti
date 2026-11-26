@@ -197,6 +197,15 @@ const stixCyberObservableMutation = graphql`
       ... on Software {
         name
       }
+      createdIndicator {
+        id
+        standard_id
+        entity_type
+        parent_types
+        representative {
+          main
+        }
+      }
     }
   }
 `;
@@ -294,8 +303,8 @@ interface StixCyberObservableCreationProps {
   defaultMarkingDefinitions?: readonly DefaultMarking[];
   isFromBulkRelation?: boolean;
   onCompleted?: (observable: CreatedObservable | null) => void;
-  // Called for each observable created, also for each one of a bulk creation
-  onCreated?: (object: CreatedObject, options?: { withIndicator?: boolean }) => void;
+  // Called for each observable created, also for each one of a bulk creation, with the indicator created with it ("Create indicator")
+  onCreated?: (object: CreatedObject, options?: { indicator?: CreatedObject | null }) => void;
   stixCyberObservableTypes?: string[];
 }
 
@@ -332,6 +341,8 @@ const StixCyberObservableCreation = ({
   const inputObsType = useMemo(() => status?.type?.replace(/(?:^|-|_)(\w)/g, (_, l) => l.toUpperCase()) ?? '', [status]);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [progressBarOpen, setProgressBarOpen] = useState(false);
+  // The indicators created with the observables ("Create indicator"), for the bulk creation result
+  const [createdIndicatorsCount, setCreatedIndicatorsCount] = useState(0);
 
   const [bulkSelectedKey, setBulkSelectedKey] = useState<string | null>(null);
   const bulkConf = useMemo(() => BULK_OBSERVABLES.find(({ type: obsType }) => obsType === status.type), [status]);
@@ -407,6 +418,7 @@ const StixCyberObservableCreation = ({
   };
 
   const onSubmit: FormikConfig<ObservableFormValues>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    setCreatedIndicatorsCount(0);
     let adaptedValues = [values];
     if (bulkConf && bulkSelectedKey) {
       const allValues = splitMultilines(fieldText(values, bulkSelectedKey));
@@ -445,8 +457,11 @@ const StixCyberObservableCreation = ({
     bulkCommit({
       variables: finalValues,
       onStepCompleted: (_, response) => {
+        if (response?.stixCyberObservableAdd?.createdIndicator) {
+          setCreatedIndicatorsCount((count) => count + 1);
+        }
         if (onCreated && response?.stixCyberObservableAdd) {
-          onCreated(response.stixCyberObservableAdd, { withIndicator: !!values.createIndicator });
+          onCreated(response.stixCyberObservableAdd, { indicator: response.stixCyberObservableAdd.createdIndicator });
         }
       },
       onStepError: (error) => {
@@ -797,6 +812,7 @@ const StixCyberObservableCreation = ({
                                 const observableInput = (v as unknown as Record<string, Record<string, unknown> | undefined>)[inputObsType];
                                 return String(observableInput?.[bulkSelectedKey ?? ''] ?? '');
                               }}
+                              extraResults={createdIndicatorsCount > 0 ? [`${createdIndicatorsCount} ${t_i18n('indicators created')}`] : []}
                             />
                           </ProgressBar>
                         </>

@@ -23,6 +23,8 @@ export interface CreatedObject {
 export interface ContainerObjectMutationArgs {
   containerId: string;
   objectId: string;
+  // Entity type and parent types of the object: the container's object list shows only its own types
+  objectTypes?: readonly string[];
   // The knowledge graph keeps its own data, so the container's object list is not updated in the store
   knowledgeGraph?: boolean;
   // Pagination options of the container's object list (`Pagination_objects`) to update in the store
@@ -31,6 +33,16 @@ export interface ContainerObjectMutationArgs {
   references?: string[];
   optimisticUpdater?: () => void;
 }
+
+/**
+ * Whether an object added to the container belongs to its object list, e.g. not an indicator in the observables list.
+ * The store update does not apply the list's `types` filter by itself. Without known types, the object is kept.
+ */
+export const belongsToObjectList = (paginationOptions: Record<string, unknown> | undefined, objectTypes: readonly string[] | undefined) => {
+  const listTypes = paginationOptions?.types;
+  if (!Array.isArray(listTypes) || listTypes.length === 0 || !objectTypes) return true;
+  return listTypes.some((type) => objectTypes.includes(type));
+};
 
 /**
  * Adds objects to a container (`object` ref) and removes them, like ticking and unticking them in the container's add panel.
@@ -45,6 +57,7 @@ export const useContainerObjects = () => {
   const addObjectToContainer = ({
     containerId,
     objectId,
+    objectTypes,
     knowledgeGraph,
     paginationOptions,
     commitMessage = '',
@@ -62,6 +75,8 @@ export const useContainerObjects = () => {
       variables,
       optimisticUpdater,
       updater: (store: RecordSourceSelectorProxy) => {
+        // Added to the container anyway: only the list display is filtered
+        if (!belongsToObjectList(paginationOptions, objectTypes)) return;
         insertNode(
           store,
           'Pagination_objects',

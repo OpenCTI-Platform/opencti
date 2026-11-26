@@ -3143,6 +3143,7 @@
   "Indicators": "インジケータ",
   "Indicators | Observations": "観測結果",
   "Indicators composed with this observable": "この観測結果から得られたインジケータ",
+  "indicators created": "作成されたインジケータ",
   "indicators currently impacted by this rule": "現在このルールの影響を受けている指標",
   "Indicators/observables generation": "インジケータ/観測結果の生成",
   "Individual": "個人",

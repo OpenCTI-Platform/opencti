@@ -23,6 +23,8 @@ interface UseBulkCommit_commits<M extends MutationParameters> {
 
 interface BulkResultProps<M extends MutationParameters> {
   variablesToString: (variables: VariablesOf<M>) => string;
+  // Other objects the creation made, e.g. "2 indicators created": shown once all are created
+  extraResults?: string[];
 }
 
 function useBulkCommit<M extends MutationParameters>({
@@ -106,7 +108,7 @@ function useBulkCommit<M extends MutationParameters>({
     files: t_i18n('files not imported'),
   };
 
-  const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
+  const BulkResult = ({ variablesToString, extraResults = [] }: BulkResultProps<M>) => (
     <>
       {currentCount === count && currentCount - inError.length > 0 && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
@@ -115,6 +117,11 @@ function useBulkCommit<M extends MutationParameters>({
           </Typography>
         </Alert>
       )}
+      {count > 0 && currentCount === count && extraResults.map((result) => (
+        <Alert key={result} variant="outlined" sx={{ marginTop: 2 }}>
+          <Typography>{result}</Typography>
+        </Alert>
+      ))}
       {inError.length > 0 && (
         <Alert
           variant="outlined"

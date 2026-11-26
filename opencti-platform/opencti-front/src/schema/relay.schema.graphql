@@ -30,6 +30,7 @@ type AIPrompt implements BasicObject & StixCoreObject & StixCyberObservable & St
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -325,6 +326,7 @@ type Artifact implements BasicObject & HashedObservable & StixCoreObject & StixC
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -785,6 +787,7 @@ type AutonomousSystem implements BasicObject & StixCoreObject & StixCyberObserva
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -990,6 +993,7 @@ type BankAccount implements BasicObject & StixCoreObject & StixCyberObservable &
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -3056,6 +3060,7 @@ type Credential implements BasicObject & StixCoreObject & StixCyberObservable & 
   containers(elementId: [String], entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -3117,6 +3122,7 @@ type CryptocurrencyWallet implements BasicObject & StixCoreObject & StixCyberObs
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -3178,6 +3184,7 @@ type CryptographicKey implements BasicObject & StixCoreObject & StixCyberObserva
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -4123,6 +4130,7 @@ type Directory implements BasicObject & StixCoreObject & StixCyberObservable & S
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   ctime: DateTime
@@ -4264,6 +4272,7 @@ type DomainName implements BasicObject & StixCoreObject & StixCyberObservable & 
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -4525,6 +4534,7 @@ type EmailAddr implements BasicObject & StixCoreObject & StixCyberObservable & S
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -4591,6 +4601,7 @@ type EmailMessage implements BasicObject & StixCoreObject & StixCyberObservable 
   containersNumber: Number
   content_type: String
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -4664,6 +4675,7 @@ type EmailMimePartType implements BasicObject & StixCoreObject & StixCyberObserv
   content_disposition: String
   content_type: String
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -5909,6 +5921,7 @@ interface HashedObservable {
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -5998,6 +6011,7 @@ type Hostname implements BasicObject & StixCoreObject & StixCyberObservable & St
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -6059,6 +6073,7 @@ type ICCID implements BasicObject & StixCoreObject & StixCyberObservable & StixO
   containers(elementId: [String], entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -6114,6 +6129,7 @@ type IMEI implements BasicObject & StixCoreObject & StixCyberObservable & StixOb
   containers(elementId: [String], entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -6169,6 +6185,7 @@ type IMSI implements BasicObject & StixCoreObject & StixCyberObservable & StixOb
   containers(elementId: [String], entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -6225,6 +6242,7 @@ type IPv4Addr implements BasicObject & StixCoreObject & StixCyberObservable & St
   containersNumber: Number
   countries: CountryConnection
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -6289,6 +6307,7 @@ type IPv6Addr implements BasicObject & StixCoreObject & StixCyberObservable & St
   containersNumber: Number
   countries: CountryConnection
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -8516,6 +8535,7 @@ type MacAddr implements BasicObject & StixCoreObject & StixCyberObservable & Sti
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -9133,6 +9153,7 @@ type MediaContent implements BasicObject & StixCoreObject & StixCyberObservable 
   containersNumber: Number
   content: String
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -9852,6 +9873,7 @@ type Mutex implements BasicObject & StixCoreObject & StixCyberObservable & StixO
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -10043,6 +10065,7 @@ type NetworkTraffic implements BasicObject & StixCoreObject & StixCyberObservabl
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -11048,6 +11071,7 @@ type PaymentCard implements BasicObject & StixCoreObject & StixCyberObservable &
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -11114,6 +11138,7 @@ type Persona implements BasicObject & StixCoreObject & StixCyberObservable & Sti
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -11179,6 +11204,7 @@ type PhoneNumber implements BasicObject & StixCoreObject & StixCyberObservable &
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -11742,6 +11768,7 @@ type Process implements BasicObject & StixCoreObject & StixCyberObservable & Sti
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   created_time: DateTime
   creators: [Creator!]
@@ -13145,6 +13172,7 @@ type SSHKey implements BasicObject & StixCoreObject & StixCyberObservable & Stix
   containersNumber: Number
   created: DateTime
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -14110,6 +14138,7 @@ type Software implements BasicObject & StixCoreObject & StixCyberObservable & St
   containersNumber: Number
   cpe: String
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -14623,6 +14652,11 @@ interface StixCyberObservable {
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+
+  """
+  Only in the response of stixCyberObservableAdd with createIndicator: the indicator it created or upserted. Null everywhere else
+  """
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -14900,6 +14934,7 @@ type StixFile implements BasicObject & HashedObservable & StixCoreObject & StixC
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   ctime: DateTime
@@ -16083,6 +16118,7 @@ type Text implements BasicObject & StixCoreObject & StixCyberObservable & StixOb
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -16839,6 +16875,7 @@ type TrackingNumber implements BasicObject & StixCoreObject & StixCyberObservabl
   containers(elementId: [String], entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -17044,6 +17081,7 @@ type Url implements BasicObject & StixCoreObject & StixCyberObservable & StixObj
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -17165,6 +17203,7 @@ type UserAccount implements BasicObject & StixCoreObject & StixCyberObservable &
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   credential: String
@@ -17274,6 +17313,7 @@ type UserAgent implements BasicObject & StixCoreObject & StixCyberObservable & S
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -17988,6 +18028,7 @@ type WindowsRegistryKey implements BasicObject & StixCoreObject & StixCyberObser
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -18052,6 +18093,7 @@ type WindowsRegistryValueType implements BasicObject & StixCoreObject & StixCybe
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   currentUserAccessRight: String
@@ -18454,6 +18496,7 @@ type X509Certificate implements BasicObject & HashedObservable & StixCoreObject 
   containers(entityTypes: [String!], first: Int): ContainerConnection
   containersNumber: Number
   createdBy: Identity
+  createdIndicator: Indicator
   created_at: DateTime!
   creators: [Creator!]
   crl_distribution_points: String

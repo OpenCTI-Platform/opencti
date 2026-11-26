@@ -64,6 +64,25 @@ describe('useBulkCommit', () => {
     expect(bulkCreation.onBulkEnd).toHaveBeenCalledOnce();
   });
 
+  it('shows the extra results once all the objects are created', () => {
+    const commit = (config: UseMutationConfig<FakeMutation>) => {
+      config.onCompleted?.({ xAdd: { id: config.variables.value } }, null);
+    };
+    let bulk: ReturnType<typeof useBulkCommit<FakeMutation>> | undefined;
+    const Harness = () => {
+      bulk = useBulkCommit<FakeMutation>({ commit });
+      const { BulkResult } = bulk;
+      return <BulkResult variablesToString={(v) => v.value} extraResults={['2 indicators created']} />;
+    };
+    testRender(<Harness />);
+
+    // Nothing created yet
+    expect(screen.queryByText('2 indicators created')).toBeNull();
+
+    act(() => bulk?.bulkCommit({ variables: [{ value: 'one' }, { value: 'two' }] }));
+    expect(screen.getByText('2 indicators created')).toBeDefined();
+  });
+
   it('shows the add to the container in progress, then its result', () => {
     const feedback = (progress: { done: number; total: number; inProgress: boolean }) => ({
       onBulkStart: vi.fn(),

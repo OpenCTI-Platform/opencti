@@ -7,29 +7,10 @@ import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { CreatedObject, useContainerObjects } from './useContainerObjects';
 import { BulkCreationFeedback } from '../../../../utils/hooks/useCreationFeedback';
-import { useAddCreatedObjectsToContainerIndicatorsQuery$data } from './__generated__/useAddCreatedObjectsToContainerIndicatorsQuery.graphql';
 import { useAddCreatedObjectsToContainerMembersQuery$data } from './__generated__/useAddCreatedObjectsToContainerMembersQuery.graphql';
 
 /** The objects created within this delay of each other are added together, with a single message. */
 export const CREATED_OBJECTS_BATCH_DELAY_MS = 1000;
-
-const indicatorsBasedOnQuery = graphql`
-  query useAddCreatedObjectsToContainerIndicatorsQuery($filters: FilterGroup) {
-    indicators(first: 50, filters: $filters) {
-      edges {
-        node {
-          id
-          standard_id
-          entity_type
-          parent_types
-          representative {
-            main
-          }
-        }
-      }
-    }
-  }
-`;
 
 // Which of the given objects are in the container: the panels load only its first objects
 const containerMembersQuery = graphql`
@@ -71,7 +52,8 @@ interface UseAddCreatedObjectsToContainerArgs {
 
 interface CreatedObjectsBatchItem {
   object: CreatedObject;
-  withIndicator: boolean;
+  // The indicator created with an observable ("Create indicator"), as the creation returned it
+  indicator: CreatedObject | null;
 }
 
 // A bulk creation in progress, from its start until its result dialog is closed
@@ -97,24 +79,6 @@ interface ReferencesFormValues {
 }
 
 const isObservable = (object: CreatedObject) => (object.parent_types ?? []).includes('Stix-Cyber-Observable');
-
-const fetchIndicatorsBasedOn = async (observableId: string): Promise<CreatedObject[]> => {
-  const filters = {
-    mode: 'and',
-    filterGroups: [],
-    filters: [{
-      key: 'regardingOf',
-      operator: 'eq',
-      mode: 'or',
-      values: [
-        { key: 'id', values: [observableId] },
-        { key: 'relationship_type', values: ['based-on'] },
-      ],
-    }],
-  };
-  const data = await fetchQuery(indicatorsBasedOnQuery, { filters }).toPromise() as useAddCreatedObjectsToContainerIndicatorsQuery$data;
-  return (data?.indicators?.edges ?? []).flatMap((edge) => (edge?.node ? [edge.node] : []));
-};
 
 const fetchContainerMemberIds = async (containerId: string, objectIds: string[]): Promise<string[]> => {
   const filters = {
@@ -244,11 +208,9 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     const batch = batchRef.current;
     batchRef.current = [];
     const { containerId, knowledgeGraph, paginationOptions, enableReferences, isInContainer, resolveObject } = argsRef.current;
-    // The indicators created with an observable ("Create indicator") are added too
-    const indicators = await Promise.all(batch
-      .filter((item) => item.withIndicator)
-      .map((item) => fetchIndicatorsBasedOn(item.object.id).catch(() => [])));
-    const created = [...batch.map((item) => item.object), ...indicators.flat()]
+    // The indicator created with an observable ("Create indicator") is added too
+    const indicators = batch.flatMap((item) => (item.indicator ? [item.indicator] : []));
+    const created = [...batch.map((item) => item.object), ...indicators]
       .filter((object, index, all) => all.findIndex((o) => o.id === object.id) === index);
     // An existing object returned by the creation (upsert) may already be in the container: it is neither added nor undone.
     // The panel knows only the first objects of the container: the server is asked for the others.
@@ -283,6 +245,7 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     const results = await Promise.allSettled(toAdd.map((object) => addObjectToContainer({
       containerId,
       objectId: object.id,
+      objectTypes: [object.entity_type, ...(object.parent_types ?? [])],
       knowledgeGraph,
       paginationOptions,
       ...references,
@@ -334,9 +297,9 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     }
   };
 
-  const onCreated = (object: CreatedObject, options?: { withIndicator?: boolean }) => {
+  const onCreated = (object: CreatedObject, options?: { indicator?: CreatedObject | null }) => {
     if (argsRef.current.disabled) return;
-    batchRef.current.push({ object, withIndicator: !!options?.withIndicator });
+    batchRef.current.push({ object, indicator: options?.indicator ?? null });
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = null;
     // The objects of a bulk creation are added together once all are created: one add, one references dialog
