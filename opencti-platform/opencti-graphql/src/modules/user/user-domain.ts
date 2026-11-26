@@ -31,7 +31,7 @@ import {
 import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
-import { checkApiBasicAuthAllowed } from './user-basic-auth';
+import { checkApiBasicAuthAllowed, checkApiBasicAuthTwoFactor, warnApiBasicAuthTwoFactor } from './user-basic-auth';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
 import {
@@ -2510,6 +2510,7 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
   // Refused before login(): the password is never checked and the attempt is never counted
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   checkApiBasicAuthAllowed(settings);
+  await checkApiBasicAuthTwoFactor(settings, () => getUserByEmail(basicAuth.username));
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip, { source: 'basic_auth' });
   const user = platformUsers.get(loggedUser.id);
@@ -2519,7 +2520,10 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
     await clearLocalAuthLockout(basicAuth.username);
-    return internalAuthenticateUser(context, req, user);
+    const authenticatedUser = await internalAuthenticateUser(context, req, user);
+    // After a successful login only, from the account just loaded by login() rather than from the cache
+    warnApiBasicAuthTwoFactor(loggedUser, settings);
+    return authenticatedUser;
   }
   throw FunctionalError('Cannot identify user with basic auth');
 };

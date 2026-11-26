@@ -80,6 +80,8 @@ In the local authentication drawer, the **Allow API Basic authentication** switc
 - A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled: disable it once your scripts and integrations use API tokens.
 - While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated, and it is not counted as a failed login attempt.
 
+While it is enabled, Basic authentication never asks for the second factor. The `app:authentication:secure_by_default` [configuration key](../deployment/configuration.md) refuses it to the accounts that two-factor authentication applies to: the accounts that enabled it, or every account when two-factor authentication is mandatory. Those accounts must use an API token: their requests are refused before the password is checked, and are not counted as failed login attempts. The key is disabled by default for now, and will be enabled by default in an upcoming version. Until then, the platform logs a warning with the id of each account that still uses Basic authentication with two-factor authentication, at most once per hour, to find the integrations to migrate.
+
 #### Define password policy
 
 By clicking on the local authentication you can manage your local password policies. Administrators can specify requirements such as minimum/maximum number of characters, symbols, digits, and more to ensure robust password security across the platform. Here are all the parameters available:
