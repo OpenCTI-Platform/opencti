@@ -18803,7 +18803,7 @@ __metadata:
     react-virtualized-auto-sizer: "npm:2.0.4"
     react-wordcloud: "npm:1.2.7"
     reactflow: "npm:11.11.4"
-    recharts: "npm:3.11.0"
+    recharts: "npm:3.11.1"
     relay-compiler: "npm:21.0.1"
     relay-runtime: "npm:21.0.1"
     relay-test-utils: "npm:21.0.1"
@@ -21008,9 +21008,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recharts@npm:3.11.0":
-  version: 3.11.0
-  resolution: "recharts@npm:3.11.0"
+"recharts@npm:3.11.1":
+  version: 3.11.1
+  resolution: "recharts@npm:3.11.1"
   dependencies:
     "@reduxjs/toolkit": "npm:^1.9.0 || 2.x.x"
     clsx: "npm:^2.1.1"
@@ -21031,7 +21031,7 @@ __metadata:
   peerDependenciesMeta:
     "@types/react":
       optional: true
-  checksum: 10c0/160d0ac75aa15f4160dca0383b12cf75398510fc0b6c46f3a78d60fedc03bd642c107cc87f2ab14a6d2cf1a81cb1ac9b3045f3e335233dbdd3760bcdf6e55736
+  checksum: 10c0/cd9002234d0dc64969ccadac3e2f89f02ebafa8d9b0e405d7433c41f75a5a6d97b68bb075baa9631804874727d2cf53ed8e6e20d3c920704d1246b4d5fdbb19b
   languageName: node
   linkType: hard
 
