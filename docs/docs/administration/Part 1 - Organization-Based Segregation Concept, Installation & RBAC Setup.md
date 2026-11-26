@@ -118,15 +118,15 @@ This is promoted/demoted from the user's edit form by a platform administrator, 
 
 Because segregation can cause a user to be unable to see (or re-create) knowledge that already exists but belongs to another organization, OpenCTI surfaces a generic **Restricted entity already exists** error in that case. Administrators can configure a Request Access workflow so users can formally request visibility instead of hitting a dead end:
 
-1. Open the entity settings for **Request for Information**.
+1. Open **Settings > Customization > Entity types > Request for Information > Workflow**, and switch to the **Request access** scope.
 
-2. Configure the "**Specific workflow for request access**": define the status list to use (the RFI is created with the first status), the status used when accepted, the status used when declined, and the group allowed to see the auto-created RFIs.
+2. Build and publish the request access workflow: an *Approved* status that shares the requested knowledge, a *Declined* status, and the **Validator group membership** allowed to see the auto-created RFIs. A request access configuration made in an earlier version is migrated on upgrade.
 
 3. Once configured, users who hit the restriction see a "**Request Access**" button, letting them state a reason and select the organization to request access from.
 
-4. Users who are both members of the owning organization and the configured validator group receive the RFI (automatically placed under Authorized Members for confidentiality) with **Validate / Decline** actions. Validating shares the requested knowledge immediately.
+4. Users who are both members of the owning organization and the validator group receive the RFI (automatically placed under Authorized Members for confidentiality) and move it through the workflow. Entering the *Approved* status shares the requested knowledge.
 
-5. To disable the feature, remove all statuses from the "Specific Workflow for Request Access" section, or remove the group from Validator membership.
+See [Request access](request-access.md) for the full guide.
 
 ### 1.9 Best practices
 

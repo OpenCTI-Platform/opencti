@@ -10,32 +10,23 @@ When users creates knowledge that already exists in the platform but is not visi
 
 Platform administrator can configure a request access workflow to allows users to request access to a knowledge that already exists but is not visible because of organization restriction. This workflow will create a specific Request For Information.
 
-## Configuration to allows users to request access to restricted knowledge
+## Requirements
 
-### Configuration of the Request For Information settings
+The **Request Access** button is only offered when:
 
-Go to `Settings > Customization > Entity types`, select `Request for information`, and open the `Workflow` tab.
+- the **OpenCTI Enterprise Edition** is enabled,
+- a [platform organization](organization-segregation.md) is set,
+- the request access scope of *Request for information* has an *Approved* and a *Declined* status and a validator group: see [Request access with a workflow](#request-access-with-a-workflow).
 
-![Request for Information entity settings](assets/request-access/entity-setting-rfi.png)
+!!! note "Upgrading from the legacy configuration"
 
-Configure the `Specific Workflow for Request Access` section:
+    Before entities workflow, request access was configured in the *Specific Workflow for Request Access* section of *Request for information*. On upgrade, these statuses become a published request access workflow, and existing requests keep their status. This configuration screen no longer exists.
 
-![Example of request access workflow disabled](assets/request-access/specific-workflow.png)
-
-1. Click the edit icon next to `Specific Workflow for Request Access` and configure all status that can be used for request access use case. Note that the `Request for Information` will be created with the first status in this list.
-
-2. Click the edit icon next to `Request access actions configuration`. In `On approval move to status:`, select the status that will be used when the request is accepted.
-
-3. In `On decline move to status:`, select the status that will be used when the request is declined.
-
-4. In `Validator group membership:`, select the group that will be allowed to see the `Request for Information` created automatically by the platform.
-
-
-![Example of request access workflow configured](assets/request-access/specific-workflow-configured.png)
+    If the migration fails, for example because the same status was used for approval and decline, requests keep the legacy configuration. Fix it from the **Migrate request access statuses** button: see [Set up the workflow](#set-up-the-workflow).
 
 ## Requesting an access
 
-Once the configuration is complete, user that attempt to create an existing knowledge will have a new button "Request Access" proposed.
+When users create knowledge that already exists but is hidden from them, the error message `Restricted entity already exists` offers a **Request Access** button.
 
 ![Example of error with button](assets/request-access/restricted-entity.png)
 
@@ -43,30 +34,21 @@ Then users will be able to give more detail on reason that lead to this request,
 
 ![Example of request access form](assets/request-access/request-access-popup.png)
 
-### Accepting or declining a request to access to knowledge
-
-Users who are both:
-
-- in the organization where the knowledge actually belong
-- in the group that has been configured in Request for information entity settings
-
-Will receive a dedicated Request for information for example:
+The platform creates a dedicated Request for information, which lists the requested knowledge in its related entities.
 
 ![Example of dedicated Request for information](assets/request-access/rfi-dedicated.png)
 
 > Note that this specific Request for Information is automatically under [authorized member restricted access](authorized-members.md) for confidentiality reason.
 
-The knowledge that is requested to be shared, can be found in related entities.
-There is two dedicated button "Validate" and "Decline": with one click on Validate, the knowledge will be shared as requested.
+The validators are notified when the request is created.
 
-User that are allowed to see the dedicated Request for Information and allowed to share the knowledge, will also be notified on dedicated Request for Information creation.
 ![Example of notification](assets/request-access/request-access-notifications.png)
 
 ## Request access with a workflow
 
-!!! tip "Enterprise edition, preview"
+!!! tip "Enterprise edition"
 
-    The request access workflow requires the **OpenCTI Enterprise Edition** and the `ENTITIES_WORKFLOW` feature flag. Until a request access workflow is **published** for *Request for information*, the configuration described above applies unchanged.
+    The request access workflow requires the **OpenCTI Enterprise Edition**. Until a request access workflow is **published**, requests keep the legacy request access configuration.
 
 With [Entities workflow](../usage/entities-workflow.md), request access gets its own workflow, built in the same editor as other workflows. You choose the statuses and transitions, who can decide, and what happens when a request is approved.
 
@@ -81,13 +63,13 @@ Each scope has its own statuses, draft and published version. Changing one never
 
 A request for information belongs to one scope for its whole life. A request created by the request access form can only be created on the published request access workflow.
 
-In the **Request access** scope, a **Validator group** select sets the group of validators. It saves when you change it. A request cannot be created while no validator group is set.
+In the **Request access** scope, a **Validator group membership** select sets the group of validators. It saves when you change it. A request cannot be created while no validator group is set.
 
 ![Request access scope with the validator group and the migration button](assets/request-access/workflow-scopes.jpg)
 
 ### Set up the workflow
 
-1. **Migrate the legacy statuses (optional).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The **Publish immediately** switch is on by default: the migrated workflow is published at once, and new requests follow it. Turn it off to review the result as a draft first. The migration replaces the current draft of the request access workflow, and asks for a confirmation when a draft already exists. The button is only shown until a request access workflow is published: the migration never replaces a published workflow. If the publish fails, the migration is undone and the previous draft is restored, so you can fix the problem and retry.
+1. **Migrate the legacy statuses (if the upgrade did not).** Click **Migrate request access statuses**. The preview shows the Approved and Declined statuses and the *Accept* and *Reject* transitions that will be created, and lists any blocking problem. The statuses already in use are reused, so existing requests keep their status. The **Publish immediately** switch is on by default: the migrated workflow is published at once, and new requests follow it. Turn it off to review the result as a draft first. The migration replaces the current draft of the request access workflow, and asks for a confirmation when a draft already exists. The button is only shown until a request access workflow is published: the migration never replaces a published workflow. If the publish fails, the migration is undone and the previous draft is restored, so you can fix the problem and retry. If the legacy outcome statuses are invalid, for example the same status for approval and decline, the dialog shows **Request access outcome statuses**: pick the status for **On approval move to status:** and **On decline move to status:**, click **Update**, and the preview is computed again. Neither outcome can be the first status of the workflow.
 
     ![Migration of the request access statuses](assets/request-access/workflow-migration.jpg)
 
@@ -158,11 +140,4 @@ The share needs a real user: it never runs for the system, the workflow manager 
 
 ## Disabling request access feature
 
-If you have attempted to use the functionality but need to remove it due to policy:
-
-- In entity setting, delete all status in "Specific Workflow for Request Access" section. 
-- You can alternatively remove the group in `Validator group membership:`.
-
-This will restore the default behavior, and the button will not appear in the error message `Restricted entity already exists`.
-
-![Example of request access workflow disabled](assets/request-access/specific-workflow.png)
+The **Request Access** button is not offered as soon as one of the [requirements](#requirements) is missing. Once the request access workflow is published, its outcome statuses stay and the validator group can be changed but not emptied: to turn the feature off, remove the platform organization or disable the Enterprise Edition.

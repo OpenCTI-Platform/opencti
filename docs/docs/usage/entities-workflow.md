@@ -4,9 +4,9 @@ Entities workflow turns the processing status of your entities into an enforced 
 
 A typical use is a SOC process on Incident responses: L1 analysts triage, L2 analysts investigate, and only L3 analysts can close. The same editor powers the [Draft workflow](draft-workflow.md); entities workflow extends it to every customizable entity type.
 
-!!! note "Availability"
+!!! note "Upgrading from legacy statuses"
 
-    Entities workflow is being rolled out progressively. While in preview, the `ENTITIES_WORKFLOW` feature flag gates workflow status reads, mass transitions and bypasses for entity types other than Draft. When the flag is off, those entity types keep the existing status screens. It does not remove workflow definitions that are already published, so turning it off alone does not restore the legacy behavior.
+    On upgrade, OpenCTI turns the statuses you configured on each entity type into a published workflow, so most platforms have nothing to do. Some types keep their legacy statuses until you migrate them: see [Legacy statuses and migration](#legacy-statuses-and-migration).
 
 ## Key features of entities workflow
 
@@ -51,6 +51,42 @@ A workflow can be defined on every entity type that has a processing status:
 - **Domain objects**: Threat actor, Intrusion set, Campaign, Malware, Vulnerability, Incident and the other STIX domain objects.
 - **Relationships and sightings.**
 - **Draft**: see [Draft workflow](draft-workflow.md) for the actions specific to drafts.
+
+## Legacy statuses and migration
+
+Before entities workflow, an entity type had a plain ordered list of statuses, with no transitions: the *legacy statuses*. A type without a published workflow keeps them: users who can edit an entity set any of its statuses, one entity at a time or with a mass update.
+
+### Migration on upgrade
+
+On the first start after the upgrade, OpenCTI publishes a workflow built from the legacy statuses of each entity type. The statuses are reused, so entities keep their current status. Each status gets a *MOVE_TO_&lt;STATUS&gt;* transition from every other status, so users keep the freedom they had until you edit the workflow. On Request for information, the [request access](../administration/request-access.md#request-access-with-a-workflow) statuses get their own workflow as well.
+
+Some types are left on their legacy statuses:
+
+| Type | Why |
+|---|---|
+| A type that already has a workflow, draft or published | A workflow is never replaced. |
+| A type without statuses | There is nothing to migrate. |
+| **Report** with its default statuses (*NEW*, *IN_PROGRESS*, *ANALYZED*, *CLOSED*, in this order) | Nobody configured them. If you changed, added, removed or reordered them, the Report statuses are migrated like any other type. |
+| **Draft**, and the generic *relationship* and *sighting* settings | Their statuses are never migrated. A draft workflow needs a validation action, see [Draft workflow](draft-workflow.md). |
+| Request access on **Community Edition** | Request access needs the **Enterprise Edition**. Its legacy statuses are kept: once the Enterprise Edition is enabled, migrate them from the Workflow tab. |
+| A type whose migration failed | It keeps its legacy statuses, and the platform logs a warning listing the failed types. Retry from the Workflow tab. |
+
+The platform logs one summary line of the migration, and a line listing the types skipped because they need the Enterprise Edition. A new platform starts with legacy statuses and runs no migration.
+
+### Migrate statuses yourself
+
+When a type that can be migrated (not Draft, relationships or sightings) still has legacy statuses and no published workflow, its **Workflow** tab offers **Migrate statuses** (**Migrate request access statuses** on the request access scope of Request for information). On an empty workflow, the tab says *This type has legacy statuses: migrate them to start your workflow, or define a new one by adding a Status.*
+
+![Workflow tab of a type with legacy statuses](assets/entities-workflow-00b-legacy-statuses.jpg)
+
+1. Click **Migrate statuses**. The dialog lists the **States** and **Transitions** that will be created, and any blocking problem.
+
+    ![Migrate statuses dialog](assets/entities-workflow-00c-migration-dialog.jpg)
+
+2. Leave **Publish immediately** on to publish the workflow at once, or turn it off to review it as a draft first.
+3. Click **Migrate**.
+
+The migration replaces the current draft, and asks for a confirmation when a draft exists. It never replaces a published workflow: the button is hidden once one is published. If the publish fails, the migration is undone and the previous draft is restored.
 
 ## Creating a workflow definition
 
@@ -267,7 +303,7 @@ From a list, select entities (or **select all** on a filtered list), then open t
 - **Entities already in the target status** are normally left untouched by the **Status** bypass field. A **Workflow transition** is different: it is triggered on every selected entity, so a self-loop transition (from a status back to itself) runs its actions again and adds a history entry. An entity moved by someone else before the task reaches it can also make the transition unavailable, and the task reports an error for that entity.
 - **One entity type at a time.** The workflow transition is only available when the selected entities are of a single type that has a published workflow.
 
-Users with the *Bypass all capabilities* capability can also use the field **Status** to move all the selected entities to any status. It goes through the workflow engine, and the switch **Apply transition actions** (on by default) runs the *on exit* and *on enter* status actions. The fields **Status** and **Workflow transition** cannot be combined in the same update.
+On a type with a published workflow, only users with the *Bypass all capabilities* capability can use the field **Status**, to move all the selected entities to any status. On types still on [legacy statuses](#legacy-statuses-and-migration), the **Status** field stays open to every user who can update them. With a filter, the change is only allowed when the filter limits the entity type to types without a published workflow. On a type with a published workflow, the change goes through the workflow engine, and the switch **Apply transition actions** (on by default) runs the *on exit* and *on enter* status actions. The fields **Status** and **Workflow transition** cannot be combined in the same update.
 
 ### Lists and filters
 
@@ -355,7 +391,7 @@ A closed Incident response with the reason *Duplicate*: the **Closing reason** i
 The workflow writes its current status in the entity's processing status. Lists, saved filters, dashboards, streams and STIX exports keep working as before. No data migration is needed when you publish a workflow on an entity type that already has entities.
 
 - **New entities** start in the starting status, unless they are created with a status that exists in the workflow, for example by a connector.
-- **Existing entities** keep their current status and get their workflow the first time they are opened.
+- **Existing entities** keep their current status and get their workflow the first time they are opened. An entity created without a status before the workflow was published keeps no status until someone moves it.
 
 ### Status changes made outside the workflow
 
@@ -382,7 +418,7 @@ The **Entity status sync** switch, on the canvas of the entity type's **Workflow
 
 #### Playbooks
 
-A [playbook](playbook-automation.md) component **Manipulate knowledge** can replace the processing status like any other attribute. In the replace action on the status, choose the **entity type** first: the status list then only shows the statuses of that type's workflow. Playbooks saved before this step existed have no entity type and keep working. By default this is a plain status change, handled as described above. A playbook can instead move the entity through the workflow engine, so that the *on exit* and *on enter* status actions run: in the configuration of the replace action on the processing status, set `apply_transition_actions` to `true`. This option is not shown in the playbook editor and needs the workflow feature enabled. The status is changed as the automation user; if the change cannot be applied, it is logged and the playbook goes on. An entity already in the target status is left unchanged.
+A [playbook](playbook-automation.md) component **Manipulate knowledge** can replace the processing status like any other attribute. In the replace action on the status, choose the **entity type** first: the status list then only shows the statuses of that type's workflow. Playbooks saved before this step existed have no entity type and keep working. By default this is a plain status change, handled as described above. A playbook can instead move the entity through the workflow engine, so that the *on exit* and *on enter* status actions run: in the configuration of the replace action on the processing status, set `apply_transition_actions` to `true`. This option is not shown in the playbook editor. The status is changed as the automation user; if the change cannot be applied, it is logged and the playbook goes on. An entity already in the target status is left unchanged.
 
 ### Deleting statuses
 
