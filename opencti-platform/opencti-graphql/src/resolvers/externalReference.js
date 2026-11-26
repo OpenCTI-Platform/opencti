@@ -7,6 +7,7 @@ import {
   externalReferenceDeleteRelation,
   externalReferenceEditContext,
   externalReferenceEditField,
+  externalReferenceImportFiles,
   externalReferenceImportPush,
   findReferencesPaginated,
   findById,
@@ -15,7 +16,6 @@ import {
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { worksForSource } from '../domain/work';
-import { loadFile } from '../database/file-storage';
 import { askElementEnrichmentForConnector, askElementEnrichmentForConnectors } from '../domain/stixCoreObject';
 import { connectorsForEnrichment } from '../database/repository';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -37,19 +37,7 @@ const externalReferenceResolvers = {
     editContext: (externalReference) => fetchEditContext(externalReference.id),
     jobs: (externalReference, args, context) => worksForSource(context, context.user, externalReference.standard_id, args),
     connectors: (externalReference, { onlyAlive = false }, context) => connectorsForEnrichment(context, context.user, externalReference.entity_type, onlyAlive),
-    importFiles: async (externalReference, { first }, context) => {
-      const opts = { first, entity_type: externalReference.entity_type };
-      const listing = await paginatedForPathWithEnrichment(context, context.user, `import/${externalReference.entity_type}/${externalReference.id}`, externalReference.id, opts);
-      if (externalReference.fileId) {
-        try {
-          const refFile = await loadFile(context, context.user, externalReference.fileId);
-          listing.edges.unshift({ node: refFile, cursor: '' });
-        } catch {
-          // FileId is no longer available
-        }
-      }
-      return listing;
-    },
+    importFiles: (externalReference, { first }, context) => externalReferenceImportFiles(context, context.user, externalReference, { first }),
     exportFiles: (externalReference, { first }, context) => {
       const opts = { first, entity_type: externalReference.entity_type };
       return paginatedForPathWithEnrichment(context, context.user, `export/${externalReference.entity_type}`, externalReference.id, opts);
