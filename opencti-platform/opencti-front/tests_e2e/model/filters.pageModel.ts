@@ -179,7 +179,7 @@ export default class FiltersPageModel {
   // endregion
 
   async removeLastFilter() {
-    const removeButton = this.root.getByRole('button', { name: /^Remove/ }).last();
+    const removeButton = this.root.getByTestId('filter-chip').last().getByRole('button', { name: /^Remove(: |$)/ });
     await expect(removeButton).toBeVisible();
     await removeButton.click({ force: true });
   }

@@ -31,6 +31,7 @@ It uses **Relay** for data fetching and **Material UI** for styling.
   - `relay/`: Relay environment configuration
 - `packages/`: Monorepo packages (if any)
 - `tests_e2e/`: End-to-End tests
+  - CI runs them on the built front: never select MUI icons by test id (`getByTestId('DeleteIcon')`), they only exist in dev. Use a role or accessible name (ESLint enforces it).
 
 ### Aliases (tsconfig.json)
 - `@common/*`: `src/components/common/*`

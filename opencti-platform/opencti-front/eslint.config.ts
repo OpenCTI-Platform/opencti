@@ -258,6 +258,17 @@ export default defineConfig([
     },
   },
 
+  // MUI only renders the `<Name>Icon` test ids in dev: CI runs the e2e on the built front, where they do not exist.
+  {
+    files: ['tests_e2e/**'],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: "CallExpression[callee.property.name='getByTestId'][arguments.0.value=/Icon$/]",
+        message: 'MUI icon test ids only exist in dev. Select by role or accessible name instead.',
+      }],
+    },
+  },
+
   // Playwright fixtures and the maintenance scripts run in Node, not in a browser, so
   // they see Node's globals rather than the browser ones the app code is checked against.
   {

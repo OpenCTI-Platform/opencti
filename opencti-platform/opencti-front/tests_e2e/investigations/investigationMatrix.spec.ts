@@ -120,6 +120,7 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
     // No platform selected: no mark at all.
     await expect(investigationPage.getMatrix().getByLabel(SHOULD_COVER, { exact: true })).toHaveCount(0);
+    await expect(investigationPage.getMatrix().getByLabel(DOES_NOT_COVER, { exact: true })).toHaveCount(0);
 
     await investigationPage.selectSecurityPlatform('E2E Matrix platform');
     // The platform should cover T9001 only: a tick on T9001, a cross on T9002.
