@@ -18076,10 +18076,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:1.4.3":
-  version: 1.4.3
-  resolution: "node-forge@npm:1.4.3"
-  checksum: 10c0/02202bf144dfb6f9662c21a2fdbc6251cb1e8b6dd7e4016d2bb8c996fb61a46383f7426503e06e3f15014d1b8a3215c32ee5cf22e5023ecd8e6d88b6a41dada0
+"node-forge@npm:1.4.4":
+  version: 1.4.4
+  resolution: "node-forge@npm:1.4.4"
+  checksum: 10c0/91916e521451b6d4b469213a8f17900d42cb13d49063a8401b6cf5456a4aec973917d8f41ee84edcf55b8f7f0ad77ba1852c01e3de59e023a2e1318f3973531f
   languageName: node
   linkType: hard
 
@@ -18968,7 +18968,7 @@ __metadata:
     nconf: "npm:0.13.0"
     node-calls-python: "npm:1.13.0"
     node-fetch: "npm:3.3.2"
-    node-forge: "npm:1.4.3"
+    node-forge: "npm:1.4.4"
     node-gyp-build: "npm:4.8.4"
     nodemailer: "npm:10.6.1"
     openai: "npm:7.62.0"
