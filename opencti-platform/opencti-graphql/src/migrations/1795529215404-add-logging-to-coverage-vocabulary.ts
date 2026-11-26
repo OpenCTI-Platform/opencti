@@ -11,7 +11,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 const message = '[MIGRATION] Vocabulary add logging to coverage open vocabulary';
 
 // OpenAEV now sends a LOGGING security coverage score: a platform created before seeds the entry here.
-// Additive only: an entry an administrator already created under the same name is kept as it is.
+// Additive only: an entry an administrator already created under the same name, or carrying it as an alias, is kept as it is
+// (the creation resolves an existing entry through its aliases too, and would upsert it).
 const LOGGING_KEY = 'logging';
 
 export const up = async (next: (error?: Error) => void) => {
@@ -29,7 +30,7 @@ export const up = async (next: (error?: Error) => void) => {
     filters,
     noFiltersChecking: true,
   });
-  const existingNames = new Set(existing.map(({ name }) => normalizeName(name)));
+  const existingNames = new Set(existing.flatMap(({ name, aliases }) => [name, ...(aliases ?? [])]).map(normalizeName));
   const entries = (openVocabularies[category] ?? []).filter(({ key }) => key === LOGGING_KEY && !existingNames.has(normalizeName(key)));
   for (let i = 0; i < entries.length; i += 1) {
     await addVocabulary(context, SYSTEM_USER, seedVocabularyInput(category, entries[i]));
