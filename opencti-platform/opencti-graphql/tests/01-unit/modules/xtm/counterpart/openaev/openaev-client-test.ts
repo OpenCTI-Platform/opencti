@@ -33,11 +33,16 @@ import {
   CounterpartLookupError,
   findXtmConnections,
   findXtmCounterpartsByIds,
+  registerCounterpartProvider,
   resetCounterpartCache,
   sanitiseFacts,
 } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
 import { openAevProvider } from '../../../../../../src/modules/xtm/counterpart/openaev/openaev-provider';
-import '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-provider';
+import { openCrqProvider } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-provider';
+
+// What the counterpart module descriptor registers at boot
+registerCounterpartProvider(openAevProvider);
+registerCounterpartProvider(openCrqProvider);
 
 const ALICE = { id: 'alice', user_email: 'alice@example.com' };
 

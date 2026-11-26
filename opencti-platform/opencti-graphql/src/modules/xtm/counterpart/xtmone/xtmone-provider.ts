@@ -1,4 +1,4 @@
-import { type CounterpartProvider, counterpartsOfAnswer, registerCounterpartProvider } from '../core/counterpart-domain';
+import { type CounterpartProvider, counterpartsOfAnswer } from '../core/counterpart-domain';
 import { fetchXtmOneAssets, getXtmOneUrl, isXtmOneConnected } from './xtmone-client';
 
 // XTM One's inventory holds assets only (hostnames, FQDNs, IP addresses): every other kind is
@@ -11,5 +11,3 @@ export const xtmOneProvider: CounterpartProvider = {
   // XTM One echoes the key as asked; normalised back like the other products.
   resolve: async (kind, keys, caller) => counterpartsOfAnswer('xtmone', kind, keys, await fetchXtmOneAssets(keys, caller)),
 };
-
-registerCounterpartProvider(xtmOneProvider);

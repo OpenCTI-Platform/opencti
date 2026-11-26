@@ -1,4 +1,4 @@
-import { type CounterpartKind, type CounterpartProvider, counterpartsOfAnswer, registerCounterpartProvider } from '../core/counterpart-domain';
+import { type CounterpartKind, type CounterpartProvider, counterpartsOfAnswer } from '../core/counterpart-domain';
 import { fetchOpenCrqObjects, getOpenCrqUrl, isOpenCrqConnected, type OpenCrqLookupKind } from './opencrq-client';
 
 // OpenCRQ holds threats (STIX id), vulnerabilities (CVE) and assets (hostname); attack patterns and
@@ -13,5 +13,3 @@ export const openCrqProvider: CounterpartProvider = {
   // OpenCRQ answers keys in its own case (STIX ids and hostnames lower, CVEs upper): normalised back.
   resolve: async (kind, keys, caller) => counterpartsOfAnswer('opencrq', kind, keys, await fetchOpenCrqObjects(kind as OpenCrqLookupKind, keys, caller)),
 };
-
-registerCounterpartProvider(openCrqProvider);
