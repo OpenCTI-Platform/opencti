@@ -16,6 +16,18 @@ vi.mock('./useContainerObjects', () => ({
   useContainerObjects: () => ({ addObjectToContainer, removeObjectFromContainer }),
 }));
 
+// The objects of the container the server knows, whatever the panel loaded
+const { serverMemberIds } = vi.hoisted(() => ({ serverMemberIds: { current: [] as string[] } }));
+
+vi.mock('../../../../relay/environment', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../relay/environment')>()),
+  fetchQuery: () => ({
+    toPromise: () => Promise.resolve({
+      container: { objects: { edges: serverMemberIds.current.map((id) => ({ node: { id } })) } },
+    }),
+  }),
+}));
+
 const observable = (id: string): CreatedObject => ({ id, entity_type: 'IPv4-Addr', parent_types: ['Stix-Cyber-Observable'] });
 
 const baseArgs = () => ({
@@ -53,6 +65,7 @@ describe('useAddCreatedObjectsToContainer', () => {
 
   beforeEach(() => {
     vi.useFakeTimers();
+    serverMemberIds.current = [];
     vi.mocked(addObjectToContainer).mockReset().mockResolvedValue(undefined);
     vi.mocked(removeObjectFromContainer).mockReset().mockResolvedValue(undefined);
     notifySuccess = vi.spyOn(MESSAGING$, 'notifySuccess').mockImplementation(() => {});
@@ -202,6 +215,26 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(removeObjectFromContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
     expect(args.onRemoved).toHaveBeenCalledWith(observable('o2'));
     expect(notifySuccess.mock.calls[1][0]).toContain('Removed from the');
+  });
+
+  it('neither adds nor undoes an object already in the container but not loaded by the panel', async () => {
+    // The panel loads only the first objects of the container: it does not know o1
+    serverMemberIds.current = ['o1'];
+    const args = baseArgs();
+    const hook = renderAddHook(args);
+
+    act(() => {
+      hook.result.current.onCreated(observable('o1'));
+      hook.result.current.onCreated(observable('o2'));
+    });
+    await flushBatch();
+
+    expect(addObjectToContainer).toHaveBeenCalledOnce();
+    expect(addObjectToContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
+    const { action } = notifySuccess.mock.calls[0][1];
+    await act(async () => { action.onClick(); await vi.runAllTimersAsync(); });
+    expect(removeObjectFromContainer).toHaveBeenCalledOnce();
+    expect(removeObjectFromContainer).toHaveBeenCalledWith(expect.objectContaining({ objectId: 'o2' }));
   });
 
   it('reports an add failure and keeps the others', async () => {

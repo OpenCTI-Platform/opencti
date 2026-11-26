@@ -8,6 +8,7 @@ import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { CreatedObject, useContainerObjects } from './useContainerObjects';
 import { BulkCreationFeedback } from '../../../../utils/hooks/useCreationFeedback';
 import { useAddCreatedObjectsToContainerIndicatorsQuery$data } from './__generated__/useAddCreatedObjectsToContainerIndicatorsQuery.graphql';
+import { useAddCreatedObjectsToContainerMembersQuery$data } from './__generated__/useAddCreatedObjectsToContainerMembersQuery.graphql';
 
 /** The objects created within this delay of each other are added together, with a single message. */
 export const CREATED_OBJECTS_BATCH_DELAY_MS = 1000;
@@ -23,6 +24,26 @@ const indicatorsBasedOnQuery = graphql`
           parent_types
           representative {
             main
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Which of the given objects are in the container: the panels load only its first objects
+const containerMembersQuery = graphql`
+  query useAddCreatedObjectsToContainerMembersQuery($id: String!, $filters: FilterGroup, $count: Int) {
+    container(id: $id) {
+      objects(filters: $filters, first: $count) {
+        edges {
+          node {
+            ... on BasicObject {
+              id
+            }
+            ... on BasicRelationship {
+              id
+            }
           }
         }
       }
@@ -93,6 +114,17 @@ const fetchIndicatorsBasedOn = async (observableId: string): Promise<CreatedObje
   };
   const data = await fetchQuery(indicatorsBasedOnQuery, { filters }).toPromise() as useAddCreatedObjectsToContainerIndicatorsQuery$data;
   return (data?.indicators?.edges ?? []).flatMap((edge) => (edge?.node ? [edge.node] : []));
+};
+
+const fetchContainerMemberIds = async (containerId: string, objectIds: string[]): Promise<string[]> => {
+  const filters = {
+    mode: 'and',
+    filterGroups: [],
+    filters: [{ key: 'ids', operator: 'eq', mode: 'or', values: objectIds }],
+  };
+  const data = await fetchQuery(containerMembersQuery, { id: containerId, filters, count: objectIds.length })
+    .toPromise() as useAddCreatedObjectsToContainerMembersQuery$data;
+  return (data?.container?.objects?.edges ?? []).flatMap((edge) => (edge?.node?.id ? [edge.node.id] : []));
 };
 
 /**
@@ -211,8 +243,13 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       .map((item) => fetchIndicatorsBasedOn(item.object.id).catch(() => [])));
     const created = [...batch.map((item) => item.object), ...indicators.flat()]
       .filter((object, index, all) => all.findIndex((o) => o.id === object.id) === index);
-    // An existing object returned by the creation (upsert) may already be in the container: it is neither added nor undone
-    const toAdd = created.filter((object) => !isInContainer(object.id));
+    // An existing object returned by the creation (upsert) may already be in the container: it is neither added nor undone.
+    // The panel knows only the first objects of the container: the server is asked for the others.
+    const unknown = created.filter((object) => !isInContainer(object.id));
+    const memberIds = unknown.length > 0
+      ? await fetchContainerMemberIds(containerId, unknown.map((object) => object.id)).catch(() => [])
+      : [];
+    const toAdd = unknown.filter((object) => !memberIds.includes(object.id));
     if (toAdd.length === 0) {
       const alreadyIn = t_i18n('Already in the {containerType}', { values: { containerType: containerLabel() } });
       if (created.length > 0 && bulkRef.current) {
