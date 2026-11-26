@@ -248,7 +248,7 @@ describe('stream commands', () => {
 
     const info = await mod.rawFetchStreamInfo();
 
-    expect(mockClient.xinfo).toHaveBeenCalledWith('STREAM', 'test:stream.opencti');
+    expect(mockClient.xinfo).toHaveBeenCalledWith('STREAM', 'stream.opencti');
     expect(info).toEqual({
       firstEventId: '1000-0',
       firstEventDate: new Date(1000).toISOString(),
