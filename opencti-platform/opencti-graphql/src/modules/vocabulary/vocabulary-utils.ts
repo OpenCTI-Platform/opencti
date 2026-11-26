@@ -262,6 +262,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<OpenVocabularyEn
     { key: 'prevention', description: 'Prevention', order: 1 },
     { key: 'detection', description: 'Detection', order: 2 },
     { key: 'vulnerability', description: 'Vulnerability', order: 3 },
+    { key: 'logging', description: 'Logging', order: 4 },
   ],
   case_severity_ov: [
     { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },

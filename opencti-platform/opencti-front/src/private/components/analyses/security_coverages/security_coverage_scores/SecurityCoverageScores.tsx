@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import { Avatar, Tooltip } from '@mui/material';
-import { BugReportOutlined, HourglassEmpty, Person, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
+import { BugReportOutlined, HourglassEmpty, Person, ReceiptLongOutlined, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../../../../../components/i18n';
@@ -109,6 +109,7 @@ const SecurityCoverageScores: FunctionComponent<SecurityCoverageScoresProps> = (
   const ICON_MAP: Record<string, (size: number) => React.ReactElement> = {
     DETECTION: (size) => <TrackChangesOutlined style={{ fontSize: size }} />,
     PREVENTION: (size) => <ShieldOutlined style={{ fontSize: size }} />,
+    LOGGING: (size) => <ReceiptLongOutlined style={{ fontSize: size }} />,
     VULNERABILITY: (size) => <BugReportOutlined style={{ fontSize: size }} />,
     MANUAL: (size) => <Person style={{ fontSize: size }} />,
   };
