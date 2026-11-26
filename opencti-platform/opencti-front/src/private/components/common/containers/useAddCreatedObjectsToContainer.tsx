@@ -111,6 +111,7 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
   const batchRef = useRef<CreatedObjectsBatchItem[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const referencesResolverRef = useRef<((references: References | null) => void) | null>(null);
+  const pendingReferencesRef = useRef<Promise<References | null> | null>(null);
   const [referencesDialogOpen, setReferencesDialogOpen] = useState(false);
   const bulkRef = useRef<BulkState | null>(null);
   const [bulkProgress, setBulkProgress] = useState<BulkCreationFeedback['progress']>(null);
@@ -128,13 +129,20 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     return containerType ? t_i18n(`entity_${containerType}`) : t_i18n('container');
   };
 
-  const askReferences = () => new Promise<References | null>((resolve) => {
-    referencesResolverRef.current = resolve;
-    setReferencesDialogOpen(true);
-  });
+  // A request made while the dialog is open waits for that dialog: one set of references for all of them
+  const askReferences = () => {
+    if (!pendingReferencesRef.current) {
+      pendingReferencesRef.current = new Promise<References | null>((resolve) => {
+        referencesResolverRef.current = resolve;
+        setReferencesDialogOpen(true);
+      });
+    }
+    return pendingReferencesRef.current;
+  };
   const resolveReferences = (references: References | null) => {
     const resolve = referencesResolverRef.current;
     referencesResolverRef.current = null;
+    pendingReferencesRef.current = null;
     setReferencesDialogOpen(false);
     resolve?.(references);
   };
@@ -264,22 +272,36 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
     MESSAGING$.notifySuccess(addedMessage(added), { action: { label: 'Undo', onClick: () => { undo(added); } } });
   };
 
+  const runFlush = async () => {
+    const bulk = bulkRef.current;
+    if (bulk) bulk.flushing += 1;
+    try {
+      await flush();
+    } finally {
+      if (bulk) bulk.flushing -= 1;
+      refreshBulkProgress();
+    }
+  };
+
   const onCreated = (object: CreatedObject, options?: { withIndicator?: boolean }) => {
     if (argsRef.current.disabled) return;
     batchRef.current.push({ object, withIndicator: !!options?.withIndicator });
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(async () => {
-      timerRef.current = null;
-      const bulk = bulkRef.current;
-      if (bulk) bulk.flushing += 1;
-      try {
-        await flush();
-      } finally {
-        if (bulk) bulk.flushing -= 1;
-        refreshBulkProgress();
-      }
-    }, CREATED_OBJECTS_BATCH_DELAY_MS);
+    timerRef.current = null;
+    // The objects of a bulk creation are added together once all are created: one add, one references dialog
+    const bulk = bulkRef.current;
+    if (!bulk || bulk.creationsDone) {
+      timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        runFlush();
+      }, CREATED_OBJECTS_BATCH_DELAY_MS);
+    }
     refreshBulkProgress();
+  };
+
+  // Adds the objects held during a bulk creation
+  const flushHeldObjects = () => {
+    if (batchRef.current.length > 0 && !timerRef.current) runFlush();
   };
 
   const submitReferences: FormikConfig<ReferencesFormValues>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -324,6 +346,7 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       setTimeout(() => {
         if (!bulk || bulkRef.current !== bulk) return;
         bulk.creationsDone = true;
+        flushHeldObjects();
         refreshBulkProgress();
       }, 0);
     },
@@ -331,6 +354,8 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       bulkRef.current = null;
       setBulkProgress(null);
       setBulkResultMessage(null);
+      // Closed before all were created (e.g. the form is gone): what was created is still added, with a message
+      flushHeldObjects();
     },
     containerType: containerLabel(),
     progress: bulkProgress,

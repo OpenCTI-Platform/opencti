@@ -1,7 +1,8 @@
 import React, { useImperativeHandle, forwardRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
-import testRender, { testRenderHook } from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext, testRenderHook } from '../../../../utils/tests/test-render';
+import { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE } from '../../../../utils/hooks/capabilities';
 import { MESSAGING$ } from '../../../../relay/environment';
 import type { ContainerObjectMutationArgs, CreatedObject } from './useContainerObjects';
 import { CREATED_OBJECTS_BATCH_DELAY_MS, useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
@@ -35,6 +36,16 @@ const flushBatch = async () => {
     await vi.advanceTimersByTimeAsync(CREATED_OBJECTS_BATCH_DELAY_MS);
   });
 };
+
+// "Update without references" needs this capability
+const canSkipReferences = createMockUserContext({ me: { capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE }] } });
+
+type ReferencesHandle = { onCreated: (o: CreatedObject) => void };
+const ReferencesHarness = forwardRef<ReferencesHandle, { args: Args }>(({ args }, ref) => {
+  const { onCreated, referencesDialog } = useAddCreatedObjectsToContainer(args);
+  useImperativeHandle(ref, () => ({ onCreated }));
+  return <>{referencesDialog}</>;
+});
 
 describe('useAddCreatedObjectsToContainer', () => {
   let notifySuccess: ReturnType<typeof vi.spyOn>;
@@ -104,18 +115,25 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(hook.result.current.bulkCreation?.resultMessage).toContain('1 observables added to the');
   });
 
-  it('keeps a bulk creation in progress until all its creations are done', async () => {
+  it('adds the objects of a bulk creation together, once all are created', async () => {
     const hook = renderAddHook(baseArgs());
 
     act(() => hook.result.current.bulkCreation?.onBulkStart());
     act(() => hook.result.current.onCreated(observable('o1')));
-    await flushBatch();
-    // The first object is added, but other creations may still come
-    expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 1, total: 1, inProgress: true });
+    // Long after the first one, other creations may still come: nothing is added yet
+    await act(async () => { await vi.advanceTimersByTimeAsync(CREATED_OBJECTS_BATCH_DELAY_MS * 3); });
+    expect(addObjectToContainer).not.toHaveBeenCalled();
+    expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 0, total: 0, inProgress: true });
 
-    act(() => hook.result.current.bulkCreation?.onBulkCompleted());
+    act(() => {
+      hook.result.current.onCreated(observable('o2'));
+      hook.result.current.bulkCreation?.onBulkCompleted();
+    });
     await act(async () => { await vi.runAllTimersAsync(); });
-    expect(hook.result.current.bulkCreation?.progress?.inProgress).toBe(false);
+
+    expect(addObjectToContainer).toHaveBeenCalledTimes(2);
+    expect(hook.result.current.bulkCreation?.progress).toEqual({ done: 2, total: 2, inProgress: false });
+    expect(hook.result.current.bulkCreation?.resultMessage).toContain('2 observables added to the');
   });
 
   it('shows the message when the bulk result dialog is closed before the objects are added', async () => {
@@ -233,7 +251,7 @@ describe('useAddCreatedObjectsToContainer', () => {
       return <>{referencesDialog}</>;
     });
     const handle = React.createRef<Handle>();
-    testRender(<Harness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />);
+    testRender(<Harness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
 
     act(() => {
       handle.current?.onCreated(observable('o1'));
@@ -245,7 +263,8 @@ describe('useAddCreatedObjectsToContainer', () => {
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Update without references' }));
-      await vi.runAllTimersAsync();
+      // Not runAllTimers: the references dialog keeps a recurring timer
+      await vi.advanceTimersByTimeAsync(CREATED_OBJECTS_BATCH_DELAY_MS);
     });
 
     expect(addObjectToContainer).toHaveBeenCalledTimes(2);
@@ -253,4 +272,26 @@ describe('useAddCreatedObjectsToContainer', () => {
     expect(first.commitMessage).toBe(second.commitMessage);
     expect(first.references).toEqual(second.references);
   });
+
+  it('asks references once for batches waiting at the same time', async () => {
+    const handle = React.createRef<ReferencesHandle>();
+    testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
+
+    act(() => handle.current?.onCreated(observable('o1')));
+    await flushBatch();
+    // A second batch while the dialog is still open
+    act(() => handle.current?.onCreated(observable('o2')));
+    await flushBatch();
+    expect(screen.getAllByText('Reference modification')).toHaveLength(1);
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Update without references' }));
+      // Not runAllTimers: the references dialog keeps a recurring timer
+      await vi.advanceTimersByTimeAsync(CREATED_OBJECTS_BATCH_DELAY_MS);
+    });
+
+    expect(addObjectToContainer).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(addObjectToContainer).mock.calls.map(([call]) => call.objectId)).toEqual(['o1', 'o2']);
+  });
 });
+
