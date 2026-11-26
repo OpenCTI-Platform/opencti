@@ -56,6 +56,7 @@ const RetentionEditionContainer = (props) => {
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(props.retentionRule?.filters ?? undefined));
   const [verified, setVerified] = useState(false);
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
+  const availableFilterKeysDrafts = useAvailableFilterKeysForEntityTypes(['DraftWorkspace']);
 
   const retentionValidation = Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
@@ -155,7 +156,9 @@ const RetentionEditionContainer = (props) => {
                   endAdornment: (
                     <InputAdornment position="end">
                       <Tooltip
-                        title={t_i18n(
+                        title={retentionRule.scope === 'draft' ? t_i18n(
+                          'All objects matching the filters that have been created prior to this amount of units will be deleted',
+                        ) : t_i18n(
                           'All objects matching the filters that have not been updated since this amount of units will be deleted',
                         )}
                       >
@@ -198,7 +201,7 @@ const RetentionEditionContainer = (props) => {
                 </Alert>
               )
             }
-            {retentionRule.scope === 'knowledge'
+            {(retentionRule.scope === 'knowledge' || retentionRule.scope === 'draft')
               && (
                 <>
                   <Box
@@ -211,18 +214,18 @@ const RetentionEditionContainer = (props) => {
                     }}
                   >
                     <Filters
-                      availableFilterKeys={availableFilterKeys}
+                      availableFilterKeys={retentionRule.scope === 'draft' ? availableFilterKeysDrafts : availableFilterKeys}
                       helpers={helpers}
-                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                      searchContext={{ entityTypes: retentionRule.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                     />
                   </Box>
                   <FilterIconButton
                     filters={filters}
                     helpers={helpers}
-                    availableFilterKeys={availableFilterKeys}
+                    availableFilterKeys={retentionRule.scope === 'draft' ? availableFilterKeysDrafts : availableFilterKeys}
                     redirection
-                    entityTypes={['Stix-Core-Object', 'stix-core-relationship']}
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                    entityTypes={retentionRule.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship']}
+                    searchContext={{ entityTypes: retentionRule.scope === 'draft' ? ['DraftWorkspace'] : ['Stix-Core-Object', 'stix-core-relationship'] }}
                   />
                 </>
               )

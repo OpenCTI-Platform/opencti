@@ -12960,20 +12960,6 @@ type ResolvedInstanceFilter {
   value: String
 }
 
-type RetentionRule {
-  active: Boolean
-  filters: String!
-  id: ID!
-  last_deleted_count: Int
-  last_execution_date: DateTime
-  max_retention: Int!
-  name: String!
-  remaining_count: Int
-  retention_unit: RetentionUnit!
-  scope: RetentionRuleScope!
-  standard_id: String!
-}
-
 input RetentionRuleAddInput {
   active: Boolean
   filters: String
@@ -12985,6 +12971,20 @@ input RetentionRuleAddInput {
   name: String!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
+}
+
+type RetentionRule {
+  id: ID!
+  standard_id: String!
+  name: String!
+  filters: String!
+  max_retention: Int!
+  retention_unit: RetentionUnit!
+  last_execution_date: DateTime
+  last_deleted_count: Int
+  remaining_count: Int
+  scope: RetentionRuleScope!
+  active: Boolean
 }
 
 type RetentionRuleConnection {
@@ -13018,6 +13018,7 @@ enum RetentionRuleScope {
   history
   knowledge
   workbench
+  draft
 }
 
 enum RetentionUnit {
