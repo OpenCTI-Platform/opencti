@@ -17,6 +17,7 @@ import {
   authorizedMembers,
   authorizedMembersActivationDate,
   confidence,
+  coverageInformation,
   creators,
   customFieldValues,
   files,
@@ -29,7 +30,7 @@ import { height, type Measurement, weight } from '../../../src/modules/threatAct
 import { workflowId } from '../../../src/modules/attributes/stixDomainObject-registrationAttributes';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import type { EntityFileReference } from '../../../src/modules/internal/document/document-types';
-import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../../../src/schema/internalRelationship';
 
 describe('generateUpdatePatchMessage tests', () => {
@@ -107,6 +108,23 @@ describe('generateUpdatePatchMessage tests', () => {
       .toEqual('Due date: October 12 2026, 3:26:00 PM');
     expect(humanizeRawValue({}, customFieldValues as AttributeDefinition, value, DefaultFormating))
       .toEqual('x_opencti_cf_due: October 12 2026, 3:26:00 PM');
+  });
+  it('should generate message for coverage score update with each coverage name and score', () => {
+    const changes: Change[] = [
+      {
+        field: RELATION_HAS_COVERED + '--' + coverageInformation.name,
+        changes_added: [{ raw: JSON.stringify({ coverage_name: 'Detection', coverage_score: 80 }) }],
+        changes_removed: [{ raw: JSON.stringify({ coverage_name: 'Detection', coverage_score: 50 }) }],
+      },
+    ];
+    const message = generateMessageFromChanges({}, changes);
+    expect(message).toEqual('adds `Detection: 80%` in `Coverage` | removes `Detection: 50%` in `Coverage`');
+  });
+  it('should humanize coverage information with a dash for a missing name or score', () => {
+    const withoutScore = { raw: JSON.stringify({ coverage_name: 'Detection' }) };
+    expect(humanizeRawValue({}, coverageInformation as AttributeDefinition, withoutScore, DefaultFormating)).toEqual('Detection: -');
+    const withoutName = { raw: JSON.stringify({ coverage_score: 0 }) };
+    expect(humanizeRawValue({}, coverageInformation as AttributeDefinition, withoutName, DefaultFormating)).toEqual('-: 0%');
   });
   it('should generate message fail for unexisting attribute', () => {
     const changes: Change[] = [
