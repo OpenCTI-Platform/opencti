@@ -55,8 +55,9 @@ const GraphToolbarItem = ({
   );
   if (opensMenu) control = <MenuTrigger asChild>{control}</MenuTrigger>;
   if (badge) {
+    // Tucked onto the round button, as on the enrichment button: on its corner, the toolbar row would clip it.
     control = (
-      <Badge content={badge} tone="brand" accessibleText={t_i18n('{count, plural, one {# in use} other {# in use}}', { values: { count: badge } })}>
+      <Badge content={badge} tone="brand" circularAnchor accessibleText={t_i18n('{count, plural, one {# in use} other {# in use}}', { values: { count: badge } })}>
         {control}
       </Badge>
     );

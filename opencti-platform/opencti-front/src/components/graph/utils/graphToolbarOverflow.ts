@@ -7,6 +7,8 @@ export interface ToolbarOverflowCandidate {
   priority: number;
   /** A toggle in effect keeps its place before the others: it is turned off where it was turned on. */
   pressed?: boolean;
+  /** Room the action takes in the row, its gap included: `TOOLBAR_ACTION_WIDTH` when unset (a wide control sets it). */
+  width?: number;
 }
 
 export interface ToolbarMetrics {
@@ -16,6 +18,9 @@ export interface ToolbarMetrics {
   divider: number;
 }
 
+/** Gap between two controls of the toolbar row: 0.5 theme spacing unit, 4 px with the 8 px theme spacing. */
+export const TOOLBAR_GAP_UNITS = 0.5;
+export const TOOLBAR_GAP_PX = 4;
 /** A medium design-system icon button (36 px) and the toolbar gap after it. */
 export const TOOLBAR_ACTION_WIDTH = 40;
 /** A vertical divider with its margins and the toolbar gap after it. */
@@ -46,7 +51,7 @@ export const planToolbarOverflow = (
       || b.candidate.priority - a.candidate.priority
       || a.index - b.index)
     .forEach(({ candidate }) => {
-      const cost = metrics.action + (openGroups.has(candidate.group) ? 0 : metrics.divider);
+      const cost = (candidate.width ?? metrics.action) + (openGroups.has(candidate.group) ? 0 : metrics.divider);
       if (used + cost > room) return;
       used += cost;
       shown.add(candidate.id);

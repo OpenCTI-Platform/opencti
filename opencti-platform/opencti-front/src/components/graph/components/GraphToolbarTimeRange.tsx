@@ -3,11 +3,9 @@ import React, { CSSProperties } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { computeTimeRangeValuesDomain, GraphTimeRange } from '../utils/graphTimeRange';
 import type { Theme } from '../../Theme';
-import { useGraphContext } from '../GraphContext';
 import { dateFormat } from '../../../utils/Time';
 import TimeRange from '../../range_slider/RangeSlider';
 import { useFormatter } from '../../i18n';
-import useGraphInteractions from '../utils/useGraphInteractions';
 
 const TimeRangeTooltip = ({
   active,
@@ -41,11 +39,14 @@ const TimeRangeTooltip = ({
   );
 };
 
-const GraphToolbarTimeRange = () => {
+export interface GraphToolbarTimeRangeProps {
+  timeRange: GraphTimeRange;
+  selectedInterval?: [Date, Date];
+  onChange: (interval: [Date, Date]) => void;
+}
+
+const GraphToolbarTimeRange = ({ timeRange, selectedInterval, onChange }: GraphToolbarTimeRangeProps) => {
   const theme = useTheme<Theme>();
-  const { setSelectedTimeRange } = useGraphInteractions();
-  const { timeRange, graphState } = useGraphContext();
-  const { selectedTimeRangeInterval } = graphState;
 
   return (
     <div style={{
@@ -93,10 +94,10 @@ const GraphToolbarTimeRange = () => {
       >
         <TimeRange
           ticksNumber={15}
-          selectedInterval={selectedTimeRangeInterval ?? timeRange.interval}
+          selectedInterval={selectedInterval ?? timeRange.interval}
           timelineInterval={timeRange.interval}
           onUpdateCallback={() => null}
-          onChangeCallback={setSelectedTimeRange}
+          onChangeCallback={onChange}
           formatTick={dateFormat}
           containerClassName="timerange"
         />

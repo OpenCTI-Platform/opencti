@@ -1,6 +1,6 @@
 import { type FocusEvent, type KeyboardEvent, type MutableRefObject, useEffect, useRef } from 'react';
 
-const CONTROL_SELECTOR = 'button, input, [role="button"]';
+const CONTROL_SELECTOR = 'button, input, select, [role="button"], [role="combobox"]';
 
 /** The controls of a toolbar a reader can reach, in reading order: enabled and drawn. */
 export const toolbarControls = (root: HTMLElement): HTMLElement[] => Array.from(root.querySelectorAll<HTMLElement>(CONTROL_SELECTOR))
@@ -30,6 +30,8 @@ export const nextToolbarIndex = (key: string, index: number, count: number): num
  * reaches the end it moves towards.
  */
 export const keepsKeyInField = (target: EventTarget, key: string) => {
+  // A native select picks its first or last option with Home and End; the arrow keys leave it.
+  if (target instanceof HTMLSelectElement) return key === 'Home' || key === 'End';
   if (!(target instanceof HTMLInputElement)) return false;
   if (key === 'Home' || key === 'End') return true;
   const { selectionStart, selectionEnd, value } = target;
