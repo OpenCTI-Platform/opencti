@@ -13,50 +13,54 @@ import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 export const BULK_SEARCH_LOCAL_STORAGE_KEY = 'searchBulk';
 
 export const searchBulkLineFragment = graphql`
-  fragment SearchBulkLine_node on StixCoreObject {
-    id
-    entity_type
-    created_at
-    updated_at
-    draftVersion {
-      draft_id
-      draft_operation
+  fragment SearchBulkLine_node on StixObjectOrStixRelationship {
+    ... on BasicObject {
+      id
+      entity_type
     }
-    ... on StixObject {
-      representative {
-        main
-        secondary
+    ... on StixCoreObject {
+      created_at
+      updated_at
+      draftVersion {
+        draft_id
+        draft_operation
       }
-    }
-    ... on HashedObservable {
-      hashes {
-        algorithm
-        hash
+      ... on StixObject {
+        representative {
+          main
+          secondary
+        }
       }
-    }
-    createdBy {
-      ... on Identity {
+      ... on HashedObservable {
+        hashes {
+          algorithm
+          hash
+        }
+      }
+      createdBy {
+        ... on Identity {
+          name
+        }
+      }
+      objectMarking {
+        id
+        definition_type
+        definition
+        x_opencti_order
+        x_opencti_color
+      }
+      objectLabel {
+        id
+        value
+        color
+      }
+      creators {
+        id
         name
       }
-    }
-    objectMarking {
-      id
-      definition_type
-      definition
-      x_opencti_order
-      x_opencti_color
-    }
-    objectLabel {
-      id
-      value
-      color
-    }
-    creators {
-      id
-      name
-    }
-    containersNumber {
-      total
+      containersNumber {
+        total
+      }
     }
   }
 `;
@@ -96,7 +100,7 @@ export const searchBulkFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
   )
   @refetchable(queryName: "SearchBulkRefetchQuery") {
-    globalSearch(
+    globalSearchWithRelationships(
       first: $count
       after: $cursor
       types: $types,
@@ -105,11 +109,13 @@ export const searchBulkFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
     )
-    @connection(key: "Pagination_globalSearch") {
+    @connection(key: "Pagination_globalSearchWithRelationships") {
       edges {
         node {
-          id
-          entity_type
+          ... on BasicObject {
+            id
+            entity_type
+          }
           ...SearchBulkLine_node
         }
       }
@@ -167,7 +173,7 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
     linesQuery: searchBulkQuery,
     linesFragment: searchBulkFragment,
     queryRef,
-    nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
+    nodePath: ['globalSearchWithRelationships', 'pageInfo', 'globalCount'],
     setNumberOfElements: completeSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SearchBulkQuery>;
 
@@ -176,7 +182,7 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearchWithRelationships?.edges?.map((n) => n?.node)}
           storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           contextFilters={queryFilters}

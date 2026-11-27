@@ -6,6 +6,7 @@ import * as R from 'ramda';
 import { useState } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
+import Alert from '../../../../components/Alert';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
@@ -106,7 +107,9 @@ const StixCoreObjectsExportCreation = ({
 
   return (
     <ExportContext.Consumer>
-      {({ selectedIds }) => {
+      {({ selectedIds, excludedRelationshipsCount = 0 }) => {
+        // An empty selection exports everything: when only relationships are selected, there is nothing to export.
+        const hasNothingToExport = excludedRelationshipsCount > 0 && selectedIds.length === 0;
         return (
           <Formik
             enableReinitialize={true}
@@ -132,6 +135,12 @@ const StixCoreObjectsExportCreation = ({
                   data-testid="StixCoreObjectsExportCreationDialog"
                   title={<GenerateExportTitle />}
                 >
+                  {excludedRelationshipsCount > 0 && (
+                    <Alert
+                      style={{ marginBottom: 16 }}
+                      content={t_i18n('Relationships will be excluded from the produced export')}
+                    />
+                  )}
                   <QueryRenderer
                     query={markingDefinitionsLinesSearchQuery}
                     variables={{ first: 200 }}
@@ -203,7 +212,7 @@ const StixCoreObjectsExportCreation = ({
                     </Button>
                     <Button
                       onClick={submitForm}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || hasNothingToExport}
                     >
                       {t_i18n('Create')}
                     </Button>

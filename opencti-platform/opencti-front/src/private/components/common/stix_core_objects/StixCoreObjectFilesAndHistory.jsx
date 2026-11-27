@@ -9,8 +9,7 @@ import { Field, Form, Formik } from 'formik';
 import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@common/button/Button';
-import { InfoOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
+import GenerateExportTitle from '../GenerateExportTitle';
 import DraftWorkspaceViewer from '../files/draftWorkspace/DraftWorkspaceViewer';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE, fileManagerCreateDraftAskJobImportMutation } from '../files/FileManager';
 import ManageImportConnectorMessage from '../../data/import/ManageImportConnectorMessage';
@@ -38,7 +37,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import ObjectAssigneeField from '@components/common/form/ObjectAssigneeField';
 import ObjectParticipantField from '@components/common/form/ObjectParticipantField';
 import CreatedByField from '@components/common/form/CreatedByField';
-import { Box, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import { authorizedMembersToInput } from '../../../../utils/authorizedMembers';
 
 export const stixCoreObjectFilesAndHistoryAskJobImportMutation = graphql`
@@ -467,20 +466,7 @@ const StixCoreObjectFilesAndHistory = ({
                 onClose={handleCloseExport}
                 fullWidth={true}
                 data-testid="StixCoreObjectFilesAndHistoryExportDialog"
-                title={(
-                  <Stack
-                    direction="row"
-                    sx={{
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
-                    {t_i18n('Generate an export')}
-                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                      <InfoOutlined fontSize="small" color="primary" />
-                    </Tooltip>
-                  </Stack>
-                )}
+                title={<GenerateExportTitle />}
               >
                 <Field
                   component={SelectFieldFds}

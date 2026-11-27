@@ -13,6 +13,7 @@ import {
   findStixCoreObjectRestrictedPaginated,
   findById,
   globalSearchPaginated,
+  globalSearchWithRelationshipsPaginated,
   groupingsPaginated,
   notesPaginated,
   observedDataPaginated,
@@ -68,6 +69,7 @@ import { getUserAccessRight } from '../utils/access';
 const stixCoreObjectResolvers = {
   Query: {
     globalSearch: (_, args, context) => globalSearchPaginated(context, context.user, args),
+    globalSearchWithRelationships: (_, args, context) => globalSearchWithRelationshipsPaginated(context, context.user, args),
     unknownStixCoreObjects: (_, args, context) => findUnknownStixCoreObjects(context, context.user, args),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),

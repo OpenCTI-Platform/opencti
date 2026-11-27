@@ -1,10 +1,7 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import { InfoOutlined } from '@mui/icons-material';
 import DialogActions from '@mui/material/DialogActions';
 import Slide from '@mui/material/Slide';
-import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
 import { Field, Form, Formik } from 'formik';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -22,6 +19,7 @@ import { UserContext } from '../../../../utils/hooks/useAuth';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/MarkingDefinitionsQuery';
 import { CONTENT_MAX_MARKINGS_HELPERTEXT, CONTENT_MAX_MARKINGS_TITLE } from '../files/FileManager';
 import ObjectMarkingField from '../form/ObjectMarkingField';
+import GenerateExportTitle from '../GenerateExportTitle';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -149,20 +147,7 @@ class StixCoreRelationshipsExportCreationComponent extends Component {
                               resetForm();
                               onClose();
                             }}
-                            title={(
-                              <Stack
-                                direction="row"
-                                sx={{
-                                  alignItems: 'center',
-                                  gap: 1,
-                                }}
-                              >
-                                {t('Generate an export')}
-                                <Tooltip title={t('Your max shareable markings will be applied to the content max markings')}>
-                                  <InfoOutlined sx={{ display: 'block' }} fontSize="medium" color="primary" />
-                                </Tooltip>
-                              </Stack>
-                            )}
+                            title={<GenerateExportTitle />}
                           >
                             <QueryRenderer
                               query={markingDefinitionsLinesSearchQuery}

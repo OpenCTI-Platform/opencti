@@ -26,8 +26,7 @@ import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import FileImportViewer from './FileImportViewer';
 import PictureManagementViewer from './PictureManagementViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
-import { Stack, Tooltip } from '@mui/material';
-import { InfoOutlined } from '@mui/icons-material';
+import GenerateExportTitle from '../GenerateExportTitle';
 
 export const CONTENT_MAX_MARKINGS_TITLE = 'Content max marking definition levels';
 export const CONTENT_MAX_MARKINGS_HELPERTEXT = 'Entities with higher marking definition levels won\'t be included in the file content.';
@@ -432,20 +431,7 @@ const FileManager = ({
                 open={openExport}
                 onClose={resetForm}
                 data-testid="FileManagerExportDialog"
-                title={(
-                  <Stack
-                    direction="row"
-                    sx={{
-                      alignItems: 'center',
-                      gap: 1,
-                    }}
-                  >
-                    {t_i18n('Generate an export')}
-                    <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-                      <InfoOutlined fontSize="small" color="primary" />
-                    </Tooltip>
-                  </Stack>
-                )}
+                title={<GenerateExportTitle />}
               >
                 <QueryRenderer
                   query={fileManagerExportDialogQuery}

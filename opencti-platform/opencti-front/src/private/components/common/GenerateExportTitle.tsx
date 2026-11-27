@@ -1,7 +1,6 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { InfoOutlined } from '@mui/icons-material';
 import { Stack } from '@mui/material';
-// fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
-import Tooltip from '@mui/material/Tooltip';
 import React, { FunctionComponent } from 'react';
 import { useFormatter } from '../../../components/i18n';
 
@@ -16,8 +15,13 @@ const GenerateExportTitle: FunctionComponent = () => {
       }}
     >
       {t_i18n('Generate an export')}
-      <Tooltip title={t_i18n('Your max shareable markings will be applied to the content max markings')}>
-        <InfoOutlined color="primary" sx={{ display: 'block' }} />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <InfoOutlined color="primary" sx={{ display: 'block' }} />
+        </TooltipTrigger>
+        <TooltipContent>
+          {t_i18n('The content max markings can\'t exceed your max shareable markings. If none are selected, your max shareable markings are used. Entities above this limit are excluded from the export.')}
+        </TooltipContent>
       </Tooltip>
     </Stack>
   );
