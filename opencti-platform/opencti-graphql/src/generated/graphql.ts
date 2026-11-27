@@ -4690,6 +4690,7 @@ export type ConfigPresetImportItem = {
   credentials: Array<ConfigPresetImportCredential>;
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
+  existsAsDefault: Scalars['Boolean']['output'];
   fields: Array<ConfigPresetImportField>;
   isDefault: Scalars['Boolean']['output'];
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -45841,6 +45842,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   credentials?: Resolver<Array<ResolversTypes['ConfigPresetImportCredential']>, ParentType, ContextType>;
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  existsAsDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

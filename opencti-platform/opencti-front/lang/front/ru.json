@@ -7005,5 +7005,19 @@
   "Not found across the XTM Platform": "Не найдено на платформе XTM",
   "Found": "Найдено",
   "Not found": "Не найдено",
-  "Unavailable": "Недоступно"
+  "Unavailable": "Недоступно",
+  "FINTEL templates": "шаблоны FINTEL",
+  "Import a template file": "Импортировать файл шаблона",
+  "A FINTEL template exported as a JSON file": "Шаблон FINTEL, экспортированный в файл JSON",
+  "Select the FINTEL templates to import from a full configuration bundle (zip)": "Выберите шаблоны FINTEL для импорта из полного пакета конфигурации (zip)",
+  "The entity type keeps its current default FINTEL template.": "Тип сущности сохранит текущий шаблон FINTEL по умолчанию.",
+  "The standard id of the fintel template does not match its id": "Стандартный идентификатор шаблона FINTEL не совпадает с его идентификатором",
+  "Fintel template already exists": "Шаблон FINTEL уже существует",
+  "Fintel template name already exists": "Шаблон FINTEL с таким именем уже существует",
+  "The entity type of the fintel template cannot change": "Тип сущности шаблона FINTEL нельзя изменить",
+  "The filters of the widgets are malformed": "Фильтры виджетов имеют неверный формат",
+  "Becomes the default fintel design of the platform.": "Становится дизайном Fintel по умолчанию для платформы.",
+  "Becomes the default FINTEL template of its entity type.": "Становится шаблоном FINTEL по умолчанию для своего типа сущности.",
+  "A template with the same name already exists in its entity type": "Для этого типа сущности уже существует шаблон с таким же именем",
+  "FINTEL templates are not available for this entity type": "Шаблоны FINTEL недоступны для этого типа сущности"
 }

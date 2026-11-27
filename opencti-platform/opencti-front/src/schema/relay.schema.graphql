@@ -2307,6 +2307,7 @@ type ConfigPresetImportItem {
   credentials: [ConfigPresetImportCredential!]!
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
+  existsAsDefault: Boolean!
   fields: [ConfigPresetImportField!]!
   isDefault: Boolean!
   isEnabled: Boolean

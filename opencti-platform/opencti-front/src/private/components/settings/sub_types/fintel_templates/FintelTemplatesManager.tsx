@@ -8,7 +8,7 @@ import { graphql, useFragment } from 'react-relay';
 import { useNavigate } from 'react-router';
 import Card from '../../../../../components/common/card/Card';
 import { useFormatter } from '../../../../../components/i18n';
-import { handleError, MESSAGING$ } from '../../../../../relay/environment';
+import { fetchQuery, handleError, MESSAGING$ } from '../../../../../relay/environment';
 import { resolveLink } from '../../../../../utils/Entity';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
@@ -17,6 +17,13 @@ import { FintelTemplateFormInputs } from './FintelTemplateForm';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';
 import FintelTemplatesLines, { TemplateType } from './FintelTemplatesLines';
 import useFintelTemplateImport from './useFintelTemplateImport';
+import ConfigPresetPartialImportDialog from '../../config_preset/import/partial/ConfigPresetPartialImportDialog';
+import useConfigPresetPartialImportAccess from '../../config_preset/import/partial/useConfigPresetPartialImportAccess';
+import { subTypeQuery } from '../SubType';
+import { SubTypeQuery } from '../__generated__/SubTypeQuery.graphql';
+
+// The configuration preset type of the fintel templates
+const FINTEL_TEMPLATES_CONFIG_PRESET_TYPE = 'fintelTemplates';
 
 export const fintelTemplatesFragmentParams = { orderBy: 'name', orderMode: 'asc' };
 
@@ -51,6 +58,9 @@ const FintelTemplatesManager = () => {
   const inputFileRef = useRef<HTMLInputElement>(null);
   const isEnterpriseEdition = useEnterpriseEdition();
   const [commitImportMutation, importMutating] = useFintelTemplateImport();
+  // Without the partial import (not a BYPASS user, or the CONFIG_PRESET flag off), the template file import stays as it is
+  const canImportFromBundle = useConfigPresetPartialImportAccess();
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const [dataTableRef, setDataTableRef] = useState<HTMLDivElement | null>(null);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -96,6 +106,12 @@ const FintelTemplatesManager = () => {
 
   const currentDefaultName = fintelTemplates?.edges.find(({ node }) => node.default)?.node.name;
 
+  // After the import of templates from a configuration bundle: the entity type is read again, its templates with it.
+  // A read that fails is said, as the other reads of this page are: the import itself is done
+  const onBundleImported = () => {
+    fetchQuery<SubTypeQuery>(subTypeQuery, { id: subType.id }, { fetchPolicy: 'network-only' }).toPromise().catch((err) => handleError(err));
+  };
+
   return (
     <>
       <VisuallyHiddenInput
@@ -104,6 +120,26 @@ const FintelTemplatesManager = () => {
         accept="application/JSON"
         onChange={onUpload}
       />
+      {isEnterpriseEdition && canImportFromBundle && (
+        <ConfigPresetPartialImportDialog
+          open={importDialogOpen}
+          onClose={() => setImportDialogOpen(false)}
+          title={t_i18n('Import a template')}
+          type={FINTEL_TEMPLATES_CONFIG_PRESET_TYPE}
+          // Only the templates of this entity type: the ones of the other types of the bundle are not offered
+          scope={target_type}
+          itemsLabel={t_i18n('FINTEL templates')}
+          fileLabel={t_i18n('Import a template file')}
+          fileDescription={t_i18n('A FINTEL template exported as a JSON file')}
+          bundleDescription={t_i18n('Select the FINTEL templates to import from a full configuration bundle (zip)')}
+          onBundleImported={onBundleImported}
+          // The same file import as without the dialog: the dialog closes, the file picker opens, and the import tells its outcome as before
+          onChooseFile={() => {
+            setImportDialogOpen(false);
+            inputFileRef.current?.click();
+          }}
+        />
+      )}
       <Card
         title={<>{t_i18n('FINTEL Templates')} <EEChip /></>}
         action={isEnterpriseEdition && (
@@ -120,7 +156,7 @@ const FintelTemplatesManager = () => {
             <Tooltip title={t_i18n('Import a template')}>
               <IconButton
                 disabled={importMutating}
-                onClick={() => inputFileRef.current?.click()}
+                onClick={canImportFromBundle ? () => setImportDialogOpen(true) : () => inputFileRef.current?.click()}
                 size="small"
                 aria-label={t_i18n('Import a template')}
               >

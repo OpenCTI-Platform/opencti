@@ -327,6 +327,14 @@ describe('Fintel design import', () => {
     expect(addFintelDesign).not.toHaveBeenCalled();
   });
 
+  it('says whether the design already is the default of the platform, whatever the import does', async () => {
+    expect(await importFintelDesign(context, user, configuration, undefined, overwrite)).toMatchObject({ status: 'created', existsAsDefault: false });
+    withExisting(defaultFintelDesign);
+    expect(await importFintelDesign(context, user, configuration, undefined, overwrite)).toMatchObject({ status: 'skipped', existsAsDefault: true });
+    withExisting({ ...defaultFintelDesign, default: false } as BasicStoreEntityFintelDesign);
+    expect(await importFintelDesign(context, user, configuration, undefined, overwrite)).toMatchObject({ status: 'overwritten', existsAsDefault: false });
+  });
+
   it('refuses a design that exists when it is added', async () => {
     withExisting(defaultFintelDesign);
     expect(await importFintelDesign(context, user, configuration, undefined, { mode: ConfigImportMode.Add })).toMatchObject({ status: 'failed', code: 'exists', exists: true });
