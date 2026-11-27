@@ -12,7 +12,10 @@ import { elIndex, elLoadById, elRawUpdateByQuery } from '../../../src/database/e
 import { INDEX_HISTORY, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DatabaseError } from '../../../src/config/errors';
 import { deleteFile, loadFile } from '../../../src/database/file-storage';
-import { deleteElementById } from '../../../src/database/middleware';
+import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
+import { RETENTION_MANAGER_USER } from '../../../src/utils/access';
+import { ENTITY_TYPE_RETENTION_RULE } from '../../../src/modules/retentionRules/retentionRules-types';
+import { retentionRuleEditField } from '../../../src/modules/retentionRules/retentionRules-domain';
 import { canDeleteElement } from '../../../src/database/data-consistency';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../src/schema/stixDomainObject';
 import type { BasicStoreEntityRetentionRule } from '../../../src/modules/retentionRules/retentionRules-types';
@@ -465,6 +468,13 @@ describe('Retention Manager tests ', () => {
     });
     const rule = ruleQuery.data?.retentionRuleAdd;
     expect(rule).toBeDefined();
+    // Error left by a previous run
+    await patchAttribute(context, RETENTION_MANAGER_USER, rule.id, ENTITY_TYPE_RETENTION_RULE, { last_error: 'some-id: previous failure' });
+    const failedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
+    expect(failedRule?.last_error).toBe('some-id: previous failure');
+    // Only the retention manager writes it
+    const clearByUser = retentionRuleEditField(context, ADMIN_USER, rule.id, [{ key: 'last_error', value: [null] }]);
+    await expect(clearByUser).rejects.toThrowError('Cannot update a field managed by the retention manager');
     // Run executeProcessing — nothing should be deleted
     await executeProcessing(context, {
       id: rule.id,
@@ -479,6 +489,8 @@ describe('Retention Manager tests ', () => {
     const updatedRule = await elLoadById(testContext, ADMIN_USER, rule.id) as unknown as BasicStoreEntityRetentionRule;
     expect(updatedRule?.last_execution_date).toBeDefined();
     expect(updatedRule?.last_deleted_count).toBe(0);
+    // A run without error clears the previous error
+    expect(updatedRule?.last_error).toBeFalsy();
     // Cleanup
     await queryAsAdmin({ query: DELETE_RETENTION_QUERY, variables: { id: rule.id } });
   });

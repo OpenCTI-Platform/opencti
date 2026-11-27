@@ -14,6 +14,7 @@ export interface BasicStoreEntityRetentionRule extends BasicStoreEntity {
   last_execution_date: string | null;
   last_deleted_count: number | null;
   remaining_count: number | null;
+  last_error: string | null;
 }
 
 export interface StoreEntityRetentionRule extends StoreEntity {
@@ -26,6 +27,7 @@ export interface StoreEntityRetentionRule extends StoreEntity {
   last_execution_date: string | null;
   last_deleted_count: number | null;
   remaining_count: number | null;
+  last_error: string | null;
 }
 
 export interface StixRetentionRule extends StixObject {
@@ -38,6 +40,7 @@ export interface StixRetentionRule extends StixObject {
   last_execution_date: string | null;
   last_deleted_count: number | null;
   remaining_count: number | null;
+  last_error: string | null;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };

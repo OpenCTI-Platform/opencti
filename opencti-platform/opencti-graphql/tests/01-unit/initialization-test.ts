@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { logApp } from '../../src/config/conf';
+import conf, { logApp } from '../../src/config/conf';
 import * as httpConfig from '../../src/http/httpConfig';
-import { checkHttpSecurity } from '../../src/initialization';
+import { checkAuthenticationSecurity, checkHttpSecurity } from '../../src/initialization';
 
 // The migrations are loaded through a glob import that only the build resolves
 vi.mock('../../src/database/migration', () => ({ applyMigration: vi.fn(), lastAvailableMigrationTime: vi.fn() }));
@@ -48,5 +48,35 @@ describe('checkHttpSecurity', () => {
 
     // Then
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('app:http:max_redirects'), { value: '3x', default: 5 });
+  });
+});
+
+describe('checkAuthenticationSecurity', () => {
+  afterEach(() => {
+    conf.clear('app:authentication:secure_by_default');
+    vi.restoreAllMocks();
+  });
+
+  it('should warn at startup when the authentication switch is off', () => {
+    // Given
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+
+    // When
+    checkAuthenticationSecurity();
+
+    // Then
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('app:authentication:secure_by_default=false'));
+  });
+
+  it('should not warn when the authentication switch is on', () => {
+    // Given
+    conf.set('app:authentication:secure_by_default', true);
+    const warn = vi.spyOn(logApp, 'warn').mockImplementation(() => {});
+
+    // When
+    checkAuthenticationSecurity();
+
+    // Then
+    expect(warn).not.toHaveBeenCalled();
   });
 });

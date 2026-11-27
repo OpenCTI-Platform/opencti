@@ -33,6 +33,7 @@ const redisOptions = async (provider: string, autoReconnect = false, tlsServerna
   return {
     connectionName: connectionName(provider),
     keyPrefix: REDIS_PREFIX,
+    protocol: 2,
     ...userPasswordAuth,
     tls: USE_SSL ? { ...configureCA(REDIS_CA), ...(tlsServername ? { servername: tlsServername } : {}) } : undefined,
     retryStrategy: /* v8 ignore next */ (times) => {
@@ -101,6 +102,7 @@ const sentinelOptions = async (provider: string, clusterNodes: Partial<SentinelA
     connectionName: connectionName(provider),
     ...passwordAuth,
     keyPrefix: REDIS_PREFIX,
+    protocol: 2,
     name: conf.get('redis:sentinel_master_name'),
     role: conf.get('redis:sentinel_role'),
     preferredSlaves: conf.get('redis:sentinel_preferred_slaves'),

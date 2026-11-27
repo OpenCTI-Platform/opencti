@@ -31,7 +31,7 @@ import {
 import { checkDateDisplayInput } from '../../utils/dateDisplay';
 import { ipMatchesWhitelist, isUserExcluded } from '../../http/ipWhitelistMiddleware';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
-import { checkApiBasicAuthAllowed } from './user-basic-auth';
+import { checkApiBasicAuthAllowed, checkApiBasicAuthTwoFactor, warnApiBasicAuthTwoFactor } from './user-basic-auth';
 import { elLoadBy, elRawDeleteByQuery, elRawUpdateByQuery } from '../../database/engine';
 import { createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, patchAttribute, updateAttribute, updatedInputsToData } from '../../database/middleware';
 import {
@@ -2094,13 +2094,19 @@ export const lockAccountAfterFailedAttempts = async (user: Pick<BasicStoreEntity
 // countsAttempt is false for the login form when the local auth is disabled: the password cannot log in,
 // so its attempts must neither be counted nor lock an account that logs in with another provider
 // source tells where the attempt comes from (login form or Basic auth), for the activity event of a lock
+// checkAccount can refuse the account as soon as it is loaded: neither counted nor its password checked
 export const login = async (
   email: string,
   password: string,
   sourceIp?: string,
-  { countsAttempt = true, source = 'form' }: { countsAttempt?: boolean; source?: UserLockSource } = {},
+  { countsAttempt = true, source = 'form', checkAccount }: {
+    countsAttempt?: boolean;
+    source?: UserLockSource;
+    checkAccount?: (user: BasicStoreEntityUser | undefined) => void;
+  } = {},
 ) => {
   const user = await getUserByEmail(email);
+  checkAccount?.(user);
   // Undefined when the local authentication lockout is disabled, and for the built-in admin
   const lockout = countsAttempt ? await loadLocalAuthLockout(email, user?.id) : undefined;
   // An IP that the whitelist blocks is rejected before the attempt is counted, so that it cannot lock any account.
@@ -2511,7 +2517,10 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   checkApiBasicAuthAllowed(settings);
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip, { source: 'basic_auth' });
+  const loggedUser = await login(basicAuth.username, basicAuth.password, req.ip, {
+    source: 'basic_auth',
+    checkAccount: (account) => checkApiBasicAuthTwoFactor(settings, account),
+  });
   const user = platformUsers.get(loggedUser.id);
   if (user) {
     if (!isUserHasCapability(user, 'APIACCESS_USEBASICAUTH')) {
@@ -2519,7 +2528,10 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
     await clearLocalAuthLockout(basicAuth.username);
-    return internalAuthenticateUser(context, req, user);
+    const authenticatedUser = await internalAuthenticateUser(context, req, user);
+    // After a successful login only, from the account just loaded by login() rather than from the cache
+    warnApiBasicAuthTwoFactor(loggedUser, settings);
+    return authenticatedUser;
   }
   throw FunctionalError('Cannot identify user with basic auth');
 };
