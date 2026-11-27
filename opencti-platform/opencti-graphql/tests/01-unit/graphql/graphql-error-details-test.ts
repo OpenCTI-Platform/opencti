@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { execute as executeGraphql, type ExecutionArgs, type GraphQLError } from 'graphql';
-import { AuthenticationFailure, ClientAbortError, DatabaseError, EngineShardsError, FunctionalError } from '../../../src/config/errors';
+import { AuthenticationFailure, ClientAbortError, DatabaseError, EngineShardsError, FunctionalError, UnsupportedError } from '../../../src/config/errors';
 
 vi.mock('../../../src/graphql/schema', () => ({
   default: vi.fn(),
@@ -22,6 +22,7 @@ const schema = makeExecutableSchema({
       abort: String
       login: String
       shards: String
+      unsupported: String
     }
     type Subscription {
       databaseFailure: String
@@ -43,6 +44,9 @@ const schema = makeExecutableSchema({
       },
       login: () => {
         throw AuthenticationFailure('Bad login or password', { lock: 'temporary', remaining_minutes: 5 });
+      },
+      unsupported: () => {
+        throw UnsupportedError('Load file from storage fail', { filename: 'import/global/secret.pdf' });
       },
       shards: () => {
         throw EngineShardsError({ shards: { total: 2, failed: 1, failures: [{ index: 'opencti_stix_domain_objects-000001', node: 'node-1' }] } });
@@ -110,7 +114,7 @@ describe('GraphQL error details', () => {
       const result = await execute(undefined, '{ databaseFailure }');
       expect(result.errors?.[0].message).toEqual('Fail to execute engine pagination');
       expect(result.errors?.[0].extensions?.data).toMatchObject({ root_cause: 'index_not_found_exception' });
-      expect(result.errors?.[0].extensions?.request_id).toBeUndefined();
+      expect(result.errors?.[0].extensions?.request_id).toEqual(REQUEST_ID);
     });
 
     it('should only answer the code, a generic message and the request id of a database error', async () => {
@@ -148,6 +152,12 @@ describe('GraphQL error details', () => {
       expect(result.errors?.[0].extensions).toEqual({ code: 'DATABASE_ERROR', request_id: REQUEST_ID });
     });
 
+    it('should hide a business error that is not written for the caller', async () => {
+      const result = await execute(false, '{ unsupported }');
+      expect(result.errors?.[0].message).toEqual('An unexpected error occurred');
+      expect(result.errors?.[0].extensions).toEqual({ code: 'UNSUPPORTED_ERROR', request_id: REQUEST_ID });
+    });
+
     it('should remove the cause of a business error', async () => {
       const result = await execute(false, '{ abort }');
       expect(result.errors?.[0].message).toEqual('Client disconnected');
@@ -164,9 +174,11 @@ describe('GraphQL error details', () => {
   describe('websocket', () => {
     it('should keep the error details by default', async () => {
       const errors = await subscriptionErrors(undefined, '{ databaseFailure }');
+      const requestId = errors?.[0].extensions?.request_id;
       expect(errors?.[0].message).toEqual('Fail to execute engine pagination');
       expect(errors?.[0].extensions?.data).toMatchObject({ root_cause: 'index_not_found_exception' });
-      expect(logError).not.toHaveBeenCalled();
+      expect(requestId).toEqual(expect.any(String));
+      expect(logError).toHaveBeenCalledWith('[GRAPHQL] WebSocket operation error', expect.objectContaining({ request_id: requestId }));
     });
 
     it('should hide the details of a database error and log it with the request id', async () => {
@@ -196,6 +208,8 @@ describe('GraphQL error details', () => {
     it('should keep the validation errors of the query', async () => {
       const errors = await subscriptionErrors(false, '{ unknownField }');
       expect(errors?.[0].message).toEqual('Cannot query field "unknownField" on type "Query".');
+      expect(errors?.[0].extensions?.request_id).toEqual(expect.any(String));
+      expect(logError).not.toHaveBeenCalled();
     });
 
     it('should close the socket with a generic reason on an internal error', async () => {

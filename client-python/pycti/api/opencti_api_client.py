@@ -768,6 +768,9 @@ class OpenCTIApiClient:
                     "name": error_name,
                     "error_message": main_error["message"],
                 }
+                # Leads to the full error in the platform logs when the platform hides its details
+                if extensions.get("request_id"):
+                    error_detail["request_id"] = extensions["request_id"]
                 # Contextual attributes of the error (type, doc_code, ...) are
                 # carried in the GraphQL extensions, keep the top level lookup
                 # for backward compatibility with older platforms.

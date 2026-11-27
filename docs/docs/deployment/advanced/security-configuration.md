@@ -46,7 +46,7 @@ The error responses of the HTTP endpoints (files, authentication, health check, 
 
 Every response carries an `X-Request-ID` header, also given in the error bodies (`request_id`, or `error_id` for TAXII) and written in the error log line. To investigate an error, search the logs for this id. When the request already has a `X-Request-ID` header, for example set by a reverse proxy, the platform reuses it if it is at most 128 characters of letters, digits, `.`, `_` and `-`.
 
-The GraphQL errors keep their details by default. With `app:graphql:show_error_details` set to `false`, a platform failure answers only its code, a generic message and a `request_id` in the error `extensions`, on the HTTP and WebSocket endpoints, and the full error is written in the platform logs with this id. The errors written for the caller keep their message and data.
+The GraphQL errors carry the `request_id` in their `extensions`, on the HTTP and WebSocket endpoints, and keep their details by default. With `app:graphql:show_error_details` set to `false`, a platform failure answers only its code, a generic message and this `request_id`, and its full error is written in the platform logs with this id. The errors written for the caller keep their message and data.
 
 The health check (`/health`) only names the failing dependencies and their errors with the access key and `details=true`.
 

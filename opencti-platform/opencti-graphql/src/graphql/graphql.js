@@ -18,15 +18,18 @@ import conf, {
   PLAYGROUND_INTROSPECTION_DISABLED,
 } from '../config/conf';
 import {
+  ACCESS_REQUIRED,
   AUTH_ERRORS,
   AuthRequired,
   BadUserInputError,
-  CATEGORY_BUSINESS,
-  DATABASE_ERROR,
+  CLIENT_INPUT_ERRORS,
+  DRAFT_LOCKED_ERROR,
+  FUNCTIONAL_ERRORS,
   LTS_REQUIRED_ACTIVATION,
   muteError,
   RESOURCE_NOT_FOUND_ERROR,
   ResourceNotFoundError,
+  WORK_NOT_ALIVE_ERROR,
 } from '../config/errors';
 import { getRequestId, resolveRequestId, SERVER_ERROR_MESSAGE } from '../http/httpUtils';
 import loggerPlugin from './loggerPlugin';
@@ -138,11 +141,16 @@ const createGraphqlProtection = () => {
   return { validationRules, parseOptions, formatGraphqlErrorMessage, hideErrorDetails };
 };
 
-// Written for the caller; any other non-business error can name internal components (indices, search requests, hosts).
+// An explicit list, not the error category: some BUSINESS errors carry internals (shard failures, storage paths).
 const CLIENT_ERROR_CODES = new Set([
   ...AUTH_ERRORS,
   LTS_REQUIRED_ACTIVATION,
   RESOURCE_NOT_FOUND_ERROR,
+  ...FUNCTIONAL_ERRORS,
+  ...CLIENT_INPUT_ERRORS,
+  DRAFT_LOCKED_ERROR,
+  WORK_NOT_ALIVE_ERROR,
+  ACCESS_REQUIRED,
   ApolloServerErrorCode.GRAPHQL_PARSE_FAILED,
   ApolloServerErrorCode.GRAPHQL_VALIDATION_FAILED,
   ApolloServerErrorCode.BAD_USER_INPUT,
@@ -158,11 +166,7 @@ export const isClientGraphqlError = (formattedError, error) => {
     // Parse and validation errors of graphql-js over WebSocket: they carry no code and wrap no error
     return error instanceof GraphQLError && !error.originalError;
   }
-  // EngineShardsError is a business DATABASE_ERROR whose data holds the shard failures (indices, nodes)
-  if (code === DATABASE_ERROR) {
-    return false;
-  }
-  return CLIENT_ERROR_CODES.has(code) || formattedError.extensions.data?.genre === CATEGORY_BUSINESS;
+  return CLIENT_ERROR_CODES.has(code);
 };
 
 export const hideGraphqlErrorDetails = (formattedError, error) => {
@@ -183,21 +187,20 @@ export const hideGraphqlErrorDetails = (formattedError, error) => {
 // The context function is the one of the HTTP server, it throws when the user is not authenticated.
 export const createSubscriptionServerOptions = ({ schema, protection, context }) => {
   const { validationRules, parseOptions, formatGraphqlErrorMessage, hideErrorDetails } = protection;
-  const formatError = (error) => {
+  const formatError = (error, requestId) => {
     const formattedError = { ...error.toJSON(), message: formatGraphqlErrorMessage(error.message) };
-    if (!hideErrorDetails) {
-      return formattedError;
+    const isClientError = isClientGraphqlError(formattedError, error);
+    if (!isClientError) {
+      // No Apollo logger plugin over WebSocket: the error is logged here, with the id given to the client.
+      logApp.error('[GRAPHQL] WebSocket operation error', { cause: error, request_id: requestId });
     }
-    const hiddenError = hideGraphqlErrorDetails(formattedError, error);
-    if (isClientGraphqlError(formattedError, error)) {
-      return hiddenError;
-    }
-    // No Apollo logger plugin over WebSocket: the hidden error is logged here, with the id given to the client.
-    const requestId = resolveRequestId(undefined);
-    logApp.error('[GRAPHQL] WebSocket operation error', { cause: error, request_id: requestId });
-    return { ...hiddenError, extensions: { ...hiddenError.extensions, request_id: requestId } };
+    const resultError = hideErrorDetails ? hideGraphqlErrorDetails(formattedError, error) : formattedError;
+    return { ...resultError, extensions: { ...resultError.extensions, request_id: requestId } };
   };
-  const formatErrors = (errors) => errors.map(formatError);
+  const formatErrors = (errors) => {
+    const requestId = resolveRequestId(undefined);
+    return errors.map((error) => formatError(error, requestId));
+  };
   return {
     schema,
     onSubscribe: async (ctx, _id, payload) => {
@@ -272,22 +275,20 @@ const createApolloServer = (schema = createSchema()) => {
   if (ENABLED_METRICS) {
     apolloPlugins.push(telemetryPlugin);
   }
-  if (protection.hideErrorDetails) {
-    apolloPlugins.push({
-      requestDidStart: () => ({
-        willSendResponse: ({ response, contextValue }) => {
-          const requestId = contextValue?.res ? getRequestId(contextValue.res) : undefined;
-          if (!requestId || response.body.kind !== 'single' || !response.body.singleResult.errors) {
-            return;
-          }
-          response.body.singleResult.errors = response.body.singleResult.errors.map((error) => ({
-            ...error,
-            extensions: { ...error.extensions, request_id: requestId },
-          }));
-        },
-      }),
-    });
-  }
+  apolloPlugins.push({
+    requestDidStart: () => ({
+      willSendResponse: ({ response, contextValue }) => {
+        const requestId = contextValue?.res ? getRequestId(contextValue.res) : undefined;
+        if (!requestId || response.body.kind !== 'single' || !response.body.singleResult.errors) {
+          return;
+        }
+        response.body.singleResult.errors = response.body.singleResult.errors.map((error) => ({
+          ...error,
+          extensions: { ...error.extensions, request_id: requestId },
+        }));
+      },
+    }),
+  });
 
   apolloPlugins.push({
     // see https://www.apollographql.com/docs/apollo-server/integrations/plugins-event-reference
