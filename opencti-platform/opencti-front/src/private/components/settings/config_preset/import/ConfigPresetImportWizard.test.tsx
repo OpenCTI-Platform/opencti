@@ -39,6 +39,7 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   conflict: false,
   fields: [],
   credentials: [],
+  incompatibility: null,
   dependsOn: [],
   ...overrides,
 });
@@ -422,6 +423,20 @@ describe('ConfigPresetImportWizard', () => {
         expect(whitemarkRow().getByRole('checkbox')).toHaveAttribute('data-state', 'checked');
         expect(await simulatedTypes(rendered)).toEqual(['platform', 'branding', 'messages', 'whitemark']);
       });
+    });
+
+    it('says why an item exported from an incompatible version is not imported, before any expected result', async () => {
+      const incompatible = {
+        ...preview,
+        types: [
+          ...preview.types.slice(0, 2),
+          previewType('messages', 'Messages', [previewItem('banner', 'Banner', { incompatibility: 'Exported from a more recent platform: 999.0.0' })]),
+        ],
+      };
+      await openPreview(session(), incompatible);
+      const banner = within(screen.getByTestId('config-preset-import-item-messages-banner'));
+      expect(banner.getByText('Skipped')).toBeInTheDocument();
+      expect(banner.getByText(/Exported from a more recent platform: 999.0.0/)).toBeInTheDocument();
     });
 
     it('disables Apply with nothing selected', async () => {

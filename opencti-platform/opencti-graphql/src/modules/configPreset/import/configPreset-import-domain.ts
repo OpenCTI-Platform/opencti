@@ -20,7 +20,9 @@ import {
   readStreamWithLimit,
   resolveBundleDependencies,
 } from './configPreset-import-bundle';
+import { computeIncompatibleConfigPresetItem } from './configPreset-import-version';
 import {
+  CONFIG_PRESET_CODE_INCOMPATIBLE_VERSION,
   CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED,
   CONFIG_PRESET_REASON_FILE_MISSING,
   type ConfigPresetBundle,
@@ -28,6 +30,7 @@ import {
   type ConfigPresetComputedItem,
   type ConfigPresetImportCredentials,
   type ConfigPresetImportPlan,
+  recordConfigPresetTarget,
 } from './configPreset-import-types';
 
 const fileMissing = () => FunctionalError('The uploaded file no longer exists', { reason: CONFIG_PRESET_REASON_FILE_MISSING });
@@ -138,6 +141,12 @@ export const computeConfigPresetItem = async (
   mode: ConfigImportMode,
   isAvailable?: boolean,
 ): Promise<ConfigPresetComputedItem> => {
+  const incompatible = computeIncompatibleConfigPresetItem(family, item);
+  if (incompatible) {
+    // Not written: the items that depend on it never get the local item with its bundle id (a group the local role)
+    recordConfigPresetTarget(plan, item.type, item.id, null);
+    return incompatible;
+  }
   // The importer of a family the platform cannot import is never called: it may read through domain functions that refuse without
   // the Enterprise Edition, and what it would validate or find is of no use. The item is named after its family.
   if (!(isAvailable ?? await isConfigPresetFamilyAvailable(context, family))) {
@@ -219,6 +228,7 @@ export const buildConfigPresetImportTypes = (
         isEnabled: computed.isEnabled ?? null,
         credentials: computed.credentials ?? [],
         serviceAccountRequired: computed.serviceAccountRequired ?? false,
+        incompatibility: computed.code === CONFIG_PRESET_CODE_INCOMPATIBLE_VERSION ? computed.reason : null,
         dependsOn: bundle.items
           .filter((dependency) => dependencyPaths.includes(dependency.path))
           .map((dependency) => ({ type: dependency.type, key: dependency.id })),

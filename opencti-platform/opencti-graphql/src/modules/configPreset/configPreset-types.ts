@@ -89,6 +89,8 @@ export interface ConfigPresetFamilyDefinition {
   importModes?: ConfigImportMode[];
   // The family is part of the Enterprise Edition: a platform without it neither exports its items nor imports them
   requiresEnterpriseEdition?: boolean;
+  // The oldest version whose export of the family the importer still reads: CONFIG_PRESET_MINIMAL_COMPATIBLE_VERSION when absent
+  minimalCompatibleVersion?: string;
   // The key of the configuration of an item that a partial import can be scoped to (`target_entity_type` for the custom views): a family without it cannot be scoped
   scopeKey?: string;
 }

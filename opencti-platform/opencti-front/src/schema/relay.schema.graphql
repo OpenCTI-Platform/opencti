@@ -2308,6 +2308,7 @@ type ConfigPresetImportItem {
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
   fields: [ConfigPresetImportField!]!
+  incompatibility: String
   isDefault: Boolean!
   isEnabled: Boolean
   key: String!

@@ -74,6 +74,7 @@ const configPresetImportPreviewQuery = graphql`
           exists
           conflict
           isEnabled
+          incompatibility
           fields {
             key
             value
@@ -489,7 +490,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         renderItem={(type, item) => {
           // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
-          const result = results?.[`${type.key}/${item.key}`];
+          const result = results?.[`${type.key}/${item.key}`]
+            ?? (item.incompatibility ? { type: type.key, key: item.key, status: 'SKIPPED', reason: item.incompatibility, code: 'incompatible_version' } : undefined);
           // The types the import hides: the row alone only says that the item is there
           // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
           const keptDefaultNote = keptDefaultNotes[type.key];
