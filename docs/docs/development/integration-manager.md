@@ -262,13 +262,13 @@ cd ../opencti-graphql
 cp config/default.json config/development.json
 ```
 
-OpenCTI has no default password: the back end does not start while the admin password or token keeps its `ChangeMe` value. In the `app.admin` section of `config/development.json`, set the admin password, and set the admin token to a UUID:
+OpenCTI has no default password: the back end does not start while the admin password or token keeps its `ChangeMe` value. In the `app.admin` section of `config/development.json`, set the admin password, and set the admin token to a UUID or an OpenCTI formatted token:
 
 ```json
 "admin": {
   "email": "admin@opencti.io",
   "password": "<your admin password>",
-  "token": "<a UUID, for example the output of uuidgen>"
+  "token": "<a UUID, for example the output of uuidgen or an OpenCTI formatted token>"
 }
 ```
 
