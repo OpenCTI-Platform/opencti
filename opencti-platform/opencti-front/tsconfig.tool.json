@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "include": [
     "script",
-    "*.ts"
+    "*.ts",
+    "tests_e2e/frontUrl.ts"
   ],
   "files": [],
   "compilerOptions": {
