@@ -697,7 +697,7 @@ interface SafeRealm {
 // the host realm's shared prototypes. The data deep copy, the guards, the Object substitute and the
 // octi wrapper are all made with the sandbox's own intrinsics, so a write a template leaves on an
 // inherited method dies with the per-render context instead of carrying to the next render. A function
-// value (only main-thread callers pass any) is replaced by a sandbox-realm wrapper that copies its
+// value (today only the JSON mapper helpers) is replaced by a sandbox-realm wrapper that copies its
 // receiver, arguments and result the same way, so a function passed along in either direction is
 // wrapped too. One sandbox-realm translator turns every host error a template could catch into a
 // sandbox error carrying only its name and message.
