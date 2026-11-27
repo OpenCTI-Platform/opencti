@@ -22,6 +22,7 @@ import {
   AuthRequired,
   BadUserInputError,
   CATEGORY_BUSINESS,
+  DATABASE_ERROR,
   LTS_REQUIRED_ACTIVATION,
   muteError,
   RESOURCE_NOT_FOUND_ERROR,
@@ -156,6 +157,10 @@ export const isClientGraphqlError = (formattedError, error) => {
   if (!code) {
     // Parse and validation errors of graphql-js over WebSocket: they carry no code and wrap no error
     return error instanceof GraphQLError && !error.originalError;
+  }
+  // EngineShardsError is a business DATABASE_ERROR whose data holds the shard failures (indices, nodes)
+  if (code === DATABASE_ERROR) {
+    return false;
   }
   return CLIENT_ERROR_CODES.has(code) || formattedError.extensions.data?.genre === CATEGORY_BUSINESS;
 };

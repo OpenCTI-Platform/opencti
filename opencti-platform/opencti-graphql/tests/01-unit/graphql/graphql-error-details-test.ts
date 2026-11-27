@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { execute as executeGraphql, type ExecutionArgs, type GraphQLError } from 'graphql';
-import { AuthenticationFailure, ClientAbortError, DatabaseError, FunctionalError } from '../../../src/config/errors';
+import { AuthenticationFailure, ClientAbortError, DatabaseError, EngineShardsError, FunctionalError } from '../../../src/config/errors';
 
 vi.mock('../../../src/graphql/schema', () => ({
   default: vi.fn(),
@@ -21,6 +21,7 @@ const schema = makeExecutableSchema({
       refusal: String
       abort: String
       login: String
+      shards: String
     }
     type Subscription {
       databaseFailure: String
@@ -42,6 +43,9 @@ const schema = makeExecutableSchema({
       },
       login: () => {
         throw AuthenticationFailure('Bad login or password', { lock: 'temporary', remaining_minutes: 5 });
+      },
+      shards: () => {
+        throw EngineShardsError({ shards: { total: 2, failed: 1, failures: [{ index: 'opencti_stix_domain_objects-000001', node: 'node-1' }] } });
       },
     },
   },
@@ -136,6 +140,12 @@ describe('GraphQL error details', () => {
       const result = await execute(false, '{ login }');
       expect(result.errors?.[0].message).toEqual('Bad login or password');
       expect(result.errors?.[0].extensions).toMatchObject({ code: 'AUTH_FAILURE', data: { lock: 'temporary', remaining_minutes: 5 } });
+    });
+
+    it('should hide the shard failures of the engine', async () => {
+      const result = await execute(false, '{ shards }');
+      expect(result.errors?.[0].message).toEqual('An unexpected error occurred');
+      expect(result.errors?.[0].extensions).toEqual({ code: 'DATABASE_ERROR', request_id: REQUEST_ID });
     });
 
     it('should remove the cause of a business error', async () => {
