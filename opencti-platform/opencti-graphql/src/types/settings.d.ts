@@ -81,6 +81,8 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_available_news_feed_types?: string[];
   xtm_hub_commercial_model?: XtmHubCommercialModel;
   xtm_hub_organization_name?: string;
+  xtm_hub_key_version?: number;
+  xtm_hub_key_enrolled_at?: Date;
   platform_ai_enabled: boolean;
   platform_notifier_auto_trigger_assignee?: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
