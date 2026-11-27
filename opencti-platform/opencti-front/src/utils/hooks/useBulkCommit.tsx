@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { MutationParameters, SelectorStoreUpdater } from 'relay-runtime';
 import { UseMutationConfig, VariablesOf } from 'react-relay';
-import { Alert, Typography, List, ListItem, Tooltip, LinearProgress } from '@mui/material';
+import { Alert, Box, Typography, List, ListItem, Tooltip, LinearProgress } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
+import type { Theme } from '../../components/Theme';
 import { CreationFeedbackContext } from './useCreationFeedback';
 
 type ObjectType = 'entities' | 'observables' | 'files';
@@ -33,6 +35,7 @@ function useBulkCommit<M extends MutationParameters>({
   type = 'entities',
 }: UseBulkCommitArgs<M>) {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { bulkCreation } = useContext(CreationFeedbackContext);
 
   const [count, setCount] = useState(0);
@@ -151,21 +154,21 @@ function useBulkCommit<M extends MutationParameters>({
       )}
       {/* After the creation's own result: the created objects are then added to the container */}
       {bulkCreation?.progress && (bulkCreation.progress.inProgress || bulkCreation.progress.total > 0) && (
-        <div style={{ marginTop: 16 }}>
+        <Box sx={{ marginTop: theme.spacing(2) }}>
           {bulkCreation.progress.inProgress && (
             <Typography sx={{ color: 'text.disabled' }}>
               {addingLabel(bulkCreation.containerType)}
             </Typography>
           )}
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: theme.spacing(1.5), alignItems: 'center' }}>
             <LinearProgress
               style={{ flex: 1 }}
               variant="determinate"
               value={bulkCreation.progress.total > 0 ? (bulkCreation.progress.done / bulkCreation.progress.total) * 100 : 0}
             />
             <Typography style={{ flexShrink: 0 }}>{`${bulkCreation.progress.done}/${bulkCreation.progress.total}`}</Typography>
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
       {bulkCreation?.resultMessage && !bulkCreation.progress?.inProgress && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
