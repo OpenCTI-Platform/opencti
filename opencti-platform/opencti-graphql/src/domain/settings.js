@@ -41,6 +41,7 @@ import { LOCAL_AUTH_LOCKOUT_KEYS } from './local-auth-lockout-defaults';
 import { CguStatus, PlatformEeSource } from '../generated/graphql';
 import { checkDateDisplayInput } from '../utils/dateDisplay';
 import { checkPolicyAcceptsAdminPassword } from '../modules/user/user-domain';
+import { checkLoginHistoryCountEdit, LOGIN_HISTORY_SETTING } from '../modules/user/user-login-history';
 import { getXtmOneRegistrationVersion, refreshXtmLicenseProof } from '../modules/xtm/one/xtm-one';
 
 export const getMemoryStatistics = () => {
@@ -262,6 +263,7 @@ const SETTINGS_SET_PARAMETERS_KEYS = [
   'platform_session_timeout',
   'platform_session_max_concurrent',
   'platform_session_presence_enabled',
+  'platform_login_history_count',
   'analytics_google_analytics_v4',
   'enterprise_license',
   'platform_trash_enabled',
@@ -392,6 +394,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   }
 
   checkDateDisplayInput(data, 'platform_date_format', 'platform_time_format');
+
+  data.filter((inputData) => inputData.key === LOGIN_HISTORY_SETTING).forEach((inputData) => checkLoginHistoryCountEdit(inputData.value));
 
   const ipWhitelist = data.find((inputData) => inputData.key === 'platform_ip_whitelist');
   if (ipWhitelist && Array.isArray(ipWhitelist.value) && ipWhitelist.value.length > 0) {

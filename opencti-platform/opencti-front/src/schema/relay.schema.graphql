@@ -9091,6 +9091,7 @@ type MeUser implements BasicObject & InternalObject {
   individual_id: String
   language: String
   lastname: String
+  login_history: [UserLogin!]
   max_shareable_marking: [MarkingDefinition!]
   metrics: [Metric]
   monochrome_labels: Boolean
@@ -13970,6 +13971,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_ip_whitelist_enabled: Boolean
   platform_ip_whitelist_exclusions: [Member!]
   platform_language: String
+  platform_login_history_count: Int
   platform_login_message: String
   platform_map_countries_custom_file: MapCustomFile
   platform_map_custom_file: MapCustomFile
@@ -17363,6 +17365,12 @@ input UserInfoMappingInput {
   firstname_expr: String
   lastname_expr: String
   name_expr: String!
+}
+
+type UserLogin {
+  id: ID!
+  provider: String
+  timestamp: DateTime!
 }
 
 input UserLoginInput {
