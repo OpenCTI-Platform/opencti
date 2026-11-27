@@ -65,7 +65,8 @@ export const preprocessEmailTemplate = (templateBody: string) => {
 const formatLockDate = (date: Date) => DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM-dd HH:mm \'UTC\'');
 
 // A template has no condition: $lock.unlock is the sentence that fits the lock, the end of a temporary lock,
-// or the administrator who must unlock a permanent one. Without a lock (a test email for example), every lock variable is empty
+// or the administrator who must unlock a permanent one. Without a lock (an email sent to a user for example), every lock variable is empty.
+// The "Send test email" button passes an example lock instead
 const buildLockData = (lockedUserData?: LockedUserEmailData) => {
   if (!lockedUserData) {
     return {
