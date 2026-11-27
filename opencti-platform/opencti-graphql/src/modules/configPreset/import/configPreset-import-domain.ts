@@ -17,6 +17,7 @@ import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../int
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
 import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAvailable } from '../configPreset-registry';
 import { CONFIG_PRESET_FIRST_PAGE_SIZE } from '../export/configPreset-export-domain';
+import { getConfigPresetImportPreviewProgress, trackConfigPresetImportPreview } from './configPreset-import-preview-progress';
 import {
   checkConfigPresetImportAccess,
   CONFIG_PRESET_RESULT_STATUSES,
@@ -191,12 +192,19 @@ export const prepareConfigPresetItems = async (
   items: ConfigPresetBundleItem[],
   plan: ConfigPresetImportPlan,
   availability: Map<string, boolean>,
+  // How far the preparation has got, from 0 to 1, as the importers tell it
+  onProgress?: (fraction: number) => void,
 ) => {
   const families = CONFIG_PRESET_FAMILIES.filter((family) => family.importer?.prepare && availability.get(family.id));
   for (let i = 0; i < families.length; i += 1) {
     const familyItems = items.filter((item) => item.type === families[i].id);
     if (familyItems.length > 0) {
-      await families[i].importer!.prepare!(context, user, familyItems, plan);
+      plan.onPrepared = (done, total) => onProgress?.((i + done / total) / families.length);
+      try {
+        await families[i].importer!.prepare!(context, user, familyItems, plan);
+      } finally {
+        plan.onPrepared = undefined;
+      }
     }
   }
 };
@@ -222,6 +230,11 @@ export const finalizeConfigPresetItems = async (
   }
 };
 
+// What the preparation weighs in the computation of a big bundle (the labels are looked up in batches before any item is computed), and how
+// often the items tell how far they have got
+const COMPUTE_PREPARE_SHARE = 0.65;
+const PROGRESS_EVERY = 500;
+
 // compute of every item, required dependencies first: reads only, the plan records what would be created
 // modes: the mode of each item, defaultMode for the items that have none (OVERWRITE when absent: the preview, the dependencies)
 // availability: the families the platform can use, when the caller has read it already
@@ -229,9 +242,11 @@ export const computeConfigPresetItems = async (
   context: AuthContext,
   user: AuthUser,
   items: ConfigPresetBundleItem[],
-  { modes = new Map(), availability, defaultMode, credentials = new Map(), serviceAccounts = new Map() }: {
+  { modes = new Map(), availability, defaultMode, credentials = new Map(), serviceAccounts = new Map(), onProgress }: {
     modes?: Map<string, ConfigImportMode>;
     availability?: Map<string, boolean>;
+    // How far the computation has got, from 0 to 1: the preparation is about two thirds of it, the items the rest
+    onProgress?: (fraction: number) => void;
     defaultMode?: ConfigImportMode;
     credentials?: ConfigPresetImportCredentials;
     serviceAccounts?: Map<string, string>;
@@ -254,10 +269,14 @@ export const computeConfigPresetItems = async (
     credentials,
     serviceAccounts,
   };
-  await prepareConfigPresetItems(context, user, items, plan, familiesAvailability);
+  await prepareConfigPresetItems(context, user, items, plan, familiesAvailability, (fraction) => onProgress?.(fraction * COMPUTE_PREPARE_SHARE));
+  onProgress?.(COMPUTE_PREPARE_SHARE);
   const results: { item: ConfigPresetBundleItem; computed: ConfigPresetComputedItem }[] = [];
   for (let i = 0; i < items.length; i += 1) {
     throwIfConfigPresetRequestAborted(context);
+    if (i % PROGRESS_EVERY === 0) {
+      onProgress?.(COMPUTE_PREPARE_SHARE + (1 - COMPUTE_PREPARE_SHARE) * (i / items.length));
+    }
     const family = CONFIG_PRESET_FAMILIES.find(({ id }) => id === items[i].type)!;
     const mode = configPresetImportMode(modes, items[i].type, items[i].id, defaultMode);
     results.push({ item: items[i], computed: await computeConfigPresetItem(context, user, family, items[i], plan, mode, familiesAvailability.get(family.id)) });
@@ -323,6 +342,9 @@ export const CONFIG_PRESET_IMPORT_FIRST_PAGE_SIZE = CONFIG_PRESET_FIRST_PAGE_SIZ
 const CONFIG_PRESET_IMPORT_DEFAULT_PAGE_SIZE = 25;
 const CONFIG_PRESET_IMPORT_MAX_PAGE_SIZE = 200;
 
+// What reading the zip weighs in the preview of a bundle that is not kept yet
+const PREVIEW_READ_SHARE = 0.25;
+
 const isPagedConfigPresetImportType = (type: ConfigPresetImportType) => {
   return !type.lockedByEnterpriseEdition
     && type.items.length > CONFIG_PRESET_IMPORT_PAGED_FROM
@@ -332,11 +354,11 @@ const isPagedConfigPresetImportType = (type: ConfigPresetImportType) => {
 
 // The preview of a bundle: every type, a paged one with its first page only. The index holds all the items of the paged types.
 // Reads the platform for each item of the bundle once: this is what the preview costs.
-const computeConfigPresetImportPreviewTypes = async (context: AuthContext, user: AuthUser, bundle: ConfigPresetBundle) => {
+const computeConfigPresetImportPreviewTypes = async (context: AuthContext, user: AuthUser, bundle: ConfigPresetBundle, onProgress?: (fraction: number) => void) => {
   const keys: ConfigPresetItemKey[] = bundle.items;
   const ordered = resolveBundleDependencies(bundle, keys);
   const availability = await getConfigPresetFamiliesAvailability(context, ordered);
-  const results = await computeConfigPresetItems(context, user, ordered, { availability });
+  const results = await computeConfigPresetItems(context, user, ordered, { availability, onProgress });
   const index: ConfigPresetImportIndex = new Map();
   // What the import would do with each item when everything is selected: the rows of a paged type show it, a dry run does not return it
   const expected = new Map(results.map(({ item, computed }) => [`${item.type}/${item.id}`, { status: CONFIG_PRESET_RESULT_STATUSES[computed.status] as ConfigPresetImportExpected['status'], reason: computed.reason ?? null, code: computed.code ?? null }]));
@@ -354,16 +376,31 @@ const computeConfigPresetImportPreviewTypes = async (context: AuthContext, user:
 // The items of the zip per family, with what already exists, the values they would write and their required dependencies.
 // The index of the paged types is kept with the file: the preview is the moment the dialog reads what the platform holds.
 export const configPresetImportPreview = async (context: AuthContext, user: AuthUser, fileId: string): Promise<ConfigPresetImportPreview> => {
-  const bundle = await readConfigPresetImportBundle(context, user, fileId);
-  const { types, index } = await computeConfigPresetImportPreviewTypes(context, user, bundle);
-  setConfigPresetImportIndex(user.id, fileId, Promise.resolve(index));
-  return {
-    bundle_name: bundle.metadata.bundle_name,
-    openCTI_version: bundle.metadata.openCTI_version,
-    generated_at: bundle.metadata.generated_at,
-    types,
-    ignored: bundle.ignored,
-  };
+  // The dialog asks how far it is: reading the zip is the first quarter, checking the items against the platform the rest
+  const progress = trackConfigPresetImportPreview(user.id, fileId);
+  try {
+    const bundle = await readConfigPresetImportBundle(context, user, fileId);
+    progress.set(PREVIEW_READ_SHARE * 100);
+    const { types, index } = await computeConfigPresetImportPreviewTypes(context, user, bundle, (fraction) => {
+      progress.set((PREVIEW_READ_SHARE + (1 - PREVIEW_READ_SHARE) * fraction) * 100);
+    });
+    setConfigPresetImportIndex(user.id, fileId, Promise.resolve(index));
+    return {
+      bundle_name: bundle.metadata.bundle_name,
+      openCTI_version: bundle.metadata.openCTI_version,
+      generated_at: bundle.metadata.generated_at,
+      types,
+      ignored: bundle.ignored,
+    };
+  } finally {
+    progress.end();
+  }
+};
+
+// How far the preview of the file of the user has got, as a percentage: null when none runs on this node
+export const findConfigPresetImportPreviewProgress = (context: AuthContext, user: AuthUser, fileId: string): number | null => {
+  checkConfigPresetImportAccess(context, user);
+  return getConfigPresetImportPreviewProgress(user.id, fileId);
 };
 
 // The index of a file: the one the preview kept, else computed now (another node, or what was kept expired) and kept for the next pages

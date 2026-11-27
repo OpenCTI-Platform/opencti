@@ -88,6 +88,8 @@ export interface ConfigPresetImportPlan {
   // The labels that exist among the ones of the items being computed, by standard id, read once for all of them by the labels importer
   // (prepare): a lookup per label is a round trip per item, tens of thousands of them for a big bundle
   existingLabels?: Map<string, BasicStoreEntityLabel>;
+  // Told by an importer that prepares its items in batches how many it has prepared, out of how many: the preview shows how far it has got
+  onPrepared?: (done: number, total: number) => void;
   // The items are written without waiting for the search index to refresh: the importers refresh it once at the end (finalize). Set by a
   // real import of the wizard, which calls finalize; absent for every other caller, which writes and reads as before.
   deferRefresh?: boolean;

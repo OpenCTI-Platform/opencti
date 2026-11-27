@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
-import { Alert, Text } from '@filigran/design-system';
+import { Alert, ProgressBar, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -8,8 +8,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { handleError } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { ONE_SECOND } from '../../../../../utils/Time';
 import type { FieldOption } from '../../../../../utils/field';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
+import { ConfigPresetImportPreviewProgressQuery } from './__generated__/ConfigPresetImportPreviewProgressQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
 import {
@@ -107,6 +109,13 @@ const configPresetImportPreviewQuery = graphql`
         conflictsCount
       }
     }
+  }
+`;
+
+// How far the preview that is computed has got, as a percentage: null when the backend has no preview of the file to tell of
+const configPresetImportPreviewProgressQuery = graphql`
+  query ConfigPresetImportPreviewProgressQuery($file_id: ID!) {
+    configPresetImportPreviewProgress(file_id: $file_id)
   }
 `;
 
@@ -270,6 +279,32 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
       previewRequestRef.current?.unsubscribe();
     };
   }, [environment, session.file_id, reloadCount]);
+
+  // How far the preview has got: asked every second while it loads, the bar only goes up
+  const [loadingPercent, setLoadingPercent] = useState(0);
+  const isLoading = !preview && !error;
+  useEffect(() => {
+    if (!isLoading) {
+      return undefined;
+    }
+    let active = true;
+    const interval = window.setInterval(() => {
+      fetchQuery<ConfigPresetImportPreviewProgressQuery>(environment, configPresetImportPreviewProgressQuery, { file_id: session.file_id }, { fetchPolicy: 'network-only' })
+        .toPromise()
+        // Nothing to tell, or the question failed: the bar stays where it is
+        .then((data) => {
+          const percent = data?.configPresetImportPreviewProgress;
+          if (active && typeof percent === 'number') {
+            setLoadingPercent((previous) => Math.max(previous, percent));
+          }
+        })
+        .catch(() => undefined);
+    }, ONE_SECOND);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [environment, session.file_id, isLoading, reloadCount]);
 
   // Cancels the preview that is loading and starts over: the pending zip is deleted, so is what was read of it
   const handleCancelLoading = () => {
@@ -479,7 +514,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     return (
       <ConfigPresetImportUpload onUploaded={onUploaded} busyFileName={fileName}>
         <ConfigPresetImportBusyPanel title={t_i18n('Reading your configuration bundle')}>
-          <Text variant="content-base">{t_i18n('A large bundle can take a few seconds to check against the platform.')}</Text>
+          <ProgressBar aria-label={t_i18n('Reading progress')} value={loadingPercent} size="lg" />
+          <Text variant="content-base">{t_i18n('{percent}%', { values: { percent: loadingPercent } })} · {t_i18n('A large bundle can take a few seconds to check against the platform.')}</Text>
           <div>
             <Button variant="secondary" onClick={handleCancelLoading}>{t_i18n('Cancel')}</Button>
           </div>

@@ -1,6 +1,6 @@
 import type { Resolvers, ResolversTypes } from '../../generated/graphql';
 import { configPresetExport, findConfigPresetExportableItems, findConfigPresetExportableTypes } from './export/configPreset-export-domain';
-import { configPresetImportPreview, configPresetImportUpload, findConfigPresetImportItems } from './import/configPreset-import-domain';
+import { configPresetImportPreview, configPresetImportUpload, findConfigPresetImportItems, findConfigPresetImportPreviewProgress } from './import/configPreset-import-domain';
 import { configPresetImport } from './import/configPreset-import-engine';
 import {
   backToConfigPresetImportSelection,
@@ -37,6 +37,7 @@ const configPresetResolvers: Resolvers = {
     configPresetExportableItems: (_, args, context) => findConfigPresetExportableItems(context, context.user!, args),
     configPresetImportItems: (_, args, context) => findConfigPresetImportItems(context, context.user!, args),
     configPresetImportPreview: (_, { file_id }, context) => configPresetImportPreview(context, context.user!, file_id),
+    configPresetImportPreviewProgress: (_, { file_id }, context) => findConfigPresetImportPreviewProgress(context, context.user!, file_id),
     configPresetImportSession: (_, __, context) => findConfigPresetImportSession(context, context.user!),
     configPresetImportRunning: (_, __, context) => findConfigPresetImportRunning(context, context.user!),
   },

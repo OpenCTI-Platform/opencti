@@ -12068,6 +12068,7 @@ type Query {
   configPresetExportableTypes: [ConfigPresetExportableType!]!
   configPresetImportItems(after: ID, conflictsOnly: Boolean, excludedIds: [ID!], file_id: ID!, first: Int, ids: [ID!], search: String, type: ID!): ConfigPresetImportItemConnection!
   configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
+  configPresetImportPreviewProgress(file_id: ID!): Int
   configPresetImportRunning: ConfigPresetImportRunning!
   configPresetImportSession: ConfigPresetImportSession
   connector(id: String!): Connector

@@ -159,6 +159,24 @@ describe('Config preset import: a type listed page by page', () => {
     expect(typeOf(response, 'messages').items.every(({ expected }: { expected: unknown }) => expected === null)).toBe(true);
   });
 
+  it('tells how far the preview has got only while it runs, and nothing once it answered', async () => {
+    const fileId = await upload();
+    const progressQuery = gql`query ConfigPresetPagingProgress($file_id: ID!) { configPresetImportPreviewProgress(file_id: $file_id) }`;
+    const during = queryAsAdmin({ query: PREVIEW_QUERY, variables: { file_id: fileId } });
+    const seen: unknown[] = [];
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      const progress = await queryAsAdmin({ query: progressQuery, variables: { file_id: fileId } });
+      expect(progress.errors).toBeUndefined();
+      seen.push(progress.data?.configPresetImportPreviewProgress);
+      if (progress.data?.configPresetImportPreviewProgress === null && seen.length > 1) break;
+    }
+    expect((await during).errors).toBeUndefined();
+    const after = await queryAsAdmin({ query: progressQuery, variables: { file_id: fileId } });
+    expect(after.data?.configPresetImportPreviewProgress).toBeNull();
+    // Whatever it said while the preview ran is a percentage, never a finished one
+    seen.filter((value) => value !== null).forEach((value) => expect(value as number).toBeLessThan(100));
+  });
+
   it('computes the pages by itself when the preview did not keep them, and keeps them for the next ones', async () => {
     const fileId = await upload();
     // No preview: what the next pages read does not exist yet

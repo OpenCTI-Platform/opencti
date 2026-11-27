@@ -322,6 +322,9 @@ extend type Query {
     # What the uploaded zip of the caller holds; reads only, never changes the import session.
     configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
 
+    # How far the preview of the file has got, as a percentage, so that the dialog that waits for it can show a bar. Null when no preview of it
+    # runs on this node (it is over, or it is computed by another node); it never reads the file.
+    configPresetImportPreviewProgress(file_id: ID!): Int @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # The import session of the caller, null when there is none.
     configPresetImportSession: ConfigPresetImportSession @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     configPresetImportRunning: ConfigPresetImportRunning! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])

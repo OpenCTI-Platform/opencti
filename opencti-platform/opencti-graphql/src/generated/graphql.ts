@@ -25699,6 +25699,7 @@ export type Query = {
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
   configPresetImportItems: ConfigPresetImportItemConnection;
   configPresetImportPreview: ConfigPresetImportPreview;
+  configPresetImportPreviewProgress?: Maybe<Scalars['Int']['output']>;
   configPresetImportRunning: ConfigPresetImportRunning;
   configPresetImportSession?: Maybe<ConfigPresetImportSession>;
   connector?: Maybe<Connector>;
@@ -26484,6 +26485,11 @@ export type QueryConfigPresetImportItemsArgs = {
 
 
 export type QueryConfigPresetImportPreviewArgs = {
+  file_id: Scalars['ID']['input'];
+};
+
+
+export type QueryConfigPresetImportPreviewProgressArgs = {
   file_id: Scalars['ID']['input'];
 };
 
@@ -52689,6 +52695,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
   configPresetImportItems?: Resolver<ResolversTypes['ConfigPresetImportItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetImportItemsArgs, 'file_id' | 'type'>>;
   configPresetImportPreview?: Resolver<ResolversTypes['ConfigPresetImportPreview'], ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewArgs, 'file_id'>>;
+  configPresetImportPreviewProgress?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewProgressArgs, 'file_id'>>;
   configPresetImportRunning?: Resolver<ResolversTypes['ConfigPresetImportRunning'], ParentType, ContextType>;
   configPresetImportSession?: Resolver<Maybe<ResolversTypes['ConfigPresetImportSession']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;

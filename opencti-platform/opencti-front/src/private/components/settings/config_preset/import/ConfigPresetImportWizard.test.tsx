@@ -510,13 +510,35 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.queryByRole('button', { name: 'Start over' })).not.toBeInTheDocument();
     });
 
-    it('shows the bundle in the disabled upload field, and its reading as a panel under it, while the preview loads', async () => {
+    it('shows the bundle in the disabled upload field, and its reading as a panel under it with a bar, while the preview loads', async () => {
       await renderWizard(session());
       expect(await screen.findByText('Reading your configuration bundle')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeDisabled();
       expect(screen.getByText('bundle.zip')).toBeInTheDocument();
-      // Nothing measures a preview, so there is no bar for it
-      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      expect(screen.getByRole('progressbar', { name: 'Reading progress' })).toHaveAttribute('aria-valuenow', '0');
+    });
+
+    it('moves the bar with what the backend says of the preview every second, and never back', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const rendered = await renderWizard(session());
+      const progressQueries = () => rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewProgressQuery');
+      const answer = async (percent: number | null) => {
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+        await waitFor(() => expect(progressQueries().length).toBeGreaterThan(0));
+        await act(async () => {
+          const pending = progressQueries().at(-1)!;
+          rendered.relayEnv.mock.resolve(pending, MockPayloadGenerator.generate(pending, { Query: () => ({ configPresetImportPreviewProgress: percent }) }));
+        });
+      };
+      await answer(40);
+      await waitFor(() => expect(screen.getByRole('progressbar', { name: 'Reading progress' })).toHaveAttribute('aria-valuenow', '40'));
+      expect(screen.getByText(/40%/)).toBeInTheDocument();
+      // A late or empty answer does not send the bar back
+      await answer(10);
+      await answer(null);
+      expect(screen.getByRole('progressbar', { name: 'Reading progress' })).toHaveAttribute('aria-valuenow', '40');
     });
 
     it('cancels a preview that is loading: the request is aborted, the zip is deleted and the upload comes back', async () => {

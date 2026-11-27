@@ -43,6 +43,7 @@ const labelsImporter: ConfigPresetImporter = {
     for (let i = 0; i < ids.length; i += LABELS_PREPARE_SIZE) {
       const labels = await internalFindByIds(context, user, ids.slice(i, i + LABELS_PREPARE_SIZE), { type: ENTITY_TYPE_LABEL }) as unknown as BasicStoreEntityLabel[];
       labels.forEach((label) => existing.set(label.standard_id, label));
+      plan.onPrepared?.(Math.min(i + LABELS_PREPARE_SIZE, ids.length), ids.length);
     }
     plan.existingLabels = existing;
   },
