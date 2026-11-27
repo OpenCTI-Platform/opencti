@@ -171,7 +171,7 @@ const TransitionForm = ({ entityType, targetStatusExits }: { entityType: string;
                   data-testid="workflow-transition-reset-authorized-members-toggle"
                 />
               )}
-              label={t_i18n('Reset authorized members')}
+              label={t_i18n('Remove access restriction')}
             />
             {values.syncActions && (
               <Box style={disabledEEStyle}>
