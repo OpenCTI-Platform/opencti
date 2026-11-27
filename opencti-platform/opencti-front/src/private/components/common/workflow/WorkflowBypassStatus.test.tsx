@@ -92,6 +92,13 @@ describe('WorkflowBypassStatus', () => {
     expect(screen.getByText('Share requested entities')).toBeVisible();
   });
 
+  it('names the removal of the access restriction among the actions of a status', async () => {
+    fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{ ...statuses[104], onExit: [], onEnter: [{ type: 'resetAuthorizedMembers', params: null }] }] });
+    const { user } = await openDialog();
+    await selectStatus(user);
+    expect(screen.getByText('Remove access restriction')).toBeVisible();
+  });
+
   it('dismisses stale confirmation when the source status changes', async () => {
     const { user, rerender } = await openDialog();
     await selectStatus(user);
