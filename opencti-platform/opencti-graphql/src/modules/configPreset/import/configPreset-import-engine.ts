@@ -10,6 +10,7 @@ import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import {
   checkConfigPresetImportAccess,
   checkConfigPresetItemModes,
+  CONFIG_PRESET_RESULT_STATUSES,
   configPresetImportMode,
   configPresetImportModes,
   findConfigPresetFamily,
@@ -23,6 +24,7 @@ import {
   computeConfigPresetItems,
   finalizeConfigPresetItems,
   getConfigPresetFamiliesAvailability,
+  listPagedConfigPresetImportTypes,
   prepareConfigPresetItems,
   readConfigPresetImportBundle,
 } from './configPreset-import-domain';
@@ -52,13 +54,6 @@ export interface ConfigPresetImportOutput {
 }
 
 // naming: the label of the item as its importer computed it; an item that was not computed (a stopped import) is named by its key
-const RESULT_STATUSES: Record<ConfigImportStatus, ConfigPresetImportResultStatus> = {
-  created: 'CREATED',
-  overwritten: 'OVERWRITTEN',
-  skipped: 'SKIPPED',
-  failed: 'FAILED',
-};
-
 // The result of an item, as the import and the session store it; a failed one without naming is named after its key
 export const toConfigPresetImportResult = (
   item: ConfigPresetBundleItem,
@@ -68,7 +63,7 @@ export const toConfigPresetImportResult = (
 ): ConfigPresetImportItemResult => ({
   type: item.type,
   key: item.id,
-  status: RESULT_STATUSES[status],
+  status: CONFIG_PRESET_RESULT_STATUSES[status],
   reason: reason ?? null,
   code: naming?.code ?? null,
   label: naming?.label ?? item.id,
@@ -150,15 +145,20 @@ const toOutput = (results: { item: ConfigPresetBundleItem; computed: ConfigPrese
   return results.map(({ item, computed }) => toConfigPresetImportResult(item, computed.status, computed.reason, computed));
 };
 
-// Reads only: what the import would do, nothing is written, no session change, no audit event
+// Reads only: what the import would do, nothing is written, no session change, no audit event.
+// The items of the types that are listed page by page are computed, and not returned: there can be tens of thousands, and the rows of a page
+// carry their own expected result (see ConfigPresetImportItem.expected).
 const dryRun = async (
   context: AuthContext,
   user: AuthUser,
+  fileId: string,
   items: ConfigPresetBundleItem[],
   modes: Map<string, ConfigImportMode>,
   itemOptions: ConfigPresetItemOptions,
 ): Promise<ConfigPresetImportOutput> => {
-  return { results: toOutput(await computeConfigPresetItems(context, user, items, { modes, ...itemOptions })), report_id: null, settings: null, entity_settings: null };
+  const results = toOutput(await computeConfigPresetItems(context, user, items, { modes, ...itemOptions }));
+  const pagedTypes = await listPagedConfigPresetImportTypes(context, user, fileId);
+  return { results: results.filter(({ type }) => !pagedTypes.has(type)), report_id: null, settings: null, entity_settings: null };
 };
 
 // The items read ahead together by a real import: what a slice needs is read once, before its first item
@@ -318,7 +318,7 @@ export const configPresetImport = async (
   };
   if (isDryRun) {
     // No lock: a dry run writes nothing and runs even while an import is in progress
-    return dryRun(engineContext, user, (await prepare()).items, configPresetImportModes(selections), itemOptions);
+    return dryRun(engineContext, user, fileId, (await prepare()).items, configPresetImportModes(selections), itemOptions);
   }
   // The lock is taken first, before the zip is read and before any session read: a second import is refused at once
   return withConfigPresetImportLock(engineContext, async (lock) => {

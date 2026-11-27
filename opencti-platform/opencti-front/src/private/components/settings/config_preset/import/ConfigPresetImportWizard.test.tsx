@@ -40,6 +40,8 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   fields: [],
   credentials: [],
   dependsOn: [],
+  // Only the items of a type listed page by page have one
+  expected: null,
   ...overrides,
 });
 // A type listed whole, as the API does for all but the types of thousands of items: its page is all of its items
@@ -1542,6 +1544,20 @@ describe('ConfigPresetImportWizard: a type listed page by page', () => {
     expect(screen.getByTestId('config-preset-sticky-footer')).toHaveStyle({ position: 'sticky', bottom: '0px' });
     await rendered.user.click(footer.getByRole('button', { name: 'Back to bundle' }));
     expect(within(screen.getByTestId('config-preset-sticky-footer')).getByRole('button', { name: 'Apply' })).toBeInTheDocument();
+  });
+
+  it('shows on a row of the sub-view what the import would do with it, for an item that is selected', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [
+      itemEdge('label--20', 'Label 20', { expected: { status: 'FAILED', reason: 'The label value is not valid', code: 'invalid' } }),
+      itemEdge('label--21', 'Label 21', { expected: { status: 'FAILED', reason: 'The label color is not valid', code: 'invalid' } }),
+    ]);
+    expect(screen.getByText(/The label value is not valid/)).toBeInTheDocument();
+    expect(screen.getByText(/The label color is not valid/)).toBeInTheDocument();
+    // An item that is not selected is not imported: nothing is expected of it
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Label 21' }));
+    expect(screen.queryByText(/The label color is not valid/)).not.toBeInTheDocument();
+    expect(screen.getByText(/The label value is not valid/)).toBeInTheDocument();
   });
 
   it('searches and keeps the items that already exist, by asking the API again', async () => {

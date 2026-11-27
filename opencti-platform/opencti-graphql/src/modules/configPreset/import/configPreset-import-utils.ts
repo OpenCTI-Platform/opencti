@@ -7,7 +7,8 @@ import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { logApp } from '../../../config/conf';
 import { publishUserAction, type UserConfigPresetImportActionContextData } from '../../../listener/UserActionListener';
-import type { ConfigImportMode } from '../../configImport/configImport-types';
+import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
+import type { ConfigPresetImportResultStatus } from './configPreset-import-session';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
@@ -19,6 +20,14 @@ import {
   type ConfigPresetItemOptions,
   configPresetPlanKey,
 } from './configPreset-import-types';
+
+// The status of a result, from the one an importer computes
+export const CONFIG_PRESET_RESULT_STATUSES: Record<ConfigImportStatus, ConfigPresetImportResultStatus> = {
+  created: 'CREATED',
+  overwritten: 'OVERWRITTEN',
+  skipped: 'SKIPPED',
+  failed: 'FAILED',
+};
 
 // The family of a type of a selection: the type sent by the frontend is not trusted
 export const findConfigPresetFamily = (type: string): ConfigPresetFamilyDefinition => {

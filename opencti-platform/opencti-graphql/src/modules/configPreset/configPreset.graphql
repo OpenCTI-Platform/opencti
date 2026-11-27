@@ -84,6 +84,16 @@ type ConfigPresetImportItem {
     isEnabled: Boolean
     # Items imported with this one, whatever the selection.
     dependsOn: [ConfigPresetItemReference!]!
+    # What the import would do with the item when everything is selected, for the items of a type that is listed page by page: a dry run does not
+    # return the results of those (tens of thousands), the rows of the page ask for their own. Null for the items of the other types.
+    expected: ConfigPresetImportExpected
+}
+
+# What the import would do with an item: the status, why in words, and why as a code the UI can rely on.
+type ConfigPresetImportExpected {
+    status: ConfigPresetImportResultStatus!
+    reason: String
+    code: String
 }
 
 type ConfigPresetImportItemEdge {
@@ -244,6 +254,7 @@ type ConfigPresetImportSession {
 }
 
 # The results of an import, one per processed item (the required dependencies included), and the settings so that the front store learns the new values; settings is null for a dry run.
+# A dry run leaves out the items of the types that are listed page by page (see ConfigPresetImportItem.expected): they are too many to be sent.
 type ConfigPresetImportOutput {
     results: [ConfigPresetImportResult!]!
     # The import report, null for a dry run or when it could not be written.
@@ -310,6 +321,7 @@ extend type Query {
     ): ConfigPresetImportItemConnection! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     # What the uploaded zip of the caller holds; reads only, never changes the import session.
     configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
+
     # The import session of the caller, null when there is none.
     configPresetImportSession: ConfigPresetImportSession @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])
     configPresetImportRunning: ConfigPresetImportRunning! @auth(for: [BYPASS]) @ff(flags: ["CONFIG_PRESET"])

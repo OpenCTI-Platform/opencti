@@ -92,6 +92,11 @@ const configPresetImportPreviewQuery = graphql`
             type
             key
           }
+          expected {
+            status
+            reason
+            code
+          }
         }
         itemsPageInfo {
           hasNextPage
@@ -478,7 +483,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const renderRow = (type: PreviewType, item: PreviewItem) => {
     // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
     const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
-    const result = results?.[`${type.key}/${item.key}`];
+    // The dry run does not return the items of a type listed page by page: the row of a selected one has its own expected result
+    const result = results?.[`${type.key}/${item.key}`] ?? (item.expected && isImportedItem(type.key, item.key) ? { type: type.key, key: item.key, ...item.expected } : undefined);
     // The types the import hides: the row alone only says that the item is there
     // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
     const keptDefaultNote = keptDefaultNotes[type.key];

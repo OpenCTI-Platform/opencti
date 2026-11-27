@@ -4678,6 +4678,13 @@ export type ConfigPresetImportCredential = {
   type: Scalars['String']['output'];
 };
 
+export type ConfigPresetImportExpected = {
+  __typename?: 'ConfigPresetImportExpected';
+  code?: Maybe<Scalars['String']['output']>;
+  reason?: Maybe<Scalars['String']['output']>;
+  status: ConfigPresetImportResultStatus;
+};
+
 export type ConfigPresetImportField = {
   __typename?: 'ConfigPresetImportField';
   key: Scalars['String']['output'];
@@ -4690,6 +4697,7 @@ export type ConfigPresetImportItem = {
   credentials: Array<ConfigPresetImportCredential>;
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
+  expected?: Maybe<ConfigPresetImportExpected>;
   fields: Array<ConfigPresetImportField>;
   isDefault: Scalars['Boolean']['output'];
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -42132,6 +42140,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
   ConfigPresetImportCounts: ResolverTypeWrapper<ConfigPresetImportCounts>;
   ConfigPresetImportCredential: ResolverTypeWrapper<ConfigPresetImportCredential>;
+  ConfigPresetImportExpected: ResolverTypeWrapper<ConfigPresetImportExpected>;
   ConfigPresetImportField: ResolverTypeWrapper<ConfigPresetImportField>;
   ConfigPresetImportItem: ResolverTypeWrapper<ConfigPresetImportItem>;
   ConfigPresetImportItemConnection: ResolverTypeWrapper<ConfigPresetImportItemConnection>;
@@ -43392,6 +43401,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetExportableType: ConfigPresetExportableType;
   ConfigPresetImportCounts: ConfigPresetImportCounts;
   ConfigPresetImportCredential: ConfigPresetImportCredential;
+  ConfigPresetImportExpected: ConfigPresetImportExpected;
   ConfigPresetImportField: ConfigPresetImportField;
   ConfigPresetImportItem: ConfigPresetImportItem;
   ConfigPresetImportItemConnection: ConfigPresetImportItemConnection;
@@ -45881,6 +45891,12 @@ export type ConfigPresetImportCredentialResolvers<ContextType = any, ParentType 
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type ConfigPresetImportExpectedResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportExpected'] = ResolversParentTypes['ConfigPresetImportExpected']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ConfigPresetImportResultStatus'], ParentType, ContextType>;
+}>;
+
 export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45891,6 +45907,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   credentials?: Resolver<Array<ResolversTypes['ConfigPresetImportCredential']>, ParentType, ContextType>;
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  expected?: Resolver<Maybe<ResolversTypes['ConfigPresetImportExpected']>, ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -57170,6 +57187,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
   ConfigPresetImportCounts?: ConfigPresetImportCountsResolvers<ContextType>;
   ConfigPresetImportCredential?: ConfigPresetImportCredentialResolvers<ContextType>;
+  ConfigPresetImportExpected?: ConfigPresetImportExpectedResolvers<ContextType>;
   ConfigPresetImportField?: ConfigPresetImportFieldResolvers<ContextType>;
   ConfigPresetImportItem?: ConfigPresetImportItemResolvers<ContextType>;
   ConfigPresetImportItemConnection?: ConfigPresetImportItemConnectionResolvers<ContextType>;

@@ -4,7 +4,13 @@ import { FunctionalError } from '../../../config/errors';
 import { downloadFile } from '../../../database/raw-file-storage';
 import { deleteFile, type FileUploadData, loadFile, type LoadedFile, uploadToStorage } from '../../../database/file-storage';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import type { ConfigPresetImportItemConnection, ConfigPresetImportPreview, ConfigPresetImportType, QueryConfigPresetImportItemsArgs } from '../../../generated/graphql';
+import type {
+  ConfigPresetImportExpected,
+  ConfigPresetImportItemConnection,
+  ConfigPresetImportPreview,
+  ConfigPresetImportType,
+  QueryConfigPresetImportItemsArgs,
+} from '../../../generated/graphql';
 import type { ConfigImportMode } from '../../configImport/configImport-types';
 import { allFilesForPaths } from '../../internal/document/document-domain';
 import { CONFIG_PRESET_HISTORY_PATH, CONFIG_PRESET_IMPORT_PATH } from '../../internal/document/document-types';
@@ -13,6 +19,7 @@ import { CONFIG_PRESET_FAMILIES, configPresetFamilyType, isConfigPresetFamilyAva
 import { CONFIG_PRESET_FIRST_PAGE_SIZE } from '../export/configPreset-export-domain';
 import {
   checkConfigPresetImportAccess,
+  CONFIG_PRESET_RESULT_STATUSES,
   configPresetImportMode,
   getConfigPresetFamilyModes,
   getConfigPresetPlatformId,
@@ -331,12 +338,15 @@ const computeConfigPresetImportPreviewTypes = async (context: AuthContext, user:
   const availability = await getConfigPresetFamiliesAvailability(context, ordered);
   const results = await computeConfigPresetItems(context, user, ordered, { availability });
   const index: ConfigPresetImportIndex = new Map();
+  // What the import would do with each item when everything is selected: the rows of a paged type show it, a dry run does not return it
+  const expected = new Map(results.map(({ item, computed }) => [`${item.type}/${item.id}`, { status: CONFIG_PRESET_RESULT_STATUSES[computed.status] as ConfigPresetImportExpected['status'], reason: computed.reason ?? null, code: computed.code ?? null }]));
   const types = buildConfigPresetImportTypes(bundle, results, availability).map((type) => {
     if (!isPagedConfigPresetImportType(type)) {
       return type;
     }
-    index.set(type.key, type.items);
-    return { ...type, items: type.items.slice(0, CONFIG_PRESET_IMPORT_FIRST_PAGE_SIZE), itemsPageInfo: pageInfoOf(type.items.length, true) };
+    const items = type.items.map((item) => ({ ...item, expected: expected.get(`${type.key}/${item.key}`) ?? null }));
+    index.set(type.key, items);
+    return { ...type, items: items.slice(0, CONFIG_PRESET_IMPORT_FIRST_PAGE_SIZE), itemsPageInfo: pageInfoOf(items.length, true) };
   });
   return { types, index };
 };
@@ -368,6 +378,11 @@ const loadConfigPresetImportIndex = (context: AuthContext, user: AuthUser, fileI
   const computing = readConfigPresetImportBundle(shared, user, fileId).then(async (bundle) => (await computeConfigPresetImportPreviewTypes(shared, user, bundle)).index);
   setConfigPresetImportIndex(user.id, fileId, computing);
   return computing;
+};
+
+// The types of the file that are listed page by page, the ones whose items a dry run does not return
+export const listPagedConfigPresetImportTypes = async (context: AuthContext, user: AuthUser, fileId: string): Promise<Set<string>> => {
+  return new Set((await loadConfigPresetImportIndex(context, user, fileId)).keys());
 };
 
 // One page of the items of a paged type, searched and filtered in memory: nothing is computed, the preview did. The cursor is the position

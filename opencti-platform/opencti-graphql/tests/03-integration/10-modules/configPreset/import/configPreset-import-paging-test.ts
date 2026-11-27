@@ -22,7 +22,7 @@ const UPLOAD_MUTATION = gql`mutation ConfigPresetPagingUpload($file: Upload!) { 
 const PREVIEW_QUERY = gql`
   query ConfigPresetPagingPreview($file_id: ID!) {
     configPresetImportPreview(file_id: $file_id) {
-      types { key conflictsCount items { key } itemsPageInfo { globalCount hasNextPage } }
+      types { key conflictsCount items { key expected { status } } itemsPageInfo { globalCount hasNextPage } }
     }
   }
 `;
@@ -30,7 +30,7 @@ const ITEMS_QUERY = gql`
   query ConfigPresetPagingItems($file_id: ID!, $type: ID!, $first: Int, $after: ID, $search: String, $excludedIds: [ID!], $conflictsOnly: Boolean) {
     configPresetImportItems(file_id: $file_id, type: $type, first: $first, after: $after, search: $search, excludedIds: $excludedIds, conflictsOnly: $conflictsOnly) {
       pageInfo { globalCount hasNextPage endCursor }
-      edges { node { key label conflict exists } }
+      edges { node { key label conflict exists expected { status reason code } } }
     }
   }
 `;
@@ -137,15 +137,26 @@ describe('Config preset import: a type listed page by page', () => {
     expect(excluded.data?.configPresetImportItems.pageInfo.globalCount).toBe(COUNT - 1);
   });
 
-  it('still computes every item of the type for a dry run', async () => {
+  it('does not return the items of the type from a dry run, which sends the results of the other types and leaves these to the rows', async () => {
     const fileId = await upload();
     await preview(fileId);
-    const dryRun = await queryAsAdmin({ query: IMPORT_MUTATION, variables: { file_id: fileId, selections: [{ type: 'labels' }], dry_run: true } });
+    const dryRun = await queryAsAdmin({ query: IMPORT_MUTATION, variables: { file_id: fileId, selections: [{ type: 'labels' }, { type: 'messages' }], dry_run: true } });
     expect(dryRun.errors).toBeUndefined();
-    const results = dryRun.data?.configPresetImport.results as { status: string }[];
-    expect(results).toHaveLength(COUNT);
-    expect(results.filter(({ status }) => status === 'CREATED')).toHaveLength(COUNT - EXISTING.length);
-    expect(results.filter(({ status }) => status === 'OVERWRITTEN')).toHaveLength(EXISTING.length);
+    const results = dryRun.data?.configPresetImport.results as { type: string }[];
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.every(({ type }) => type !== 'labels')).toBe(true);
+    expect(results.some(({ type }) => type === 'messages')).toBe(true);
+  });
+
+  it('gives each item of a page what the import would do with it, in the preview and in the next pages, and none to the other types', async () => {
+    const fileId = await upload();
+    const response = await preview(fileId);
+    const labels = typeOf(response, 'labels');
+    const firstPage = labels.items as { key: string; expected: { status: string } | null }[];
+    expect(firstPage.every(({ key, expected }) => expected?.status === (EXISTING.some((value) => getLabelStandardId(value) === key) ? 'OVERWRITTEN' : 'CREATED'))).toBe(true);
+    const page = await items(fileId, { search: EXISTING[0], first: 5 });
+    expect(page.data?.configPresetImportItems.edges[0].node.expected).toMatchObject({ status: 'OVERWRITTEN' });
+    expect(typeOf(response, 'messages').items.every(({ expected }: { expected: unknown }) => expected === null)).toBe(true);
   });
 
   it('computes the pages by itself when the preview did not keep them, and keeps them for the next ones', async () => {

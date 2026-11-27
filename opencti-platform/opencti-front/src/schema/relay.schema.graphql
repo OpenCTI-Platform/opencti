@@ -2297,6 +2297,12 @@ type ConfigPresetImportCredential {
   type: String!
 }
 
+type ConfigPresetImportExpected {
+  code: String
+  reason: String
+  status: ConfigPresetImportResultStatus!
+}
+
 type ConfigPresetImportField {
   key: String!
   value: String
@@ -2307,6 +2313,7 @@ type ConfigPresetImportItem {
   credentials: [ConfigPresetImportCredential!]!
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
+  expected: ConfigPresetImportExpected
   fields: [ConfigPresetImportField!]!
   isDefault: Boolean!
   isEnabled: Boolean

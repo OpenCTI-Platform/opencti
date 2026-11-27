@@ -26,6 +26,8 @@ vi.mock('../../../../../src/modules/rule/rule-import', async (importOriginal) =>
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-domain')>()),
   readConfigPresetImportBundle: vi.fn(),
+  // The types listed page by page: none, unless a test says so
+  listPagedConfigPresetImportTypes: vi.fn(async () => new Set<string>()),
 }));
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-cache', () => ({
   dropConfigPresetImportCache: vi.fn(),
@@ -55,7 +57,7 @@ import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_ENGINE_DISABL
 import { RULES_DECLARATION } from '../../../../../src/domain/rules';
 import { groupStandardId } from '../../../../../src/modules/user/group-import';
 import { bundleRefused } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
-import { readConfigPresetImportBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
+import { listPagedConfigPresetImportTypes, readConfigPresetImportBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
 import { dropConfigPresetImportCache } from '../../../../../src/modules/configPreset/import/configPreset-import-cache';
 import { readConfigPresetImportSession } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
@@ -210,6 +212,27 @@ describe('Config preset real import: what the items need is read a slice at a ti
     await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], true);
     expect(apply).not.toHaveBeenCalled();
     expect(finalize).not.toHaveBeenCalled();
+  });
+
+  it('computes the items of a type listed page by page on a dry run, and does not return them: its rows carry their own', async () => {
+    withBundle([...labelItems(3), roleItem(roleStandardId('Analyst'))]);
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    const compute = vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    vi.mocked(importRole).mockResolvedValue({ status: 'created', exists: false, targetId: roleStandardId('Analyst'), grantsSensitiveRights: false });
+    vi.mocked(listPagedConfigPresetImportTypes).mockResolvedValueOnce(new Set(['labels']));
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }, { type: 'roles' }], true);
+    expect(compute).toHaveBeenCalledTimes(3);
+    expect(results.map(({ type }) => type)).toEqual(['roles']);
+  });
+
+  it('returns the results of every type on a dry run when none is listed page by page', async () => {
+    withBundle(labelItems(3));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], true);
+    expect(results).toHaveLength(3);
   });
 
   it('does not prepare a family the platform cannot use', async () => {

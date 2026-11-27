@@ -66,6 +66,11 @@ const configPresetImportItemsFragment = graphql`
             type
             key
           }
+          expected {
+            status
+            reason
+            code
+          }
         }
       }
     }
