@@ -416,6 +416,32 @@ describe('XTM hub', () => {
 
         expect(sendAdministratorsLostConnectivityEmailSpy).not.toHaveBeenCalled();
       });
+
+      it('should complete the connectivity check and keep the email flag when the email cannot be sent', async () => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.Registered,
+          xtm_hub_last_connectivity_check: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+          xtm_hub_should_send_connectivity_email: true,
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue({ status: 'inactive', commercialModel: null, organizationName: null });
+        sendAdministratorsLostConnectivityEmailSpy.mockRejectedValue(new Error('SMTP send failed'));
+
+        const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(result.status).toBe(XtmHubRegistrationStatus.LostConnectivity);
+        expect(sendAdministratorsLostConnectivityEmailSpy).toHaveBeenCalled();
+        // The registration status is still saved, without the email flag, so the next check sends the email again.
+        expect(updateAttributeSpy).toHaveBeenLastCalledWith(
+          testContext,
+          HUB_REGISTRATION_MANAGER_USER,
+          'id',
+          ENTITY_TYPE_SETTINGS,
+          [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }],
+        );
+      });
     });
   });
 

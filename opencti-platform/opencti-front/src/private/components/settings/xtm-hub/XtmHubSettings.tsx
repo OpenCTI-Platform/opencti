@@ -236,14 +236,25 @@ const XtmHubSettingsComponent = () => {
 };
 
 const XtmHubSettings: React.FC = () => {
-  const [commitCheckConnectivity] = useApiMutation(checkHubConnectivity);
+  const { t_i18n } = useFormatter();
+  const [commitCheckConnectivity] = useApiMutation(
+    checkHubConnectivity,
+    undefined,
+    { errorMessage: t_i18n('Unable to check XTM Hub connectivity. Please try again later.') },
+  );
   const [isCheckDone, setIsCheckDone] = useState(false);
 
   useEffect(() => {
-    commitCheckConnectivity({ variables: {},
+    commitCheckConnectivity({
+      variables: {},
       onCompleted: () => {
         setIsCheckDone(true);
-      } });
+      },
+      // A failed check shows the error message and the last known XTM Hub settings, instead of an endless loader.
+      onError: () => {
+        setIsCheckDone(true);
+      },
+    });
   }, []);
 
   if (!isCheckDone) {
