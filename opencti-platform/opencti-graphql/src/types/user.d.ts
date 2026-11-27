@@ -70,6 +70,7 @@ interface AuthUser extends BasicStoreIdentifier {
   draft_context?: string | undefined;
   otp_activated?: boolean;
   password_valid_until?: Date | null;
+  external?: boolean;
   otp_secret?: string;
   creator_id?: string | string[];
   unsubscribed_news_feed_types?: string[];
@@ -92,6 +93,8 @@ interface AuthContext {
   user_inside_platform_organization: boolean;
   user_otp_validated?: boolean;
   user_with_session?: boolean;
+  // The session user must change an expired password: only the operations that let it do so are allowed
+  password_change_required?: boolean;
   synchronizedUpsert?: boolean;
   previousStandard?: string;
   req?: Express.Request;

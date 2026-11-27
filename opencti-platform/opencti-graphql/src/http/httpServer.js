@@ -24,6 +24,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { getSettings } from '../domain/settings';
 import { computeLoaders } from './httpAuthenticatedContext';
 import { createGraphqlContext } from './httpGraphqlContext';
+import { isLocalPasswordSession, isPasswordExpired, sessionPasswordValidUntil } from '../modules/user/user-domain';
 import {
   applyKeepAliveTimeout,
   buildGraphqlUploadOptions,
@@ -79,7 +80,9 @@ export const extractWsSessionContext = async (context) => {
     };
     const platformUsers = await getEntitiesMapFromCache(sessionContext, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(wsSession?.user.id);
-    sessionContext.user = { ...wsSession?.user, ...logged, origin };
+    sessionContext.user = { ...wsSession?.user, ...logged, password_valid_until: sessionPasswordValidUntil(wsSession.user, logged), origin };
+    // A session that must change its expired password cannot subscribe (see createSubscriptionServerOptions)
+    sessionContext.password_change_required = isPasswordExpired(sessionContext.user, { localPassword: isLocalPasswordSession(wsSession) });
     // A subscription is authenticated by the session as well: its maximum lifetime applies.
     // It is only checked when a subscription is requested: a subscription already open when the session reaches
     // its maximum lifetime stays alive. This is accepted, as the next HTTP request of the front then fails and sends

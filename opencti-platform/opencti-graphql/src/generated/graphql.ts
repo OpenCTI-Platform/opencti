@@ -44297,6 +44297,10 @@ export type ResolversParentTypes = ResolversObject<{
   XtmCounterpartResult: XtmCounterpartResult;
 }>;
 
+export type AllowExpiredPasswordDirectiveArgs = { };
+
+export type AllowExpiredPasswordDirectiveResolver<Result, Parent, ContextType = any, Args = AllowExpiredPasswordDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
+
 export type AllowUnlicensedLtsDirectiveArgs = { };
 
 export type AllowUnlicensedLtsDirectiveResolver<Result, Parent, ContextType = any, Args = AllowUnlicensedLtsDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
@@ -57807,6 +57811,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
 }>;
 
 export type DirectiveResolvers<ContextType = any> = ResolversObject<{
+  allowExpiredPassword?: AllowExpiredPasswordDirectiveResolver<any, any, ContextType>;
   allowUnlicensedLTS?: AllowUnlicensedLtsDirectiveResolver<any, any, ContextType>;
   allowUnprotectedOTP?: AllowUnprotectedOtpDirectiveResolver<any, any, ContextType>;
   auth?: AuthDirectiveResolver<any, any, ContextType>;

@@ -46,6 +46,9 @@ class AuthBoundaryComponent extends React.Component {
       if (includes('OTP_REQUIRED', types)) {
         return <LoginRoot type="2FA_VALIDATION" />;
       }
+      if (includes('PASSWORD_CHANGE_REQUIRED', types)) {
+        return <LoginRoot type="FORCE_PASSWORD_CHANGE" />;
+      }
       return <HighLevelError />;
     }
     return this.props.children;

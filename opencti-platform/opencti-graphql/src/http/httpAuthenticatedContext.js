@@ -8,6 +8,8 @@ import {
   batchRolesForUsers,
   batchUserEffectiveConfidenceLevel,
   batchUserTokens,
+  isLocalPasswordSession,
+  isPasswordExpired,
 } from '../modules/user/user-domain';
 import { isNotEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
@@ -73,6 +75,10 @@ const createRequestAbortSignal = (req, res) => {
   return abortController.signal;
 };
 
+// Execution-context name of the GraphQL API (see httpGraphqlContext), the only entry point
+// a session may use while it must change its expired password
+export const GRAPHQL_CONTEXT_NAME = 'api';
+
 export const createAuthenticatedContext = async (req, res, contextName) => {
   const executeContext = executionContext(contextName);
   const requestAbortSignal = createRequestAbortSignal(req, res);
@@ -88,7 +94,16 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   // region handle user
   try {
     const user = await authenticateUserFromRequest(executeContext, req);
-    if (user) {
+    const userWithSession = isNotEmptyField(req.session?.user);
+    // A session opened with an expired password can only be used to change it
+    const passwordChangeRequired = !!user && userWithSession && isPasswordExpired(user, { localPassword: isLocalPasswordSession(req.session) });
+    executeContext.password_change_required = passwordChangeRequired;
+    // Outside the GraphQL API, a session that must change its expired password is handled as not authenticated
+    const refusedUntilPasswordChange = passwordChangeRequired && contextName !== GRAPHQL_CONTEXT_NAME;
+    if (refusedUntilPasswordChange) {
+      logApp.debug('Session refused until the expired password is changed', { context: contextName, user_id: user.id });
+    }
+    if (user && !refusedUntilPasswordChange) {
       if (!Object.keys(req.headers).some((k) => k === 'opencti-draft-id')) {
         executeContext.draft_context = user.draft_context;
       }
@@ -98,7 +113,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
       // If full sync needs to be done : used only by bypass user (worker)
       executeContext.synchronizedUpsert = user.origin?.synchronized_upsert === true || (req.headers['synchronized-upsert'] === 'true' && isBypassUser(user));
       executeContext.user_otp_validated = true;
-      executeContext.user_with_session = isNotEmptyField(req.session?.user);
+      executeContext.user_with_session = userWithSession;
       if (executeContext.user_with_session) {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }

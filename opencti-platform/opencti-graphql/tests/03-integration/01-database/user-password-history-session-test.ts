@@ -62,3 +62,33 @@ describe('Forced password change with password history', () => {
     expect((await findUserSessions(userId)).map((s: { id: string }) => s.id)).toEqual([current.id]);
   });
 });
+
+const EXTERNAL_EMAIL = 'forced.change.external@opencti.invalid';
+const EXTERNAL_PASSWORD = 'Forced-Change-Ext-1!';
+
+describe('Forced password change for an external account on an SSO session', () => {
+  let userId: string;
+
+  beforeAll(async () => {
+    const user = await addUser(testContext, ADMIN_USER, { name: 'Forced change external', user_email: EXTERNAL_EMAIL, password: EXTERNAL_PASSWORD } as any);
+    userId = user.id;
+  });
+
+  afterAll(async () => {
+    await killUserSessions(userId);
+    await userDelete(testContext, ADMIN_USER, userId);
+  });
+
+  it('lets an external account renew an expired password without providing the current one', async () => {
+    // SSO session: context.password_change_required is never set (stays undefined/false),
+    // yet the account validity date has passed. The current-password check must still be
+    // skipped, based on the date alone.
+    const context = { ...testContext, req: { session: { id: 'sso-session' } } } as unknown as AuthContext;
+    const expired = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const expiredExternalUser = { ...(await findById(testContext, SYSTEM_USER, userId)), external: true, password_valid_until: expired };
+
+    // No 5th argument: the current password is intentionally not provided
+    const updated = await meEditField(context, expiredExternalUser, userId, [{ key: 'password', value: ['Forced-Change-Ext-2!'] }]);
+    expect(updated.id).toEqual(userId);
+  });
+});

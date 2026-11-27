@@ -1610,14 +1610,18 @@ export const meEditField = async (context: AuthContext, user: AuthUser & Partial
     if (!ME_USER_MODIFIABLE_ATTRIBUTES.includes(key)) {
       throw ForbiddenAccess();
     }
+    // A session that must change its expired password can only change the password
+    if (context.password_change_required && key !== 'password') {
+      throw ForbiddenAccess();
+    }
     // The bootstrap wizard is for administrators only
     if (key === 'bootstrap_wizard_skipped' && !isUserHasCapability(user, BYPASS)) {
       throw ForbiddenAccess();
     }
   });
   const hasPasswordInput = inputs.some((i) => i.key === 'password');
-  // Check password confirmation in case of password change
-  // Skip current password check if the password is expired (force change scenario)
+  // On a password change, confirm with the current password unless the validity date has passed.
+  // The date alone is used, so external/SSO accounts (which never set password_change_required) can renew too.
   const passwordExpired = isPasswordExpired(user);
   if (hasPasswordInput && !passwordExpired) {
     if (typeof password !== 'string' || password.length === 0) {
@@ -2248,7 +2252,7 @@ export const sessionLogin = async (context: AuthContext, input: UserLoginInput) 
   if (loggedUser) {
     // After session creation, check if the password is expired.
     // The session is kept so the user can call meEdit to set a new password.
-    if (isPasswordExpired(loggedUser)) {
+    if (isPasswordExpired(loggedUser, { localPassword: isLocalPasswordSession(context.req?.session) })) {
       throw PasswordChangeRequired();
     }
     // [SECURITY] api_token plaintext is no longer returned from the login mutation.
@@ -2528,7 +2532,7 @@ export const authenticateUserByBasicAuth = async (context: AuthContext, req: Ori
       throw ForbiddenAccess('You are not allowed to use API basic auth');
     }
     await clearLocalAuthLockout(basicAuth.username);
-    const authenticatedUser = await internalAuthenticateUser(context, req, user);
+    const authenticatedUser = await internalAuthenticateUser(context, req, user, { localPassword: true });
     // After a successful login only, from the account just loaded by login() rather than from the cache
     warnApiBasicAuthTwoFactor(loggedUser, settings);
     return authenticatedUser;
@@ -2614,7 +2618,7 @@ export const authenticateUserByUserId = async (context: AuthContext, req: Origin
   throw FunctionalError('Cannot identify user with id');
 };
 
-const internalAuthenticateUser = async (context: AuthContext, req: OriginRequest, user: AuthUser) => {
+const internalAuthenticateUser = async (context: AuthContext, req: OriginRequest, user: AuthUser, { localPassword = false }: { localPassword?: boolean } = {}) => {
   let authenticatedUser = user;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const synchronizedUpsert = req.headers['synchronized-upsert'] === 'true';
@@ -2629,7 +2633,8 @@ const internalAuthenticateUser = async (context: AuthContext, req: OriginRequest
       throw FunctionalError(`Cant impersonate applicant ${applicantId}`);
     }
   }
-  validateUser(authenticatedUser, settings);
+  // An impersonated applicant never authenticated with its own password
+  validateUser(authenticatedUser, settings, { localPassword: localPassword && authenticatedUser === user });
   return userWithOrigin(
     req,
     authenticatedUser,
@@ -2638,13 +2643,43 @@ const internalAuthenticateUser = async (context: AuthContext, req: OriginRequest
 };
 
 /**
+ * Returns true when a session was opened with the local password of the user.
+ * A session without provider is handled as a local one.
+ */
+export const isLocalPasswordSession = (session: { session_provider?: string } | undefined | null) => {
+  return !session?.session_provider || session.session_provider === LOCAL_STRATEGY_IDENTIFIER;
+};
+
+/**
+ * Password validity to apply for a session user: the one carried by the login until the user is in the
+ * cache, then its current one, including a value cleared by a password change (an absent cache field
+ * would otherwise keep the one of the login).
+ */
+export const sessionPasswordValidUntil = (
+  sessionUser: { password_valid_until?: Date | null },
+  logged: { password_valid_until?: Date | null } | undefined,
+) => {
+  return logged ? (logged.password_valid_until ?? null) : sessionUser.password_valid_until;
+};
+
+/**
  * Returns true when the user must change the password before using the platform.
+ * An external user (SSO, LDAP...) only has to change it when it authenticated with its local password.
+ * The password of the configuration admin is set by the platform configuration: it never expires.
  *
  * @param {AuthUser} user
+ * @param {boolean} [opts.localPassword] - When false, the user authenticated without its local password
+ * (other provider, API token). Defaults to true.
  * @returns {boolean}
  */
-export const isPasswordExpired = (user: Pick<AuthUser, 'password_valid_until'>) => {
-  if (user.password_valid_until == null) {
+export const isPasswordExpired = (
+  user: Pick<AuthUser, 'password_valid_until' | 'external'> & { id?: string },
+  { localPassword = true }: { localPassword?: boolean } = {},
+) => {
+  if (user.id === OPENCTI_ADMIN_UUID || user.password_valid_until == null) {
+    return false;
+  }
+  if (user.external === true && !localPassword) {
     return false;
   }
   // Use an inclusive comparison: if validity is set to "now", login must be blocked immediately.
@@ -2661,7 +2696,11 @@ export const isPasswordExpired = (user: Pick<AuthUser, 'password_valid_until'>) 
  *   Used at session creation so the user can authenticate and be redirected to the password screen.
  * @throws {AuthenticationFailure} if the user has an invalid account status.
  */
-const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForcePasswordCheck = false }: { skipForcePasswordCheck?: boolean } = {}) => {
+const validateUser = (
+  user: AuthUser,
+  settings: BasicStoreSettings,
+  { skipForcePasswordCheck = false, localPassword = true }: { skipForcePasswordCheck?: boolean; localPassword?: boolean } = {},
+) => {
   // Check organization consistency
   if (!isBypassUser(user) && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -2672,7 +2711,7 @@ const validateUser = (user: AuthUser, settings: BasicStoreSettings, { skipForceP
   }
   // Require users with expired password validity to update their password before using the platform.
   // Skipped at session creation so the user can authenticate and be redirected to the change-password screen.
-  if (!skipForcePasswordCheck && isPasswordExpired(user)) {
+  if (!skipForcePasswordCheck && isPasswordExpired(user, { localPassword })) {
     throw PasswordChangeRequired();
   }
 };
@@ -2689,7 +2728,8 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
     logged = platformUsers.get(user.internal_id);
   }
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  // Password expiration is enforced after login by the frontend guard on /change-password.
+  // An expired password still opens a session, so that the user can change it: the session is then limited
+  // to the password change (see createAuthenticatedContext and checkOTPValidationStatus).
   validateUser(logged!, settings, { skipForcePasswordCheck: true });
   // Any accepted session login (local, LDAP, SSO, certificate or headers) resets the local lockout.
   // With MFA, only a valid MFA code resets it (otpUserLogin)
@@ -2726,7 +2766,7 @@ export const sessionAuthenticateUser = async (context: AuthContext, req: Express
 
 export const JWT_TOKEN_PREFIX = 'ey';
 type SessionEndRequest = { sessionID?: string; session?: { user?: unknown; regenerate?: (callback: (err?: unknown) => void) => void } };
-type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string } } };
+type SessionAuthRequest = OriginRequest & { session?: { user?: { id: string; session_creation?: string; password_valid_until?: Date | null } } };
 
 // The ended session must not stay on the request: the end of the request would save it again.
 // The request gets a new empty session instead, as the rest of the request may still use one: a login
@@ -2821,7 +2861,7 @@ export const authenticateUserFromRequest = async (context: AuthContext, req: Ses
   if (sessionUser) {
     const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     const logged = platformUsers.get(sessionUser.id);
-    const authUser = userWithOrigin(req, { ...sessionUser, ...logged });
+    const authUser = userWithOrigin(req, { ...sessionUser, ...logged, password_valid_until: sessionPasswordValidUntil(sessionUser, logged) });
     // The maximum lifetime is counted from the login: the activity of the user never extends it
     if (isSessionOverMaxLifetime(sessionUser)) {
       // The user of the session may no longer be in the cache: the logout is recorded with its session identity

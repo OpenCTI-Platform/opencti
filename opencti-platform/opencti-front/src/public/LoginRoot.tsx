@@ -86,14 +86,14 @@ const LoginRoot = ({ type }: { type: string }) => {
       <ConnectedThemeProvider settings={data.publicSettings}>
         <CssBaseline />
         <ConnectedIntlProvider settings={data.publicSettings}>
-          <LoginContextProvider>
+          <LoginContextProvider initialValues={{ forcePasswordChange: type === 'FORCE_PASSWORD_CHANGE' }}>
             {type === '2FA_VALIDATION' && (
               <OtpValidationPage settings={data.publicSettings} />
             )}
             {type === '2FA_ACTIVATION' && (
               <OtpActivationPage settings={data.publicSettings} />
             )}
-            {type === 'LOGIN' && (
+            {(type === 'LOGIN' || type === 'FORCE_PASSWORD_CHANGE') && (
               <LoginPage settings={data.publicSettings} />
             )}
           </LoginContextProvider>

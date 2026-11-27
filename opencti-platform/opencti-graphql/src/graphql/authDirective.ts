@@ -1,7 +1,7 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import type { GraphQLFieldConfig, GraphQLSchema } from 'graphql';
-import { defaultFieldResolver } from 'graphql';
-import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
+import { defaultFieldResolver, getNamedType, isLeafType } from 'graphql';
+import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, PasswordChangeRequired, UnsupportedError } from '../config/errors';
 import { Capabilities } from '../generated/graphql';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -46,6 +46,8 @@ const TYPE_MUTATION = 'Mutation';
 const PUBLIC_PROTECT_DIRECTIVE = 'public';
 const OTP_PROTECT_DIRECTIVE = 'allowUnprotectedOTP';
 const LTS_PROTECT_DIRECTIVE = 'allowUnlicensedLTS';
+const EXPIRED_PASSWORD_DIRECTIVE = 'allowExpiredPassword';
+const ME_USER_TYPE = 'MeUser';
 
 /**
  * Return type of authDirectiveBuilder function
@@ -89,6 +91,27 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
           if (!publicDirective) {
             throw UnsupportedError('Unsecure schema: missing auth or public directive', { field: _fieldName });
           }
+          // A public field answers a session that must change its expired password as it answers an anonymous user:
+          // some of them return more to an authenticated user
+          const { resolve: publicResolve = defaultFieldResolver } = fieldConfig;
+          fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
+            if (context?.password_change_required) {
+              return publicResolve(source, args, { ...context, user: undefined }, info);
+            }
+            return publicResolve(source, args, context, info);
+          };
+          return fieldConfig;
+        }
+
+        // The user returned by the change of an expired password only exposes its own attributes
+        if (typeName === ME_USER_TYPE && fieldConfig.resolve && !isLeafType(getNamedType(fieldConfig.type))) {
+          const { resolve: meResolve } = fieldConfig;
+          fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
+            if (context?.password_change_required) {
+              throw PasswordChangeRequired();
+            }
+            return meResolve(source, args, context, info);
+          };
         }
 
         if (authDirective) {
@@ -100,9 +123,10 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
             fieldConfig.resolve = (source: any, args: any, context: AuthContext, info: any) => {
               // Get user from the session
               const { user, blocked_for_lts_validation } = context;
-              // Check user OTP status
+              // Check the 2FA step, then the change of an expired password
               const allowUnprotectedOTP = !!getDirective(schema, fieldConfig, OTP_PROTECT_DIRECTIVE)?.[0];
-              const otpStatus = checkOTPValidationStatus(context, allowUnprotectedOTP);
+              const allowExpiredPassword = !!getDirective(schema, fieldConfig, EXPIRED_PASSWORD_DIRECTIVE)?.[0];
+              const otpStatus = checkOTPValidationStatus(context, { allowUnprotectedOTP, allowExpiredPassword });
               switch (otpStatus) {
                 case OTPValidationStatus.AUTHENTICATION_REQUIRED:
                   throw AuthRequired();
@@ -110,6 +134,8 @@ export const authDirectiveBuilder = (directiveName: string): AuthDirectiveBuilde
                   throw OtpRequired();
                 case OTPValidationStatus.ACTIVATION_REQUIRED:
                   throw OtpRequiredActivation();
+                case OTPValidationStatus.PASSWORD_CHANGE_REQUIRED:
+                  throw PasswordChangeRequired();
                 default:
                   break;
               }
