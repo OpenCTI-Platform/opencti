@@ -2,6 +2,8 @@ import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import conf, { logApp, PLATFORM_VERSION } from '../../../config/conf';
 import type { Success } from '../../../generated/graphql';
 import { type NewsFeedItemMetadata, NewsFeedItemType } from './news-feed/news-feed-types';
+import { getXtmHubKey, type XtmHubPublicJwk } from './xtm-hub-key';
+import { HUB_OPENCTI_IDENTIFIER } from './xtm-hub-identifier';
 
 type RegistrationStatus = 'active' | 'inactive' | 'not_found';
 export type HubPlatformContract = 'CE' | 'EE';
@@ -27,6 +29,72 @@ interface HubRefreshAnswer {
   errors?: HubGraphQLError[];
 }
 
+// How this platform authenticates a call to XTM Hub: with its key once XTM Hub has enrolled it, with the
+// registration token before. Never both: an enrolled platform does not fall back to the token.
+export type XtmHubCredentials = { kind: 'key' } | { kind: 'token'; token: string };
+
+export const XTM_HUB_ASSERTION_HEADER = 'XTM-Hub-Platform-Assertion';
+const XTM_HUB_TOKEN_HEADER = 'XTM-Hub-Platform-Token';
+const XTM_HUB_PLATFORM_ID_HEADER = 'XTM-Hub-Platform-Id';
+
+const tokenHeaders = (platformId: string, token: string): Record<string, string> => ({
+  [XTM_HUB_TOKEN_HEADER]: token,
+  [XTM_HUB_PLATFORM_ID_HEADER]: platformId,
+});
+
+// A new assertion for every call: XTM Hub accepts each one once (jti) and for 60 seconds.
+// No htu: these calls open no single resource.
+const assertionHeaders = async (platformId: string): Promise<Record<string, string>> => {
+  const key = await getXtmHubKey();
+  return { [XTM_HUB_ASSERTION_HEADER]: await key.signAssertion({ platformId }) };
+};
+
+const platformHeaders = async (platformId: string, credentials: XtmHubCredentials): Promise<Record<string, string>> => (
+  credentials.kind === 'key' ? assertionHeaders(platformId) : tokenHeaders(platformId, credentials.token)
+);
+
+// The refusals of a platform credential XTM Hub answers, by error code: the one place they are read.
+// assertion_invalid: a signature, type, audience, expiry or replayed jti XTM Hub refused.
+// key_mismatch: the key that signed is not the one XTM Hub enrolled (the encryption key or the key version changed).
+// token_refused: XTM Hub knows no registration under this token.
+// token_path_closed: XTM Hub no longer accepts platform tokens.
+export type XtmHubPlatformRefusal = 'assertion_invalid' | 'key_mismatch' | 'token_refused' | 'token_path_closed';
+const PLATFORM_REFUSALS: Record<string, XtmHubPlatformRefusal> = {
+  PLATFORM_ASSERTION_INVALID: 'assertion_invalid',
+  PLATFORM_KEY_MISMATCH: 'key_mismatch',
+  PLATFORM_TOKEN_REFUSED: 'token_refused',
+  PLATFORM_TOKEN_PATH_CLOSED: 'token_path_closed',
+};
+
+// What XTM Hub answers an enrollment, with the same names as the other XTM products.
+// enrolled: the key is stored (again, for a retry): the token can go.
+// conflict: another key is enrolled for this registration.
+// not_found: no registration matches the token.
+// key_mismatch: the key that signed the assertion is not the public key sent.
+// not_available: XTM Hub does not enroll keys yet.
+// unknown_operation: XTM Hub is older than the enrollment.
+// unreachable: a network failure, a timeout or a 5xx.
+// refused: any other refusal or answer.
+// not_available, unknown_operation and unreachable keep the token for a later try.
+export type XtmHubEnrollmentOutcome = 'enrolled' | 'conflict' | 'not_found' | 'key_mismatch' | 'not_available'
+  | 'unknown_operation' | 'unreachable' | 'refused';
+const ENROLLMENT_STATUSES: XtmHubEnrollmentOutcome[] = ['enrolled', 'conflict', 'not_found', 'key_mismatch', 'not_available'];
+
+// The one place the enrollment request is written: XTM Hub's enrollPlatformKey answers this document.
+// The call carries the token headers, which name the registration, and an assertion signed with the key
+// it enrolls, which proves this platform holds it.
+const ENROLL_PLATFORM_KEY_MUTATION = `
+  mutation EnrollPlatformKey($input: EnrollPlatformKeyInput!) {
+    enrollPlatformKey(input: $input) {
+      status
+    }
+  }
+`;
+
+// The code of a document XTM Hub's schema does not validate: an older XTM Hub without enrollPlatformKey.
+const GRAPHQL_VALIDATION_FAILED = 'GRAPHQL_VALIDATION_FAILED';
+const ENROLL_PLATFORM_KEY_UNKNOWN = ['Cannot query field "enrollPlatformKey" on type', 'Unknown type "EnrollPlatformKeyInput"'];
+
 const INACTIVE_REFRESH_RESULT: RefreshRegistrationStatusResult = { status: 'inactive', commercialModel: null, organizationName: null };
 
 // The input coercion error a hub older than the edition refresh (graphql-js 16) returns for the unknown field.
@@ -42,6 +110,36 @@ const isFieldRejected = (errors: HubGraphQLError[] | undefined, fieldError: stri
 const hubErrorCodes = (errors?: HubGraphQLError[]) => (errors ?? [])
   .map((error) => error?.extensions?.code)
   .filter((code): code is string => typeof code === 'string');
+
+const toPlatformRefusal = (errors?: HubGraphQLError[]): XtmHubPlatformRefusal | null => {
+  const code = hubErrorCodes(errors).find((errorCode) => errorCode in PLATFORM_REFUSALS);
+  return code ? PLATFORM_REFUSALS[code] : null;
+};
+
+const toEnrollmentOutcome = (status: unknown): XtmHubEnrollmentOutcome | null => {
+  if (typeof status !== 'string') {
+    return null;
+  }
+  const outcome = status.toLowerCase();
+  return ENROLLMENT_STATUSES.find((known) => known === outcome) ?? null;
+};
+
+const toEnrollmentRefusal = (errors: HubGraphQLError[]): XtmHubEnrollmentOutcome => {
+  const isUnknownOperation = hubErrorCodes(errors).includes(GRAPHQL_VALIDATION_FAILED)
+    || ENROLL_PLATFORM_KEY_UNKNOWN.some((unknownError) => isFieldRejected(errors, unknownError));
+  if (isUnknownOperation) {
+    return 'unknown_operation';
+  }
+  const refusal = toPlatformRefusal(errors);
+  if (refusal === 'key_mismatch') {
+    return 'key_mismatch';
+  }
+  // No registration the token still opens: the same answer as a token XTM Hub does not know.
+  if (refusal === 'token_refused' || refusal === 'token_path_closed') {
+    return 'not_found';
+  }
+  return 'refused';
+};
 
 let isPlatformContractFallbackLogged = false;
 let isCommercialModelFallbackLogged = false;
@@ -86,8 +184,6 @@ interface ConsumeProvisionedNewsFeedItemsResponse {
 }
 
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
-// The identifier XTM Hub knows this product by.
-export const HUB_OPENCTI_IDENTIFIER = 'opencti';
 
 export const xtmHubClient = {
   isBackendReachable: async (): Promise<{ isReachable: boolean }> => {
@@ -104,9 +200,9 @@ export const xtmHubClient = {
       return { isReachable: false };
     }
   },
-  refreshRegistrationStatus: async ({ platformId, token, platformVersion, platformContract }: {
+  refreshRegistrationStatus: async ({ platformId, credentials, platformVersion, platformContract }: {
     platformId: string;
-    token: string;
+    credentials: XtmHubCredentials;
     platformVersion: string;
     platformContract: HubPlatformContract;
   }): Promise<RefreshRegistrationStatusResult> => {
@@ -125,9 +221,11 @@ export const xtmHubClient = {
     `;
     };
 
+    // Before enrollment the token travels in the input, as it always has. Once enrolled, the call is signed
+    // and the input carries no token.
     const input = {
       platformId,
-      token,
+      ...(credentials.kind === 'token' ? { token: credentials.token } : {}),
       platformVersion,
       platformIdentifier: HUB_OPENCTI_IDENTIFIER,
     };
@@ -138,8 +236,10 @@ export const xtmHubClient = {
     });
     const refresh = async (selection: RefreshSelection): Promise<HubRefreshAnswer> => {
       const variables = { input: selection.withPlatformContract ? { ...input, platformContract } : input };
+      // Every attempt is a call of its own: a retry without a field signs a new assertion.
+      const headers = credentials.kind === 'key' ? await assertionHeaders(platformId) : {};
       try {
-        const response = await httpClient.post('/graphql-api', { query: buildQuery(selection), variables });
+        const response = await httpClient.post('/graphql-api', { query: buildQuery(selection), variables }, { headers });
         const refreshed = response.data?.data?.refreshPlatformRegistrationConnectivityStatus;
         return {
           status: refreshed?.status,
@@ -192,7 +292,7 @@ export const xtmHubClient = {
         }
         return attempt({ ...selection, withPlatformContract: false });
       }
-      logApp.warn('XTM Hub sent an error', { codes: hubErrorCodes(errors) });
+      logApp.warn('XTM Hub sent an error', { codes: hubErrorCodes(errors), refusal: toPlatformRefusal(errors) });
       return INACTIVE_REFRESH_RESULT;
     };
 
@@ -203,7 +303,7 @@ export const xtmHubClient = {
       return INACTIVE_REFRESH_RESULT;
     }
   },
-  autoRegister: async (platform: { platformId: string; platformToken: string; platformUrl: string; platformTitle: string },
+  autoRegister: async (platform: { platformId: string; credentials: XtmHubCredentials; platformUrl: string; platformTitle: string },
     enterpriseLicense: string,
     existing_users_count: number): Promise<Success> => {
     const query = `
@@ -230,18 +330,15 @@ export const xtmHubClient = {
       baseURL: HUB_BACKEND_URL,
       trusted: true,
       responseType: 'json',
-      headers: {
-        'Content-Type': 'application/json',
-        'XTM-Hub-Platform-Token': platform.platformToken,
-        'XTM-Hub-Platform-Id': platform.platformId,
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
     try {
-      const response = await httpClient.post('/graphql-api', { query, variables });
+      const headers = await platformHeaders(platform.platformId, platform.credentials);
+      const response = await httpClient.post('/graphql-api', { query, variables }, { headers });
       const { data, errors } = response.data;
       if ((errors?.length ?? 0) > 0 || !data?.autoRegisterPlatform?.success) {
-        logApp.warn('XTM sent an error', { reason: errors[0] });
+        logApp.warn('XTM sent an error', { reason: errors?.[0] });
         return { success: false };
       }
       return data?.autoRegisterPlatform;
@@ -250,7 +347,7 @@ export const xtmHubClient = {
       return { success: false };
     }
   },
-  consumeProvisionedNewsFeedItems: async (platformId: string, platformToken: string): Promise<ConsumeProvisionedNewsFeedItemsResponse> => {
+  consumeProvisionedNewsFeedItems: async (platformId: string, credentials: XtmHubCredentials): Promise<ConsumeProvisionedNewsFeedItemsResponse> => {
     const mutation = `
       mutation ConsumeProvisionedNewsFeedItems {
         consumeProvisionedNewsFeedItems {
@@ -275,17 +372,14 @@ export const xtmHubClient = {
       baseURL: HUB_BACKEND_URL,
       trusted: true,
       responseType: 'json',
-      headers: {
-        'Content-Type': 'application/json',
-        'XTM-Hub-Platform-Id': platformId,
-        'XTM-Hub-Platform-Token': platformToken,
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
     const emptyResponse: ConsumeProvisionedNewsFeedItemsResponse = { news_feed_items: [], available_news_feed_types: [] };
 
     try {
-      const response = await httpClient.post('/graphql-api', { query: mutation });
+      const headers = await platformHeaders(platformId, credentials);
+      const response = await httpClient.post('/graphql-api', { query: mutation }, { headers });
       const { data, errors } = response.data;
       if ((errors?.length ?? 0) > 0) {
         logApp.warn('XTM Hub consumeProvisionedNewsFeedItems error', { reason: errors?.[0] });
@@ -297,7 +391,7 @@ export const xtmHubClient = {
       return emptyResponse;
     }
   },
-  contactUs: async (platform: { platformId: string; platformToken: string }, message: string): Promise<Success> => {
+  contactUs: async (platform: { platformId: string; credentials: XtmHubCredentials }, message: string): Promise<Success> => {
     const query = `
       mutation ContactUs($message: String) {
         contactUs(message: $message) {
@@ -314,15 +408,12 @@ export const xtmHubClient = {
       baseURL: HUB_BACKEND_URL,
       trusted: true,
       responseType: 'json',
-      headers: {
-        'Content-Type': 'application/json',
-        'XTM-Hub-Platform-Token': platform.platformToken,
-        'XTM-Hub-Platform-Id': platform.platformId,
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
 
     try {
-      const response = await httpClient.post('/graphql-api', { query, variables });
+      const headers = await platformHeaders(platform.platformId, platform.credentials);
+      const response = await httpClient.post('/graphql-api', { query, variables }, { headers });
       const { data, errors } = response.data;
       if ((errors?.length ?? 0) > 0 || !data?.contactUs?.success) {
         logApp.warn('XTM Hub contactUs failed', { reason: errors?.[0] });
@@ -333,5 +424,47 @@ export const xtmHubClient = {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return { success: false };
     }
+  },
+  // Asks XTM Hub to enroll this platform's public key for the registration the token belongs to.
+  // Only XTM Hub's answer is read: recording the enrollment and forgetting the token are the caller's.
+  enrollPlatformKey: async (
+    platform: { platformId: string; token: string },
+    publicJwk: XtmHubPublicJwk,
+    assertion: string,
+  ): Promise<XtmHubEnrollmentOutcome> => {
+    const httpClient = getHttpClient({
+      baseURL: HUB_BACKEND_URL,
+      trusted: true,
+      responseType: 'json',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const headers = { ...tokenHeaders(platform.platformId, platform.token), [XTM_HUB_ASSERTION_HEADER]: assertion };
+    const variables = { input: { publicKey: publicJwk } };
+
+    let answer: { data?: { enrollPlatformKey?: { status?: unknown } } | null; errors?: HubGraphQLError[] } | undefined;
+    try {
+      const response = await httpClient.post('/graphql-api', { query: ENROLL_PLATFORM_KEY_MUTATION, variables }, { headers });
+      answer = response.data;
+    } catch (error) {
+      const responseError = getResponseError(error);
+      if (!responseError || responseError.status >= 500) {
+        logApp.warn('[XTMH] XTM Hub is unreachable, the platform key is not enrolled', { status: responseError?.status });
+        return 'unreachable';
+      }
+      answer = responseError.data;
+    }
+
+    const errors = answer?.errors ?? [];
+    if (errors.length > 0) {
+      const outcome = toEnrollmentRefusal(errors);
+      logApp.warn('[XTMH] XTM Hub did not enroll the platform key', { outcome, codes: hubErrorCodes(errors) });
+      return outcome;
+    }
+    const outcome = toEnrollmentOutcome(answer?.data?.enrollPlatformKey?.status);
+    if (!outcome) {
+      logApp.warn('[XTMH] XTM Hub answered the platform key enrollment with an unknown status');
+      return 'refused';
+    }
+    return outcome;
   },
 };

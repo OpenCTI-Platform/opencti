@@ -7,7 +7,7 @@ import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../../../utils/access';
 import type { BasicStoreSettings } from '../../../types/settings';
-import { HUB_OPENCTI_IDENTIFIER } from './xtm-hub-client';
+import { HUB_OPENCTI_IDENTIFIER } from './xtm-hub-identifier';
 
 // The instance key that signs the assertions this platform sends to XTM Hub.
 // It is derived from the platform encryption key, never generated nor stored:

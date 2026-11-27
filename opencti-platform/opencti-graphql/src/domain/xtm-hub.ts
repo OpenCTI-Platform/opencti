@@ -2,7 +2,7 @@ import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache'
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { type HubPlatformContract, xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
+import { type HubPlatformContract, type XtmHubCredentials, xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
 import { booleanConf, BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
@@ -21,16 +21,32 @@ interface AttributeUpdate {
   value: unknown[];
 }
 
+// How this platform authenticates to XTM Hub, or nothing when it is not registered.
+// Once XTM Hub has enrolled the platform key, every call is signed with it: an enrolled platform never falls back
+// to the token, even when one is still stored.
+export const getXtmHubCredentials = (
+  settings: Pick<BasicStoreSettings, 'xtm_hub_token' | 'xtm_hub_key_enrolled_at'>,
+): XtmHubCredentials | undefined => {
+  if (settings.xtm_hub_key_enrolled_at) {
+    return { kind: 'key' };
+  }
+  if (settings.xtm_hub_token) {
+    return { kind: 'token', token: settings.xtm_hub_token };
+  }
+  return undefined;
+};
+
 export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
   status: XtmHubRegistrationStatus;
 }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   await checkHubIfBackendIsReachable(context, user, settings);
-  if (!settings.xtm_hub_token) {
+  const credentials = getXtmHubCredentials(settings);
+  if (!credentials) {
     return { status: XtmHubRegistrationStatus.Unregistered };
   }
   const platformContract: HubPlatformContract = getEnterpriseEditionInfo(settings).license_validated ? 'EE' : 'CE';
-  const platformInformation = { platformId: settings.id, token: settings.xtm_hub_token, platformVersion: PLATFORM_VERSION, platformContract };
+  const platformInformation = { platformId: settings.id, credentials, platformVersion: PLATFORM_VERSION, platformContract };
   const { status, commercialModel, organizationName } = await xtmHubClient.refreshRegistrationStatus(platformInformation);
   if (status === 'not_found') {
     logApp.warn('[XTMH] Platform was not found on XTM Hub');
@@ -86,7 +102,9 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
 
   const licenseInfo = getEnterpriseEditionInfo(settings);
 
-  if (!input.platform_token) {
+  // A new registration: only the token it was given authenticates it.
+  const credentials = getXtmHubCredentials({ xtm_hub_token: input.platform_token });
+  if (!credentials) {
     return { success: false };
   }
 
@@ -96,7 +114,7 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
   const response = await xtmHubClient.autoRegister(
     {
       platformId: settings.id,
-      platformToken: input.platform_token,
+      credentials,
       platformUrl: settings.platform_url,
       platformTitle: settings.platform_title ?? '',
     },
@@ -150,6 +168,11 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     },
     {
       key: 'xtm_hub_organization_name',
+      value: [],
+    },
+    // The key XTM Hub enrolled belonged to the registration it no longer knows.
+    {
+      key: 'xtm_hub_key_enrolled_at',
       value: [],
     },
   ];
@@ -209,7 +232,8 @@ const handleLostConnectivityEmail = async (context: AuthContext, settings: Basic
 
 export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: AuthUser): Promise<void> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  if (!settings.xtm_hub_token) {
+  const credentials = getXtmHubCredentials(settings);
+  if (!credentials) {
     logApp.info('[XTMH] Cannot fetch news feed: platform is not registered');
     return;
   }
@@ -217,7 +241,7 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
   const {
     news_feed_items: newsFeedItems,
     available_news_feed_types: availableNewsFeedTypes,
-  } = await xtmHubClient.consumeProvisionedNewsFeedItems(settings.id, settings.xtm_hub_token);
+  } = await xtmHubClient.consumeProvisionedNewsFeedItems(settings.id, credentials);
 
   await updateAttribute(
     context,
@@ -273,14 +297,15 @@ export const loadAndSaveLatestNewsFeed = async (context: AuthContext, user: Auth
 export const contactUsXtmHub = async (context: AuthContext, user: AuthUser, message: string): Promise<{ success: boolean }> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
 
-  if (!settings.xtm_hub_token) {
-    logApp.warn('[XTMH] Cannot contact XTM Hub: no token found');
+  const credentials = getXtmHubCredentials(settings);
+  if (!credentials) {
+    logApp.warn('[XTMH] Cannot contact XTM Hub: platform is not registered');
     return { success: false };
   }
 
   const platformInformation = {
     platformId: settings.id,
-    platformToken: settings.xtm_hub_token,
+    credentials,
   };
 
   return xtmHubClient.contactUs(platformInformation, message);
