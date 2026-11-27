@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT,
+  CONFIG_PRESET_IMPORT_RECENT_LIMIT,
+  configPresetResultBucket,
+  type ConfigPresetImportItemResult,
   type ConfigPresetImportSession,
   getConfigPresetImportAvailableEvents,
+  isConfigPresetResultProblem,
+  summarizeConfigPresetImportResults,
+  toConfigPresetImportTypeCounts,
   transitionConfigPresetImportSession as transition,
 } from '../../../../../src/modules/configPreset/import/configPreset-import-session';
 
@@ -57,11 +64,10 @@ describe('Config preset import session transitions', () => {
     refused(finished(), 'START', { started_at: 'x', total: 1, selections } as never);
   });
 
-  it('adds the result of each processed item while applying only', () => {
+  it('accepts the result of a processed item while applying only, and leaves the session as it is: the results have a list of their own', () => {
     const result = { type: 'messages', key: 'banner', status: 'OVERWRITTEN' as const, reason: null };
-    const progress = transition(applying(), 'ITEM_PROCESSED', { result })!;
-    expect(progress.results).toEqual([result]);
-    expect(transition(progress, 'ITEM_PROCESSED', { result })!.results).toHaveLength(2);
+    const session = applying();
+    expect(transition(session, 'ITEM_PROCESSED', { result })).toBe(session);
     refused(draft(), 'ITEM_PROCESSED', { result } as never);
   });
 
@@ -129,5 +135,57 @@ describe('Config preset import session transitions', () => {
     expect(getConfigPresetImportAvailableEvents(draft())).toEqual(['UPLOAD', 'SAVE', 'START_OVER', 'START']);
     expect(getConfigPresetImportAvailableEvents(applying())).toEqual(['ITEM_PROCESSED', 'FINISH', 'ABORT']);
     expect(getConfigPresetImportAvailableEvents(finished())).toEqual(['UPLOAD', 'START_OVER', 'CLOSE']);
+  });
+});
+
+describe('What the screens show of a run', () => {
+  const result = (type: string, key: string, status: ConfigPresetImportItemResult['status'], code: string | null = null): ConfigPresetImportItemResult => ({
+    type,
+    key,
+    status,
+    reason: status === 'FAILED' || status === 'SKIPPED' ? 'a reason' : null,
+    code,
+  });
+
+  it('counts an item the platform had as it is apart from the ones that were skipped', () => {
+    expect(configPresetResultBucket(result('labels', 'a', 'CREATED'))).toBe('created');
+    expect(configPresetResultBucket(result('labels', 'a', 'OVERWRITTEN'))).toBe('overwritten');
+    expect(configPresetResultBucket(result('labels', 'a', 'FAILED'))).toBe('failed');
+    expect(configPresetResultBucket(result('labels', 'a', 'SKIPPED', 'unchanged'))).toBe('unchanged');
+    expect(configPresetResultBucket(result('labels', 'a', 'SKIPPED', 'nothing_to_import'))).toBe('skipped');
+    expect(configPresetResultBucket(result('labels', 'a', 'SKIPPED'))).toBe('skipped');
+  });
+
+  it('calls a problem what failed or was skipped for a reason, not what is up to date', () => {
+    expect(isConfigPresetResultProblem(result('labels', 'a', 'FAILED'))).toBe(true);
+    expect(isConfigPresetResultProblem(result('labels', 'a', 'SKIPPED', 'nothing_to_import'))).toBe(true);
+    expect(isConfigPresetResultProblem(result('labels', 'a', 'SKIPPED', 'unchanged'))).toBe(false);
+    expect(isConfigPresetResultProblem(result('labels', 'a', 'CREATED'))).toBe(false);
+    expect(isConfigPresetResultProblem(result('labels', 'a', 'OVERWRITTEN'))).toBe(false);
+  });
+
+  it('reads the counts by type from the counters of a run, and ignores a field it does not know', () => {
+    expect(toConfigPresetImportTypeCounts({ 'labels|created': '120', 'labels|failed': '3', 'messages|overwritten': '1', 'labels|unknown': '9', broken: '2' })).toEqual([
+      { type: 'labels', created: 120, overwritten: 0, unchanged: 0, skipped: 0, failed: 3 },
+      { type: 'messages', created: 0, overwritten: 1, unchanged: 0, skipped: 0, failed: 0 },
+    ]);
+    expect(toConfigPresetImportTypeCounts({})).toEqual([]);
+  });
+
+  it('summarizes the results of a session that kept them inside it: counts, first problems, last items', () => {
+    const results = [
+      ...Array.from({ length: 30 }, (_, i) => result('labels', `ok-${i}`, 'CREATED')),
+      ...Array.from({ length: CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT + 20 }, (_, i) => result('labels', `ko-${i}`, 'FAILED')),
+      result('messages', 'banner', 'SKIPPED', 'unchanged'),
+    ];
+    const summary = summarizeConfigPresetImportResults(results);
+    expect(summary.processed).toBe(results.length);
+    expect(summary.type_counts).toEqual([
+      { type: 'labels', created: 30, overwritten: 0, unchanged: 0, skipped: 0, failed: CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT + 20 },
+      { type: 'messages', created: 0, overwritten: 0, unchanged: 1, skipped: 0, failed: 0 },
+    ]);
+    expect(summary.problems).toHaveLength(CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT);
+    expect(summary.problems[0].key).toBe('ko-0');
+    expect(summary.recent.map(({ key }) => key)).toEqual(results.slice(-CONFIG_PRESET_IMPORT_RECENT_LIMIT).map(({ key }) => key));
   });
 });

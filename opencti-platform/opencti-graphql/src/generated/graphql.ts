@@ -4678,6 +4678,13 @@ export type ConfigPresetImportCredential = {
   type: Scalars['String']['output'];
 };
 
+export type ConfigPresetImportExpected = {
+  __typename?: 'ConfigPresetImportExpected';
+  code?: Maybe<Scalars['String']['output']>;
+  reason?: Maybe<Scalars['String']['output']>;
+  status: ConfigPresetImportResultStatus;
+};
+
 export type ConfigPresetImportField = {
   __typename?: 'ConfigPresetImportField';
   key: Scalars['String']['output'];
@@ -4690,6 +4697,7 @@ export type ConfigPresetImportItem = {
   credentials: Array<ConfigPresetImportCredential>;
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
+  expected?: Maybe<ConfigPresetImportExpected>;
   fields: Array<ConfigPresetImportField>;
   isDefault: Scalars['Boolean']['output'];
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -4697,6 +4705,18 @@ export type ConfigPresetImportItem = {
   label: Scalars['String']['output'];
   serviceAccountRequired: Scalars['Boolean']['output'];
   translatable: Scalars['Boolean']['output'];
+};
+
+export type ConfigPresetImportItemConnection = {
+  __typename?: 'ConfigPresetImportItemConnection';
+  edges: Array<ConfigPresetImportItemEdge>;
+  pageInfo: PageInfo;
+};
+
+export type ConfigPresetImportItemEdge = {
+  __typename?: 'ConfigPresetImportItemEdge';
+  cursor: Scalars['String']['output'];
+  node: ConfigPresetImportItem;
 };
 
 export enum ConfigPresetImportOutcome {
@@ -4763,6 +4783,9 @@ export type ConfigPresetImportSession = {
   counts?: Maybe<ConfigPresetImportCounts>;
   file_id: Scalars['ID']['output'];
   outcome?: Maybe<ConfigPresetImportOutcome>;
+  problems: Array<ConfigPresetImportResult>;
+  processed: Scalars['Int']['output'];
+  recent: Array<ConfigPresetImportResult>;
   report_id?: Maybe<Scalars['String']['output']>;
   results: Array<ConfigPresetImportResult>;
   revision: Scalars['Int']['output'];
@@ -4770,6 +4793,7 @@ export type ConfigPresetImportSession = {
   started_at?: Maybe<Scalars['DateTime']['output']>;
   status: ConfigPresetImportSessionStatus;
   total: Scalars['Int']['output'];
+  type_counts: Array<ConfigPresetImportTypeCounts>;
 };
 
 export enum ConfigPresetImportSessionEvent {
@@ -4801,13 +4825,28 @@ export enum ConfigPresetImportSessionStatus {
 
 export type ConfigPresetImportType = {
   __typename?: 'ConfigPresetImportType';
+  conflictsCount: Scalars['Int']['output'];
   description: Scalars['String']['output'];
   group: ConfigPresetExportableGroup;
   items: Array<ConfigPresetImportItem>;
+  itemsPageInfo: PageInfo;
   key: Scalars['String']['output'];
   label: Scalars['String']['output'];
   lockedByEnterpriseEdition: Scalars['Boolean']['output'];
   modes: Array<ConfigImportMode>;
+};
+
+export type ConfigPresetImportTypeCounts = {
+  __typename?: 'ConfigPresetImportTypeCounts';
+  created: Scalars['Int']['output'];
+  failed: Scalars['Int']['output'];
+  group: ConfigPresetExportableGroup;
+  overwritten: Scalars['Int']['output'];
+  skipped: Scalars['Int']['output'];
+  type: Scalars['String']['output'];
+  type_index: Scalars['Int']['output'];
+  type_label: Scalars['String']['output'];
+  unchanged: Scalars['Int']['output'];
 };
 
 export type ConfigPresetItemCredentialsInput = {
@@ -25658,7 +25697,9 @@ export type Query = {
   city?: Maybe<City>;
   configPresetExportableItems: ConfigPresetExportableItemConnection;
   configPresetExportableTypes: Array<ConfigPresetExportableType>;
+  configPresetImportItems: ConfigPresetImportItemConnection;
   configPresetImportPreview: ConfigPresetImportPreview;
+  configPresetImportPreviewProgress?: Maybe<Scalars['Int']['output']>;
   configPresetImportRunning: ConfigPresetImportRunning;
   configPresetImportSession?: Maybe<ConfigPresetImportSession>;
   connector?: Maybe<Connector>;
@@ -26431,7 +26472,24 @@ export type QueryConfigPresetExportableItemsArgs = {
 };
 
 
+export type QueryConfigPresetImportItemsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  conflictsOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  excludedIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+  file_id: Scalars['ID']['input'];
+  first?: InputMaybe<Scalars['Int']['input']>;
+  ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  type: Scalars['ID']['input'];
+};
+
+
 export type QueryConfigPresetImportPreviewArgs = {
+  file_id: Scalars['ID']['input'];
+};
+
+
+export type QueryConfigPresetImportPreviewProgressArgs = {
   file_id: Scalars['ID']['input'];
 };
 
@@ -42088,8 +42146,11 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetExportableType: ResolverTypeWrapper<ConfigPresetExportableType>;
   ConfigPresetImportCounts: ResolverTypeWrapper<ConfigPresetImportCounts>;
   ConfigPresetImportCredential: ResolverTypeWrapper<ConfigPresetImportCredential>;
+  ConfigPresetImportExpected: ResolverTypeWrapper<ConfigPresetImportExpected>;
   ConfigPresetImportField: ResolverTypeWrapper<ConfigPresetImportField>;
   ConfigPresetImportItem: ResolverTypeWrapper<ConfigPresetImportItem>;
+  ConfigPresetImportItemConnection: ResolverTypeWrapper<ConfigPresetImportItemConnection>;
+  ConfigPresetImportItemEdge: ResolverTypeWrapper<ConfigPresetImportItemEdge>;
   ConfigPresetImportOutcome: ConfigPresetImportOutcome;
   ConfigPresetImportOutput: ResolverTypeWrapper<Omit<ConfigPresetImportOutput, 'entity_settings' | 'results' | 'settings'> & { entity_settings?: Maybe<Array<ResolversTypes['EntitySetting']>>, results: Array<ResolversTypes['ConfigPresetImportResult']>, settings?: Maybe<ResolversTypes['Settings']> }>;
   ConfigPresetImportPreview: ResolverTypeWrapper<ConfigPresetImportPreview>;
@@ -42102,6 +42163,7 @@ export type ResolversTypes = ResolversObject<{
   ConfigPresetImportSessionSelection: ResolverTypeWrapper<ConfigPresetImportSessionSelection>;
   ConfigPresetImportSessionStatus: ConfigPresetImportSessionStatus;
   ConfigPresetImportType: ResolverTypeWrapper<ConfigPresetImportType>;
+  ConfigPresetImportTypeCounts: ResolverTypeWrapper<ConfigPresetImportTypeCounts>;
   ConfigPresetItemCredentialsInput: ConfigPresetItemCredentialsInput;
   ConfigPresetItemMode: ResolverTypeWrapper<ConfigPresetItemMode>;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
@@ -43345,8 +43407,11 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetExportableType: ConfigPresetExportableType;
   ConfigPresetImportCounts: ConfigPresetImportCounts;
   ConfigPresetImportCredential: ConfigPresetImportCredential;
+  ConfigPresetImportExpected: ConfigPresetImportExpected;
   ConfigPresetImportField: ConfigPresetImportField;
   ConfigPresetImportItem: ConfigPresetImportItem;
+  ConfigPresetImportItemConnection: ConfigPresetImportItemConnection;
+  ConfigPresetImportItemEdge: ConfigPresetImportItemEdge;
   ConfigPresetImportOutput: Omit<ConfigPresetImportOutput, 'entity_settings' | 'results' | 'settings'> & { entity_settings?: Maybe<Array<ResolversParentTypes['EntitySetting']>>, results: Array<ResolversParentTypes['ConfigPresetImportResult']>, settings?: Maybe<ResolversParentTypes['Settings']> };
   ConfigPresetImportPreview: ConfigPresetImportPreview;
   ConfigPresetImportResult: ConfigPresetImportItemResult;
@@ -43355,6 +43420,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfigPresetImportSession: ConfigPresetImportGraphqlSession;
   ConfigPresetImportSessionSelection: ConfigPresetImportSessionSelection;
   ConfigPresetImportType: ConfigPresetImportType;
+  ConfigPresetImportTypeCounts: ConfigPresetImportTypeCounts;
   ConfigPresetItemCredentialsInput: ConfigPresetItemCredentialsInput;
   ConfigPresetItemMode: ConfigPresetItemMode;
   ConfigPresetItemModeInput: ConfigPresetItemModeInput;
@@ -45831,6 +45897,12 @@ export type ConfigPresetImportCredentialResolvers<ContextType = any, ParentType 
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type ConfigPresetImportExpectedResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportExpected'] = ResolversParentTypes['ConfigPresetImportExpected']> = ResolversObject<{
+  code?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['ConfigPresetImportResultStatus'], ParentType, ContextType>;
+}>;
+
 export type ConfigPresetImportFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportField'] = ResolversParentTypes['ConfigPresetImportField']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45841,6 +45913,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   credentials?: Resolver<Array<ResolversTypes['ConfigPresetImportCredential']>, ParentType, ContextType>;
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  expected?: Resolver<Maybe<ResolversTypes['ConfigPresetImportExpected']>, ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -45848,6 +45921,16 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   serviceAccountRequired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   translatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportItemConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportItemConnection'] = ResolversParentTypes['ConfigPresetImportItemConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['ConfigPresetImportItemEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportItemEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportItemEdge'] = ResolversParentTypes['ConfigPresetImportItemEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['ConfigPresetImportItem'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportOutputResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportOutput'] = ResolversParentTypes['ConfigPresetImportOutput']> = ResolversObject<{
@@ -45896,6 +45979,9 @@ export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType ext
   counts?: Resolver<Maybe<ResolversTypes['ConfigPresetImportCounts']>, ParentType, ContextType>;
   file_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   outcome?: Resolver<Maybe<ResolversTypes['ConfigPresetImportOutcome']>, ParentType, ContextType>;
+  problems?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
+  processed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recent?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
   report_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   results?: Resolver<Array<ResolversTypes['ConfigPresetImportResult']>, ParentType, ContextType>;
   revision?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -45903,6 +45989,7 @@ export type ConfigPresetImportSessionResolvers<ContextType = any, ParentType ext
   started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   status?: Resolver<ResolversTypes['ConfigPresetImportSessionStatus'], ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type_counts?: Resolver<Array<ResolversTypes['ConfigPresetImportTypeCounts']>, ParentType, ContextType>;
 }>;
 
 export type ConfigPresetImportSessionSelectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportSessionSelection'] = ResolversParentTypes['ConfigPresetImportSessionSelection']> = ResolversObject<{
@@ -45913,13 +46000,27 @@ export type ConfigPresetImportSessionSelectionResolvers<ContextType = any, Paren
 }>;
 
 export type ConfigPresetImportTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportType'] = ResolversParentTypes['ConfigPresetImportType']> = ResolversObject<{
+  conflictsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
   items?: Resolver<Array<ResolversTypes['ConfigPresetImportItem']>, ParentType, ContextType>;
+  itemsPageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   lockedByEnterpriseEdition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modes?: Resolver<Array<ResolversTypes['ConfigImportMode']>, ParentType, ContextType>;
+}>;
+
+export type ConfigPresetImportTypeCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetImportTypeCounts'] = ResolversParentTypes['ConfigPresetImportTypeCounts']> = ResolversObject<{
+  created?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  failed?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  group?: Resolver<ResolversTypes['ConfigPresetExportableGroup'], ParentType, ContextType>;
+  overwritten?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  skipped?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type_index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  type_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  unchanged?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type ConfigPresetItemModeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfigPresetItemMode'] = ResolversParentTypes['ConfigPresetItemMode']> = ResolversObject<{
@@ -52592,7 +52693,9 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
   configPresetExportableItems?: Resolver<ResolversTypes['ConfigPresetExportableItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetExportableItemsArgs, 'type'>>;
   configPresetExportableTypes?: Resolver<Array<ResolversTypes['ConfigPresetExportableType']>, ParentType, ContextType>;
+  configPresetImportItems?: Resolver<ResolversTypes['ConfigPresetImportItemConnection'], ParentType, ContextType, RequireFields<QueryConfigPresetImportItemsArgs, 'file_id' | 'type'>>;
   configPresetImportPreview?: Resolver<ResolversTypes['ConfigPresetImportPreview'], ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewArgs, 'file_id'>>;
+  configPresetImportPreviewProgress?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, RequireFields<QueryConfigPresetImportPreviewProgressArgs, 'file_id'>>;
   configPresetImportRunning?: Resolver<ResolversTypes['ConfigPresetImportRunning'], ParentType, ContextType>;
   configPresetImportSession?: Resolver<Maybe<ResolversTypes['ConfigPresetImportSession']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
@@ -57091,8 +57194,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetExportableType?: ConfigPresetExportableTypeResolvers<ContextType>;
   ConfigPresetImportCounts?: ConfigPresetImportCountsResolvers<ContextType>;
   ConfigPresetImportCredential?: ConfigPresetImportCredentialResolvers<ContextType>;
+  ConfigPresetImportExpected?: ConfigPresetImportExpectedResolvers<ContextType>;
   ConfigPresetImportField?: ConfigPresetImportFieldResolvers<ContextType>;
   ConfigPresetImportItem?: ConfigPresetImportItemResolvers<ContextType>;
+  ConfigPresetImportItemConnection?: ConfigPresetImportItemConnectionResolvers<ContextType>;
+  ConfigPresetImportItemEdge?: ConfigPresetImportItemEdgeResolvers<ContextType>;
   ConfigPresetImportOutput?: ConfigPresetImportOutputResolvers<ContextType>;
   ConfigPresetImportPreview?: ConfigPresetImportPreviewResolvers<ContextType>;
   ConfigPresetImportResult?: ConfigPresetImportResultResolvers<ContextType>;
@@ -57101,6 +57207,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConfigPresetImportSession?: ConfigPresetImportSessionResolvers<ContextType>;
   ConfigPresetImportSessionSelection?: ConfigPresetImportSessionSelectionResolvers<ContextType>;
   ConfigPresetImportType?: ConfigPresetImportTypeResolvers<ContextType>;
+  ConfigPresetImportTypeCounts?: ConfigPresetImportTypeCountsResolvers<ContextType>;
   ConfigPresetItemMode?: ConfigPresetItemModeResolvers<ContextType>;
   ConfigPresetItemReference?: ConfigPresetItemReferenceResolvers<ContextType>;
   ConfigPresetPartialImportOutput?: ConfigPresetPartialImportOutputResolvers<ContextType>;

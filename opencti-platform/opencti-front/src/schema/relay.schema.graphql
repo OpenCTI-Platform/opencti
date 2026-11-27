@@ -2297,6 +2297,12 @@ type ConfigPresetImportCredential {
   type: String!
 }
 
+type ConfigPresetImportExpected {
+  code: String
+  reason: String
+  status: ConfigPresetImportResultStatus!
+}
+
 type ConfigPresetImportField {
   key: String!
   value: String
@@ -2307,6 +2313,7 @@ type ConfigPresetImportItem {
   credentials: [ConfigPresetImportCredential!]!
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
+  expected: ConfigPresetImportExpected
   fields: [ConfigPresetImportField!]!
   isDefault: Boolean!
   isEnabled: Boolean
@@ -2314,6 +2321,16 @@ type ConfigPresetImportItem {
   label: String!
   serviceAccountRequired: Boolean!
   translatable: Boolean!
+}
+
+type ConfigPresetImportItemConnection {
+  edges: [ConfigPresetImportItemEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ConfigPresetImportItemEdge {
+  cursor: String!
+  node: ConfigPresetImportItem!
 }
 
 enum ConfigPresetImportOutcome {
@@ -2374,6 +2391,9 @@ type ConfigPresetImportSession {
   counts: ConfigPresetImportCounts
   file_id: ID!
   outcome: ConfigPresetImportOutcome
+  problems: [ConfigPresetImportResult!]!
+  processed: Int!
+  recent: [ConfigPresetImportResult!]!
   report_id: String
   results: [ConfigPresetImportResult!]!
   revision: Int!
@@ -2381,6 +2401,7 @@ type ConfigPresetImportSession {
   started_at: DateTime
   status: ConfigPresetImportSessionStatus!
   total: Int!
+  type_counts: [ConfigPresetImportTypeCounts!]!
 }
 
 enum ConfigPresetImportSessionEvent {
@@ -2410,13 +2431,27 @@ enum ConfigPresetImportSessionStatus {
 }
 
 type ConfigPresetImportType {
+  conflictsCount: Int!
   description: String!
   group: ConfigPresetExportableGroup!
   items: [ConfigPresetImportItem!]!
+  itemsPageInfo: PageInfo!
   key: String!
   label: String!
   lockedByEnterpriseEdition: Boolean!
   modes: [ConfigImportMode!]!
+}
+
+type ConfigPresetImportTypeCounts {
+  created: Int!
+  failed: Int!
+  group: ConfigPresetExportableGroup!
+  overwritten: Int!
+  skipped: Int!
+  type: String!
+  type_index: Int!
+  type_label: String!
+  unchanged: Int!
 }
 
 input ConfigPresetItemCredentialsInput {
@@ -12031,7 +12066,9 @@ type Query {
   city(id: String): City
   configPresetExportableItems(after: ID, excludedIds: [ID!], first: Int, ids: [ID!], search: String, type: ID!): ConfigPresetExportableItemConnection!
   configPresetExportableTypes: [ConfigPresetExportableType!]!
+  configPresetImportItems(after: ID, conflictsOnly: Boolean, excludedIds: [ID!], file_id: ID!, first: Int, ids: [ID!], search: String, type: ID!): ConfigPresetImportItemConnection!
   configPresetImportPreview(file_id: ID!): ConfigPresetImportPreview!
+  configPresetImportPreviewProgress(file_id: ID!): Int
   configPresetImportRunning: ConfigPresetImportRunning!
   configPresetImportSession: ConfigPresetImportSession
   connector(id: String!): Connector

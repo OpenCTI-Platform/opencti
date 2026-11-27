@@ -1,13 +1,14 @@
 import { getEntityFromCache } from '../../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import type { BasicStoreSettings } from '../../../types/settings';
-import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../config/errors';
+import { ClientAbortError, ForbiddenAccess, FunctionalError, UnsupportedError } from '../../../config/errors';
 import { BYPASS, isUserHasCapability, SYSTEM_USER } from '../../../utils/access';
 import { getDraftContext } from '../../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { logApp } from '../../../config/conf';
 import { publishUserAction, type UserConfigPresetImportActionContextData } from '../../../listener/UserActionListener';
-import type { ConfigImportMode } from '../../configImport/configImport-types';
+import type { ConfigImportMode, ConfigImportStatus } from '../../configImport/configImport-types';
+import type { ConfigPresetImportResultStatus } from './configPreset-import-session';
 import { resolveUserByIdFromCache } from '../../user/user-domain';
 import { CONFIG_PRESET_FAMILIES } from '../configPreset-registry';
 import type { ConfigPresetFamilyDefinition } from '../configPreset-types';
@@ -19,6 +20,14 @@ import {
   type ConfigPresetItemOptions,
   configPresetPlanKey,
 } from './configPreset-import-types';
+
+// The status of a result, from the one an importer computes
+export const CONFIG_PRESET_RESULT_STATUSES: Record<ConfigImportStatus, ConfigPresetImportResultStatus> = {
+  created: 'CREATED',
+  overwritten: 'OVERWRITTEN',
+  skipped: 'SKIPPED',
+  failed: 'FAILED',
+};
 
 // The family of a type of a selection: the type sent by the frontend is not trusted
 export const findConfigPresetFamily = (type: string): ConfigPresetFamilyDefinition => {
@@ -103,6 +112,18 @@ export const publishConfigPresetImportAction = async (user: AuthUser, contextDat
 };
 
 // The upload, the preview and the import are BYPASS only and refused in a draft context
+// A preview or a dry run whose caller went away (the browser cancelled the request) stops at the next item, instead of computing for nobody.
+// A real import is detached from its request, its context has no signal: it never stops here.
+export const throwIfConfigPresetRequestAborted = (context: AuthContext) => {
+  if (context.requestAbortSignal?.aborted) {
+    throw ClientAbortError('The preview was cancelled');
+  }
+};
+
+// The context of what several requests share (the zip read for the snapshot, the index of a file): it is not tied to the request that started it.
+// A request that goes away (the browser cancelled it) must not make the request that joined the same read fail with it.
+export const detachConfigPresetImportContext = (context: AuthContext): AuthContext => ({ ...context, requestAbortSignal: undefined });
+
 export const checkConfigPresetImportAccess = (context: AuthContext, user: AuthUser) => {
   if (!isUserHasCapability(user, BYPASS)) {
     throw ForbiddenAccess();

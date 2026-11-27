@@ -1,7 +1,9 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
+import type { ConfigPresetImportItem } from '../../../generated/graphql';
 import { ConfigImportMode, type ConfigImportStatus } from '../../configImport/configImport-types';
 import type { ConfigPresetConfiguration } from '../configPreset-types';
 import type { ConnectorImportLoaded } from '../../connector/connector-import';
+import type { BasicStoreEntityLabel } from '../../label/label-types';
 
 // Reasons of a refusal, read by the front in extensions.data.reason (the message is only for display)
 export const CONFIG_PRESET_REASON_FILE_MISSING = 'file_missing';
@@ -83,6 +85,14 @@ export interface ConfigPresetItemOptions {
 // What the import would create, shared by the items of one import: `<type>/<bundle id>`
 export interface ConfigPresetImportPlan {
   created: Set<string>;
+  // The labels that exist among the ones of the items being computed, by standard id, read once for all of them by the labels importer
+  // (prepare): a lookup per label is a round trip per item, tens of thousands of them for a big bundle
+  existingLabels?: Map<string, BasicStoreEntityLabel>;
+  // Told by an importer that prepares its items in batches how many it has prepared, out of how many: the preview shows how far it has got
+  onPrepared?: (done: number, total: number) => void;
+  // The items are written without waiting for the search index to refresh: the importers refresh it once at the end (finalize). Set by a
+  // real import of the wizard, which calls finalize; absent for every other caller, which writes and reads as before.
+  deferRefresh?: boolean;
   // The theme names the earlier items of a dry run would take, which writes nothing: an import reads the platform before each item
   themeNames?: Set<string>;
   // The names that the themes the earlier items of a dry run would rename no longer hold
@@ -139,6 +149,12 @@ export const configPresetTargets = (plan: ConfigPresetImportPlan, type: string) 
 };
 
 export interface ConfigPresetImporter {
+  // Optional, reads only: called once with the items of the family about to be computed, so that the importer reads what they need in one
+  // query instead of one per item, and records it in the plan
+  prepare?: (context: AuthContext, user: AuthUser, items: ConfigPresetBundleItem[], plan: ConfigPresetImportPlan) => Promise<void>;
+  // Optional: called once after the last item of a real import (also when it stopped), for the families that had items. Where an importer
+  // that defers the refresh of its index (plan.deferRefresh) refreshes it. A failure is logged, it never fails the import.
+  finalize?: (context: AuthContext, user: AuthUser, plan: ConfigPresetImportPlan) => Promise<void>;
   // Reads only: finds the existing item, validates, decides the result and records in the plan what it would create
   compute: (context: AuthContext, user: AuthUser, item: ConfigPresetBundleItem, plan: ConfigPresetImportPlan, mode: ConfigImportMode) => Promise<ConfigPresetComputedItem>;
   // Writes the item, with one domain call when it can: an importer that needs several (the hidden entity types hide, then show) can leave
@@ -176,3 +192,6 @@ export interface ConfigPresetBundle {
   // Entries of the zip that are not an importable item
   ignored: string[];
 }
+
+// What the preview computed of the items of the types it lists page by page, by type key: the pages are read from it
+export type ConfigPresetImportIndex = Map<string, ConfigPresetImportItem[]>;

@@ -24,12 +24,13 @@ vi.mock('../../../../src/database/raw-file-storage', async (importOriginal) => (
 }));
 vi.mock('../../../../src/modules/configPreset/import/configPreset-import-bundle', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/configPreset/import/configPreset-import-bundle')>()),
-  readConfigPresetBundle: vi.fn(async () => ({
+  createConfigPresetBundleSnapshot: vi.fn(async () => Buffer.from(JSON.stringify({
     metadata: { openCTI_version: '1.0.0', generated_at: '2026-01-01T00:00:00.000Z', bundle_name: null },
     items: bundle.items,
     dependencies: {},
     ignored: [],
-  })),
+    extracted_size: 0,
+  }))),
 }));
 
 import { CONFIG_PRESET_FAMILIES } from '../../../../src/modules/configPreset/configPreset-registry';
@@ -39,6 +40,7 @@ import {
   findConfigPresetExportableTypes,
   resolveConfigPresetSelections,
 } from '../../../../src/modules/configPreset/export/configPreset-export-domain';
+import { clearConfigPresetImportCache } from '../../../../src/modules/configPreset/import/configPreset-import-cache';
 import { computeConfigPresetItem, configPresetImportPreview } from '../../../../src/modules/configPreset/import/configPreset-import-domain';
 import { CONFIG_PRESET_REASON_ENTERPRISE_EDITION_REQUIRED } from '../../../../src/modules/configPreset/import/configPreset-import-types';
 import { platformSettingsGroup } from '../../../../src/modules/configPreset/registry/common-configPreset-registry';
@@ -81,6 +83,8 @@ describe('Contract of a family that requires the Enterprise Edition, on a platfo
 
   beforeEach(() => {
     enterpriseEdition.enabled = false;
+    // The preview reads the bundle through what was kept of it
+    clearConfigPresetImportCache();
     bundle.items = flagged().map((family) => ({ type: family.id, id: family.id, path: `${family.directory}/${family.id}.json`, configuration: {} }));
   });
 

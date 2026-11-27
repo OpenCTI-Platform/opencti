@@ -18,6 +18,7 @@ import {
   isSingletonConfigPresetType,
   toggleConfigPresetTypes,
 } from './configPresetSelection';
+import ConfigPresetProgressiveList from './ConfigPresetProgressiveList';
 import { ConfigPresetItemRow } from './ConfigPresetItemRow';
 
 interface ConfigPresetExpandableRowProps {
@@ -232,9 +233,13 @@ const ConfigPresetSelectionAccordion = <T extends ConfigPresetAccordionType>({
                   expanded={isExpanded(type)}
                   onToggleExpanded={() => setExpandedTypes((current) => ({ ...current, [type.key]: !isExpanded(type) }))}
                 >
-                  {type.items.map((item) => (renderItem
-                    ? <React.Fragment key={item.key}>{renderItem(type, item)}</React.Fragment>
-                    : <ConfigPresetItemRow key={item.key} typeKey={type.key} item={item} selection={selection} forced={forced} onSelectionChange={onSelectionChange} />))}
+                  <ConfigPresetProgressiveList
+                    items={type.items}
+                    getKey={(item) => item.key}
+                    renderItem={(item) => (renderItem
+                      ? renderItem(type, item)
+                      : <ConfigPresetItemRow typeKey={type.key} item={item} selection={selection} forced={forced} onSelectionChange={onSelectionChange} />)}
+                  />
                 </ConfigPresetExpandableRow>
               );
             })}

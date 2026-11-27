@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
-import { Alert, Spinner, Text } from '@filigran/design-system';
+import { Alert, ProgressBar, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -8,8 +8,10 @@ import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { handleError } from '../../../../../relay/environment';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { ONE_SECOND } from '../../../../../utils/Time';
 import type { FieldOption } from '../../../../../utils/field';
 import { ConfigPresetImportPreviewQuery, ConfigPresetImportPreviewQuery$data } from './__generated__/ConfigPresetImportPreviewQuery.graphql';
+import { ConfigPresetImportPreviewProgressQuery } from './__generated__/ConfigPresetImportPreviewProgressQuery.graphql';
 import { ConfigPresetImportPreviewSaveMutation } from './__generated__/ConfigPresetImportPreviewSaveMutation.graphql';
 import { toConfigImportModes, toConfigPresetSelection } from './configPresetImportSelection';
 import {
@@ -21,7 +23,9 @@ import {
   withConfigImportMode,
   withConfigImportModeForItems,
 } from '../configImportMode';
+import ConfigPresetImportBusyPanel from './ConfigPresetImportBusyPanel';
 import ConfigPresetImportModeSelect from './ConfigPresetImportModeSelect';
+import ConfigPresetImportUpload, { getConfigPresetImportFileName } from './ConfigPresetImportUpload';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
 import {
   buildConfigPresetSelections,
@@ -35,6 +39,8 @@ import {
 } from '../configPresetSelection';
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
+import ConfigPresetImportItems from './ConfigPresetImportItems';
+import ConfigPresetStickyFooter from './ConfigPresetStickyFooter';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
 import ConfigPresetResultLine, { CODE_UNCHANGED, translateReasons } from './ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from './ConfigPresetCredentialsDialog';
@@ -90,9 +96,26 @@ const configPresetImportPreviewQuery = graphql`
             type
             key
           }
+          expected {
+            status
+            reason
+            code
+          }
         }
+        itemsPageInfo {
+          hasNextPage
+          globalCount
+        }
+        conflictsCount
       }
     }
+  }
+`;
+
+// How far the preview that is computed has got, as a percentage: null when the backend has no preview of the file to tell of
+const configPresetImportPreviewProgressQuery = graphql`
+  query ConfigPresetImportPreviewProgressQuery($file_id: ID!) {
+    configPresetImportPreviewProgress(file_id: $file_id)
   }
 `;
 
@@ -106,9 +129,7 @@ const configPresetImportPreviewSaveMutation = graphql`
 
 type Preview = ConfigPresetImportPreviewQuery$data['configPresetImportPreview'];
 type PreviewType = Preview['types'][number];
-
-// The list takes its counts from the items it was given: a bundle is read at once, there is no next page
-const toCountedTypes = (types: ReadonlyArray<PreviewType>) => types.map((type) => ({ ...type, itemsPageInfo: { globalCount: type.items.length } }));
+type PreviewItem = PreviewType['items'][number];
 
 type ImportSelections = ReturnType<typeof buildConfigPresetSelections>;
 
@@ -158,6 +179,8 @@ export interface ConfigPresetImportPreviewProps {
     callbacks: { onCompleted: (results: ReadonlyArray<SimulatedResult>) => void; onError: (error: Error) => void },
   ) => void;
   onStartOver: () => void;
+  // Another bundle was picked in the field that shows under a bundle that cannot be imported
+  onUploaded: () => void;
   onFileMissing: () => void;
 }
 
@@ -169,6 +192,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   onApply,
   onSimulate,
   onStartOver,
+  onUploaded,
   onFileMissing,
 }) => {
   const { t_i18n } = useFormatter();
@@ -185,6 +209,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const [selection, setSelection] = useState<ConfigPresetSelection>({});
   // What the import does with the items that exist, by item; saved with the selection
   const [importModes, setImportModes] = useState<ConfigImportModes>({});
+  // The type whose items are managed in the sub-view, when it is listed page by page
+  const [managedTypeKey, setManagedTypeKey] = useState<string | null>(null);
   const [confirmStartOver, setConfirmStartOver] = useState(false);
   const [credentials, setCredentials] = useState<Record<string, Record<string, string>>>({});
   const [credentialsItem, setCredentialsItem] = useState<{ typeKey: string; item: PreviewType['items'][number] } | null>(null);
@@ -212,12 +238,16 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   const commitSaveRef = useRef(commitSave);
   commitSaveRef.current = commitSave;
 
+  // The request of the preview in flight: unsubscribing aborts it in the browser, and the backend stops computing when the connection closes
+  const previewRequestRef = useRef<{ unsubscribe: () => void } | null>(null);
   useEffect(() => {
     let active = true;
-    fetchQuery<ConfigPresetImportPreviewQuery>(environment, configPresetImportPreviewQuery, { file_id: session.file_id }, { fetchPolicy: 'network-only' })
-      .toPromise()
-      .then((data) => {
-        if (active && data) {
+    previewRequestRef.current = fetchQuery<ConfigPresetImportPreviewQuery>(environment, configPresetImportPreviewQuery, { file_id: session.file_id }, { fetchPolicy: 'network-only' })
+      .subscribe({
+        next: (data) => {
+          if (!active || !data) {
+            return;
+          }
           const loaded = data.configPresetImportPreview;
           setPreview(loaded);
           if (!hasLoadedRef.current) {
@@ -227,10 +257,11 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             setSelection(isNew ? selectAllConfigPresetItems(loaded.types) : toConfigPresetSelection(session.selections));
             setImportModes(toConfigImportModes(session.selections));
           }
-        }
-      })
-      .catch((err) => {
-        if (active) {
+        },
+        error: (err: Error) => {
+          if (!active) {
+            return;
+          }
           const reason = getConfigPresetErrorReason(err);
           if (reason === 'file_missing') {
             onFileMissing();
@@ -240,12 +271,46 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             // A reload that fails (after a license change) leaves the preview that is shown: the error is only notified
             handleError(err);
           }
-        }
+        },
       });
     return () => {
       active = false;
+      // A preview that is no longer wanted (the dialog is closed, the file is replaced, the preview is read again) stops being computed
+      previewRequestRef.current?.unsubscribe();
     };
   }, [environment, session.file_id, reloadCount]);
+
+  // How far the preview has got: asked every second while it loads, the bar only goes up
+  const [loadingPercent, setLoadingPercent] = useState(0);
+  const isLoading = !preview && !error;
+  useEffect(() => {
+    if (!isLoading) {
+      return undefined;
+    }
+    let active = true;
+    const interval = window.setInterval(() => {
+      fetchQuery<ConfigPresetImportPreviewProgressQuery>(environment, configPresetImportPreviewProgressQuery, { file_id: session.file_id }, { fetchPolicy: 'network-only' })
+        .toPromise()
+        // Nothing to tell, or the question failed: the bar stays where it is
+        .then((data) => {
+          const percent = data?.configPresetImportPreviewProgress;
+          if (active && typeof percent === 'number') {
+            setLoadingPercent((previous) => Math.max(previous, percent));
+          }
+        })
+        .catch(() => undefined);
+    }, ONE_SECOND);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [environment, session.file_id, isLoading, reloadCount]);
+
+  // Cancels the preview that is loading and starts over: the pending zip is deleted, so is what was read of it
+  const handleCancelLoading = () => {
+    previewRequestRef.current?.unsubscribe();
+    onStartOver();
+  };
 
   // Resolved once the save is answered, whatever the answer. A failure is notified by the global error toast; a file that is no longer
   // the one of the session (another tab uploaded a new one) sends the wizard back to the upload.
@@ -290,7 +355,8 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
     isMountedRef.current = false;
   }, []);
 
-  const types = preview ? toCountedTypes(preview.types) : [];
+  // A type with thousands of items lists its first page: its count comes from the API, the next pages from the sub-view
+  const types = preview ? preview.types : [];
   const givenCredentials = (typeKey: string, itemKey: string) => credentials[`${typeKey}/${itemKey}`] ?? {};
   // A secret stored on the platform is kept on overwrite, never on a copy
   const requiredCredentials = (typeKey: string, item: PreviewType['items'][number]) => {
@@ -434,20 +500,144 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // The selection as sent: a new array with the same content does not compute again
   }, [preview, selectionsKey, itemOptionsKey, platformVersion]);
 
+  const fileName = getConfigPresetImportFileName(session.file_id);
   if (error) {
+    // The field is free again: another bundle is picked right there, which replaces this one
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
+      <ConfigPresetImportUpload onUploaded={onUploaded}>
         <Alert severity="error" title={t_i18n('This configuration bundle cannot be imported')} description={t_i18n('The file is not a valid configuration bundle, or it comes from a more recent platform.')} />
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="secondary" onClick={onStartOver}>{t_i18n('Start over')}</Button>
-        </div>
-      </div>
+      </ConfigPresetImportUpload>
     );
   }
   if (!preview) {
-    return <Spinner label={t_i18n('Loading')} />;
+    // The bundle is read and checked in one request: there is nothing to measure, only to wait for or to give up
+    return (
+      <ConfigPresetImportUpload onUploaded={onUploaded} busyFileName={fileName}>
+        <ConfigPresetImportBusyPanel title={t_i18n('Reading your configuration bundle')}>
+          <ProgressBar aria-label={t_i18n('Reading progress')} value={loadingPercent} size="lg" />
+          <Text variant="content-base">{t_i18n('{percent}%', { values: { percent: loadingPercent } })} · {t_i18n('A large bundle can take a few seconds to check against the platform.')}</Text>
+          <div>
+            <Button variant="secondary" onClick={handleCancelLoading}>{t_i18n('Cancel')}</Button>
+          </div>
+        </ConfigPresetImportBusyPanel>
+      </ConfigPresetImportUpload>
+    );
   }
-  const itemsCount = preview.types.reduce((count, type) => count + type.items.length, 0);
+  const itemsCount = preview.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0);
+  // The row of an item, in the list of its type and in the sub-view of a type that is listed page by page
+  const renderRow = (type: PreviewType, item: PreviewItem) => {
+    // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
+    const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
+    // The dry run does not return the items of a type listed page by page: the row of a selected one has its own expected result
+    const result = results?.[`${type.key}/${item.key}`] ?? (item.expected && isImportedItem(type.key, item.key) ? { type: type.key, key: item.key, ...item.expected } : undefined);
+    // The types the import hides: the row alone only says that the item is there
+    // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
+    const keptDefaultNote = keptDefaultNotes[type.key];
+    const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+    const shownResult = result && isResultShown(result, hasChoice) ? result : null;
+    // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
+    const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
+    // Under the label: the expected status, then what the item is and why the import does what it does
+    const detail = [
+      typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined),
+      shownResult?.reason ? translateReasons(t_i18n, shownResult.reason) : undefined,
+    ].filter(Boolean).join(' · ');
+    const description = (hasStatus || detail) ? (
+      <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: theme.spacing(1) }}>
+        {shownResult && hasStatus && <ConfigPresetResultLine status={shownResult.status} code={shownResult.code} withoutReason />}
+        {detail}
+      </span>
+    ) : undefined;
+    const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
+    const itemLabel = item.translatable ? t_i18n(item.label) : item.label;
+    if (isCredentialsLocked(type.key, item)) {
+      return (
+        <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
+          <ConfigPresetCredentialsItemRow
+            label={itemLabel}
+            actions={item.conflict && type.modes.length > 1 && (
+              <ConfigPresetImportModeSelect
+                subject={itemLabel}
+                purpose="When it already exists"
+                modes={type.modes}
+                value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                disabled={isStarting}
+                onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
+              />
+            )}
+            onOpen={() => setCredentialsItem({ typeKey: type.key, item })}
+          />
+        </div>
+      );
+    }
+    const hasCredentials = item.credentials.length > 0 && isImportedItem(type.key, item.key);
+    const serviceAccount = serviceAccounts[`${type.key}/${item.key}`];
+    const needsServiceAccount = isImportedItem(type.key, item.key) && (!!serviceAccount || result?.code === 'no_ingestion_group');
+    return (
+      <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
+        <ConfigPresetItemRow
+          typeKey={type.key}
+          item={item}
+          description={description}
+          selection={importableSelection}
+          forced={forced}
+          disabled={isStarting}
+          onSelectionChange={handleSelectionChange}
+          statusSlot={(hasChoice || hasCredentials || needsServiceAccount) ? (
+            // The choices are on the right of the row, and end where the one of the type does: the chevron is after them
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginRight: theme.spacing(4) }}>
+              {needsServiceAccount && (
+                <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setServiceAccountItem({ typeKey: type.key, item })}>
+                  {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
+                </Button>
+              )}
+              {hasCredentials && (
+                <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setCredentialsItem({ typeKey: type.key, item })}>
+                  {t_i18n('Configuration')}
+                </Button>
+              )}
+              {hasChoice && (
+                <ConfigPresetImportModeSelect
+                  subject={item.translatable ? t_i18n(item.label) : item.label}
+                  purpose="When it already exists"
+                  modes={type.modes}
+                  value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
+                  disabled={isStarting}
+                  onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
+                />
+              )}
+            </div>
+          ) : undefined}
+        />
+        {keepsDefault && (
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+            {keptDefaultNote}
+          </Text>
+        )}
+        {hiddenTypes && (
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
+            {translateConfigPresetEntityTypes(t_i18n, hiddenTypes)}
+          </Text>
+        )}
+      </div>
+    );
+  };
+  const managedType = types.find((type) => type.key === managedTypeKey);
+  if (managedType) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
+        <ConfigPresetImportItems<PreviewItem>
+          fileId={session.file_id}
+          type={managedType}
+          selection={importableSelection}
+          forced={forced}
+          onSelectionChange={handleSelectionChange}
+          renderItem={(item) => renderRow(managedType, item)}
+          onBack={() => setManagedTypeKey(null)}
+        />
+      </div>
+    );
+  }
   return (
     // The dialog scrolls: a minimum height gives the list room, and the footer sticks to the bottom of the visible part
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2), minHeight: '60vh' }}>
@@ -469,6 +659,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
         disabled={isStarting}
         lockedTitle="Activate the Enterprise Edition to import this item"
         onSelectionChange={handleSelectionChange}
+        onManageType={setManagedTypeKey}
         renderTypeActions={(type) => {
           // As soon as an imported item conflicts, whatever their number, so that every type reads the same; an item that is not imported has none
           const conflictKeys = type.items.filter((item) => item.conflict && isImportedItem(type.key, item.key)).map((item) => item.key);
@@ -486,119 +677,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
             />
           );
         }}
-        renderItem={(type, item) => {
-          // The choice is for an item that conflicts with the platform and is imported; the items that do not show nothing
-          const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
-          const result = results?.[`${type.key}/${item.key}`];
-          // The types the import hides: the row alone only says that the item is there
-          // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
-          const keptDefaultNote = keptDefaultNotes[type.key];
-          const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
-          const shownResult = result && isResultShown(result, hasChoice) ? result : null;
-          // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
-          const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
-          // Under the label: the expected status, then what the item is and why the import does what it does
-          const detail = [
-            typeof item.isEnabled === 'boolean' ? describeEnabled(t_i18n, item.isEnabled) : (isSingletonConfigPresetType(type) ? describeType(t_i18n, type) : undefined),
-            shownResult?.reason ? translateReasons(t_i18n, shownResult.reason) : undefined,
-          ].filter(Boolean).join(' · ');
-          const description = (hasStatus || detail) ? (
-            <span style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: theme.spacing(1) }}>
-              {shownResult && hasStatus && <ConfigPresetResultLine status={shownResult.status} code={shownResult.code} withoutReason />}
-              {detail}
-            </span>
-          ) : undefined;
-          const hiddenTypes = isImportedItem(type.key, item.key) && type.key === 'hiddenEntityTypes' ? item.fields.find(({ key }) => key === 'hidden_entity_types')?.value : null;
-          const itemLabel = item.translatable ? t_i18n(item.label) : item.label;
-          if (isCredentialsLocked(type.key, item)) {
-            return (
-              <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-                <ConfigPresetCredentialsItemRow
-                  label={itemLabel}
-                  actions={item.conflict && type.modes.length > 1 && (
-                    <ConfigPresetImportModeSelect
-                      subject={itemLabel}
-                      purpose="When it already exists"
-                      modes={type.modes}
-                      value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
-                      disabled={isStarting}
-                      onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
-                    />
-                  )}
-                  onOpen={() => setCredentialsItem({ typeKey: type.key, item })}
-                />
-              </div>
-            );
-          }
-          const hasCredentials = item.credentials.length > 0 && isImportedItem(type.key, item.key);
-          const serviceAccount = serviceAccounts[`${type.key}/${item.key}`];
-          const needsServiceAccount = isImportedItem(type.key, item.key) && (!!serviceAccount || result?.code === 'no_ingestion_group');
-          return (
-            <div data-testid={`config-preset-import-item-${type.key}-${item.key}`}>
-              <ConfigPresetItemRow
-                typeKey={type.key}
-                item={item}
-                description={description}
-                selection={importableSelection}
-                forced={forced}
-                disabled={isStarting}
-                onSelectionChange={handleSelectionChange}
-                statusSlot={(hasChoice || hasCredentials || needsServiceAccount) ? (
-                  // The choices are on the right of the row, and end where the one of the type does: the chevron is after them
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginRight: theme.spacing(4) }}>
-                    {needsServiceAccount && (
-                      <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setServiceAccountItem({ typeKey: type.key, item })}>
-                        {serviceAccount ? serviceAccount.label : t_i18n('Choose a service account')}
-                      </Button>
-                    )}
-                    {hasCredentials && (
-                      <Button variant="secondary" size="small" disabled={isStarting} onClick={() => setCredentialsItem({ typeKey: type.key, item })}>
-                        {t_i18n('Configuration')}
-                      </Button>
-                    )}
-                    {hasChoice && (
-                      <ConfigPresetImportModeSelect
-                        subject={item.translatable ? t_i18n(item.label) : item.label}
-                        purpose="When it already exists"
-                        modes={type.modes}
-                        value={importModes[configImportModeKey(type.key, item.key)] ?? DEFAULT_CONFIG_IMPORT_MODE}
-                        disabled={isStarting}
-                        onChange={(mode) => handleImportModeChange(type.key, item.key, mode)}
-                      />
-                    )}
-                  </div>
-                ) : undefined}
-              />
-              {keepsDefault && (
-                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {keptDefaultNote}
-                </Text>
-              )}
-              {hiddenTypes && (
-                <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {translateConfigPresetEntityTypes(t_i18n, hiddenTypes)}
-                </Text>
-              )}
-            </div>
-          );
-        }}
+        renderItem={renderRow}
       />
-      <div
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 1,
-          marginTop: 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: theme.spacing(2),
-          paddingTop: theme.spacing(2),
-          // The surface of the dialog, so that the footer hides what scrolls under it without drawing a box of its own
-          background: 'var(--bg-elevation-default)',
-          // The scroll area of the Dialog has a 4px vertical padding below the sticky footer, where the list would show through
-          boxShadow: `0 ${theme.spacing(0.5)} 0 0 var(--bg-elevation-default)`,
-        }}
-      >
+      <ConfigPresetStickyFooter>
         <ConfigPresetImportMessages
           itemsCount={itemsCount}
           isOtherImportRunning={isOtherImportRunning}
@@ -611,7 +692,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           onStartOver={() => setConfirmStartOver(true)}
           onApply={handleApply}
         />
-      </div>
+      </ConfigPresetStickyFooter>
       {serviceAccountItem && (
         <ConfigPresetServiceAccountDialog
           open

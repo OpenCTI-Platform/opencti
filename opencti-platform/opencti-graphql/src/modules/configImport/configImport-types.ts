@@ -15,6 +15,9 @@ export type ConfigImportStatus = 'created' | 'overwritten' | 'skipped' | 'failed
 export interface ConfigImportOptions {
   mode: ConfigImportMode;
   dryRun?: boolean;
+  // The item is written without waiting for the search index to refresh: its caller refreshes the index once, after the last item
+  // (the finalize of the importer). Absent: the write returns when the item can be searched.
+  deferRefresh?: boolean;
 }
 
 export interface ConfigImportResult<TConfiguration = unknown, TCode extends string = string> {

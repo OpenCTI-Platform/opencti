@@ -41,10 +41,12 @@ export const stringToColour = (str) => {
   return colour;
 };
 
-export const addLabel = async (context, user, label) => {
+// knownNotExisting: the caller has just read that no label has this value (an import that read its labels ahead): not read again
+// refresh: false when the caller creates many labels and refreshes the index of the labels once at the end
+export const addLabel = async (context, user, label, { knownNotExisting = false, refresh = true } = {}) => {
   // Check if a label with the same value (case-insensitive) already exists
   const standardId = generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label.value) });
-  const existing = await storeLoadById(context, user, standardId, ENTITY_TYPE_LABEL);
+  const existing = knownNotExisting ? undefined : await storeLoadById(context, user, standardId, ENTITY_TYPE_LABEL);
   if (existing) {
     return existing;
   }
@@ -52,7 +54,7 @@ export const addLabel = async (context, user, label) => {
     assoc('value', label.value.trim()),
     assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value))),
   )(label);
-  const element = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL);
+  const element = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL, { refresh });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, element, user);
 };
 

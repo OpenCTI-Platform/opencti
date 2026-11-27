@@ -40,8 +40,11 @@ const previewItem = (key: string, label: string, overrides: Record<string, unkno
   fields: [],
   credentials: [],
   dependsOn: [],
+  // Only the items of a type listed page by page have one
+  expected: null,
   ...overrides,
 });
+// A type listed whole, as the API does for all but the types of thousands of items: its page is all of its items
 const previewType = (key: string, label: string, items: unknown[], modes = ['OVERWRITE'], lockedByEnterpriseEdition = false) => ({
   key,
   label,
@@ -50,6 +53,8 @@ const previewType = (key: string, label: string, items: unknown[], modes = ['OVE
   lockedByEnterpriseEdition,
   modes,
   items,
+  itemsPageInfo: { globalCount: items.length, hasNextPage: false },
+  conflictsCount: items.filter((item) => (item as { conflict?: boolean }).conflict).length,
 });
 const preview = {
   bundle_name: 'Test bundle',
@@ -122,15 +127,33 @@ const previewWithConnector = {
     ], ['OVERWRITE', 'COPY']),
   ],
 };
-const session = (overrides: Record<string, unknown> = {}) => ({
+// What the session says of a run, as the backend gives it: counts by type, the first problems, the last items. The tests state the results
+// of the run, and this is what the screens get of them.
+const progressOf = (results: ReturnType<typeof processed>[]) => {
+  const counts = new Map<string, Record<string, unknown>>();
+  const bucket = (result: { status: string; code?: string | null }) => (result.status === 'SKIPPED' && result.code === 'unchanged' ? 'unchanged' : result.status.toLowerCase());
+  results.forEach((result) => {
+    const known = counts.get(result.type) ?? {
+      type: result.type, type_label: result.type_label, type_index: result.type_index, group: result.group, created: 0, overwritten: 0, unchanged: 0, skipped: 0, failed: 0,
+    };
+    known[bucket(result)] = (known[bucket(result)] as number) + 1;
+    counts.set(result.type, known);
+  });
+  return {
+    processed: results.length,
+    type_counts: [...counts.values()],
+    problems: results.filter((result) => ['failed', 'skipped'].includes(bucket(result))).slice(0, 100),
+    recent: results.slice(-10),
+  };
+};
+const session = ({ results = [], ...overrides }: Record<string, unknown> = {}) => ({
   status: 'DRAFT',
   file_id: 'config_preset/import/id/bundle.zip',
   revision: 0,
   selections: [],
   total: 0,
-  results: [],
+  ...progressOf(results as ReturnType<typeof processed>[]),
   outcome: null,
-  counts: null,
   report_id: null,
   available_events: [],
   ...overrides,
@@ -479,14 +502,62 @@ describe('ConfigPresetImportWizard', () => {
       });
     });
 
-    it('shows a refused bundle with Start over as the exit', async () => {
+    it('shows a refused bundle under the upload field, which is free again to pick another one', async () => {
       const rendered = await renderWizard(session());
       await reject(rendered, 'ConfigPresetImportPreviewQuery', 'bundle_refused');
       expect(await screen.findByText('This configuration bundle cannot be imported')).toBeInTheDocument();
-      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
+      expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeEnabled();
+      expect(screen.queryByRole('button', { name: 'Start over' })).not.toBeInTheDocument();
+    });
+
+    it('shows the bundle in the disabled upload field, and its reading as a panel under it with a bar, while the preview loads', async () => {
+      await renderWizard(session());
+      expect(await screen.findByText('Reading your configuration bundle')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeDisabled();
+      expect(screen.getByText('bundle.zip')).toBeInTheDocument();
+      expect(screen.getByRole('progressbar', { name: 'Reading progress' })).toHaveAttribute('aria-valuenow', '0');
+    });
+
+    it('moves the bar with what the backend says of the preview every second, and never back', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      const rendered = await renderWizard(session());
+      const progressQueries = () => rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewProgressQuery');
+      const answer = async (percent: number | null) => {
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+        await waitFor(() => expect(progressQueries().length).toBeGreaterThan(0));
+        await act(async () => {
+          const pending = progressQueries().at(-1)!;
+          rendered.relayEnv.mock.resolve(pending, MockPayloadGenerator.generate(pending, { Query: () => ({ configPresetImportPreviewProgress: percent }) }));
+        });
+      };
+      await answer(40);
+      await waitFor(() => expect(screen.getByRole('progressbar', { name: 'Reading progress' })).toHaveAttribute('aria-valuenow', '40'));
+      expect(screen.getByText(/40%/)).toBeInTheDocument();
+      // A late or empty answer does not send the bar back
+      await answer(10);
+      await answer(null);
+      expect(screen.getByRole('progressbar', { name: 'Reading progress' })).toHaveAttribute('aria-valuenow', '40');
+    });
+
+    it('cancels a preview that is loading: the request is aborted, the zip is deleted and the upload comes back', async () => {
+      const rendered = await renderWizard(session());
+      // Nothing answered yet: the loader has a way out
+      expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewQuery');
+      await rendered.user.click(await screen.findByRole('button', { name: 'Cancel' }));
+      // No confirmation: nothing was selected. The preview request is no longer pending, and the session is cleared with its file
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
       expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
       await resolve(rendered, 'ConfigPresetImportWizardClearMutation', {});
       expect(await screen.findByRole('button', { name: 'Upload a configuration bundle' })).toBeInTheDocument();
+    });
+
+    it('aborts the preview request when the wizard is closed while it loads', async () => {
+      const rendered = await renderWizard(session());
+      expect(operationNames(rendered)).toContain('ConfigPresetImportPreviewQuery');
+      rendered.unmount();
+      expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
     });
 
     it('goes back to the upload step when the file is missing', async () => {
@@ -647,14 +718,13 @@ describe('ConfigPresetImportWizard', () => {
     it('shows the progress while the import runs, then the result with the report', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
-      expect(await screen.findByText('Import in progress')).toBeInTheDocument();
+      expect(await screen.findByText('Applying your configuration')).toBeInTheDocument();
       await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {});
       const finished = session({
         status: 'FINISHED',
         outcome: 'COMPLETED',
         total: 2,
         report_id: 'config_preset/history/id/import-report.json',
-        counts: { created: 0, overwritten: 1, skipped: 0, failed: 1 },
         results: [processed('messages', 'banner', 'OVERWRITTEN'), processed('branding', 'theme--1', 'FAILED', 'Theme name already exists')],
       });
       await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: finished }) });
@@ -676,10 +746,10 @@ describe('ConfigPresetImportWizard', () => {
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
       await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {});
       // The session in hand is still the draft: the preview would ask for the zip that the import deleted
-      expect(screen.getByText('Import in progress')).toBeInTheDocument();
+      expect(screen.getByText('Applying your configuration')).toBeInTheDocument();
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
       await resolve(rendered, 'ConfigPresetImportWizardQuery', {
-        Query: () => ({ configPresetImportSession: session({ status: 'FINISHED', outcome: 'COMPLETED', total: 1, counts: { created: 0, overwritten: 1, skipped: 0, failed: 0 }, results: [processed('messages', 'banner', 'OVERWRITTEN')] }) }),
+        Query: () => ({ configPresetImportSession: session({ status: 'FINISHED', outcome: 'COMPLETED', total: 1, results: [processed('messages', 'banner', 'OVERWRITTEN')] }) }),
       });
       expect(await screen.findByText('Import finished')).toBeInTheDocument();
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
@@ -702,114 +772,108 @@ describe('ConfigPresetImportWizard', () => {
       expect(rendered.relayEnv.getStore().getSource().get('entity-setting-1')).toMatchObject({ platform_hidden_type: true });
     });
 
-    describe('result groups', () => {
-      const finished = (results: unknown[]) => session({
+    describe('result', () => {
+      const finished = (results: unknown[], overrides: Record<string, unknown> = {}) => session({
         status: 'FINISHED',
         outcome: 'COMPLETED',
         total: results.length,
-        counts: { created: 0, overwritten: results.length, skipped: 0, failed: 0 },
         results,
+        ...overrides,
       });
       // The items come in the order they were processed: the theme the platform depends on first
       const allImported = [processed('branding', 'theme--1', 'CREATED'), processed('platform', 'platform', 'OVERWRITTEN'), processed('messages', 'banner', 'OVERWRITTEN')];
       const oneFailed = [processed('branding', 'theme--1', 'FAILED', 'Theme name already exists'), processed('platform', 'platform', 'OVERWRITTEN'), processed('messages', 'banner', 'OVERWRITTEN')];
 
-      it('keeps the groups closed when every item was imported, with what was imported out of all in the headers', async () => {
+      it('says what was done by type under its group, in the order of the selection, without listing the items that went well', async () => {
         await renderWizard(finished(allImported));
-        expect(screen.getByText('Platform settings (3/3)')).toBeInTheDocument();
-        expect(screen.queryByText('Branding (1/1)')).not.toBeInTheDocument();
-        expect(screen.queryByText('Created')).not.toBeInTheDocument();
-      });
-
-      it('shows the types in the order of the selection, closed, and the names of the items once a type is opened', async () => {
-        const { user } = await renderWizard(finished(allImported));
-        await user.click(screen.getByRole('button', { name: /^Expand/ }));
-        const headers = ['Platform configuration (1/1)', 'Branding (1/1)', 'Messages (1/1)'].map((name) => screen.getByText(name));
-        headers.slice(1).forEach((header, index) => expect(headers[index].compareDocumentPosition(header) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
+        expect(screen.getByText('Platform settings')).toBeInTheDocument();
+        const lines = ['Platform configuration: 1 overwritten', 'Branding: 1 created', 'Messages: 1 overwritten'].map((name) => screen.getByText(name));
+        lines.slice(1).forEach((line, index) => expect(lines[index].compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
+        expect(screen.getByText('1 created, 2 overwritten, 0 up to date, 0 skipped, 0 failed')).toBeInTheDocument();
+        // Nothing to check: no list, and the names of the items are not shown
+        expect(screen.queryByText(/^Items to check/)).not.toBeInTheDocument();
         expect(screen.queryByText('Import theme')).not.toBeInTheDocument();
-        await user.click(screen.getAllByRole('button', { name: /^Expand/ })[1]);
-        expect(screen.getByText('Import theme')).toBeInTheDocument();
-        expect(screen.getByText('Created')).toBeInTheDocument();
-        expect(screen.queryByText('theme--1')).not.toBeInTheDocument();
-      });
-
-      it('opens the group and the type that have a failed item, and only them', async () => {
-        await renderWizard(finished(oneFailed));
-        expect(screen.getByText('Platform settings (2/3)')).toBeInTheDocument();
-        expect(screen.getByText('Branding (0/1)')).toBeInTheDocument();
-        expect(screen.getByText('Import theme')).toBeInTheDocument();
-        expect(screen.getByText('Failed')).toBeInTheDocument();
-        expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
-        // What went well in the same group stays closed
-        expect(screen.getByText('Platform configuration (1/1)')).toBeInTheDocument();
-        expect(screen.getByText('Messages (1/1)')).toBeInTheDocument();
         expect(screen.queryByText('Banner')).not.toBeInTheDocument();
       });
 
-      describe('ticks', () => {
-        const ticks = () => screen.queryAllByTestId('config-preset-result-tick');
-
-        it('lead the header of a group and of a type that went well, and each item that was imported', async () => {
-          const { user } = await renderWizard(finished(allImported));
-          // The group only: its types and its items are closed
-          expect(ticks()).toHaveLength(1);
-          await user.click(screen.getByRole('button', { name: /^Expand/ }));
-          expect(ticks()).toHaveLength(4);
-          await user.click(screen.getAllByRole('button', { name: /^Expand/ })[1]);
-          expect(ticks()).toHaveLength(5);
-          expect(within(screen.getByText('Import theme').parentElement!).getByTestId('config-preset-result-tick')).toBeInTheDocument();
-        });
-
-        it('are not shown for what failed, nor on the header that holds it, but are for the types that went well', async () => {
-          await renderWizard(finished(oneFailed));
-          // The group has a failure, the failed item has none: the types of the platform and of the messages went well
-          expect(ticks()).toHaveLength(2);
-          expect(within(screen.getByText('Import theme').parentElement!).queryByTestId('config-preset-result-tick')).not.toBeInTheDocument();
-        });
-
-        it('are not shown for what was skipped, and a header that only holds skipped items has none', async () => {
-          const { user } = await renderWizard(finished([processed('platform', 'platform', 'SKIPPED', 'Nothing to import')]));
-          expect(ticks()).toHaveLength(0);
-          await user.click(screen.getByRole('button', { name: /^Expand/ }));
-          await user.click(screen.getByRole('button', { name: /^Expand/ }));
-          expect(screen.getByText('Skipped')).toBeInTheDocument();
-          expect(ticks()).toHaveLength(0);
-        });
+      it('lists what failed under the items to check, with the type, the name and the reason', async () => {
+        await renderWizard(finished(oneFailed));
+        expect(screen.getByText('Items to check (1)')).toBeInTheDocument();
+        expect(screen.getByText('Branding: Import theme')).toBeInTheDocument();
+        expect(screen.getByText('Failed')).toBeInTheDocument();
+        expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
+        expect(screen.getByText('Branding: 1 failed')).toBeInTheDocument();
+        // What went well is not listed
+        expect(screen.queryByText('Banner')).not.toBeInTheDocument();
       });
 
-      it('lets a type that failed be closed, and a type that went well be opened', async () => {
-        const { user } = await renderWizard(finished(oneFailed));
-        await user.click(screen.getAllByRole('button', { name: /^Collapse/ })[1]);
-        expect(screen.queryByText('Theme name already exists')).not.toBeInTheDocument();
-        await user.click(screen.getAllByRole('button', { name: /^Expand/ }).at(-1)!);
-        expect(screen.getByText('Banner')).toBeInTheDocument();
+      it('lists the first problems only, and sends to the report for the rest', async () => {
+        const failures = Array.from({ length: 100 }, (_, index) => processed('messages', `banner-${index}`, 'FAILED', 'Bad value'));
+        const counted = { ...progressOf(failures), type_counts: [{ ...progressOf(failures).type_counts[0], failed: 150 }] };
+        await renderWizard(finished([], { ...counted, report_id: 'config_preset/history/id/import-report.json' }));
+        expect(screen.getByText('Items to check (150)')).toBeInTheDocument();
+        expect(screen.getAllByText('Bad value')).toHaveLength(100);
+        expect(screen.getByText('The first 100 of 150 are listed. The report holds the complete list.')).toBeInTheDocument();
       });
 
-      it('does not open a group for an item that was skipped', async () => {
-        await renderWizard(finished([processed('platform', 'platform', 'SKIPPED', 'Nothing to import'), ...allImported.slice(2)]));
-        expect(screen.getByText('Platform settings (2/2)')).toBeInTheDocument();
-        expect(screen.queryByText('Nothing to import')).not.toBeInTheDocument();
+      it('does not send to a report that was not written', async () => {
+        const failures = Array.from({ length: 3 }, (_, index) => processed('messages', `banner-${index}`, 'FAILED', 'Bad value'));
+        const counted = { ...progressOf(failures), type_counts: [{ ...progressOf(failures).type_counts[0], failed: 5 }] };
+        await renderWizard(finished([], counted));
+        expect(screen.getByText('The first 3 of 5 are listed.')).toBeInTheDocument();
       });
 
-      it('groups the results of an interrupted import the same way', async () => {
+      it('leads with a tick the types that went well, not the ones with a failure or an item that was skipped', async () => {
+        await renderWizard(finished([...oneFailed, processed('platform', 'platform', 'SKIPPED', 'Nothing to import')]));
+        // The messages went well; the branding failed and the platform has a skipped item
+        const ticks = screen.queryAllByTestId('config-preset-result-tick');
+        expect(ticks).toHaveLength(1);
+        expect(within(screen.getByText('Messages: 1 overwritten').parentElement!).getByTestId('config-preset-result-tick')).toBeInTheDocument();
+      });
+
+      it('lists what was skipped for a reason as an item to check, but not what the platform had as it is', async () => {
+        await renderWizard(finished([
+          { ...processed('messages', 'banner', 'SKIPPED', 'Already up to date'), code: 'unchanged' },
+          processed('platform', 'platform', 'SKIPPED', 'Nothing to import'),
+        ]));
+        expect(screen.getByText('Items to check (1)')).toBeInTheDocument();
+        expect(screen.getByText('Nothing to import')).toBeInTheDocument();
+        expect(screen.queryByText('Already up to date')).not.toBeInTheDocument();
+        expect(screen.getByText('Messages: 1 up to date')).toBeInTheDocument();
+      });
+
+      it('shows the counts and the problems of an interrupted import the same way', async () => {
         await renderWizard(session({ status: 'INTERRUPTED', total: 3, results: oneFailed.slice(0, 2) }));
-        expect(screen.getByText('Platform settings (1/2)')).toBeInTheDocument();
+        expect(screen.getByText('Items processed before the stop')).toBeInTheDocument();
+        expect(screen.getByText('Platform configuration: 1 overwritten')).toBeInTheDocument();
+        expect(screen.getByText('Items to check (1)')).toBeInTheDocument();
         expect(screen.getByText('Theme name already exists')).toBeInTheDocument();
       });
+    });
+
+    it('does not ask for the result of every item when the import is real, only when it is simulated', async () => {
+      const rendered = await renderPreview();
+      await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
+      expect(realApplies(rendered)).toHaveLength(1);
+      // The same document applies and simulates, and only the simulation reads the results of the items
+      expect(realApplies(rendered)[0].request.node.params.text).toContain('@include(if: $dry_run)');
     });
 
     it('resumes on the progress screen when the session is applying, and polls every five seconds until it changes', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const applying = session({ status: 'APPLYING', total: 4, results: [processed('messages', 'banner', 'OVERWRITTEN')] });
       const rendered = await renderWizard(applying);
-      expect(screen.getByText('1 of 4 items processed')).toBeInTheDocument();
+      expect(screen.getByText('25% (1 of 4 items processed)')).toBeInTheDocument();
+      expect(screen.getByRole('progressbar', { name: 'Import progress' })).toHaveAttribute('aria-valuenow', '25');
+      expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeDisabled();
+      expect(screen.getByText('bundle.zip')).toBeInTheDocument();
       // The progress names the items, it does not show their keys
       expect(screen.getByText('Banner')).toBeInTheDocument();
       await act(async () => {
         vi.advanceTimersByTime(5000);
       });
       expect(operationNames(rendered)).toContain('ConfigPresetImportWizardQuery');
-      await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: session({ status: 'FINISHED', total: 4, counts: { created: 0, overwritten: 4, skipped: 0, failed: 0 } }) }) });
+      await resolve(rendered, 'ConfigPresetImportWizardQuery', { Query: () => ({ configPresetImportSession: session({ status: 'FINISHED', total: 4 }) }) });
       expect(await screen.findByText('Import finished')).toBeInTheDocument();
       await act(async () => {
         vi.advanceTimersByTime(10000);
@@ -818,8 +882,8 @@ describe('ConfigPresetImportWizard', () => {
     });
 
     it('shows the result of a finished import without report link when there is no report', async () => {
-      await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 1, overwritten: 0, skipped: 0, failed: 0 }, results: [processed('messages', 'banner', 'CREATED')] }));
-      expect(screen.getByText('Platform settings (1/1)')).toBeInTheDocument();
+      await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', results: [processed('messages', 'banner', 'CREATED')] }));
+      expect(screen.getByText('Messages: 1 created')).toBeInTheDocument();
       expect(screen.queryByRole('link', { name: 'Download report' })).not.toBeInTheDocument();
     });
 
@@ -827,7 +891,6 @@ describe('ConfigPresetImportWizard', () => {
       await renderWizard(session({
         status: 'FINISHED',
         outcome: 'COMPLETED',
-        counts: { created: 0, overwritten: 0, skipped: 2, failed: 0 },
         results: [
           { ...processed('messages', 'banner', 'SKIPPED', 'Already up to date'), code: 'unchanged' },
           processed('branding', 'theme--1', 'SKIPPED', 'Theme name already exists'),
@@ -836,13 +899,8 @@ describe('ConfigPresetImportWizard', () => {
       expect(screen.getByText('0 created, 0 overwritten, 1 up to date, 1 skipped, 0 failed')).toBeInTheDocument();
     });
 
-    it('counts nothing as up to date when the results do not say so', async () => {
-      await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 0, overwritten: 0, skipped: 3, failed: 0 }, results: [] }));
-      expect(screen.getByText('0 created, 0 overwritten, 0 up to date, 3 skipped, 0 failed')).toBeInTheDocument();
-    });
-
     it('clears the session and closes the wizard on Close of the result', async () => {
-      const rendered = await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED', counts: { created: 0, overwritten: 0, skipped: 0, failed: 0 } }));
+      const rendered = await renderWizard(session({ status: 'FINISHED', outcome: 'COMPLETED' }));
       await rendered.user.click(screen.getByRole('button', { name: 'Close' }));
       expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: false });
       expect(onFinish).not.toHaveBeenCalled();
@@ -946,8 +1004,8 @@ describe('ConfigPresetImportWizard', () => {
         results: [processed('messages', 'banner', 'OVERWRITTEN')],
       }));
       expect(screen.getByText('The import was interrupted')).toBeInTheDocument();
-      // Grouped like the result, closed as nothing failed
-      expect(screen.getByText('Platform settings (1/1)')).toBeInTheDocument();
+      // What was done by type, like the result
+      expect(screen.getByText('Messages: 1 overwritten')).toBeInTheDocument();
       expect(screen.queryByText('Overwritten')).not.toBeInTheDocument();
       await rendered.user.click(screen.getByRole('button', { name: 'Back to selection' }));
       expect(operationNames(rendered)).toContain('ConfigPresetImportWizardBackMutation');
@@ -985,7 +1043,7 @@ describe('ConfigPresetImportWizard', () => {
     it('moves an open wizard from applying to interrupted once the session says so', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const rendered = await renderWizard(session({ status: 'APPLYING', total: 2 }));
-      expect(screen.getByText('Import in progress')).toBeInTheDocument();
+      expect(screen.getByText('Applying your configuration')).toBeInTheDocument();
       await act(async () => {
         vi.advanceTimersByTime(5000);
       });
@@ -1016,7 +1074,6 @@ describe('ConfigPresetImportWizard', () => {
       await renderWizard(session({
         status: 'FINISHED',
         outcome: 'STOPPED',
-        counts: { created: 0, overwritten: 1, skipped: 0, failed: 1 },
         results: [processed('platform', 'platform', 'OVERWRITTEN'), processed('messages', 'banner', 'FAILED', 'Import stopped: lock lost')],
       }));
       expect(screen.getByText('Import stopped: lock lost')).toBeInTheDocument();
@@ -1458,5 +1515,107 @@ describe('ConfigPresetImportWizard', () => {
         expect(familySelect()).toHaveTextContent('Add as a copy');
       });
     });
+  });
+});
+
+// A bundle with a type of thousands of items: its first page comes with the preview, the rest from the items query
+describe('ConfigPresetImportWizard: a type listed page by page', () => {
+  const itemEdge = (key: string, label: string, overrides: Record<string, unknown> = {}) => ({ node: previewItem(key, label, { translatable: false, ...overrides }) });
+  const bigPreview = {
+    ...preview,
+    types: [
+      {
+        ...previewType('labels', 'Labels', Array.from({ length: 10 }, (_, i) => previewItem(`label--${i}`, `Label ${i}`, { translatable: false, conflict: i < 3 }))),
+        itemsPageInfo: { hasNextPage: true, globalCount: 5000 },
+        conflictsCount: 120,
+      },
+    ],
+  };
+  const itemsQueries = (rendered: Rendered) => rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportItemsQuery');
+  // The variables of the items queries sent, the latest last: a query that was answered is no longer pending
+  const itemsVariables: unknown[] = [];
+  const resolveItems = async (rendered: Rendered, edges: unknown[]) => {
+    await act(async () => {
+      const target = itemsQueries(rendered).at(-1)!;
+      itemsVariables.push(target.request.variables);
+      rendered.relayEnv.mock.resolve(target, MockPayloadGenerator.generate(target, {
+        ConfigPresetImportItemConnection: () => ({ edges, pageInfo: { hasNextPage: false, endCursor: '25', globalCount: edges.length } }),
+      }));
+    });
+  };
+  const openManage = async (rendered: Rendered, edges: unknown[]) => {
+    await rendered.user.click(screen.getByRole('button', { name: 'Manage' }));
+    await resolveItems(rendered, edges);
+  };
+
+  beforeEach(() => {
+    onFinish.mockReset();
+    enterpriseEdition.enabled = false;
+    itemsVariables.length = 0;
+  });
+
+  it('shows a Manage button for the type, and counts all its items', async () => {
+    await renderPreview(session(), [], bigPreview);
+    expect(screen.getByRole('button', { name: 'Manage' })).toBeInTheDocument();
+    expect(screen.getByText(/5000 items/)).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: 'Labels (5000/5000)' })).toBeInTheDocument();
+    // Its items are in the sub-view, not in the list
+    expect(screen.queryByTestId('config-preset-import-item-labels-label--0')).not.toBeInTheDocument();
+  });
+
+  it('opens the sub-view that reads the items of the type from the API, and goes back', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20'), itemEdge('label--21', 'Label 21', { conflict: true })]);
+    expect(itemsVariables.at(-1)).toMatchObject({ file_id: 'config_preset/import/id/bundle.zip', type: 'labels', count: 25, search: '' });
+    expect(screen.getByRole('checkbox', { name: 'Label 20' })).toBeInTheDocument();
+    expect(screen.getByText('5000 / 5000 selected')).toBeInTheDocument();
+    // The way back is in the sticky footer, as Apply is in the list: it stays at the bottom while the pages load, and is never the last row
+    const footer = within(screen.getByTestId('config-preset-sticky-footer'));
+    expect(footer.getByRole('button', { name: 'Back to bundle' })).toBeInTheDocument();
+    expect(screen.getByTestId('config-preset-sticky-footer')).toHaveStyle({ position: 'sticky', bottom: '0px' });
+    await rendered.user.click(footer.getByRole('button', { name: 'Back to bundle' }));
+    expect(within(screen.getByTestId('config-preset-sticky-footer')).getByRole('button', { name: 'Apply' })).toBeInTheDocument();
+  });
+
+  it('shows on a row of the sub-view what the import would do with it, for an item that is selected', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [
+      itemEdge('label--20', 'Label 20', { expected: { status: 'FAILED', reason: 'The label value is not valid', code: 'invalid' } }),
+      itemEdge('label--21', 'Label 21', { expected: { status: 'FAILED', reason: 'The label color is not valid', code: 'invalid' } }),
+    ]);
+    expect(screen.getByText(/The label value is not valid/)).toBeInTheDocument();
+    expect(screen.getByText(/The label color is not valid/)).toBeInTheDocument();
+    // An item that is not selected is not imported: nothing is expected of it
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Label 21' }));
+    expect(screen.queryByText(/The label color is not valid/)).not.toBeInTheDocument();
+    expect(screen.getByText(/The label value is not valid/)).toBeInTheDocument();
+  });
+
+  it('searches and keeps the items that already exist, by asking the API again', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20')]);
+    await rendered.user.type(screen.getByRole('searchbox', { name: 'Search' }), 'acme');
+    await waitFor(() => expect(itemsQueries(rendered).at(-1)!.request.variables).toMatchObject({ search: 'acme' }), { timeout: 2000 });
+    await resolveItems(rendered, []);
+    expect(await screen.findByText('No results')).toBeInTheDocument();
+    await rendered.user.click(screen.getByRole('button', { name: 'Already exists 120' }));
+    await waitFor(() => expect(itemsQueries(rendered).at(-1)!.request.variables).toMatchObject({ search: 'acme', conflictsOnly: true }));
+  });
+
+  it('keeps the items that are selected or not by their ids, as the export does', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20')]);
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Label 20' }));
+    await rendered.user.click(screen.getByRole('button', { name: 'Excluded 1' }));
+    await waitFor(() => expect(itemsQueries(rendered).at(-1)!.request.variables).toMatchObject({ ids: ['label--20'] }));
+  });
+
+  it('sends the selection of the type as every item but the excluded ones, never a list of thousands of keys', async () => {
+    const rendered = await renderPreview(session(), [], bigPreview);
+    await openManage(rendered, [itemEdge('label--20', 'Label 20')]);
+    await rendered.user.click(screen.getByRole('checkbox', { name: 'Label 20' }));
+    await waitFor(() => expect(rendered.relayEnv.mock.getAllOperations().filter((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation')).toHaveLength(1), { timeout: 2000 });
+    const save = rendered.relayEnv.mock.getAllOperations().find((candidate) => candidate.request.node.operation.name === 'ConfigPresetImportPreviewSaveMutation')!;
+    expect(save.request.variables).toMatchObject({ selections: [{ type: 'labels', items: null, excluded_items: ['label--20'] }] });
   });
 });

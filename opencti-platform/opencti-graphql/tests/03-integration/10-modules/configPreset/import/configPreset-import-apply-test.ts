@@ -12,6 +12,11 @@ import { downloadFile } from '../../../../../src/database/raw-file-storage';
 import { fullEntitiesList } from '../../../../../src/database/middleware-loader';
 import { entitySettingsEditField, getPlatformHiddenEntityTypes } from '../../../../../src/modules/entitySetting/entitySetting-domain';
 import { ENTITY_TYPE_ENTITY_SETTING, type BasicStoreEntityEntitySetting } from '../../../../../src/modules/entitySetting/entitySetting-types';
+import * as searchEngine from '../../../../../src/database/engine';
+import { labelDelete } from '../../../../../src/domain/label';
+import { ENTITY_TYPE_LABEL } from '../../../../../src/schema/stixMetaObject';
+import { getLabelStandardId } from '../../../../../src/modules/label/label-import';
+import type { BasicStoreEntityLabel } from '../../../../../src/modules/label/label-types';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
 import { applyConfigPresetImportRunEvent } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 
@@ -405,6 +410,31 @@ describe('Config preset import: apply', () => {
     const output = await configPresetImport({ ...testContext, requestAbortSignal: controller.signal }, ADMIN_USER, fileId, [{ type: 'messages' }], false);
     expect(output.results).toMatchObject([{ type: 'messages', key: 'banner', status: 'OVERWRITTEN', reason: null }]);
     expect((await readSettings()).platform_banner_text).toEqual('Hello');
+  });
+
+  const labelsOfTheTest = async () => (await fullEntitiesList(testContext, ADMIN_USER, [ENTITY_TYPE_LABEL])) as unknown as BasicStoreEntityLabel[];
+
+  it('writes the labels without a refresh each, then refreshes their index once: they can be searched when the import returns', async () => {
+    const values = Array.from({ length: 40 }, (_, i) => `deferred-refresh-label-${i}`);
+    const files: Record<string, string> = { 'metadata.json': metadataFile() };
+    values.forEach((value) => {
+      files[`taxonomy/labels/${getLabelStandardId(value)}.json`] = itemFile('taxonomy.labels', getLabelStandardId(value), { value, color: '#336699' });
+    });
+    const fileId = await upload(files);
+    const refresh = vi.spyOn(searchEngine, 'elRefreshIndices');
+    try {
+      const output = await importData(fileId, [{ type: 'labels' }]);
+      expect(output.results).toHaveLength(40);
+      expect(output.results.every(({ status }: { status: string }) => status === 'CREATED')).toBe(true);
+      expect(refresh).toHaveBeenCalledTimes(1);
+      const found = (await labelsOfTheTest()).filter(({ value }) => values.includes(value));
+      expect(found).toHaveLength(40);
+    } finally {
+      const created = (await labelsOfTheTest()).filter(({ value }) => values.includes(value));
+      for (let i = 0; i < created.length; i += 1) {
+        await labelDelete(testContext, ADMIN_USER, created[i].id);
+      }
+    }
   });
 
   it('skips the writes of a run that no longer owns the session', async () => {

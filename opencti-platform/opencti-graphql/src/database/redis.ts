@@ -1392,6 +1392,71 @@ export const redisDeleteConfigPresetImportSession = async (userId: string) => {
   await getClientBase().del(configPresetImportSessionKey(userId));
 };
 
+// The results of the items of an import run, one list per user and run (its start date). The session keeps only its small fields:
+// a result is appended with one command, so the cost of a write does not grow with the number of results already stored.
+// The keys of a run share the hash tag between braces, so they are in the same slot of a Redis cluster: one transaction writes them all
+const configPresetImportRunKey = (userId: string, startedAt: string, name: string) => `config_preset_import_{${userId}_${startedAt}}_${name}`;
+const configPresetImportResultsKey = (userId: string, startedAt: string) => configPresetImportRunKey(userId, startedAt, 'results');
+// The results that need a look (failed, skipped for a reason), and the counts by type and outcome: what a screen shows of a run of any size
+const configPresetImportProblemsKey = (userId: string, startedAt: string) => configPresetImportRunKey(userId, startedAt, 'problems');
+const configPresetImportCountsKey = (userId: string, startedAt: string) => configPresetImportRunKey(userId, startedAt, 'counts');
+
+// counter: the field of the counts hash the result is counted in; isProblem: the result is also kept in the list of the problems
+export const redisAppendConfigPresetImportResult = async (
+  userId: string,
+  startedAt: string,
+  result: object,
+  { counter, isProblem }: { counter: string; isProblem: boolean },
+) => {
+  const results = configPresetImportResultsKey(userId, startedAt);
+  const problems = configPresetImportProblemsKey(userId, startedAt);
+  const counts = configPresetImportCountsKey(userId, startedAt);
+  const json = JSON.stringify(result);
+  const tx = getClientBase().multi().rpush(results, json).hincrby(counts, counter, 1);
+  if (isProblem) {
+    tx.rpush(problems, json);
+  }
+  await tx.expire(results, CONFIG_PRESET_IMPORT_SESSION_TTL).expire(counts, CONFIG_PRESET_IMPORT_SESSION_TTL).expire(problems, CONFIG_PRESET_IMPORT_SESSION_TTL).exec();
+};
+
+const parseConfigPresetImportResults = (userId: string, raws: string[]): object[] => {
+  const results: object[] = [];
+  raws.forEach((raw) => {
+    try {
+      results.push(JSON.parse(raw));
+    } catch {
+      logApp.warn('[CONFIG PRESET] A result of the import could not be parsed', { user_id: userId });
+    }
+  });
+  return results;
+};
+
+// What a screen shows of a run, in one round trip whatever its number of results: how many, the counts, the first problems, the last results
+export const redisReadConfigPresetImportProgress = async (userId: string, startedAt: string, problemsLimit: number, recentLimit: number) => {
+  const answers = await getClientBase().multi()
+    .llen(configPresetImportResultsKey(userId, startedAt))
+    .hgetall(configPresetImportCountsKey(userId, startedAt))
+    .lrange(configPresetImportProblemsKey(userId, startedAt), 0, problemsLimit - 1)
+    .lrange(configPresetImportResultsKey(userId, startedAt), -recentLimit, -1)
+    .exec();
+  const [processed, counters, problems, recent] = (answers ?? []).map(([, answer]) => answer) as [number, Record<string, string>, string[], string[]];
+  return {
+    processed: processed ?? 0,
+    counters: counters ?? {},
+    problems: parseConfigPresetImportResults(userId, problems ?? []),
+    recent: parseConfigPresetImportResults(userId, recent ?? []),
+  };
+};
+
+// The results of a run in the order they were appended; an entry that cannot be parsed is skipped
+export const redisReadConfigPresetImportResults = async (userId: string, startedAt: string): Promise<object[]> => {
+  return parseConfigPresetImportResults(userId, await getClientBase().lrange(configPresetImportResultsKey(userId, startedAt), 0, -1));
+};
+
+export const redisDeleteConfigPresetImportResults = async (userId: string, startedAt: string) => {
+  await getClientBase().del(configPresetImportResultsKey(userId, startedAt), configPresetImportProblemsKey(userId, startedAt), configPresetImportCountsKey(userId, startedAt));
+};
+
 // The running record of a real import: who, since when, how far. The other administrators read their banner from it.
 // The 24 h TTL is a safety net for a record left by a dead node, set in seconds on every write.
 const CONFIG_PRESET_IMPORT_RUNNING_KEY = 'config_preset_import_running';

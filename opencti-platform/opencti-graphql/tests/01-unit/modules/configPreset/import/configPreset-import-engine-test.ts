@@ -25,11 +25,12 @@ vi.mock('../../../../../src/modules/rule/rule-import', async (importOriginal) =>
 }));
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-domain')>()),
-  loadConfigPresetImportZip: vi.fn(),
+  readConfigPresetImportBundle: vi.fn(),
+  // The types listed page by page: none, unless a test says so
+  listPagedConfigPresetImportTypes: vi.fn(async () => new Set<string>()),
 }));
-vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-bundle', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../../src/modules/configPreset/import/configPreset-import-bundle')>()),
-  readConfigPresetBundle: vi.fn(),
+vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-cache', () => ({
+  dropConfigPresetImportCache: vi.fn(),
 }));
 vi.mock('../../../../../src/modules/configPreset/import/configPreset-import-report', () => ({
   writeConfigPresetImportReport: vi.fn(async () => ({ reportId: 'report-id', folder: 'config_preset/history', fileName: 'report.json' })),
@@ -55,9 +56,12 @@ import { importRole, roleStandardId } from '../../../../../src/modules/user/role
 import { importConfigPresetRule, RULE_ACTIVATION_SCAN_REASON, RULE_ENGINE_DISABLED_REASON } from '../../../../../src/modules/rule/rule-import';
 import { RULES_DECLARATION } from '../../../../../src/domain/rules';
 import { groupStandardId } from '../../../../../src/modules/user/group-import';
-import { bundleRefused, readConfigPresetBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
+import { bundleRefused } from '../../../../../src/modules/configPreset/import/configPreset-import-bundle';
+import { listPagedConfigPresetImportTypes, readConfigPresetImportBundle } from '../../../../../src/modules/configPreset/import/configPreset-import-domain';
+import { dropConfigPresetImportCache } from '../../../../../src/modules/configPreset/import/configPreset-import-cache';
 import { readConfigPresetImportSession } from '../../../../../src/modules/configPreset/import/configPreset-import-session-domain';
 import { configPresetImport } from '../../../../../src/modules/configPreset/import/configPreset-import-engine';
+import { CONFIG_PRESET_FAMILIES } from '../../../../../src/modules/configPreset/configPreset-registry';
 import type { ConfigPresetBundle, ConfigPresetBundleItem } from '../../../../../src/modules/configPreset/import/configPreset-import-types';
 import { ConfigImportMode } from '../../../../../src/modules/configImport/configImport-types';
 import { BYPASS } from '../../../../../src/utils/access';
@@ -77,7 +81,7 @@ const groupItem: ConfigPresetBundleItem = {
 
 const withBundle = (items: ConfigPresetBundleItem[]) => {
   const bundle: ConfigPresetBundle = { metadata: { openCTI_version: '7.0.0', generated_at: '2026-11-05T00:00:00.000Z', bundle_name: null }, items, dependencies: {}, ignored: [] };
-  vi.mocked(readConfigPresetBundle).mockResolvedValue(bundle);
+  vi.mocked(readConfigPresetImportBundle).mockResolvedValue(bundle);
 };
 
 // The role imported as COPY, then its group: the role fails, so the group must not get the local role of the same name
@@ -130,6 +134,119 @@ describe('Config preset real import of a role in COPY and a group that depends o
   });
 });
 
+describe('Config preset real import: what the items need is read a slice at a time', () => {
+  const labelItems = (count: number): ConfigPresetBundleItem[] => Array.from({ length: count }, (_, i) => ({
+    type: 'labels',
+    id: `label--${i}`,
+    path: `taxonomy/labels/label--${i}.json`,
+    configuration: { value: `label ${i}` },
+  }));
+  const computedItem = { label: 'label', translatable: false, exists: false, conflict: false, status: 'created' as const };
+
+  it('prepares 500 items before the first of them, and not before the whole import', async () => {
+    withBundle(labelItems(1001));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    const events: string[] = [];
+    const prepare = vi.spyOn(labels, 'prepare').mockImplementation(async (_context, _user, items) => {
+      events.push(`prepare ${items.length}`);
+    });
+    vi.spyOn(labels, 'compute').mockImplementation(async (_context, _user, item) => {
+      events.push(item.id);
+      return computedItem;
+    });
+    vi.spyOn(labels, 'apply').mockResolvedValue('created' as never);
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    expect(results).toHaveLength(1001);
+    expect(prepare).toHaveBeenCalledTimes(3);
+    expect(prepare.mock.calls.map(([, , items]) => items.length)).toEqual([500, 500, 1]);
+    // Before the first item of each slice, after the last of the one before; the same plan for every slice
+    expect(events.indexOf('prepare 500')).toBe(0);
+    expect(events.slice(0, 2)).toEqual(['prepare 500', 'label--0']);
+    const secondSlice = events.indexOf('label--499') + 1;
+    expect(events.slice(secondSlice, secondSlice + 2)).toEqual(['prepare 500', 'label--500']);
+    expect(events[events.indexOf('label--999') + 1]).toBe('prepare 1');
+    expect(prepare.mock.calls[0][3]).toBe(prepare.mock.calls[2][3]);
+  });
+
+  it('writes with a deferred refresh, and finalizes once after the last item, with the plan the items were written with', async () => {
+    withBundle(labelItems(3));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    const events: string[] = [];
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    const apply = vi.spyOn(labels, 'apply').mockImplementation(async (_context, _user, item) => {
+      events.push(`apply ${item.id}`);
+    });
+    const finalize = vi.spyOn(labels, 'finalize').mockImplementation(async () => {
+      events.push('finalize');
+    });
+    await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    expect(events).toEqual(['apply label--0', 'apply label--1', 'apply label--2', 'finalize']);
+    expect(apply.mock.calls[0][5].deferRefresh).toBe(true);
+    expect(finalize.mock.calls[0][2]).toBe(apply.mock.calls[0][5]);
+  });
+
+  it('finalizes when the import stops, and the failure of a finalize does not fail the import', async () => {
+    withBundle(labelItems(2));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    vi.spyOn(labels, 'apply').mockImplementation(async (_context, _user, item) => {
+      if (item.id === 'label--1') {
+        throw bundleRefused('The configuration bundle is too large once extracted');
+      }
+    });
+    const finalize = vi.spyOn(labels, 'finalize').mockRejectedValue(new Error('search down'));
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    expect(finalize).toHaveBeenCalledTimes(1);
+    expect(results.map(({ status }) => status)).toEqual(['CREATED', 'FAILED']);
+  });
+
+  it('writes nothing and finalizes nothing on a dry run', async () => {
+    withBundle(labelItems(1));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    const apply = vi.spyOn(labels, 'apply').mockResolvedValue(undefined);
+    const finalize = vi.spyOn(labels, 'finalize').mockResolvedValue(undefined);
+    await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], true);
+    expect(apply).not.toHaveBeenCalled();
+    expect(finalize).not.toHaveBeenCalled();
+  });
+
+  it('computes the items of a type listed page by page on a dry run, and does not return them: its rows carry their own', async () => {
+    withBundle([...labelItems(3), roleItem(roleStandardId('Analyst'))]);
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    const compute = vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    vi.mocked(importRole).mockResolvedValue({ status: 'created', exists: false, targetId: roleStandardId('Analyst'), grantsSensitiveRights: false });
+    vi.mocked(listPagedConfigPresetImportTypes).mockResolvedValueOnce(new Set(['labels']));
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }, { type: 'roles' }], true);
+    expect(compute).toHaveBeenCalledTimes(3);
+    expect(results.map(({ type }) => type)).toEqual(['roles']);
+  });
+
+  it('returns the results of every type on a dry run when none is listed page by page', async () => {
+    withBundle(labelItems(3));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], true);
+    expect(results).toHaveLength(3);
+  });
+
+  it('does not prepare a family the platform cannot use', async () => {
+    withBundle(labelItems(2));
+    const labels = CONFIG_PRESET_FAMILIES.find(({ id }) => id === 'labels')!.importer!;
+    const prepare = vi.spyOn(labels, 'prepare').mockResolvedValue(undefined);
+    vi.spyOn(labels, 'compute').mockResolvedValue(computedItem);
+    vi.spyOn(labels, 'apply').mockResolvedValue('created' as never);
+    await configPresetImport(context, user, FILE_ID, [{ type: 'labels' }], false);
+    // A family of the platform is available: prepare ran once for the 2 labels
+    expect(prepare).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('Config preset real import of a bundle that cannot be read to the end', () => {
   const named = (name: string): ConfigPresetBundleItem => ({ type: 'roles', id: roleStandardId(name), path: `security_access/roles/${name}.json`, configuration: { name } });
 
@@ -172,5 +289,39 @@ describe('Config preset real import of an item whose status changes between comp
       : { status: 'overwritten', exists: true, reason: 'Write reason', targetId: id, grantsSensitiveRights: false }));
     const { results } = await configPresetImport(context, user, FILE_ID, [{ type: 'roles' }], false);
     expect(results.map(({ type, status, reason }) => [type, status, reason])).toEqual([['roles', 'OVERWRITTEN', 'Preview reason']]);
+  });
+});
+
+describe('Config preset import and the bundle kept for the wizard', () => {
+  const selections = [{ type: 'roles', item_modes: [] }];
+
+  beforeEach(() => {
+    vi.mocked(importRole).mockResolvedValue({ status: 'created', exists: false, targetId: roleStandardId('Analyst'), grantsSensitiveRights: false });
+  });
+
+  it('reads the bundle through what the preview kept for a dry run, and reads the zip itself for the import', async () => {
+    withBundle([roleItem(roleStandardId('Analyst'))]);
+    vi.mocked(readConfigPresetImportBundle).mockClear();
+    await configPresetImport(context, user, FILE_ID, selections, true);
+    expect(readConfigPresetImportBundle).toHaveBeenLastCalledWith(expect.anything(), user, FILE_ID, { fresh: false });
+    await configPresetImport(context, user, FILE_ID, selections, false);
+    expect(readConfigPresetImportBundle).toHaveBeenLastCalledWith(expect.anything(), user, FILE_ID, { fresh: true });
+  });
+
+  it('forgets what was kept once the import ran, as the preview says something else after it', async () => {
+    withBundle([roleItem(roleStandardId('Analyst'))]);
+    vi.mocked(dropConfigPresetImportCache).mockClear();
+    await configPresetImport(context, user, FILE_ID, selections, true);
+    expect(dropConfigPresetImportCache).not.toHaveBeenCalled();
+    await configPresetImport(context, user, FILE_ID, selections, false);
+    expect(dropConfigPresetImportCache).toHaveBeenCalledWith(user.id);
+  });
+
+  it('forgets it when the import fails too', async () => {
+    withBundle([roleItem(roleStandardId('Analyst'))]);
+    vi.mocked(readConfigPresetImportBundle).mockRejectedValueOnce(new Error('unreadable'));
+    vi.mocked(dropConfigPresetImportCache).mockClear();
+    await expect(configPresetImport(context, user, FILE_ID, selections, false)).rejects.toThrow('unreadable');
+    expect(dropConfigPresetImportCache).toHaveBeenCalledWith(user.id);
   });
 });

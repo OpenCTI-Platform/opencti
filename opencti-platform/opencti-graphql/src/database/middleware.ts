@@ -1838,9 +1838,10 @@ const indexCreatedElement = async (
   context: AuthContext,
   user: AuthUser,
   { element, relations }: { element: Record<string, any>; relations: Record<string, any>[] },
+  opts: { refresh?: boolean } = {},
 ) => {
   // Continue the creation of the element and the connected relations
-  const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
+  const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])], opts);
   const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
   await BluePromise.all([taskPromise, indexPromise]);
 };
@@ -4439,6 +4440,9 @@ type CreateEntityRawOpts = PatchAttributeOpts & CreateEventOpts & {
   bypassValidation?: boolean;
   bypassMandatoryAttributes?: boolean;
   onUnresolvedRefs?: (ids: string[]) => void;
+  // false: the entity is searchable at the next refresh of the index, not when the write returns. For a caller that creates many of
+  // them and refreshes the index once at the end (elRefreshIndices). Absent: refreshed at once, as every creation.
+  refresh?: boolean;
 };
 const cleanEntityForIdsCollision = (
   input: Record<string, any>,
@@ -4786,7 +4790,7 @@ const internalCreateEntityRaw = async (
 
     // Index the created element
     lock.signal.throwIfAborted();
-    await indexCreatedElement(context, user, dataEntity);
+    await indexCreatedElement(context, user, dataEntity, { refresh: opts.refresh });
     // Push the input in the stream
     const createdElement = { ...resolvedInput, ...dataEntity.element };
     // In case we have created relation (like Marking for example) the input name is not the database name and the resolution might fail

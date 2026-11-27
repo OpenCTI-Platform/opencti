@@ -3418,6 +3418,9 @@ export const elIndexElements = async (
   user: AuthUser,
   indexingType: string | undefined,
   elements: Record<string, any>[],
+  // refresh: false leaves the elements searchable at the next refresh of the index (a second at most) instead of when the write returns:
+  // the caller that does so refreshes the index itself when it needs the elements found at once (elRefreshIndices)
+  { refresh = true }: { refresh?: boolean } = {},
 ) => {
   validateElementsToIndex(context, user, elements);
   const elIndexElementsFn = async () => {
@@ -3437,7 +3440,7 @@ export const elIndexElements = async (
       });
       if (body.length > 0) {
         meterManager.directBulk(body.length, { type: indexingType });
-        await elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body });
+        await elBulk(context, { refresh, timeout: BULK_TIMEOUT, body });
       }
     }
     // 02. If relation, generate impacts for from and to sides

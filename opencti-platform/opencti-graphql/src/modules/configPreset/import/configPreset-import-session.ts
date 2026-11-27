@@ -56,8 +56,75 @@ export interface ConfigPresetImportSession {
   report_id: string | null;
 }
 
-// The session as the API returns it: the wizard enables its buttons from the events the state accepts
-export interface ConfigPresetImportGraphqlSession extends ConfigPresetImportSession {
+// The code an importer gives to an item that is already as the bundle says: counted apart, it is not a problem
+export const CONFIG_PRESET_CODE_UNCHANGED = 'unchanged';
+
+export type ConfigPresetImportCountBucket = 'created' | 'overwritten' | 'unchanged' | 'skipped' | 'failed';
+export const CONFIG_PRESET_COUNT_BUCKETS: ConfigPresetImportCountBucket[] = ['created', 'overwritten', 'unchanged', 'skipped', 'failed'];
+
+// The count a result goes to: the items the platform had as they are are not "skipped", which reads as if they were ignored
+export const configPresetResultBucket = ({ status, code }: Pick<ConfigPresetImportItemResult, 'status' | 'code'>): ConfigPresetImportCountBucket => {
+  if (status === 'SKIPPED') {
+    return code === CONFIG_PRESET_CODE_UNCHANGED ? 'unchanged' : 'skipped';
+  }
+  return status.toLowerCase() as ConfigPresetImportCountBucket;
+};
+
+// What needs a look in the result: an item that failed, or was skipped for a reason. The rest is in the counts and in the report.
+export const isConfigPresetResultProblem = (result: Pick<ConfigPresetImportItemResult, 'status' | 'code'>) => {
+  const bucket = configPresetResultBucket(result);
+  return bucket === 'failed' || bucket === 'skipped';
+};
+
+export const CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT = 100;
+export const CONFIG_PRESET_IMPORT_RECENT_LIMIT = 10;
+
+export type ConfigPresetImportTypeCounts = Record<ConfigPresetImportCountBucket, number> & { type: string };
+
+// What a result screen and a progress screen need of a run, whatever its number of items: the counts by type, a few items
+export interface ConfigPresetImportProgress {
+  processed: number;
+  type_counts: ConfigPresetImportTypeCounts[];
+  // The first items that failed or were skipped, in the order of processing, at most CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT
+  problems: ConfigPresetImportItemResult[];
+  // The last items processed
+  recent: ConfigPresetImportItemResult[];
+}
+
+export const emptyConfigPresetImportProgress = (): ConfigPresetImportProgress => ({ processed: 0, type_counts: [], problems: [], recent: [] });
+
+const addToTypeCounts = (counts: Map<string, ConfigPresetImportTypeCounts>, type: string, bucket: ConfigPresetImportCountBucket, count: number) => {
+  const known = counts.get(type) ?? { type, created: 0, overwritten: 0, unchanged: 0, skipped: 0, failed: 0 };
+  known[bucket] += count;
+  counts.set(type, known);
+};
+
+// The progress of results that were stored inside the session (a session of a version that had no counters)
+export const summarizeConfigPresetImportResults = (results: ConfigPresetImportItemResult[]): ConfigPresetImportProgress => {
+  const counts = new Map<string, ConfigPresetImportTypeCounts>();
+  results.forEach((result) => addToTypeCounts(counts, result.type, configPresetResultBucket(result), 1));
+  return {
+    processed: results.length,
+    type_counts: [...counts.values()],
+    problems: results.filter(isConfigPresetResultProblem).slice(0, CONFIG_PRESET_IMPORT_PROBLEMS_LIMIT),
+    recent: results.slice(-CONFIG_PRESET_IMPORT_RECENT_LIMIT),
+  };
+};
+
+// The counters of a run are stored as `<type>|<bucket>` fields: the counts by type
+export const toConfigPresetImportTypeCounts = (counters: Record<string, string>): ConfigPresetImportTypeCounts[] => {
+  const counts = new Map<string, ConfigPresetImportTypeCounts>();
+  Object.entries(counters).forEach(([field, value]) => {
+    const [type, bucket] = field.split('|');
+    if (CONFIG_PRESET_COUNT_BUCKETS.includes(bucket as ConfigPresetImportCountBucket)) {
+      addToTypeCounts(counts, type, bucket as ConfigPresetImportCountBucket, Number(value) || 0);
+    }
+  });
+  return [...counts.values()];
+};
+
+// The session as the API returns it: the wizard enables its buttons from the events the state accepts, and shows the progress of the run
+export interface ConfigPresetImportGraphqlSession extends ConfigPresetImportSession, ConfigPresetImportProgress {
   available_events: ConfigPresetImportSessionEvent[];
 }
 
@@ -125,12 +192,8 @@ const TRANSITIONS: ConfigPresetImportTransition[] = [
     to: 'APPLYING',
     apply: (session, { started_at, total, selections }) => ({ ...session!, status: 'APPLYING', started_at, total, selections, results: [] }),
   },
-  {
-    event: 'ITEM_PROCESSED',
-    from: 'APPLYING',
-    to: 'APPLYING',
-    apply: (session, { result }) => ({ ...session!, results: [...session!.results, result] }),
-  },
+  // The result of an item is appended to the list of its run (applyConfigPresetImportRunEvent): the session does not change
+  { event: 'ITEM_PROCESSED', from: 'APPLYING', to: 'APPLYING', apply: (session) => session },
   {
     event: 'FINISH',
     from: 'APPLYING',
