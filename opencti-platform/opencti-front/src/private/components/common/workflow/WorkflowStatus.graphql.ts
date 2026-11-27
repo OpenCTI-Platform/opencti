@@ -97,6 +97,33 @@ export const workflowStatusStixDomainObjectFragment = graphql`
     objectParticipant {
       id
     }
+    # A transition can reset the access restriction: the headers read it from the store
+    ... on Container {
+      authorized_members {
+        id
+        member_id
+        name
+        entity_type
+        access_right
+        groups_restriction {
+          id
+          name
+        }
+      }
+    }
+    ... on Organization {
+      authorized_members {
+        id
+        member_id
+        name
+        entity_type
+        access_right
+        groups_restriction {
+          id
+          name
+        }
+      }
+    }
     workflowInstance {
       ...WorkflowStatus_workflowInstance @relay(mask: false)
     }
