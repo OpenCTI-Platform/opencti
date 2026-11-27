@@ -429,6 +429,8 @@ describe('httpPlatform: /health details behavior', () => {
     vi.spyOn(platformHealthMetrics, 'getPlatformHealthStatus').mockReturnValue({ initialized: true, isHealthy: true, failures: [], dependencies: allDependenciesUp });
     vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({
       es_used_size: 10,
+      es_status: 'green',
+      es_disk_used_percent: 40,
       s3_used_size: 20,
       queue_consumers: { EXTERNAL_IMPORT: 3, INTERNAL_ENRICHMENT: 2 },
     });
@@ -445,13 +447,15 @@ describe('httpPlatform: /health details behavior', () => {
       status: 'success',
       dependencies: allDependenciesUp,
       es_used_size: 10,
+      es_status: 'green',
+      es_disk_used_percent: 40,
       s3_used_size: 20,
       queue_consumers: { EXTERNAL_IMPORT: 3, INTERNAL_ENRICHMENT: 2 },
     });
   });
 
   it('should return null detailed metrics when collection is unavailable', async () => {
-    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+    vi.spyOn(platformHealthMetrics, 'getPlatformUsageMetrics').mockReturnValue({ es_used_size: null, es_status: null, es_disk_used_percent: null, s3_used_size: null, queue_consumers: null });
     const healthHandler = await setupHealthHandler();
     const res = buildResponse();
 
@@ -462,6 +466,8 @@ describe('httpPlatform: /health details behavior', () => {
       status: 'success',
       dependencies: allDependenciesUp,
       es_used_size: null,
+      es_status: null,
+      es_disk_used_percent: null,
       s3_used_size: null,
       queue_consumers: null,
     });

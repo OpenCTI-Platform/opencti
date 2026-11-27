@@ -9,10 +9,6 @@ vi.mock('../../../../src/modules/xtm/one/xtm-one-client', () => ({
   },
 }));
 
-vi.mock('../../../../src/modules/xtm/one/xtm-one-health', () => ({
-  buildXtmOneHealthSnapshot: vi.fn(async () => ({ schema_version: 1, rabbitmq: { queue_messages: 3, consumers: 2 } })),
-}));
-
 vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
@@ -64,6 +60,7 @@ import { createTestCertificateAuthority, createTestXtmLicense, DAY } from '../..
 
 const mockContext = {} as AuthContext;
 const mockUser = { id: 'user-1' } as AuthUser;
+const buildHealthSnapshot = vi.fn(async () => ({ schema_version: 1, rabbitmq: { queue_messages: 3, consumers: 2 } }));
 
 const mockSettings = {
   id: 'settings-id-123',
@@ -117,7 +114,7 @@ describe('registerWithXtmOne', () => {
   it('should do nothing when xtmOneClient is not configured', async () => {
     vi.mocked(xtmOneClient.isConfigured).mockReturnValue(false);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     expect(xtmOneClient.register).not.toHaveBeenCalled();
     expect(getEntityFromCache).not.toHaveBeenCalled();
@@ -127,7 +124,7 @@ describe('registerWithXtmOne', () => {
     vi.mocked(xtmOneClient.isConfigured).mockReturnValue(true);
     vi.mocked(getEntityFromCache).mockResolvedValue(undefined as any);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     expect(xtmOneClient.register).not.toHaveBeenCalled();
   });
@@ -139,7 +136,7 @@ describe('registerWithXtmOne', () => {
     vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: true, license_type: 'enterprise' } as any);
     vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     expect(xtmOneClient.register).toHaveBeenCalledTimes(1);
     const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
@@ -175,7 +172,7 @@ describe('registerWithXtmOne', () => {
     vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: true, license_type: 'enterprise' } as any);
     vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
     expect(callArgs.supports_approval_prompts).toBe(false);
@@ -191,7 +188,7 @@ describe('registerWithXtmOne', () => {
     vi.mocked(xtmOneClient.register).mockResolvedValue(null);
 
     // Should not throw
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     expect(xtmOneClient.register).toHaveBeenCalledTimes(1);
     const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
@@ -208,7 +205,7 @@ describe('registerWithXtmOne', () => {
     });
     vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
     expect(callArgs.license_type).toBeUndefined();
@@ -221,7 +218,7 @@ describe('registerWithXtmOne', () => {
     vi.mocked(decodeLicensePem).mockReturnValue({ license_validated: false, license_type: 'enterprise' } as any);
     vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
     expect(callArgs.license_type).toBeUndefined();
@@ -237,7 +234,7 @@ describe('registerWithXtmOne', () => {
     });
     vi.mocked(xtmOneClient.register).mockResolvedValue(mockRegistrationResponse);
 
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
 
     const callArgs = vi.mocked(xtmOneClient.register).mock.calls[0][0];
     expect(callArgs.platform_id).toBe('settings-id-123');
@@ -252,7 +249,7 @@ describe('registerWithXtmOne: the Enterprise Edition of the XTM license', () => 
 
   const heartbeat = async (answer: Record<string, unknown>) => {
     vi.mocked(xtmOneClient.register).mockResolvedValue({ ...mockRegistrationResponse, ...answer } as any);
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
   };
   const warnings = () => vi.mocked(logApp.warn).mock.calls.map(([message]) => message as string);
   // What the Enterprise Edition resolution verifies on every read: the proof this node holds.
@@ -410,7 +407,7 @@ describe('registerWithXtmOne: the Enterprise Edition of the XTM license', () => 
 
     redisRegistrationResult = null;
     vi.mocked(xtmOneClient.register).mockResolvedValue(null);
-    await registerWithXtmOne(mockContext, mockUser);
+    await registerWithXtmOne(mockContext, mockUser, buildHealthSnapshot);
     expect(xtmLicenseVerdict().granted).toBe(false);
   });
 

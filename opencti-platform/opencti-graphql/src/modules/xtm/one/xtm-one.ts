@@ -8,6 +8,7 @@ import { decodeLicensePem, getEnterpriseEditionActivePem, IS_LTS_PLATFORM } from
 import { publishCacheResetEvent, redisGetXtmRegistrationResult, redisSetXtmRegistrationResult } from '../../../database/redis';
 import xtmOneClient from './xtm-one-client';
 import type { XtmOneRegistrationResponse } from './xtm-one-client';
+import type { XtmOneHealthSnapshot } from './xtm-one-health';
 import { buildXtmLicenseContext, getCurrentXtmLicenseProof, setCurrentXtmLicenseProof, verifyXtmLicenseProof } from './xtm-one-license';
 import type { XtmLicenseVerification } from './xtm-one-license';
 
@@ -94,7 +95,12 @@ const getXtmOneEntitlementWarning = (answer: XtmOneRegistrationResponse, verific
  * Sends the business vertical and requested intents so that XTM One
  * returns the intent catalog with available agents.
  */
-export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): Promise<void> => {
+export const registerWithXtmOne = async (
+  context: AuthContext,
+  user: AuthUser,
+  // Passed by the caller: importing it here closes the cycle settings -> xtm-one -> connector-domain -> ... -> settings
+  buildHealthSnapshot: (context: AuthContext, user: AuthUser) => Promise<XtmOneHealthSnapshot>,
+): Promise<void> => {
   if (!xtmOneClient.isConfigured()) {
     return;
   }
@@ -123,10 +129,7 @@ export const registerWithXtmOne = async (context: AuthContext, user: AuthUser): 
   const isChatbotUsable = settings.filigran_chatbot_ai_cgu_status === CguStatus.Enabled
     && (isOwnLicenseValidated || previousVerification.granted);
   // Each part of the snapshot is collected on its own: a part that fails is left out, the registration still goes.
-  // Imported lazily: this module is imported by settings.js, and a static import of the connector, engine and
-  // broker modules here closes an import cycle (settings -> xtm-one -> connector-domain -> ... -> settings).
-  const { buildXtmOneHealthSnapshot } = await import('./xtm-one-health');
-  const health = await buildXtmOneHealthSnapshot(context, user);
+  const health = await buildHealthSnapshot(context, user);
 
   const result = await xtmOneClient.register({
     platform_identifier: 'opencti',

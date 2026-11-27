@@ -31,11 +31,26 @@ The following metrics are exposed by the OpenCTI API.
 
 A background monitor refreshes the health metrics periodically, so scraping them never triggers a request to a dependency. The same collected state answers the `/health` endpoint, which therefore never probes ElasticSearch, S3, RabbitMQ or Redis per request. Configure both refresh intervals with `app:health_monitoring:dependency_check_interval` and `app:health_monitoring:usage_metrics_interval` (see [Configuration](configuration.md)).
 
-Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: they describe the platform as a whole rather than one node's view of it, so a dedicated manager (`platform_usage_metrics_manager`, see [Configuration](configuration.md)) computes the value once per interval and shares it with the rest of the cluster through Redis; every node then just adopts that shared value on its own polling cycle, which keeps every node reporting the same figure. This manager is disabled by default: set `PLATFORM_USAGE_METRICS_MANAGER__ENABLED=true` to collect the usage metrics.
+Dependency checks run on every node, so each node reports the connectivity it observes itself. Usage metrics are cluster wide instead: they describe the platform as a whole rather than one node's view of it, so a dedicated manager (`platform_usage_metrics_manager`, see [Configuration](configuration.md)) computes the value once per interval and shares it with the rest of the cluster through Redis; every node then just adopts that shared value on its own polling cycle, which keeps every node reporting the same figure. This manager is enabled by default: set `PLATFORM_USAGE_METRICS_MANAGER__ENABLED=false` to stop collecting the usage metrics. The health snapshot sent to XTM One then has no search engine part.
 
 A usage metric that cannot be collected is not exported, instead of being exported as `0`.
 
 The platform reports raw consumer counts per connector type and does not aggregate them into an ingestion capacity value. Consumers of the metric decide how to combine the types that are relevant to them.
+
+### Health endpoint details
+
+With the access key and `details=true` (`/health?health_access_key=<your key>&details=true`), a healthy platform answers the collected state below. The details are never given when `app:health_access_key` is `public`. An unhealthy platform answers `503` with the failing dependencies and their errors instead.
+
+| Field | Description |
+|:---|:---|
+| `dependencies` | Connectivity of each dependency as last checked by this node: `elasticsearch`, `storage`, `rabbitmq`, `redis`. |
+| `es_used_size` | ElasticSearch/OpenSearch primary store size in bytes, replicas excluded. Same value as `opencti_elasticsearch_used_size_bytes`. |
+| `es_status` | ElasticSearch/OpenSearch cluster health status: `green`, `yellow` or `red`. |
+| `es_disk_used_percent` | Disk usage, in percent, of the fullest ElasticSearch/OpenSearch data node: the engine stops writing on a node past its flood stage watermark. |
+| `s3_used_size` | Size in bytes of the files stored by the platform. Same value as `opencti_storage_used_size_bytes`. |
+| `queue_consumers` | Active consumers on the push queues, per connector type. Same values as `opencti_queue_consumers`. |
+
+Every field but `dependencies` is collected by the `platform_usage_metrics_manager`, and is `null` when the manager is disabled or the value could not be collected. The health snapshot sent to XTM One reads the same `es_status` and `es_disk_used_percent`.
 
 ### Dependency Metrics Attributes
 Applies to: `opencti_dependency_up`

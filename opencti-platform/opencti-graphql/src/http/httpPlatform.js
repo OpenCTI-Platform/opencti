@@ -636,8 +636,8 @@ const createApp = async (app, schema) => {
             const error = withDetails ? failures.join(', ') : 'Some dependencies are unavailable';
             res.status(503).send({ status: 'error', error, ...(withDetails ? { dependencies } : {}) });
           } else if (withDetails) {
-            const { es_used_size, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
-            res.status(200).send({ status: 'success', dependencies, es_used_size, s3_used_size, queue_consumers });
+            const { es_used_size, es_status, es_disk_used_percent, s3_used_size, queue_consumers } = getPlatformUsageMetrics();
+            res.status(200).send({ status: 'success', dependencies, es_used_size, es_status, es_disk_used_percent, s3_used_size, queue_consumers });
           } else {
             res.status(200).send({ status: 'success' });
           }

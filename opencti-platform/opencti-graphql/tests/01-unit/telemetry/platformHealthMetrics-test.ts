@@ -71,15 +71,24 @@ describe('platformHealthMetrics: buildHealthFailures function', () => {
 
 describe('platformHealthMetrics: parseCachedUsageMetrics function', () => {
   it('should adopt a payload shared by another node', () => {
-    const cached = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
+    const cached = { es_used_size: 10, es_status: 'green', es_disk_used_percent: 40, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
 
     expect(parseCachedUsageMetrics(cached)).toEqual(cached);
   });
 
   it('should adopt a payload where a metric could not be collected', () => {
-    const cached = { es_used_size: null, s3_used_size: 20, queue_consumers: null };
+    const cached = { es_used_size: null, es_status: null, es_disk_used_percent: null, s3_used_size: 20, queue_consumers: null };
 
     expect(parseCachedUsageMetrics(cached)).toEqual(cached);
+  });
+
+  it('should adopt a payload published before the search engine health was collected', () => {
+    expect(parseCachedUsageMetrics({ es_used_size: 10, s3_used_size: 20, queue_consumers: null }))
+      .toEqual({ es_used_size: 10, es_status: null, es_disk_used_percent: null, s3_used_size: 20, queue_consumers: null });
+  });
+
+  it('should ignore a payload with an unknown search engine status', () => {
+    expect(parseCachedUsageMetrics({ es_used_size: 10, es_status: 'purple', s3_used_size: 20, queue_consumers: null })).toBeNull();
   });
 
   it('should ignore an empty cache', () => {
@@ -99,7 +108,7 @@ describe('platformHealthMetrics: parseCachedUsageMetrics function', () => {
 });
 
 describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
-  const shared = { es_used_size: 10, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
+  const shared = { es_used_size: 10, es_status: 'green', es_disk_used_percent: 40, s3_used_size: 20, queue_consumers: { EXTERNAL_IMPORT: 3 } };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -120,7 +129,7 @@ describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue(null);
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, es_status: null, es_disk_used_percent: null, s3_used_size: null, queue_consumers: null });
   });
 
   it('should reset metrics when the published payload is invalid', async () => {
@@ -130,7 +139,7 @@ describe('platformHealthMetrics: adoptSharedUsageMetrics function', () => {
     vi.mocked(redisGetPlatformUsageMetrics).mockResolvedValue({ es_used_size: 'nope' });
     await adoptSharedUsageMetrics();
 
-    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, s3_used_size: null, queue_consumers: null });
+    expect(getPlatformUsageMetrics()).toEqual({ es_used_size: null, es_status: null, es_disk_used_percent: null, s3_used_size: null, queue_consumers: null });
   });
 });
 
