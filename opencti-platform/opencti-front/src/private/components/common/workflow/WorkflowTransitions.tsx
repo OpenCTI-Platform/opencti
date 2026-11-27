@@ -146,6 +146,12 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   const [menuOpen, setMenuOpen] = useState(false);
   const [blockedDialog, setBlockedDialog] = useState<BlockedTransition | null>(null);
   const nextStatusRef = useRef<HTMLButtonElement>(null);
+  // Whatever opened the blocked dialog: "Next status" for a menu item, the locked button itself in the button row.
+  const blockedDialogOpenerRef = useRef<HTMLElement | null>(null);
+  const openBlockedDialog = (transition: BlockedTransition, opener: HTMLElement | null) => {
+    blockedDialogOpenerRef.current = opener;
+    setBlockedDialog(transition);
+  };
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
 
@@ -368,7 +374,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                   key={transition.event}
                   data-testid={`workflow-blocked-transition-${transition.event}`}
                   aria-disabled="true"
-                  onSelect={() => setBlockedDialog(transition)}
+                  onSelect={() => openBlockedDialog(transition, nextStatusRef.current)}
                   style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal', gap: 8, alignItems: 'flex-start', color: 'var(--text-default-secondary)' }}
                 >
                   <LockOutlined fontSize="small" />
@@ -387,19 +393,25 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
         ) : (
           <>
             {workflowInstance.allowedTransitions.map(renderTransitionButton)}
-            {blockedTransitions.map((transition) => (
-              <React.Fragment key={transition.event}>
-                {transitionButtons ? (
-                  <FdsButton priority="secondary" disabled>
-                    {transition.event}
-                  </FdsButton>
-                ) : (
-                  <Button variant="secondary" size={buttonSize} startIcon={<LockOutlined fontSize="small" />} disabled>
-                    {transition.event}
-                  </Button>
-                )}
-              </React.Fragment>
-            ))}
+            {blockedTransitions.map((transition) => {
+              // Locked, not disabled: it stays focusable and clickable to explain why.
+              const lockedProps = {
+                'data-testid': `workflow-blocked-transition-${transition.event}`,
+                'aria-disabled': true,
+                startIcon: <LockOutlined fontSize="small" />,
+                style: { color: 'var(--text-default-secondary)' },
+                onClick: (e: React.MouseEvent<HTMLElement>) => openBlockedDialog(transition, e.currentTarget),
+              };
+              return transitionButtons ? (
+                <FdsButton key={transition.event} priority="secondary" {...lockedProps}>
+                  {transition.event}
+                </FdsButton>
+              ) : (
+                <Button key={transition.event} variant="secondary" size={buttonSize} {...lockedProps}>
+                  {transition.event}
+                </Button>
+              );
+            })}
           </>
         )}
         {/* After the buttons, so that it wraps under them instead of pushing them to a new line */}
@@ -504,7 +516,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           entityType={entityType}
           toStatusName={blockedDialog.toStatus?.template?.name}
           blockingConditions={blockedDialog.blockingConditions}
-          returnFocusTo={nextStatusRef}
+          returnFocusTo={blockedDialogOpenerRef}
         />
       )}
     </>

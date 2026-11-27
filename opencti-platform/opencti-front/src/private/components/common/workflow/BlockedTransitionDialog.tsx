@@ -94,8 +94,8 @@ interface BlockedTransitionDialogProps {
   entityType: string;
   toStatusName: string | undefined;
   blockingConditions: string | null | undefined;
-  // The dialog has no trigger of its own (it opens from a menu item), so Radix
-  // cannot restore focus on close: this element gets it back instead.
+  // The dialog has no Radix trigger (it opens from a menu item or a locked
+  // button), so Radix cannot restore focus on close: this element gets it back.
   returnFocusTo?: RefObject<HTMLElement | null>;
 }
 
