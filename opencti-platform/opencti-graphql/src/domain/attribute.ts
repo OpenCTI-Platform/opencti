@@ -15,11 +15,6 @@ import type { RefAttribute } from '../schema/attribute-definition';
 import { INPUT_EXTERNAL_REFS, INPUT_MARKINGS } from '../schema/general';
 import { resolveAttributeDescription } from '../schema/attribute-descriptions';
 
-export interface DefaultValue {
-  id: string;
-  name: string;
-}
-
 // -- ATTRIBUTES --
 
 export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, opts: QueryRuntimeAttributesArgs = {} as QueryRuntimeAttributesArgs) => {

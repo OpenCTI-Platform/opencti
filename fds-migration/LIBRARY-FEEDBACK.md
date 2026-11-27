@@ -3231,3 +3231,32 @@ the tooltip's positioning and portal).
 **Removal test.** At a library pin that ships a hover card, the preview
 renders inside it, opens on hover and on keyboard focus, and the row-mark tests
 still pass.
+
+---
+
+## 87. No Snackbar / Toast with an action button
+
+**Needed.** An object created from a container's add panel (Report, Grouping,
+Case) is now added to the container at once. The user is told so by a
+transient message — "Observable created and added to the Report" — that
+carries an **Undo** button and a **Close** button, stays at least 8 s, does not
+hide while hovered or focused, and is announced as a status.
+
+**Today.** The library ships no Snackbar, Toast or transient notification.
+`--explain` does not list one, and the census classes `Snackbar` as
+"no-lib-equivalent — feedback".
+
+**Consequence.** OpenCTI keeps its global message,
+`opencti-front/src/components/Message.tsx` (MUI `Snackbar` + `Alert`, fed by
+`MESSAGING$`). A message may now carry an `action`; the Undo button is the
+library `Button` (`@common/button/Button`), the close button the library
+`IconButton`. The auto-hide pause on focus is done by hand.
+
+**Ask.** A `Toast` / `Snackbar` component with: a severity, an optional action
+button, a close button, an auto-hide duration paused while hovered or focused,
+and `role="status"` (or `alert` for errors).
+
+**Removal test.** Replace the MUI `Snackbar` + `Alert` in `Message.tsx` by the
+library component: a success message with an action shows Undo and Close,
+clicking Undo calls the action and closes the message, focusing Undo keeps the
+message open, and `Message.test.tsx` passes unchanged.

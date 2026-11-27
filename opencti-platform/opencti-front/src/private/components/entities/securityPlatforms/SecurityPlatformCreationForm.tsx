@@ -41,7 +41,7 @@ interface SecurityPlatformCreationFormData {
 }
 
 interface SecurityPlatformCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: SecurityPlatformCreationMutation['response']['securityPlatformAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -81,9 +81,9 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     resetBulk,
   } = useBulkCommit<SecurityPlatformCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'securityPlatformAdd');
+        updater(store, 'securityPlatformAdd', response?.securityPlatformAdd);
       }
     },
   });

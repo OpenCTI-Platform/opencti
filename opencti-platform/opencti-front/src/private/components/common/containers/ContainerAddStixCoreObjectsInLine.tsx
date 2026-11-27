@@ -2,17 +2,16 @@ import Button from '@common/button/Button';
 import { Add } from '@mui/icons-material';
 import { Stack, Tooltip } from '@mui/material';
 import { IconButton } from '@filigran/design-system';
-import { FunctionComponent, Suspense, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { FunctionComponent, Suspense, useRef, useState } from 'react';
 import { useFormatter } from '../../../../components/i18n';
-import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { PaginationLocalStorage, usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { removeEmptyFields } from '../../../../utils/utils';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import type { DefaultValue } from '../../settings/sub_types/entity_setting/entitySetting';
 import Drawer from '../drawer/Drawer';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import { ContainerAddStixCoreObjectsLinesQuery, ContainerAddStixCoreObjectsLinesQuery$variables } from './__generated__/ContainerAddStixCoreObjectsLinesQuery.graphql';
@@ -20,6 +19,9 @@ import { ContainerStixDomainObjectsLinesQuery$variables } from './__generated__/
 import ContainerAddStixCoreObjectsLines, { containerAddStixCoreObjectsLinesQuery } from './ContainerAddStixCoreObjectsLines';
 import { ContainerStixCyberObservablesLinesPaginationQuery$variables } from '@components/common/containers/__generated__/ContainerStixCyberObservablesLinesPaginationQuery.graphql';
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
+import { CreationFeedbackContext } from '../../../../utils/hooks/useCreationFeedback';
+import { useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
+import { CreatedObject } from './useContainerObjects';
 
 interface ControlledDialProps {
   onOpen: () => void;
@@ -60,62 +62,19 @@ type scoEdge = {
   };
 };
 
-interface ContainerAddStixCreObjectsInLineLoaderProps {
-  queryRef: PreloadedQuery<ContainerAddStixCoreObjectsLinesQuery>;
-  containerId: string;
-  buildColumns: () => DataColumns;
-  linesPaginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
-  knowledgeGraph?: boolean;
-  selectedElements: unknown[];
-  handleSelect: (o: { id: string }) => void;
-  handleDeselect: (o: { id: string }) => void;
-  helpers: PaginationLocalStorage['helpers'];
-  containerRef: HTMLDivElement;
-  enableReferences?: boolean;
-}
-
-const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStixCreObjectsInLineLoaderProps> = ({
-  queryRef,
-  containerId,
-  buildColumns,
-  linesPaginationOptions,
-  knowledgeGraph,
-  selectedElements,
-  handleSelect,
-  handleDeselect,
-  helpers,
-  containerRef,
-  enableReferences,
-}) => {
-  const data = usePreloadedQuery(containerAddStixCoreObjectsLinesQuery, queryRef);
-  return (
-    <ContainerAddStixCoreObjectsLines
-      data={data}
-      containerId={containerId}
-      paginationOptions={linesPaginationOptions}
-      dataColumns={buildColumns()}
-      initialLoading={data === null}
-      knowledgeGraph={knowledgeGraph}
-      containerStixCoreObjects={selectedElements}
-      onAdd={handleSelect}
-      onDelete={handleDeselect}
-      setNumberOfElements={helpers.handleSetNumberOfElements}
-      containerRef={{ current: containerRef }}
-      enableReferences={enableReferences}
-      onLabelClick={helpers.handleAddFilter}
-    />
-  );
-};
-
 interface ContainerAddStixCoreObjectsInLineProps {
   containerId: string;
+  // Entity type of the container, named in the confirmation message
+  containerType?: string;
+  // The full object for the parent view (e.g. a graph node) when an object created from the panel is added
+  resolveObject?: (id: string) => Promise<CreatedObject>;
   targetStixCoreObjectTypes: string[];
   paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesPaginationQuery$variables;
   containerStixCoreObjects: unknown[];
   onAdd?: (node: { id: string }) => void;
   onDelete?: (node: { id: string }) => void;
   confidence?: number;
-  defaultCreatedBy?: unknown;
+  defaultCreatedBy?: DefaultValue | null;
   defaultMarkingDefinitions?: readonly DefaultMarking[];
   selectedText?: string;
   enableReferences?: boolean | undefined;
@@ -124,6 +83,8 @@ interface ContainerAddStixCoreObjectsInLineProps {
 
 const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({
   containerId,
+  containerType,
+  resolveObject,
   targetStixCoreObjectTypes,
   paginationOptions: linesPaginationOptions,
   containerStixCoreObjects,
@@ -166,17 +127,32 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   } = viewStorage;
   const [containerRef, setRef] = useState<HTMLDivElement | null>(null);
   const [selectedElements, setSelectedElements] = useState<scoEdge[]>(containerStixCoreObjects as scoEdge[]);
+  // Read when the objects created from the panel are added, after a delay
+  const selectedElementsRef = useRef(selectedElements);
+  selectedElementsRef.current = selectedElements;
+  // Functional updates: several objects can be added at once
   const handleSelect = (node: { id: string }) => {
-    setSelectedElements([
-      ...selectedElements,
+    setSelectedElements((current) => [
+      ...current,
       { node, types: ['manual'] },
     ]);
     if (typeof onAdd === 'function') onAdd(node);
   };
   const handleDeselect = (node: { id: string }) => {
-    setSelectedElements(selectedElements.filter((e) => e.node.id !== node.id));
+    setSelectedElements((current) => current.filter((e) => e.node.id !== node.id));
     if (typeof onDelete === 'function') onDelete(node);
   };
+  const { onCreated, referencesDialog, bulkCreation } = useAddCreatedObjectsToContainer({
+    containerId,
+    containerType,
+    knowledgeGraph,
+    paginationOptions: linesPaginationOptions,
+    enableReferences,
+    isInContainer: (id) => selectedElementsRef.current.some((e) => e.node.id === id),
+    onAdded: handleSelect,
+    onRemoved: handleDeselect,
+    resolveObject,
+  });
   const keyword = (searchTerm ?? '').length === 0 ? selectedText : searchTerm;
   const buildColumns = () => {
     return {
@@ -217,41 +193,42 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
   const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
 
-  const Header = () => {
-    return (
-      <>
-        <StixDomainObjectCreation
-          display={false}
-          inputValue=""
-          speeddial={true}
-          open={openCreateEntity}
-          handleClose={() => setOpenCreateEntity(false)}
-          creationCallback={undefined}
-          onCompleted={undefined}
-          isFromBulkRelation={undefined}
-          confidence={confidence}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions}
-          stixDomainObjectTypes={targetStixCoreObjectTypes}
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-        />
-        <StixCyberObservableCreation
-          display={false}
-          contextual={true}
-          inputValue=""
-          paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
-          speeddial={true}
-          open={openCreateObservable}
-          handleClose={() => setOpenCreateObservable(false)}
-          type={undefined}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
-        />
-      </>
-    );
-  };
+  // An element, not a component: a component declared here would be remounted, with the open creation form, at each render
+  const header = (
+    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: true, bulkCreation }}>
+      <StixDomainObjectCreation
+        display={false}
+        inputValue=""
+        speeddial={true}
+        open={openCreateEntity}
+        handleClose={() => setOpenCreateEntity(false)}
+        creationCallback={undefined}
+        onCompleted={undefined}
+        onCreated={onCreated}
+        isFromBulkRelation={undefined}
+        confidence={confidence}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
+        stixDomainObjectTypes={targetStixCoreObjectTypes}
+        paginationKey="Pagination_stixCoreObjects"
+        paginationOptions={searchPaginationOptions}
+      />
+      <StixCyberObservableCreation
+        display={false}
+        contextual={true}
+        inputValue=""
+        paginationKey="Pagination_stixCoreObjects"
+        paginationOptions={searchPaginationOptions}
+        speeddial={true}
+        open={openCreateObservable}
+        handleClose={() => setOpenCreateObservable(false)}
+        type={undefined}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
+        onCreated={onCreated}
+      />
+    </CreationFeedbackContext.Provider>
+  );
 
   const Dial = showSDOCreation
     ? ({ onOpen }: { onOpen: () => void }) => <ControlledDial title={t_i18n('Add entity')} onOpen={onOpen} />
@@ -286,53 +263,56 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   );
 
   return (
-    <Drawer
-      controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
-      header={<Header />}
-      title={showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-      ref={setRef}
-    >
-      <ListLines
-        helpers={helpers}
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={buildColumns()}
-        handleSearch={helpers.handleSearch}
-        keyword={keyword}
-        handleSort={helpers.handleSort}
-        handleAddFilter={helpers.handleAddFilter}
-        handleRemoveFilter={helpers.handleRemoveFilter}
-        handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-        handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-        disableCards={true}
-        filters={filters}
-        paginationOptions={searchPaginationOptions}
-        iconExtension={true}
-        parametersWithPadding={true}
-        disableExport={true}
-        availableEntityTypes={targetStixCoreObjectTypes}
-        entityTypes={targetStixCoreObjectTypes}
-        createButton={buttons}
+    <>
+      <Drawer
+        controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
+        header={header}
+        title={showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
+        ref={setRef}
       >
-        {(containerRef && queryRef) && (
-          <Suspense>
-            <ContainerAddStixCreObjectsInLineLoader
-              queryRef={queryRef}
-              containerId={containerId}
-              buildColumns={buildColumns}
-              linesPaginationOptions={linesPaginationOptions}
-              knowledgeGraph={knowledgeGraph}
-              selectedElements={selectedElements}
-              handleSelect={handleSelect}
-              handleDeselect={handleDeselect}
-              helpers={helpers}
-              containerRef={containerRef}
-              enableReferences={enableReferences}
-            />
-          </Suspense>
-        )}
-      </ListLines>
-    </Drawer>
+        <ListLines
+          helpers={helpers}
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={buildColumns()}
+          handleSearch={helpers.handleSearch}
+          keyword={keyword}
+          handleSort={helpers.handleSort}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+          handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+          disableCards={true}
+          filters={filters}
+          paginationOptions={searchPaginationOptions}
+          iconExtension={true}
+          parametersWithPadding={true}
+          disableExport={true}
+          availableEntityTypes={targetStixCoreObjectTypes}
+          entityTypes={targetStixCoreObjectTypes}
+          createButton={buttons}
+        >
+          {(containerRef && queryRef) && (
+            <Suspense>
+              <ContainerAddStixCoreObjectsLines
+                queryRef={queryRef}
+                containerId={containerId}
+                paginationOptions={linesPaginationOptions}
+                dataColumns={buildColumns()}
+                knowledgeGraph={knowledgeGraph}
+                containerStixCoreObjects={selectedElements}
+                onAdd={handleSelect}
+                onDelete={handleDeselect}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                enableReferences={enableReferences}
+                onLabelClick={helpers.handleAddFilter}
+              />
+            </Suspense>
+          )}
+        </ListLines>
+      </Drawer>
+      {referencesDialog}
+    </>
   );
 };
 

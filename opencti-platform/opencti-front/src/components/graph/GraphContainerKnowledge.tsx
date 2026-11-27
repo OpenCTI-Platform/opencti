@@ -25,6 +25,7 @@ import { ObjectToParse } from './utils/useGraphParser';
 const graphContainerKnowledgeDataFragment = graphql`
   fragment GraphContainerKnowledgeData_fragment on Container {
     id
+    entity_type
     confidence
     createdBy {
       ... on Identity {

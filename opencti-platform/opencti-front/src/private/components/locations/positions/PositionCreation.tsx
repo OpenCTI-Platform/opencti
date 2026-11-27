@@ -72,7 +72,7 @@ interface PositionAddInput {
 }
 
 interface PositionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: PositionCreationMutation['response']['positionAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -156,9 +156,9 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     resetBulk,
   } = useBulkCommit<PositionCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'positionAdd');
+        updater(store, 'positionAdd', response?.positionAdd);
       }
     },
   });

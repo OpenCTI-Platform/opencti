@@ -13,6 +13,11 @@ export const securityPlatformCreationMutation = graphql`
 mutation SecurityPlatformCreationMutation($input: SecurityPlatformAddInput!) {
     securityPlatformAdd(input: $input) {
     id
+    entity_type
+    parent_types
+    representative {
+      main
+    }
         ...SecurityPlatform_securityPlatform
     }
 }

@@ -13,10 +13,17 @@ import { createClient } from 'graphql-ws';
 import uploadMiddleware from './uploadMiddleware';
 import type { RelayError } from './relayTypes';
 
+/** A button shown in a message, e.g. "Undo" after an action. */
+export interface MessageAction {
+  label: string;
+  onClick: () => void;
+}
+
 interface ServiceMessage {
   type: string;
   text?: unknown;
   fullError?: unknown;
+  action?: MessageAction;
 }
 
 // Service bus
@@ -44,7 +51,7 @@ export const MESSAGING$ = {
     }));
     MESSENGER$.next(messages);
   },
-  notifySuccess: (text: unknown) => MESSENGER$.next([{ type: 'message', text }]),
+  notifySuccess: (text: unknown, options?: { action?: MessageAction }) => MESSENGER$.next([{ type: 'message', text, action: options?.action }]),
   notifyWarning: (text: unknown) => MESSENGER$.next([{ type: 'warning', text }]),
   notifyNLQ: (text: unknown) => MESSENGER$.next([{ type: 'nlq', text }]),
   toggleNav: new Subject(),

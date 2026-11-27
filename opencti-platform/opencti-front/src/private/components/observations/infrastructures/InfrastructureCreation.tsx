@@ -74,7 +74,7 @@ interface InfrastructureAddInput {
 }
 
 interface InfrastructureFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: InfrastructureCreationMutation['response']['infrastructureAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -135,9 +135,9 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
     resetBulk,
   } = useBulkCommit<InfrastructureCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'infrastructureAdd');
+        updater(store, 'infrastructureAdd', response?.infrastructureAdd);
       }
     },
   });

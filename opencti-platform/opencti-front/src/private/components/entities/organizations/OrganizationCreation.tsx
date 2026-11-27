@@ -72,7 +72,7 @@ interface OrganizationAddInput {
 }
 
 interface OrganizationFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: OrganizationCreationMutation['response']['organizationAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -128,9 +128,9 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     resetBulk,
   } = useBulkCommit<OrganizationCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'organizationAdd');
+        updater(store, 'organizationAdd', response?.organizationAdd);
       }
     },
   });

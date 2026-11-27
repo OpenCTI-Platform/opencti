@@ -131,8 +131,8 @@ test('Add and remove observable from Observables tab of a Report as Admin user',
   await expect(containerObservablesPage.getPage()).toBeVisible();
   await containerObservablesPage.getAddObservableListButton().click();
   await containerAddObservablesPage.createNewIPV4Observable('8.8.8.8');
-  await expect(containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8')).toBeVisible();
-  await containerAddObservablesPage.getObservable('IPv4 address 8.8.8.8').click();
+  // The created observable is added to the report without being ticked
+  await expect(containerAddObservablesPage.getAddedMessage()).toBeVisible();
   await containerAddObservablesPage.getCloseObservablesListButton().click();
   await expect(containerObservablesPage.getObservableInContainer('IPv4 address 8.8.8.8')).toBeVisible();
 
@@ -187,8 +187,8 @@ test.describe('Add and remove observable from Observables tab of a Report as noB
     await expect(containerObservablesPage.getPage()).toBeVisible();
     await containerObservablesPage.getAddObservableListButton().click();
     await containerAddObservablesPage.createNewIPV4Observable('9.9.9.9');
-    await expect(containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9')).toBeVisible();
-    await containerAddObservablesPage.getObservable('IPv4 address 9.9.9.9').click();
+    // The created observable is added to the report without being ticked
+    await expect(containerAddObservablesPage.getAddedMessage()).toBeVisible();
     await containerAddObservablesPage.getCloseObservablesListButton().click();
     await expect(containerObservablesPage.getObservableInContainer('IPv4 address 9.9.9.9')).toBeVisible();
 

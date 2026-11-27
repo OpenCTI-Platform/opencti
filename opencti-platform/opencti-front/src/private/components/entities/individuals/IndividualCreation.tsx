@@ -69,7 +69,7 @@ interface IndividualAddInput {
 }
 
 interface IndividualFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: IndividualCreationMutation['response']['individualAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -119,9 +119,9 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     resetBulk,
   } = useBulkCommit<IndividualCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'individualAdd');
+        updater(store, 'individualAdd', response?.individualAdd);
       }
     },
   });

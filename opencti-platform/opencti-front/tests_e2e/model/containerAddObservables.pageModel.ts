@@ -36,7 +36,33 @@ export default class ContainerAddObservablesPage {
     return this.page.getByRole('button', { name: observableName });
   }
 
+  getPanel() {
+    return this.page.getByRole('dialog', { name: 'Add observables' });
+  }
+
+  // Scoped to the panel: the success message has a Close button too
   getCloseObservablesListButton() {
-    return this.page.getByRole('button', { name: 'Close' });
+    return this.getPanel().getByRole('button', { name: 'Close' });
+  }
+
+  // The message locators include hidden elements: while the panel (a modal drawer) is open,
+  // MUI sets aria-hidden on the rest of the app, the message included.
+
+  // Any message: its text is checked by the caller
+  getMessage() {
+    return this.page.getByRole('alert', { includeHidden: true });
+  }
+
+  // The confirmation shown once a created object is added to the container
+  getAddedMessage() {
+    return this.page.getByRole('status', { includeHidden: true });
+  }
+
+  getUndoButton() {
+    return this.getMessage().getByRole('button', { name: 'Undo', exact: true, includeHidden: true });
+  }
+
+  getCloseMessageButton() {
+    return this.getMessage().getByRole('button', { name: 'Close', exact: true, includeHidden: true });
   }
 }

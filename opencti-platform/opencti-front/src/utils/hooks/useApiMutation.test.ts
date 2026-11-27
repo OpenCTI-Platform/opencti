@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import React, { ReactNode } from 'react';
 import { renderHook } from '@testing-library/react';
 import { GraphQLTaggedNode } from 'relay-runtime';
 import useApiMutation from './useApiMutation';
 import * as useDeferredCreationModule from './useDeferredCreation';
+import { CreationFeedbackContext } from './useCreationFeedback';
+import { MESSAGING$ } from '../../relay/environment';
 
 // ── Relay mocks ──────────────────────────────────────────────────────────────
 
@@ -120,5 +123,43 @@ describe('useApiMutation – deferred mode (isDeferredMode = true)', () => {
     expect(() => {
       commit({ variables: { input: { name: 'Test' } } } as Parameters<typeof commit>[0]);
     }).not.toThrow();
+  });
+});
+
+describe('useApiMutation – creation feedback silenced by a container panel', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(useDeferredCreationModule, 'useDeferredCreation').mockReturnValue({
+      isDeferredMode: false,
+      captureInput: vi.fn(),
+      registerPending: vi.fn(),
+      getPending: vi.fn(),
+    });
+    // Complete every mutation at once
+    mockCommit.mockImplementation((config: { onCompleted: (r: unknown, e: null) => void }) => config.onCompleted({}, null));
+  });
+
+  const silenced = ({ children }: { children: ReactNode }) => React.createElement(
+    CreationFeedbackContext.Provider,
+    { value: { silenceCreationSuccess: true } },
+    children,
+  );
+  const renderSilencedCommit = (rootField: string) => {
+    const { result } = renderHook(() => useApiMutation(fakeQuery(rootField), undefined, { successMessage: 'Done' }), { wrapper: silenced });
+    return result.current[0];
+  };
+
+  it('does not notify the success message of a creation mutation when the creation feedback is silenced', () => {
+    const commit = renderSilencedCommit('malwareAdd');
+    commit({ variables: { input: { name: 'Silenced' } } } as Parameters<typeof commit>[0]);
+
+    expect(MESSAGING$.notifySuccess).not.toHaveBeenCalled();
+  });
+
+  it('still notifies the success message of a non-creation mutation when silenced', () => {
+    const commit = renderSilencedCommit('malwareEdit');
+    commit({ variables: { id: 'm1' } } as Parameters<typeof commit>[0]);
+
+    expect(MESSAGING$.notifySuccess).toHaveBeenCalledOnce();
   });
 });

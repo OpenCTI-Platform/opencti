@@ -1,8 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { MutationParameters, SelectorStoreUpdater } from 'relay-runtime';
 import { UseMutationConfig, VariablesOf } from 'react-relay';
-import { Alert, Typography, List, ListItem, Tooltip } from '@mui/material';
+import { Alert, Box, Typography, List, ListItem, LinearProgress } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
+import type { Theme } from '../../components/Theme';
+import { CreationFeedbackContext } from './useCreationFeedback';
+import { getGraphQLResponseErrorsMessage } from '../../relay/graphQLResponseErrors';
 
 type ObjectType = 'entities' | 'observables' | 'files';
 
@@ -15,13 +20,15 @@ interface UseBulkCommitArgs<M extends MutationParameters> {
 interface UseBulkCommit_commits<M extends MutationParameters> {
   variables: VariablesOf<M>[];
   onStepError?: (err: Error, v: VariablesOf<M>) => void;
-  onStepCompleted?: (v: VariablesOf<M>) => void;
+  onStepCompleted?: (v: VariablesOf<M>, response: M['response']) => void;
   onCompleted?: (total: number) => void;
   commit?: (args: UseMutationConfig<M>) => void;
 }
 
 interface BulkResultProps<M extends MutationParameters> {
   variablesToString: (variables: VariablesOf<M>) => string;
+  // Other objects the creation made, e.g. "2 indicators created": shown once all are created
+  extraResults?: string[];
 }
 
 function useBulkCommit<M extends MutationParameters>({
@@ -30,6 +37,8 @@ function useBulkCommit<M extends MutationParameters>({
   type = 'entities',
 }: UseBulkCommitArgs<M>) {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const { bulkCreation } = useContext(CreationFeedbackContext);
 
   const [count, setCount] = useState(0);
   const [currentCount, setCurrentCount] = useState(0);
@@ -41,11 +50,13 @@ function useBulkCommit<M extends MutationParameters>({
     setCount(0);
     setCurrentCount(0);
     setInError([]);
+    bulkCreation?.onBulkEnd();
   };
 
   useEffect(() => {
     if (currentCount === count && count !== 0) {
       onBulkCompleted.current?.(count);
+      if (count > 1) bulkCreation?.onBulkCompleted();
     }
   }, [count, currentCount]);
 
@@ -62,6 +73,9 @@ function useBulkCommit<M extends MutationParameters>({
     }
 
     onBulkCompleted.current = onCompleted;
+    // A single object is not a bulk creation: it has no result dialog
+    const isBulk = variables.length > 1;
+    if (isBulk) bulkCreation?.onBulkStart();
     setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
@@ -75,9 +89,9 @@ function useBulkCommit<M extends MutationParameters>({
           setInError((err) => [...err, [variable as VariablesOf<M>, error]]);
           onStepError?.(error, variable);
         },
-        onCompleted: () => {
+        onCompleted: (response) => {
           setCurrentCount((c) => c + 1);
-          onStepCompleted?.(variable);
+          onStepCompleted?.(variable, response);
         },
       });
     });
@@ -89,13 +103,18 @@ function useBulkCommit<M extends MutationParameters>({
     files: t_i18n('files imported'),
   };
 
+  // Shown while the created objects are added to the surrounding container (files are never added to one)
+  const addingLabel = (containerType: string) => (type === 'observables'
+    ? t_i18n('Observables added to the {containerType}', { values: { containerType } })
+    : t_i18n('Entities added to the {containerType}', { values: { containerType } }));
+
   const errorLabel: Record<ObjectType, string> = {
     entities: t_i18n('entities not created'),
     observables: t_i18n('observables not created'),
     files: t_i18n('files not imported'),
   };
 
-  const BulkResult = ({ variablesToString }: BulkResultProps<M>) => (
+  const BulkResult = ({ variablesToString, extraResults = [] }: BulkResultProps<M>) => (
     <>
       {currentCount === count && currentCount - inError.length > 0 && (
         <Alert variant="outlined" sx={{ marginTop: 2 }}>
@@ -104,6 +123,11 @@ function useBulkCommit<M extends MutationParameters>({
           </Typography>
         </Alert>
       )}
+      {count > 0 && currentCount === count && extraResults.map((result) => (
+        <Alert key={result} variant="outlined" sx={{ marginTop: 2 }}>
+          <Typography>{result}</Typography>
+        </Alert>
+      ))}
       {inError.length > 0 && (
         <Alert
           variant="outlined"
@@ -120,15 +144,43 @@ function useBulkCommit<M extends MutationParameters>({
           </Typography>
           <List dense>
             {inError.map(([variables, error], index) => {
+              const message = getGraphQLResponseErrorsMessage(error);
               return (
-                <Tooltip key={index} title={error.message}>
-                  <ListItem divider>
-                    {variablesToString(variables)}
-                  </ListItem>
-                </Tooltip>
+                <ListItem key={index} divider sx={{ gap: theme.spacing(2) }}>
+                  <Typography sx={{ flexShrink: 0 }}>{variablesToString(variables)}</Typography>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Typography noWrap tabIndex={0} sx={{ color: 'error.main', minWidth: 0, marginLeft: 'auto' }}>{message}</Typography>
+                    </TooltipTrigger>
+                    <TooltipContent>{message}</TooltipContent>
+                  </Tooltip>
+                </ListItem>
               );
             })}
           </List>
+        </Alert>
+      )}
+      {/* After the creation's own result: the created objects are then added to the container */}
+      {bulkCreation?.progress && (bulkCreation.progress.inProgress || bulkCreation.progress.total > 0) && (
+        <Box sx={{ marginTop: theme.spacing(2) }}>
+          {bulkCreation.progress.inProgress && (
+            <Typography sx={{ color: 'text.disabled' }}>
+              {addingLabel(bulkCreation.containerType)}
+            </Typography>
+          )}
+          <Box sx={{ display: 'flex', gap: theme.spacing(1.5), alignItems: 'center' }}>
+            <LinearProgress
+              style={{ flex: 1 }}
+              variant="determinate"
+              value={bulkCreation.progress.total > 0 ? (bulkCreation.progress.done / bulkCreation.progress.total) * 100 : 0}
+            />
+            <Typography style={{ flexShrink: 0 }}>{`${bulkCreation.progress.done}/${bulkCreation.progress.total}`}</Typography>
+          </Box>
+        </Box>
+      )}
+      {bulkCreation?.resultMessage && !bulkCreation.progress?.inProgress && (
+        <Alert variant="outlined" sx={{ marginTop: 2 }}>
+          <Typography>{bulkCreation.resultMessage}</Typography>
         </Alert>
       )}
     </>

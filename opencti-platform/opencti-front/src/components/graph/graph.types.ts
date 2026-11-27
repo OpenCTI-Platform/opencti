@@ -84,6 +84,7 @@ export interface OctiGraphPositions {
 
 export interface GraphEntity {
   id: string;
+  entity_type?: string;
   confidence?: number | null | undefined;
   createdBy?: unknown | null | undefined;
   published?: string | null | undefined;

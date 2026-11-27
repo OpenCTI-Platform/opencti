@@ -342,6 +342,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <ContainerAddStixCoreObjectsInLine
                   containerId={container.id}
+                  containerType={container.entity_type}
                   targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
                   containerStixCoreObjects={[...(container.objects?.edges ?? [])]}
                   paginationOptions={queryPaginationOptions}
@@ -377,6 +378,7 @@ const ContainerStixCyberObservables = createFragmentContainer(
     container: graphql`
       fragment ContainerStixCyberObservables_container on Container {
         id
+        entity_type
         objectMarking {
           id
           definition

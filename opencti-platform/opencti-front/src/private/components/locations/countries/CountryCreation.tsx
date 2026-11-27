@@ -65,7 +65,7 @@ interface CountryAddInput {
 }
 
 interface CountryFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: CountryCreationMutation['response']['countryAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -113,9 +113,9 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     resetBulk,
   } = useBulkCommit<CountryCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'countryAdd');
+        updater(store, 'countryAdd', response?.countryAdd);
       }
     },
   });

@@ -88,7 +88,7 @@ interface SectorAddInput {
 }
 
 interface SectorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (store: RecordSourceSelectorProxy, key: string, response: SectorCreationMutation['response']['sectorAdd']) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -135,9 +135,9 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     resetBulk,
   } = useBulkCommit<SectorCreationMutation>({
     commit,
-    relayUpdater: (store) => {
+    relayUpdater: (store, response) => {
       if (updater) {
-        updater(store, 'sectorAdd');
+        updater(store, 'sectorAdd', response?.sectorAdd);
       }
     },
   });

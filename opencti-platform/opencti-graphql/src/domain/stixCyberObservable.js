@@ -247,14 +247,17 @@ export const addStixCyberObservable = async (context, user, input) => {
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);
   // create the linked indicator if needed
+  let createdIndicator = null;
   if (createIndicator) {
     try {
-      await createIndicatorFromObservable(context, user, input, created);
+      createdIndicator = await createIndicatorFromObservable(context, user, input, created);
     } catch (err) {
       logApp.info('[OPENCTI] Cannot create indicator', { error: err });
     }
   }
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].ADDED_TOPIC, created, user);
+  const notified = await notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].ADDED_TOPIC, created, user);
+  // Given in this response only (createdIndicator field), not in the event: the indicator created or upserted with the observable
+  return createdIndicator ? { ...notified, createdIndicator } : notified;
 };
 
 export const stixCyberObservableDelete = async (context, user, stixCyberObservableId) => {

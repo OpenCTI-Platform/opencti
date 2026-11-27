@@ -1,7 +1,6 @@
-import React, { FunctionComponent, ReactNode, useEffect, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useEffect, useRef, useState } from 'react';
 import * as R from 'ramda';
 import { Form, Formik, FormikConfig } from 'formik';
-import { ConnectionHandler, RecordSourceSelectorProxy } from 'relay-runtime';
 import IconButton from '@common/button/IconButton';
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Add } from '@mui/icons-material';
@@ -11,10 +10,7 @@ import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
-import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
-import { containerAddStixCoreObjectsLinesRelationAddMutation, containerAddStixCoreObjectsLinesRelationDeleteMutation } from './ContainerAddStixCoreObjectsLines';
-import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from '../../analyses/reports/ReportKnowledgeGraphQuery';
 import {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
@@ -32,6 +28,7 @@ import {
 } from '../stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLine_node.graphql';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import type { DefaultValue } from '../../settings/sub_types/entity_setting/entitySetting';
 import useAuth from '../../../../utils/hooks/useAuth';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps, DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
@@ -43,8 +40,10 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { insertNode } from '../../../../utils/store';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { useContainerObjects } from './useContainerObjects';
+import { useAddCreatedObjectsToContainer } from './useAddCreatedObjectsToContainer';
+import { CreationFeedbackContext } from '../../../../utils/hooks/useCreationFeedback';
 import CommitMessage from '../form/CommitMessage';
 import { ExternalReferencesValues } from '../form/ExternalReferencesField';
 import { DefaultMarking } from '../../settings/marking_definitions/markingDefinition.types';
@@ -55,6 +54,13 @@ export type ContainerAddStixCoreObjectsLine = StixCoreRelationshipCreationFromEn
 type ContainerStixCoreObjects = ReadonlyArray<{ readonly node: { readonly id?: string } } | null | undefined>;
 
 type SearchPaginationOptions = StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables;
+
+// The objects in the container, indexed by id, or by standard_id for the mapping view
+type AddedStixCoreObjects = Record<string, { id?: string }>;
+interface MarkableObject {
+  id: string;
+  standard_id?: string;
+}
 
 interface ReferencesFormValues {
   message: string;
@@ -81,7 +87,10 @@ interface ContainerAddStixCoreObjectsSelectEntitiesProps {
   containerId: string;
   paginationOptions?: Record<string, unknown>;
   knowledgeGraph?: boolean;
-  containerStixCoreObjects?: ContainerStixCoreObjects;
+  // Held by the panel, which also adds the objects created from it
+  addedStixCoreObjects: AddedStixCoreObjects;
+  markAsAdded: (stixCoreObject: MarkableObject) => void;
+  markAsRemoved: (stixCoreObject: MarkableObject) => void;
   onAdd?: (stixCoreObject: ContainerAddStixCoreObjectsLine) => void;
   onDelete?: (stixCoreObject: ContainerAddStixCoreObjectsLine) => void;
   enableReferences?: boolean;
@@ -99,20 +108,18 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
   containerId,
   paginationOptions,
   knowledgeGraph,
-  containerStixCoreObjects,
+  addedStixCoreObjects,
+  markAsAdded,
+  markAsRemoved,
   onAdd,
   onDelete,
   enableReferences,
 }) => {
   const theme = useTheme<Theme>();
+  const { addObjectToContainer, removeObjectFromContainer } = useContainerObjects();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const [referenceDialogOpened, setReferenceDialogOpened] = useState(false);
   const [currentlyToggledCoreObject, setCurrentlyToggledCoreObject] = useState<ContainerAddStixCoreObjectsLine | null>(null);
-  // Indexed by id, or by standard_id for the mapping view
-  const [addedStixCoreObjects, setAddedStixCoreObjects] = useState<Record<string, { id?: string }>>(() => R.indexBy(
-    (n) => n.id ?? '',
-    (containerStixCoreObjects ?? []).flatMap((n) => (n?.node.id ? [n.node] : [])),
-  ));
   const queryRef = useQueryLoading<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery>(
     stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
     { ...searchPaginationOptions, count: 25 },
@@ -120,16 +127,6 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
 
   const isAdded = (stixCoreObject: ContainerAddStixCoreObjectsLine) => stixCoreObject.id in addedStixCoreObjects
     || stixCoreObject.standard_id in addedStixCoreObjects;
-  const markAsAdded = (stixCoreObject: ContainerAddStixCoreObjectsLine) => setAddedStixCoreObjects((current) => ({
-    ...current,
-    [stixCoreObject.id]: stixCoreObject,
-  }));
-  const markAsRemoved = (stixCoreObject: ContainerAddStixCoreObjectsLine) => setAddedStixCoreObjects((current) => R.omit(
-    [stixCoreObject.id, stixCoreObject.standard_id],
-    current,
-  ));
-  // ID is not valid pagination options, will be handled better when hooked
-  const { id: _, count: __, ...containerPaginationOptions } = paginationOptions ?? {};
 
   const sendStixCoreObjectModification = (
     stixCoreObject: ContainerAddStixCoreObjectsLine,
@@ -138,6 +135,7 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
     setSubmitting?: (isSubmitting: boolean) => void,
     resetForm?: () => void,
   ) => {
+    const args = { containerId, objectId: stixCoreObject.id, knowledgeGraph, paginationOptions, commitMessage, references };
     const complete = (callback?: (o: ContainerAddStixCoreObjectsLine) => void) => {
       if (typeof callback === 'function') {
         callback(stixCoreObject);
@@ -145,68 +143,23 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
       if (setSubmitting) setSubmitting(false);
       if (resetForm) resetForm();
     };
+    // The error is already shown by the mutation
+    const fail = () => {
+      if (setSubmitting) setSubmitting(false);
+    };
     if (isAdded(stixCoreObject)) {
-      commitMutation({
-        mutation: knowledgeGraph
-          ? reportKnowledgeGraphMutationRelationDeleteMutation
-          : containerAddStixCoreObjectsLinesRelationDeleteMutation,
-        variables: {
-          id: containerId,
-          toId: stixCoreObject.id,
-          relationship_type: 'object',
-          commitMessage,
-          references,
-        },
-        updater: knowledgeGraph ? undefined : (store: RecordSourceSelectorProxy) => {
-          markAsRemoved(stixCoreObject);
-          const containerRecord = store.get(containerId);
-          const conn = containerRecord && ConnectionHandler.getConnection(
-            containerRecord,
-            'Pagination_objects',
-            containerPaginationOptions,
-          );
-          if (conn) ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-        },
-        onCompleted: () => {
-          markAsRemoved(stixCoreObject);
-          complete(onDelete);
-        },
-        setSubmitting,
-      });
+      removeObjectFromContainer(args).then(() => {
+        markAsRemoved(stixCoreObject);
+        complete(onDelete);
+      }).catch(fail);
     } else {
-      const input = {
-        toId: stixCoreObject.id,
-        relationship_type: 'object',
-      };
-      commitMutation({
-        mutation: knowledgeGraph
-          ? reportKnowledgeGraphtMutationRelationAddMutation
-          : containerAddStixCoreObjectsLinesRelationAddMutation,
-        variables: {
-          id: containerId,
-          input,
-          commitMessage,
-          references,
-        },
+      addObjectToContainer({
+        ...args,
         optimisticUpdater: knowledgeGraph ? undefined : () => markAsAdded(stixCoreObject),
-        updater: knowledgeGraph ? undefined : (store: RecordSourceSelectorProxy) => {
-          insertNode(
-            store,
-            'Pagination_objects',
-            containerPaginationOptions,
-            'containerEdit',
-            containerId,
-            'relationAdd',
-            { input, commitMessage, references },
-            'to',
-          );
-        },
-        onCompleted: () => {
-          if (knowledgeGraph) markAsAdded(stixCoreObject);
-          complete(onAdd);
-        },
-        setSubmitting,
-      });
+      }).then(() => {
+        if (knowledgeGraph) markAsAdded(stixCoreObject);
+        complete(onAdd);
+      }).catch(fail);
     }
   };
 
@@ -291,8 +244,10 @@ const ContainerAddStixCoreObjectsSelectEntities: FunctionComponent<ContainerAddS
 
 interface ContainerAddStixCoreObjectsProps {
   containerId: string;
+  // Entity type of the container, named in the confirmation message
+  containerType?: string;
   targetStixCoreObjectTypes: string[];
-  defaultCreatedBy?: unknown;
+  defaultCreatedBy?: DefaultValue | null;
   defaultMarkingDefinitions?: readonly DefaultMarking[];
   knowledgeGraph?: boolean;
   containerStixCoreObjects?: ContainerStixCoreObjects;
@@ -313,6 +268,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
   defaultCreatedBy,
   defaultMarkingDefinitions,
   containerId,
+  containerType,
   knowledgeGraph,
   containerStixCoreObjects,
   confidence,
@@ -330,6 +286,40 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
   const [openSpeedDial, setOpenSpeedDial] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
+  const [addedStixCoreObjects, setAddedStixCoreObjects] = useState<AddedStixCoreObjects>(() => R.indexBy(
+    (n) => n.id ?? '',
+    (containerStixCoreObjects ?? []).flatMap((n) => (n?.node.id ? [n.node] : [])),
+  ));
+  // Read when the objects created from the panel are added, after a delay
+  const addedStixCoreObjectsRef = useRef(addedStixCoreObjects);
+  addedStixCoreObjectsRef.current = addedStixCoreObjects;
+  const markAsAdded = (stixCoreObject: MarkableObject) => setAddedStixCoreObjects((current) => ({
+    ...current,
+    [stixCoreObject.id]: stixCoreObject,
+  }));
+  const markAsRemoved = (stixCoreObject: MarkableObject) => setAddedStixCoreObjects((current) => R.omit(
+    [stixCoreObject.id, stixCoreObject.standard_id ?? stixCoreObject.id],
+    current,
+  ));
+  // In content mapping, adding an object also maps the selected text: nothing is added automatically there
+  const { onCreated, referencesDialog, bulkCreation } = useAddCreatedObjectsToContainer({
+    containerId,
+    containerType,
+    knowledgeGraph,
+    paginationOptions,
+    enableReferences,
+    disabled: !!mapping,
+    isInContainer: (id) => id in addedStixCoreObjectsRef.current,
+    onAdded: (object) => {
+      markAsAdded(object);
+      onAdd?.(object as unknown as ContainerAddStixCoreObjectsLine);
+    },
+    onRemoved: (object) => {
+      markAsRemoved(object);
+      onDelete?.(object as unknown as ContainerAddStixCoreObjectsLine);
+    },
+  });
+  const onCreatedFromPanel = mapping ? undefined : onCreated;
 
   const { stixDomainObjectTypes, stixCyberObservableTypes } = useAttributes();
   const {
@@ -414,6 +404,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
         stixDomainObjectTypes={targetStixCoreObjectTypes}
         creationCallback={undefined}
         onCompleted={undefined}
+        onCreated={onCreatedFromPanel}
         isFromBulkRelation={undefined}
         open={undefined}
         speeddial={undefined}
@@ -431,7 +422,8 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
+        onCreated={onCreatedFromPanel}
       />
     );
   };
@@ -482,6 +474,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
           handleClose={() => handleCloseCreateEntity()}
           creationCallback={undefined}
           onCompleted={undefined}
+          onCreated={onCreatedFromPanel}
           isFromBulkRelation={undefined}
         />
         <StixCyberObservableCreation
@@ -492,15 +485,16 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions as unknown as []}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
           speeddial={true}
           open={openCreateObservable}
           handleClose={() => handleCloseCreateObservable()}
+          onCreated={onCreatedFromPanel}
         />
       </>
     );
   };
-  const renderEntityCreation = (searchPaginationOptions: Omit<SearchPaginationOptions, 'count'>) => {
+  const renderEntityCreationForms = (searchPaginationOptions: Omit<SearchPaginationOptions, 'count'>) => {
     if (isOnlyDomainObjects) {
       return renderDomainObjectCreation(searchPaginationOptions);
     }
@@ -509,6 +503,12 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
     }
     return renderStixCoreObjectCreation(searchPaginationOptions);
   };
+  // The panel confirms the creation and the add with a single message, except in content mapping
+  const renderEntityCreation = (searchPaginationOptions: Omit<SearchPaginationOptions, 'count'>) => (
+    <CreationFeedbackContext.Provider value={{ silenceCreationSuccess: !mapping, bulkCreation }}>
+      {renderEntityCreationForms(searchPaginationOptions)}
+    </CreationFeedbackContext.Provider>
+  );
   const buildColumns = () => {
     return {
       entity_type: {
@@ -551,7 +551,9 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
         containerId={containerId}
         paginationOptions={paginationOptions}
         knowledgeGraph={knowledgeGraph}
-        containerStixCoreObjects={containerStixCoreObjects}
+        addedStixCoreObjects={addedStixCoreObjects}
+        markAsAdded={markAsAdded}
+        markAsRemoved={markAsRemoved}
         onAdd={onAdd}
         onDelete={onDelete}
         enableReferences={enableReferences}
@@ -616,6 +618,7 @@ const ContainerAddStixCoreObjects: FunctionComponent<ContainerAddStixCoreObjects
           {renderSearchResults(searchPaginationOptions)}
         </>
       </Drawer>
+      {referencesDialog}
     </>
   );
 };

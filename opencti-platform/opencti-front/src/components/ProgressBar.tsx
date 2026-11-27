@@ -1,8 +1,9 @@
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { DialogActions, LinearProgress, Typography } from '@mui/material';
-import { ReactNode } from 'react';
+import { ReactNode, useContext } from 'react';
 import { useFormatter } from './i18n';
+import { CreationFeedbackContext } from '../utils/hooks/useCreationFeedback';
 
 interface ProgressBarProps {
   open: boolean;
@@ -24,6 +25,8 @@ const ProgressBar = ({
   variant = 'buffer',
 }: ProgressBarProps) => {
   const { t_i18n } = useFormatter();
+  // After a bulk creation, the created objects may still be added to the surrounding container
+  const { bulkCreation } = useContext(CreationFeedbackContext);
 
   return (
     <Dialog
@@ -36,7 +39,7 @@ const ProgressBar = ({
       </div>
       {children}
       <DialogActions>
-        <Button onClick={onClose}>
+        <Button onClick={onClose} disabled={!!bulkCreation?.progress?.inProgress}>
           {t_i18n('Close')}
         </Button>
       </DialogActions>

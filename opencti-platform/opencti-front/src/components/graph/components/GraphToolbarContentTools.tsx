@@ -21,6 +21,9 @@ import { getRelationshipMainRepresentative } from '../../../utils/defaultReprese
 import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { fetchQuery } from '../../../relay/environment';
+import { CreatedObject } from '../../../private/components/common/containers/useContainerObjects';
+import type { DefaultValue } from '../../../private/components/settings/sub_types/entity_setting/entitySetting';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -147,8 +150,16 @@ const GraphToolbarContentTools = ({
         <ContainerAddStixCoreObjectsInLine
           knowledgeGraph={context !== 'correlation'}
           containerId={entity.id}
+          containerType={entity.entity_type}
+          // A created object is added to the graph with the same data as the other nodes
+          resolveObject={stixCoreObjectRefetchQuery
+            ? (id) => fetchQuery(stixCoreObjectRefetchQuery, { id })
+                .toPromise()
+                .then((data) => (data as { stixCoreObject: ObjectToParse }).stixCoreObject as unknown as CreatedObject)
+            : undefined}
           containerStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
-          defaultCreatedBy={entity.createdBy ?? null}
+          // The graph's entity is a container: its author is an identity
+          defaultCreatedBy={(entity.createdBy ?? null) as DefaultValue | null}
           defaultMarkingDefinitions={entity.objectMarking ?? []}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
           onAdd={addNode as (node: { id: string }) => void}

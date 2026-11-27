@@ -19,7 +19,8 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
+import { OpinionCreationMutation, OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
+import { OpinionCreationUserMutation } from './__generated__/OpinionCreationUserMutation.graphql';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -75,7 +76,11 @@ interface OpinionAddInput {
 }
 
 interface OpinionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: OpinionCreationMutation['response']['opinionAdd'] | OpinionCreationUserMutation['response']['userOpinionAdd'],
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
   defaultCreatedBy?: FieldOption;
@@ -108,7 +113,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     ['createdBy'],
   );
 
-  const [commit] = useApiMutation(opinionCreationMutation);
+  const [commit] = useApiMutation<OpinionCreationMutation>(opinionCreationMutation);
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
@@ -131,9 +136,9 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       variables: {
         input,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'opinionAdd');
+          updater(store, 'opinionAdd', response?.opinionAdd);
         }
       },
       onError: (error) => {
@@ -275,7 +280,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     ['createdBy'],
   );
 
-  const [commit] = useApiMutation(opinionCreationUserMutation);
+  const [commit] = useApiMutation<OpinionCreationUserMutation>(opinionCreationUserMutation);
   const { buildCreationFilesInput, registerMarkdownImagesController } = useMarkdownCreationFilesInput();
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
@@ -298,9 +303,9 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'userOpinionAdd');
+          updater(store, 'userOpinionAdd', response?.userOpinionAdd);
         }
       },
       onError: (error) => {

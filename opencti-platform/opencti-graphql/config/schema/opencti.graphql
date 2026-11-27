@@ -7955,6 +7955,8 @@ interface StixCyberObservable {
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  "Only in the response of stixCyberObservableAdd with createIndicator: the indicator it created or upserted. Null everywhere else"
+  createdIndicator: Indicator
   # Technical
   creators: [Creator!]
   toStix(version: Version): String
@@ -8077,6 +8079,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # AutonomousSystem
   number: Int
   name: String
@@ -8215,6 +8218,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Directory
   path: String!
   path_enc: String
@@ -8357,6 +8361,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   x_opencti_score: Int
   x_opencti_description: String
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # DomainName
   value: String
   # Technical
@@ -8491,6 +8496,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # EmailAddr
   value: String
   display_name: String
@@ -8627,6 +8633,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # EmailMessage
   is_multipart: Boolean
   attribute_date: DateTime
@@ -8773,6 +8780,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # EmailMimePartType
   body: String
   content_type: String
@@ -8928,6 +8936,7 @@ interface HashedObservable {
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # HashedObservable
   hashes: [Hash]
   # Technical
@@ -9052,6 +9061,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # HashedObservable
   hashes: [Hash]
   # Artifact
@@ -9199,6 +9209,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # HashedObservable
   hashes: [Hash]
   # File
@@ -9365,6 +9376,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # HashedObservable
   hashes: [Hash]
   # X509Certificate
@@ -9556,6 +9568,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # IPv4Addr
   value: String
   countries: CountryConnection
@@ -9693,6 +9706,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # IPv4Addr
   value: String
   countries: CountryConnection
@@ -9828,6 +9842,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # MacAddr
   value: String
   # Technical
@@ -9962,6 +9977,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Mutex
   name: String
   # Technical
@@ -10096,6 +10112,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # NetworkTraffic
   extensions: String
   start: DateTime
@@ -10253,6 +10270,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Process
   extensions: String
   is_hidden: Boolean
@@ -10433,6 +10451,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Software
   name: String
   cpe: String
@@ -10590,6 +10609,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Url
   value: String
   # Technical
@@ -10724,6 +10744,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # UserAccount
   extensions: String
   user_id: String
@@ -10885,6 +10906,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # WindowsRegistryKey
   attribute_key: String
   modified_time: DateTime
@@ -11023,6 +11045,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # WindowsRegistryKey
   name: String
   data: String
@@ -11161,6 +11184,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # CryptographicKey
   value: String
   # Technical
@@ -11295,6 +11319,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # CryptocurrencyWallet
   value: String
   # Technical
@@ -11429,6 +11454,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Hostname
   value: String
   # Technical
@@ -11563,6 +11589,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Text
   value: String
   # Technical
@@ -11697,6 +11724,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # UserAgent
   value: String
   # Technical
@@ -11832,6 +11860,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # BankAccount
   iban: String
   bic: String
@@ -11973,6 +12002,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # TrackingNumber
   value: String
   # Technical
@@ -12110,6 +12140,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Credential
   value: String
   # Technical
@@ -12244,6 +12275,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # PhoneNumber
   value: String
   # Technical
@@ -12378,6 +12410,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # CreditCard
   card_number: String
   expiration_date: DateTime
@@ -12518,6 +12551,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # MediaContent
   title: String
   description: String
@@ -12661,6 +12695,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # Persona
   persona_name: String!
   persona_type: String!
@@ -12798,6 +12833,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # SSHKey
   key_type: String
   public_key: String
@@ -12946,6 +12982,7 @@ type AIPrompt implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # AIPrompt
   value: String
   # Technical
@@ -13082,6 +13119,7 @@ type IMEI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # IMEI Number
   value: String
   # Technical
@@ -13213,6 +13251,7 @@ type ICCID implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # ICCID Number
   value: String
   # Technical
@@ -13344,6 +13383,7 @@ type IMSI implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
+  createdIndicator: Indicator
   # IMSI Number
   value: String
   # Technical

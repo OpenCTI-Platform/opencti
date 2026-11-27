@@ -27,6 +27,8 @@ export const taskAddMutation = graphql`
   mutation TaskCreationMutation($input: TaskAddInput!) {
     taskAdd(input: $input) {
       id
+      entity_type
+      parent_types
       representative {
         main
       }
@@ -58,6 +60,7 @@ interface TaskCreationFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
+    response: TaskCreationMutation['response']['taskAdd'],
   ) => void;
   onClose?: () => void;
   defaultMarkings?: { value: string; label: string }[];
@@ -119,9 +122,9 @@ export const TaskCreationForm: FunctionComponent<TaskCreationFormProps> = ({
       variables: {
         input,
       },
-      updater: (store: RecordSourceSelectorProxy) => {
+      updater: (store: RecordSourceSelectorProxy, response) => {
         if (updater) {
-          updater(store, 'taskAdd');
+          updater(store, 'taskAdd', response?.taskAdd);
         }
       },
       onError: (error: Error) => {
