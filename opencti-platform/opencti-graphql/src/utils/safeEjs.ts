@@ -167,10 +167,15 @@ const createSafeContext = (
  * does. LS (U+2028) and PS (U+2029) are valid content inside a quoted string, where a raw LF is not,
  * so they are left untouched there (a template literal already allows a raw line terminator). One
  * character maps to one character, so positions stay aligned with the original template — which the
- * verifier edits by offset and EJS renders unchanged. This copy is used only by the lezer/AST verifier.
+ * verifier edits by offset and EJS renders unchanged. `verified` is the copy the lezer/AST verifier
+ * reads; `rendered` is the original fragment with the same comment ranges blanked (line terminators
+ * kept), so the code V8 compiles holds no comment the verifier skipped: a lezer/V8 disagreement on
+ * what is a comment can then only remove code, never hide it.
  */
-const stripJsComments = (code: string): string => {
+const stripJsComments = (code: string): { verified: string; rendered: string } => {
   const chars = code.split('');
+  const renderedChars = code.split('');
+  const isLineTerminator = (char: string) => char === '\n' || char === '\r' || char === '\u2028' || char === '\u2029';
   const inString = new Array<boolean>(chars.length).fill(false);
   const stringCursor = jsParser.parse(code).cursor();
   do {
@@ -189,28 +194,42 @@ const stripJsComments = (code: string): string => {
       chars[i] = '\n';
     }
   }
-  const cursor = jsParser.parse(chars.join('')).cursor();
+  const normalized = chars.join('');
+  const cursor = jsParser.parse(normalized).cursor();
   do {
     const { name } = cursor.type;
+    // lezer accepts an unterminated block comment without an error node; V8 refuses it. Refuse it
+    // here, since its content is blanked before V8 compiles the template.
+    if (name === 'BlockComment' && (cursor.to - cursor.from < 4 || !normalized.slice(cursor.from, cursor.to).endsWith('*/'))) {
+      throw new VerifierParsingError('Invalid javascript');
+    }
     if (name === 'LineComment' || name === 'BlockComment') {
       for (let i = cursor.from; i < cursor.to; i += 1) {
         if (chars[i] !== '\n') {
           chars[i] = ' ';
         }
+        if (!isLineTerminator(renderedChars[i])) {
+          renderedChars[i] = ' ';
+        }
       }
     }
   } while (cursor.next());
-  return chars.join('');
+  return { verified: chars.join(''), rendered: renderedChars.join('') };
 };
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
   const fragments: string[] = [];
+  // The template EJS compiles: the original text, with the comments of every code fragment blanked
+  const renderFragments: string[] = [];
   const outputRanges: Array<{ start: number; end: number }> = [];
   const pushFragment = (text: string, isCode: boolean) => {
     if (text.length > 0) {
       if (isCode) {
-        fragments.push(stripJsComments(text));
+        const { verified, rendered } = stripJsComments(text);
+        fragments.push(verified);
+        renderFragments.push(rendered);
       } else {
+        renderFragments.push(text);
         // keep the same output size in order to permit to easy code edition
         // replace the first char by a line break, so multiple EJS tag on the same would not lead to invalid JS code
         const cleaned = `\n${text.replaceAll(/[^\r\n]/g, ' ').substring(1)}`;
@@ -292,8 +311,9 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
   }
 
   const code = fragments.join('');
+  const renderTemplate = renderFragments.join('');
   if (outputRanges.length === 0) {
-    return code;
+    return { code, renderTemplate };
   }
   const chars = code.split('');
   const isBlank = (i: number) => i >= 0 && i < chars.length && (chars[i] === ' ' || chars[i] === '\n' || chars[i] === '\r');
@@ -322,7 +342,7 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
       chars[end + 1] = ';';
     }
   }
-  return chars.join('');
+  return { code: chars.join(''), renderTemplate };
 };
 
 const transformTemplate = (template: string, code: string, context: string[], async: boolean, shouldYield: boolean) => {
@@ -868,12 +888,12 @@ export const createSafeEjsSandbox = (): SafeEjsSandbox => {
   return {
     safeRender: (template, data, options = {}) => {
       const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false, useNotificationTool = false } = options;
-      const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
+      const { code, renderTemplate } = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
       const contextVars = Object.keys(data ?? {});
       if (useNotificationTool) {
         contextVars.push('octi');
       }
-      const safeTemplate = transformTemplate(template, code, contextVars, async, options.yieldMethod !== undefined);
+      const safeTemplate = transformTemplate(renderTemplate, code, contextVars, async, options.yieldMethod !== undefined);
       const escape = options.escape ? realm.wrapCallback(options.escape) : options.escape;
       return sandbox.render(safeTemplate, createSafeContext(data ?? {}, options, sandboxGlobals, realm), { ...options, escape, includer });
     },

@@ -20,6 +20,7 @@ import { isEmptyField, isNotEmptyField } from '../../../database/utils';
 import { representationLabel } from '../mapper-utils';
 import { isStixRelationshipExceptRef } from '../../../schema/stixRelationship';
 import { isStixObject } from '../../../schema/stixCoreObject';
+import { checkJsonMapperFormula } from '../../../parser/json-mapper-formula';
 
 export const parseJsonMapper = (mapper: any): JsonMapperParsed => {
   let representations: JsonMapperRepresentation[];
@@ -127,6 +128,8 @@ export const validateJsonMapper = async (context: AuthContext, user: AuthUser, m
     throw FunctionalError('JSON mapper representations is not an array of JsonMapperRepresentation objects', { mapper_name: mapper.name });
   }
 
+  (mapper.variables ?? []).forEach((variable) => checkJsonMapperFormula(variable.path?.formula));
+
   // consider empty csv mapper as invalid to avoid being used in the importer
   if (mapper.representations.length === 0) {
     throw FunctionalError('JSON Mapper has no representation', { mapper_name: mapper.name });
@@ -175,6 +178,9 @@ export const validateJsonMapper = async (context: AuthContext, user: AuthUser, m
 
     // Validate representation attribute configuration
     representation.attributes.forEach((attribute) => {
+      if (attribute.mode === 'complex' && attribute.complex_path) {
+        checkJsonMapperFormula(attribute.complex_path.formula);
+      }
       // Validate based on configuration
       if (attribute.mode === 'base') {
         const schemaAttribute = [...attributesDefs, ...refsDefs].find((attr) => attr.name === attribute.key);

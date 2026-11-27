@@ -119,10 +119,8 @@ describe('check safeRender on invalid cases', () => {
     'sandbox escape via line comment: process.binding RCE': '<%//%><%- JSON.stringify(process.binding("spawn_sync")) %>',
     'sandbox escape via line comment with space': '<% // %><%= process.env %>',
     'sandbox escape via line comment: multi-fragment chain': '<%//%><%//%><%= process.env %>',
-    'sandbox escape via block comment': '<%/*%><%- process.env %><%*/%>',
     'sandbox escape via regex literal hiding comment': '<% /\\/\\// %><%- JSON.stringify(process.env) %>',
     'sandbox escape via line comment: end of expression': '<% const x = //%><%= process.env %>',
-    'split payload across tags fooling block comment': '<% /* %>filler text<% still comment */ this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\') %>',
     'comment-like sequence inside template literal substitution': '<% const x = `${/*z*/this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\')}`; %>',
   }).map(([name, template]) => ({ name, template }));
 
@@ -156,10 +154,11 @@ describe('check safeRender on invalid cases', () => {
     }
     expect(ejsError).toBeDefined();
     expect(safeError).toBeDefined();
-    // Identical source-position context => line numbers preserved through stripping.
-    expect(safeError).toEqual(ejsError);
-    // Sanity: the reported context really spans the multi-line comment region.
-    expect(safeError).toContain('4|  c */');
+    // Same position as ejs => line numbers preserved through stripping. The excerpt shows the
+    // compiled template, where comment text is blanked.
+    expect(safeError?.split('\n')[0]).toEqual(ejsError?.split('\n')[0]);
+    expect(safeError).toContain("Cannot read properties of undefined (reading 'bad')");
+    expect(safeError).not.toContain('c */');
   });
 
   it('safeRender should reject a "%>" inside a block comment as a tag boundary, same as ejs', () => {
@@ -187,6 +186,9 @@ describe('check safeRender on invalid cases', () => {
     'invalid JS': ' <%= user( %>',
     'HTML-like comment open in code': '<% let a = 2; a <!-- a %>',
     'HTML-like comment close in code': '<% let a = 2; a-->0 %>',
+    // A block comment cut by a tag boundary is unterminated in its fragment: refused while parsing
+    'sandbox escape via block comment': '<%/*%><%- process.env %><%*/%>',
+    'split payload across tags fooling block comment': '<% /* %>filler text<% still comment */ this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\') %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(parsingErrorCases)('safeRender should fail with VerifierParsingError for "$name" case', ({ template }) => {

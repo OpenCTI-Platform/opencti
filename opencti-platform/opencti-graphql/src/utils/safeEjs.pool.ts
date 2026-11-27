@@ -1,8 +1,15 @@
 import conf from '../config/conf';
 import type { WorkerRequest } from './safeEjs.worker';
-import { createWorkerPool } from './workerPool';
+import { createWorkerPool, type HostCallFunction } from './workerPool';
+
+// Main-thread functions a template helper may call from a render worker, registered by their owner
+const hostCalls: Record<string, HostCallFunction> = Object.create(null);
+export const registerSafeEjsHostCall = (name: string, fn: HostCallFunction) => {
+  hostCalls[name] = fn;
+};
 
 const pool = createWorkerPool<WorkerRequest, string>({
+  hostCalls,
   workerFile: 'safeEjs.worker.mjs',
   idlePoolSize: conf.get('safe_ejs:idle_pool_size') ?? 2,
   maxTasksPerWorker: conf.get('safe_ejs:max_renders_per_worker') ?? 1000,

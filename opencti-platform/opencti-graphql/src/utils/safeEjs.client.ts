@@ -6,6 +6,8 @@ export type WorkerOptions = {
   timeout?: number;
   useJsonEscape?: boolean;
   usePlainTextEscape?: boolean;
+  // Adds patternFromValue / extractWithRegexp / decisionMatrix to the data, built in the worker
+  useJsonMapperHelpers?: boolean;
 };
 
 export const safeRender = async (template: string, data: Data, options?: SafeRenderOptions & WorkerOptions): Promise<string> => {
@@ -29,6 +31,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
       options: workerOptions,
       useJsonEscape: options?.useJsonEscape,
       usePlainTextEscape: options?.usePlainTextEscape,
+      useJsonMapperHelpers: options?.useJsonMapperHelpers,
     }, timeout);
   } catch (error) {
     // Enhance error messages
