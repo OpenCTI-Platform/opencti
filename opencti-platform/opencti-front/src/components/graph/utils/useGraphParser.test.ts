@@ -108,6 +108,18 @@ describe('useGraphParser', () => {
       expect(node.z).toBe(0); // default z to 0 when no position is provided
     });
 
+    it('names an expanded entity by its representative, the only name the expand fetches', () => {
+      const narrative = {
+        ...constructEntity({ id: 'narrative-1', entity_type: 'Narrative' }),
+        representative: { main: 'Fake news' },
+      };
+
+      const node = parser.buildNode(narrative, emptyPositions);
+
+      expect(node.label).toBe('Fake news');
+      expect(node.name).toContain('Fake news');
+    });
+
     it('should use graph positions when provided', () => {
       const entity = constructEntity({ id: 'node-1' });
       const positions: OctiGraphPositions = {
