@@ -13,19 +13,49 @@ import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filter
 import type { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { parseBlockingConditions } from './blockedTransitionConditions';
 
-type ConditionRow = { id: string; mode: string; filters: Filter[] };
-
-const flattenFilters = (group: FilterGroup): Filter[] => [
-  ...(group.filters ?? []),
-  ...(group.filterGroups ?? []).flatMap(flattenFilters),
+// One row per top-level condition, and one row per nested group.
+const toRows = (filters: FilterGroup): { id: string; group: FilterGroup }[] => [
+  ...(filters.filters ?? []).map((f, i) => ({ id: `filter-${i}`, group: { mode: filters.mode, filters: [f], filterGroups: [] } })),
+  ...(filters.filterGroups ?? []).map((g, i) => ({ id: `group-${i}`, group: g })),
 ];
 
-// One row per top-level condition, and one row per nested group (its
-// conditions joined by the group's own mode).
-const toRows = (filters: FilterGroup): ConditionRow[] => [
-  ...(filters.filters ?? []).map((f, i) => ({ id: `filter-${i}`, mode: filters.mode, filters: [f] })),
-  ...(filters.filterGroups ?? []).map((g, i) => ({ id: `group-${i}`, mode: g.mode, filters: flattenFilters(g) })),
-];
+interface GroupConditionsProps {
+  group: FilterGroup;
+  entityTypes: string[];
+  filterKeysMap: ReturnType<typeof useFilterRepresentatives>['filterKeysMap'];
+  filtersRepresentativesMap: ReturnType<typeof useFilterRepresentatives>['filtersRepresentativesMap'];
+  modeLabel: (mode: string) => string;
+}
+
+// A group's conditions joined by its own mode; a group inside it is shown in
+// parentheses, so its own mode is not mistaken for the outer one.
+const GroupConditions: FunctionComponent<GroupConditionsProps> = ({ group, ...props }) => {
+  const parts = [
+    ...(group.filters ?? []).map((filter: Filter, i) => (
+      <FilterValues
+        key={`filter-${i}`}
+        label={<FilterKeyLabel filter={filter} filterKeysMap={props.filterKeysMap} />}
+        tooltip
+        currentFilter={filter}
+        filtersRepresentativesMap={props.filtersRepresentativesMap}
+        entityTypes={props.entityTypes}
+      />
+    )),
+    ...(group.filterGroups ?? []).map((inner, i) => (
+      <span key={`group-${i}`}>(<GroupConditions group={inner} {...props} />)</span>
+    )),
+  ];
+  return (
+    <>
+      {parts.map((part, i) => (
+        <React.Fragment key={part.key}>
+          {i > 0 && ` ${props.modeLabel(group.mode)} `}
+          {part}
+        </React.Fragment>
+      ))}
+    </>
+  );
+};
 
 interface ConditionRowsProps {
   filters: FilterGroup;
@@ -54,18 +84,13 @@ const ConditionRows: FunctionComponent<ConditionRowsProps> = ({ filters, entityT
             data-testid="workflow-blocked-dialog-condition"
             style={{ overflowWrap: 'anywhere', whiteSpace: 'normal' }}
           >
-            {row.filters.map((filter, filterIndex) => (
-              <span key={`${row.id}-${filter.key}-${filter.values.join(',')}`}>
-                {filterIndex > 0 && ` ${modeLabel(row.mode)} `}
-                <FilterValues
-                  label={<FilterKeyLabel filter={filter} filterKeysMap={filterKeysMap} />}
-                  tooltip
-                  currentFilter={filter}
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  entityTypes={entityTypes}
-                />
-              </span>
-            ))}
+            <GroupConditions
+              group={row.group}
+              entityTypes={entityTypes}
+              filterKeysMap={filterKeysMap}
+              filtersRepresentativesMap={filtersRepresentativesMap}
+              modeLabel={modeLabel}
+            />
           </div>
         </React.Fragment>
       ))}
@@ -97,6 +122,9 @@ interface BlockedTransitionDialogProps {
   // The dialog has no Radix trigger (it opens from a menu item or a locked
   // button), so Radix cannot restore focus on close: this element gets it back.
   returnFocusTo?: RefObject<HTMLElement | null>;
+  // Only an entity's own transitions offer Edit: the registered opener belongs
+  // to the entity page, so a draft-level dialog would open the wrong drawer.
+  allowEntityEdition?: boolean;
 }
 
 const BlockedTransitionDialog: FunctionComponent<BlockedTransitionDialogProps> = ({
@@ -107,9 +135,11 @@ const BlockedTransitionDialog: FunctionComponent<BlockedTransitionDialogProps> =
   toStatusName,
   blockingConditions,
   returnFocusTo,
+  allowEntityEdition = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const openEdition = useEntityEditionOpener();
+  const registeredOpener = useEntityEditionOpener();
+  const openEdition = allowEntityEdition ? registeredOpener : null;
   const filters = useMemo(() => parseBlockingConditions(blockingConditions), [blockingConditions]);
   const entityLabel = t_i18n(`entity_${entityType}`);
   const handleEdit = () => {

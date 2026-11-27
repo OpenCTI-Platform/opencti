@@ -126,6 +126,8 @@ interface WorkflowTransitionsViewProps {
   transitionButtons?: TransitionButtonsOptions;
   // Small next to an entity status chip, default next to the other draft toolbar buttons
   buttonSize?: ComponentProps<typeof Button>['size'];
+  // The blocked dialog offers "Edit <entity type>" only for an entity's own transitions
+  allowEntityEdition?: boolean;
 }
 
 const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> = ({
@@ -140,6 +142,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   onFailed,
   transitionButtons,
   buttonSize,
+  allowEntityEdition = false,
 }) => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
@@ -517,6 +520,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           toStatusName={blockedDialog.toStatus?.template?.name}
           blockingConditions={blockedDialog.blockingConditions}
           returnFocusTo={blockedDialogOpenerRef}
+          allowEntityEdition={allowEntityEdition}
         />
       )}
     </>
@@ -620,6 +624,7 @@ export const WorkflowTransitionsForEntity: FunctionComponent<{
         onFailed={refreshOnFailure ? refresh : undefined}
         transitionButtons={transitionButtons}
         buttonSize="small"
+        allowEntityEdition
       />
     </>
   );

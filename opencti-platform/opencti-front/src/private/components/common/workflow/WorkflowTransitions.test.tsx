@@ -8,6 +8,7 @@ import { screen } from '@testing-library/react';
 import { useMutation } from 'react-relay';
 import { WorkflowTransitions } from './WorkflowTransitions';
 import testRender from '../../../../utils/tests/test-render';
+import { registerEntityEditionOpener } from '../../../../components/entityEditionOpener';
 import type { WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 
 // ---------------------------------------------------------------------------
@@ -300,6 +301,33 @@ describe('WorkflowTransitions — next status menu', () => {
     expect(screen.getAllByRole('menuitem')).toHaveLength(3);
     await user.click(screen.getByRole('menuitem', { name: /^approve/ }));
     expect(await screen.findByText('Do you want to approve this draft and send it to ingestion?')).toBeDefined();
+  });
+
+  it('offers no Edit button in the blocked dialog, even when an entity page registered its edition opener', async () => {
+    // The draft toolbar sits on top of an entity page whose edit dial registered
+    // itself: Edit would open that entity, not the draft the transition belongs to.
+    const off = registerEntityEditionOpener(vi.fn());
+    try {
+      const draft = makeDraft({
+        workflowInstance: {
+          id: 'instance-1',
+          currentState: 'in_review',
+          currentStatus: makeStatus(),
+          lastHistoryEntry: null,
+          pendingStatus: null,
+          pendingError: null,
+          pendingTransition: null,
+          allowedTransitions: [],
+          blockedTransitions: [{ event: 'publish', toState: 'published', blockingConditions: null, toStatus: makeStatus() }],
+        },
+      });
+      const { user } = testRender(<WorkflowTransitions data={draft} />);
+      await user.click(screen.getByTestId('workflow-blocked-transition-publish'));
+      expect(await screen.findByTestId('workflow-blocked-dialog')).toBeInTheDocument();
+      expect(screen.queryByTestId('workflow-blocked-dialog-edit')).toBeNull();
+    } finally {
+      off();
+    }
   });
 });
 

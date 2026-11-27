@@ -9,9 +9,13 @@ const keyOf = (filter: Filter): string => {
   return Array.isArray(key) ? key[0] : key;
 };
 
+// A condition without key cannot be shown; one without values (e.g. "is
+// empty") still can, with an empty list instead of undefined.
 const withStringKeys = (group: FilterGroup): FilterGroup => ({
   mode: group.mode,
-  filters: (group.filters ?? []).map((f) => ({ ...f, key: keyOf(f) })),
+  filters: (group.filters ?? [])
+    .filter((f) => !!f.key && !!keyOf(f))
+    .map((f) => ({ ...f, key: keyOf(f), values: f.values ?? [] })),
   filterGroups: (group.filterGroups ?? []).map(withStringKeys),
 });
 

@@ -58,6 +58,16 @@ describe('blocked transition condition helpers', () => {
     expect(blockingConditionKeys(conditions as unknown as FilterGroup)).toEqual(['objectAssignee', 'description']);
   });
 
+  it('gives a filter without values an empty list and drops a filter without key', () => {
+    const parsed = parseBlockingConditions(JSON.stringify({
+      mode: 'and',
+      filters: [{ key: 'objectAssignee', operator: 'nil' }, { values: ['x'] }],
+      filterGroups: [{ mode: 'or', filters: [{ key: ['name'] }] }],
+    }));
+    expect(parsed?.filters).toEqual([{ key: 'objectAssignee', operator: 'nil', values: [] }]);
+    expect(parsed?.filterGroups[0].filters).toEqual([{ key: 'name', values: [] }]);
+  });
+
   it('returns no keys without conditions', () => {
     expect(blockingConditionKeys(null)).toEqual([]);
   });
@@ -104,6 +114,40 @@ describe('BlockedTransitionDialog', () => {
     expect(rows[1].textContent).toMatch(/alpha.*OR.*beta/);
   });
 
+  it('keeps the logic of a group nested inside a nested group', async () => {
+    // description AND (alpha OR (beta AND gamma)): flattening the inner group
+    // would show "alpha OR beta OR gamma", a different condition.
+    const deep = {
+      mode: 'and',
+      filters: [filter('description', [LONG_VALUE])],
+      filterGroups: [{
+        mode: 'or',
+        filters: [filter('name', ['alpha'])],
+        filterGroups: [{ mode: 'and', filters: [filter('name', ['beta']), filter('name', ['gamma'])], filterGroups: [] }],
+      }],
+    };
+    const { relayEnv } = renderDialog({ blockingConditions: JSON.stringify(deep) });
+    await act(async () => relayEnv.mock.resolveMostRecentOperation({
+      data: {
+        filtersRepresentatives: [LONG_VALUE, 'alpha', 'beta', 'gamma'].map((v) => (
+          { representativeId: v, value: v, entity_type: null, color: null }
+        )),
+      },
+    }));
+    await act(async () => relayEnv.mock.resolveMostRecentOperation({ data: { vocabularyCategories: [] } }));
+    await screen.findByText('gamma', { exact: false });
+    const rows = screen.getAllByTestId('workflow-blocked-dialog-condition');
+    expect(rows).toHaveLength(2);
+    expect(rows[1].textContent).toMatch(/alpha.*OR.*\(.*beta.*AND.*gamma.*\)/);
+  });
+
+  it('shows a condition with no values without crashing', async () => {
+    const noValues = { mode: 'and', filters: [{ key: 'description', operator: 'nil', mode: 'or' }], filterGroups: [] };
+    const { relayEnv } = renderDialog({ blockingConditions: JSON.stringify(noValues) });
+    await act(async () => relayEnv.mock.resolveMostRecentOperation({ data: { filtersRepresentatives: [] } }));
+    expect(await screen.findAllByTestId('workflow-blocked-dialog-condition')).toHaveLength(1);
+  });
+
   it('Escape calls onClose', () => {
     const { onClose } = renderDialog();
     fireEvent.keyDown(screen.getByTestId('workflow-blocked-dialog'), { key: 'Escape' });
@@ -117,14 +161,21 @@ describe('BlockedTransitionDialog', () => {
   });
 
   it('hides Edit when no opener is registered', () => {
+    renderDialog({ allowEntityEdition: true });
+    expect(screen.queryByTestId('workflow-blocked-dialog-edit')).toBeNull();
+  });
+
+  it('hides Edit unless entity edition is allowed, even with an opener registered', () => {
+    const off = registerEntityEditionOpener(vi.fn());
     renderDialog();
     expect(screen.queryByTestId('workflow-blocked-dialog-edit')).toBeNull();
+    off();
   });
 
   it('Edit closes and calls the registered opener', () => {
     const open = vi.fn();
     const off = registerEntityEditionOpener(open);
-    const { onClose } = renderDialog();
+    const { onClose } = renderDialog({ allowEntityEdition: true });
     const edit = screen.getByTestId('workflow-blocked-dialog-edit');
     expect(edit).toHaveTextContent('Edit Report');
     fireEvent.click(edit);
