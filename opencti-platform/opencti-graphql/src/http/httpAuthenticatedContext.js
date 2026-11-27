@@ -82,6 +82,7 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   const settings = await getEntityFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   executeContext.otp_mandatory = settings?.otp_mandatory ?? false; // Null check fixes 500 error on platform theme selection
   executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
+  executeContext.reportExpectationRequested = req.headers['opencti-report-expectation'] === 'true'; // Worker asks the platform to report the work expectation once the call succeeds
   executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id

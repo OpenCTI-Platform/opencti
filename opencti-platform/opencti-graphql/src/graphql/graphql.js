@@ -36,6 +36,7 @@ import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
+import workExpectationPlugin from './workExpectationPlugin';
 import { pushAll } from '../utils/arrayUtil';
 
 // graphql-js appends suggestions to validation and input errors: fields, arguments, types, enum values...
@@ -257,7 +258,7 @@ const createApolloServer = (schema = createSchema()) => {
       },
     }),
   };
-  const apolloPlugins = [operationResolutionPlugin, loggerPlugin, httpResponsePlugin, constraintPlugin];
+  const apolloPlugins = [operationResolutionPlugin, loggerPlugin, httpResponsePlugin, workExpectationPlugin, constraintPlugin];
 
   const secureIntrospectionPlugin = {
     requestDidStart: () => {
