@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useRef, useState } from 'react';
 import { fetchQuery, graphql, useRelayEnvironment } from 'react-relay';
-import { Alert, Spinner, Text } from '@filigran/design-system';
+import { Alert, Text } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -21,7 +21,9 @@ import {
   withConfigImportMode,
   withConfigImportModeForItems,
 } from '../configImportMode';
+import ConfigPresetImportBusyPanel from './ConfigPresetImportBusyPanel';
 import ConfigPresetImportModeSelect from './ConfigPresetImportModeSelect';
+import ConfigPresetImportUpload, { getConfigPresetImportFileName } from './ConfigPresetImportUpload';
 import { getConfigPresetErrorReason } from './configPresetImportStep';
 import {
   buildConfigPresetSelections,
@@ -168,6 +170,8 @@ export interface ConfigPresetImportPreviewProps {
     callbacks: { onCompleted: (results: ReadonlyArray<SimulatedResult>) => void; onError: (error: Error) => void },
   ) => void;
   onStartOver: () => void;
+  // Another bundle was picked in the field that shows under a bundle that cannot be imported
+  onUploaded: () => void;
   onFileMissing: () => void;
 }
 
@@ -179,6 +183,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   onApply,
   onSimulate,
   onStartOver,
+  onUploaded,
   onFileMissing,
 }) => {
   const { t_i18n } = useFormatter();
@@ -460,22 +465,26 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   // The selection as sent: a new array with the same content does not compute again
   }, [preview, selectionsKey, itemOptionsKey, platformVersion]);
 
+  const fileName = getConfigPresetImportFileName(session.file_id);
   if (error) {
+    // The field is free again: another bundle is picked right there, which replaces this one
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
+      <ConfigPresetImportUpload onUploaded={onUploaded}>
         <Alert severity="error" title={t_i18n('This configuration bundle cannot be imported')} description={t_i18n('The file is not a valid configuration bundle, or it comes from a more recent platform.')} />
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button variant="secondary" onClick={onStartOver}>{t_i18n('Start over')}</Button>
-        </div>
-      </div>
+      </ConfigPresetImportUpload>
     );
   }
   if (!preview) {
+    // The bundle is read and checked in one request: there is nothing to measure, only to wait for or to give up
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(2) }}>
-        <Spinner label={t_i18n('Loading')} />
-        <Button variant="secondary" onClick={handleCancelLoading}>{t_i18n('Cancel')}</Button>
-      </div>
+      <ConfigPresetImportUpload onUploaded={onUploaded} busyFileName={fileName}>
+        <ConfigPresetImportBusyPanel title={t_i18n('Reading your configuration bundle')}>
+          <Text variant="content-base">{t_i18n('A large bundle can take a few seconds to check against the platform.')}</Text>
+          <div>
+            <Button variant="secondary" onClick={handleCancelLoading}>{t_i18n('Cancel')}</Button>
+          </div>
+        </ConfigPresetImportBusyPanel>
+      </ConfigPresetImportUpload>
     );
   }
   const itemsCount = preview.types.reduce((count, type) => count + type.itemsPageInfo.globalCount, 0);

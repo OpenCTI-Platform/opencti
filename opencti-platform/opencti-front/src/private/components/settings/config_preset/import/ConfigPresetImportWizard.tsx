@@ -247,6 +247,11 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
     });
   };
 
+  const handleUploaded = () => {
+    setIsFileMissing(false);
+    refresh();
+  };
+
   const handleBackToSelection = () => {
     commitBack({
       variables: {},
@@ -273,11 +278,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
           {isFileMissing && (
             <Alert severity="warning" title={t_i18n('The uploaded file no longer exists')} description={t_i18n('Upload the configuration bundle again.')} />
           )}
-          <ConfigPresetImportUpload onUploaded={() => {
-            setIsFileMissing(false);
-            refresh();
-          }}
-          />
+          <ConfigPresetImportUpload onUploaded={handleUploaded} />
         </div>
       );
     }
@@ -300,6 +301,7 @@ const ConfigPresetImportWizard: FunctionComponent<ConfigPresetImportWizardProps>
         onApply={(selections, itemOptions) => handleApply(session!.file_id, selections, itemOptions)}
         onSimulate={handleSimulate}
         onStartOver={handleStartOver}
+        onUploaded={handleUploaded}
         onFileMissing={() => setIsFileMissing(true)}
       />
     );

@@ -502,14 +502,21 @@ describe('ConfigPresetImportWizard', () => {
       });
     });
 
-    it('shows a refused bundle with Start over as the exit', async () => {
+    it('shows a refused bundle under the upload field, which is free again to pick another one', async () => {
       const rendered = await renderWizard(session());
       await reject(rendered, 'ConfigPresetImportPreviewQuery', 'bundle_refused');
       expect(await screen.findByText('This configuration bundle cannot be imported')).toBeInTheDocument();
-      await rendered.user.click(screen.getByRole('button', { name: 'Start over' }));
-      expect(operation(rendered, 'ConfigPresetImportWizardClearMutation').request.variables).toEqual({ delete_file: true });
-      await resolve(rendered, 'ConfigPresetImportWizardClearMutation', {});
-      expect(await screen.findByRole('button', { name: 'Upload a configuration bundle' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeEnabled();
+      expect(screen.queryByRole('button', { name: 'Start over' })).not.toBeInTheDocument();
+    });
+
+    it('shows the bundle in the disabled upload field, and its reading as a panel under it, while the preview loads', async () => {
+      await renderWizard(session());
+      expect(await screen.findByText('Reading your configuration bundle')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeDisabled();
+      expect(screen.getByText('bundle.zip')).toBeInTheDocument();
+      // Nothing measures a preview, so there is no bar for it
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     });
 
     it('cancels a preview that is loading: the request is aborted, the zip is deleted and the upload comes back', async () => {
@@ -689,7 +696,7 @@ describe('ConfigPresetImportWizard', () => {
     it('shows the progress while the import runs, then the result with the report', async () => {
       const rendered = await renderPreview();
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
-      expect(await screen.findByText('Import in progress')).toBeInTheDocument();
+      expect(await screen.findByText('Applying your configuration')).toBeInTheDocument();
       await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {});
       const finished = session({
         status: 'FINISHED',
@@ -717,7 +724,7 @@ describe('ConfigPresetImportWizard', () => {
       await rendered.user.click(screen.getByRole('button', { name: 'Apply' }));
       await resolve(rendered, 'ConfigPresetImportWizardApplyMutation', {});
       // The session in hand is still the draft: the preview would ask for the zip that the import deleted
-      expect(screen.getByText('Import in progress')).toBeInTheDocument();
+      expect(screen.getByText('Applying your configuration')).toBeInTheDocument();
       expect(operationNames(rendered)).not.toContain('ConfigPresetImportPreviewQuery');
       await resolve(rendered, 'ConfigPresetImportWizardQuery', {
         Query: () => ({ configPresetImportSession: session({ status: 'FINISHED', outcome: 'COMPLETED', total: 1, results: [processed('messages', 'banner', 'OVERWRITTEN')] }) }),
@@ -834,8 +841,10 @@ describe('ConfigPresetImportWizard', () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const applying = session({ status: 'APPLYING', total: 4, results: [processed('messages', 'banner', 'OVERWRITTEN')] });
       const rendered = await renderWizard(applying);
-      expect(screen.getByText('1 of 4 items processed')).toBeInTheDocument();
+      expect(screen.getByText('25% (1 of 4 items processed)')).toBeInTheDocument();
       expect(screen.getByRole('progressbar', { name: 'Import progress' })).toHaveAttribute('aria-valuenow', '25');
+      expect(screen.getByRole('button', { name: 'Upload a configuration bundle' })).toBeDisabled();
+      expect(screen.getByText('bundle.zip')).toBeInTheDocument();
       // The progress names the items, it does not show their keys
       expect(screen.getByText('Banner')).toBeInTheDocument();
       await act(async () => {
@@ -1012,7 +1021,7 @@ describe('ConfigPresetImportWizard', () => {
     it('moves an open wizard from applying to interrupted once the session says so', async () => {
       vi.useFakeTimers({ shouldAdvanceTime: true });
       const rendered = await renderWizard(session({ status: 'APPLYING', total: 2 }));
-      expect(screen.getByText('Import in progress')).toBeInTheDocument();
+      expect(screen.getByText('Applying your configuration')).toBeInTheDocument();
       await act(async () => {
         vi.advanceTimersByTime(5000);
       });

@@ -1,12 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { CheckCircleOutlined, DownloadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { ProgressBar, Spinner, Text } from '@filigran/design-system';
+import { ProgressBar, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { APP_BASE_PATH } from '../../../../../relay/environment';
 import { useResultLabel } from './ConfigPresetResultGroups';
+import ConfigPresetImportBusyPanel from './ConfigPresetImportBusyPanel';
+import ConfigPresetImportUpload, { getConfigPresetImportFileName } from './ConfigPresetImportUpload';
 import ConfigPresetResultLine, { CODE_UNCHANGED } from './ConfigPresetResultLine';
 import type { ConfigPresetImportSession } from './ConfigPresetImportWizard';
 
@@ -65,27 +67,30 @@ export const countProblems = (typeCounts: ReadonlyArray<TypeCounts>) => {
   return skipped + failed;
 };
 
-// The import of the user runs: how far it is, the last items processed and the problems so far, from the session
+// The import of the user runs: how far it is, the last items processed and the problems so far, from the session.
+// The field of the bundle stays on top, disabled: the progress is where the upload was.
 export const ConfigPresetImportProgress: FunctionComponent<ConfigPresetImportProgressProps> = ({ session }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const resultLabel = useResultLabel();
   const processed = session?.processed ?? 0;
   const total = session?.total ?? 0;
+  const percent = total > 0 ? Math.min(100, Math.floor((processed / total) * 100)) : 0;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
-      <Spinner label={t_i18n('Import in progress')} />
-      {total > 0 && (
-        <>
-          <ProgressBar aria-label={t_i18n('Import progress')} value={(processed / total) * 100} size="lg" />
-          <Text variant="content-base">{t_i18n('{processed} of {total} items processed', { values: { processed, total } })}</Text>
-        </>
-      )}
-      <ProblemsList problems={session?.problems ?? []} problemsCount={countProblems(session?.type_counts ?? [])} hasReport={false} />
-      {(session?.recent ?? []).map((result) => (
-        <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={resultLabel(result)} status={result.status} reason={result.reason} code={result.code} />
-      ))}
-    </div>
+    <ConfigPresetImportUpload onUploaded={() => undefined} busyFileName={session ? getConfigPresetImportFileName(session.file_id) : null}>
+      <ConfigPresetImportBusyPanel title={t_i18n('Applying your configuration')}>
+        <ProgressBar aria-label={t_i18n('Import progress')} value={percent} size="lg" />
+        {total > 0 && (
+          <Text variant="content-base">{t_i18n('{percent}% ({processed} of {total} items processed)', { values: { percent, processed, total } })}</Text>
+        )}
+      </ConfigPresetImportBusyPanel>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}>
+        <ProblemsList problems={session?.problems ?? []} problemsCount={countProblems(session?.type_counts ?? [])} hasReport={false} />
+        {(session?.recent ?? []).map((result) => (
+          <ConfigPresetResultLine key={`${result.type}/${result.key}`} label={resultLabel(result)} status={result.status} reason={result.reason} code={result.code} />
+        ))}
+      </div>
+    </ConfigPresetImportUpload>
   );
 };
 
