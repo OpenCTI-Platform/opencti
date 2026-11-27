@@ -27,8 +27,9 @@ import ReactMde from 'react-mde';
 import { graphql, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 
-import { RichTextEditor } from '@filigran/rich-text-editor';
+import { RichTextField, RichTextFieldHandle } from '@filigran/design-system/rich-text-field';
 import { useFormatter } from '../../components/i18n';
+import useRichTextFieldLabels from '../../components/fields/useRichTextFieldLabels';
 import MarkdownDisplay from '../../components/markdownDisplay/MarkdownDisplay';
 import { cleanHtmlTags, isNotEmptyField } from '../utils';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
@@ -116,7 +117,9 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
 }) => {
   const textFieldRef = useRef<HTMLTextAreaElement>(null);
   const markdownFieldRef = useRef<HTMLTextAreaElement>(null);
+  const richTextFieldRef = useRef<RichTextFieldHandle>(null);
   const { t_i18n } = useFormatter();
+  const richTextLabels = useRichTextFieldLabels();
   const [markdownSelectedTab, setMarkdownSelectedTab] = useState<'write' | 'preview' | undefined>('write');
   const { fullyActive } = useAI();
   const isLegacyMode = !agentMode;
@@ -221,8 +224,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         markdownFieldRef.current.scrollTop = markdownFieldRef.current.scrollHeight;
       }
     } else if (format === 'html') {
-      const elementEditor = document.querySelector('.tiptap-editor-content.ProseMirror');
-      elementEditor?.lastElementChild?.scrollIntoView();
+      richTextFieldRef.current?.scrollToBottom();
     }
     return setContent(newContent ?? '');
   };
@@ -299,7 +301,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
   // ── Content editors ───────────────────────────────────────────────────
 
   const askAiEmbedStyle: Record<'markdown' | 'html', CSSProperties> = {
-    html: { position: 'absolute', top: 2, right: 45 },
+    html: { position: 'absolute', top: 2, right: 0 },
     markdown: { position: 'absolute', top: 2, right: 10, paddingTop: 4 },
   };
 
@@ -330,14 +332,21 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
         />
       )}
       {format === 'html' && (
-        <RichTextEditor
-          id="response-dialog-editor"
-          data={content}
-          onChange={(_, adapter) => {
-            setContent(adapter.getData());
-          }}
-          disabled={effectiveDisabled}
-        />
+        // FDS-WORKAROUND #87 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at
+        // the end of the toolbar for the legacy Ask AI button laid over it.
+        <Box sx={isLegacyMode ? { '& [role="toolbar"]': { paddingRight: '32px' } } : undefined}>
+          <RichTextField
+            ref={richTextFieldRef}
+            id="response-dialog-editor"
+            aria-label={t_i18n('Content')}
+            value={content}
+            onValueChange={setContent}
+            generating={effectiveDisabled}
+            height={height - 80}
+            fullscreen={false}
+            labels={richTextLabels}
+          />
+        </Box>
       )}
       {format === 'markdown' && (
         <ReactMde

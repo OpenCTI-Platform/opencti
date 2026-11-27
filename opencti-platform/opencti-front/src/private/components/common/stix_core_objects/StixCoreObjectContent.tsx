@@ -8,11 +8,12 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import ReactMde from 'react-mde';
 import { interval, Subscription } from 'rxjs';
-import { RichTextEditor } from '@filigran/rich-text-editor';
+import { RichTextField } from '@filigran/design-system/rich-text-field';
 import { ContainerMappingContent_container$data } from '@components/common/containers/__generated__/ContainerMappingContent_container.graphql';
 import StixCoreObjectMappableContent from './StixCoreObjectMappableContent';
 import TextFieldAskAI from '../form/TextFieldAskAI';
 import { useFormatter } from '../../../../components/i18n';
+import useRichTextFieldLabels from '../../../../components/fields/useRichTextFieldLabels';
 import StixCoreObjectContentFiles, { stixCoreObjectContentFilesUploadStixCoreObjectMutation } from './StixCoreObjectContentFiles';
 import { APP_BASE_PATH, commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
@@ -123,9 +124,10 @@ const EditorContainer = styled('div')(({ theme }) => ({
 }));
 
 const HtmlEditorContainer = styled(EditorContainer)({
-  '& .MuiToggleButtonGroup-root.MuiToggleButtonGroup-horizontal': {
-    // reduce gap between buttons in the toolbar to let space for the AI button
-    gap: 0,
+  // FDS-WORKAROUND #87 (fds-migration/LIBRARY-FEEDBACK.md): leaves room at the
+  // end of the toolbar for the Ask AI button laid over it.
+  '& [role="toolbar"]': {
+    paddingRight: 32,
   },
 });
 
@@ -464,6 +466,7 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
 }) => {
   const stixCoreObject = useFragment(stixCoreObjectContentFragment, stixCoreObjectKey);
   const { t_i18n } = useFormatter();
+  const richTextLabels = useRichTextFieldLabels();
   const navigate = useNavigate();
   const location = useLocation();
   const { typesWithFintelTemplates } = useAttributes();
@@ -784,15 +787,16 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
               <HtmlEditorContainer
                 style={{ minHeight: height, height }}
               >
-                <RichTextEditor
-                  data={currentContent ?? ''}
-                  onChange={(_, adapter) => {
-                    setCurrentContent(adapter.getData());
+                <RichTextField
+                  aria-label={t_i18n('Content')}
+                  value={currentContent ?? ''}
+                  onValueChange={(html) => {
+                    setCurrentContent(html);
                     setChanged(true);
                   }}
-                  onBlur={(_, adapter) => {
-                    onHtmlFieldChange(adapter.getData());
-                  }}
+                  height={height - 80}
+                  fullscreen={false}
+                  labels={richTextLabels}
                 />
                 <TextFieldAskAI
                   currentValue={currentContent ?? ''}
@@ -801,7 +805,7 @@ const StixCoreObjectContent: FunctionComponent<StixCoreObjectContentComponentPro
                   }}
                   format="html"
                   variant="html"
-                  style={{ position: 'absolute', top: 10, right: 0 }}
+                  style={{ position: 'absolute', top: 2, right: 0 }}
                 />
               </HtmlEditorContainer>
             </>

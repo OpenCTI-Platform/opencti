@@ -3231,3 +3231,203 @@ the tooltip's positioning and portal).
 **Removal test.** At a library pin that ships a hover card, the preview
 renders inside it, opens on hover and on keyboard focus, and the row-mark tests
 still pass.
+
+---
+
+## 87. `RichTextField`'s Ask AI cannot carry the product's gating, so OpenCTI lays its own button over the field
+
+**Needed.** The Ask AI button of an HTML field (report, grouping and case
+content, mappable content, the HTML file editor) is OpenCTI's `TextFieldAskAI`.
+It renders in three states the library button does not have: without Enterprise
+Edition it stays visible and its tooltip offers the upgrade (`EETooltip forAi`);
+while the XTM One terms are pending it is disabled for non-administrators, with
+"Ask Ariane isn't activated yet…" as its tooltip; and for an administrator a
+click opens the terms dialog instead of the menu.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.1,
+`components/rich-text-field/RichTextField.mjs`): the button renders only with
+`aiActions` and `onAiAction`, is inert below `aiMinLength` with the
+`askAiTooShort` label, and otherwise opens the action menu. There is no slot for
+a product tooltip on the button, no disabled-with-reason state, and no way to
+intercept the click before the menu opens.
+
+**What the product did.** `FDS-WORKAROUND #87`. The field gets no `aiActions`;
+`TextFieldAskAI` is positioned over the right end of the label row
+(`components/fields/RichTextField.tsx`) or of the toolbar (no label:
+`StixCoreObjectContent.tsx`), and `[role="status"]` / `[role="toolbar"]` get a
+32px right padding so the unsaved-changes text and the toolbar tools stay clear
+of it. Known limit, seen in the browser on 1.13.0 (2026-11-25): in fullscreen
+the editing area moves into the library's dialog, away from the button laid
+over the field, so Ask AI cannot be reached there.
+
+**Ask.** Either a slot for the button's tooltip content plus a
+disabled-with-reason state, or an `onAiOpen` callback that can cancel the menu,
+so the product can gate the library button instead of drawing its own.
+
+**Removal test.** On a report creation form without Enterprise Edition, the
+library Ask AI button shows the upgrade tooltip; with XTM One terms pending, it
+is disabled for a non-administrator with the explanation as its tooltip; and no
+`TextFieldAskAI` is rendered by the two files above.
+
+---
+
+## 88. `RichTextField` does not expose its fullscreen state, so the mapping cannot tell where a selection was made
+
+**Needed.** On a container's mapping view, selecting text in the read-only
+content field (`readOnly` + `onTextSelection`) opens the drawer that maps the
+selection to an entity. In fullscreen, that drawer opens underneath the
+fullscreen dialog, out of sight. The product ignored selections made in
+fullscreen before the migration.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.5.2,
+`components/rich-text-field/RichTextField.mjs`): fullscreen is internal state
+(`isFullscreen`) with no callback and no controlled prop, and `onTextSelection`
+fires in fullscreen as well (the button is only off while `disabled`).
+
+**What the product did.** `FDS-WORKAROUND #88`
+(`components/fields/RichTextField.tsx`). The product forwards a selection only
+when its anchor node lies inside the product's own container. In fullscreen
+the library renders the editing area in its dialog, outside that container.
+
+**Ask.** An `onFullscreenChange(open)` callback, or a controlled `fullscreen`
+open state, so the host knows when the field is in fullscreen.
+
+**Removal test.** On a report's mapping view, a selection made in fullscreen
+does not open the mapping drawer, and the product no longer checks where the
+selection's anchor lies.
+
+---
+
+## 89. `RichTextField` lets subscript and superscript stack on the same text
+
+**Needed.** Subscript and superscript are exclusive: applying one to text that
+carries the other replaces it, as the previous editor did.
+
+**Today.** Measured in the browser on `@filigran/design-system` 1.13.0
+(2026-11-25): Superscript on subscripted text writes `<sub><sup>…</sup></sub>`,
+and both buttons show as pressed.
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Make the two marks exclude each other (TipTap's `excludes` on the
+`subscript` and `superscript` marks).
+
+**Removal test.** Superscript on subscripted text gives `<sup>…</sup>` alone,
+and the reverse gives `<sub>…</sub>` alone.
+
+---
+
+## 90. `RichTextField` to-do items put the checkbox on its own line
+
+**Needed.** A to-do item reads as a checkbox followed by its text on one line.
+
+**Today.** Measured in the browser on 1.13.0 (2026-11-25): the library styles
+`ul[data-type=taskList]` (flex column, no bullets) but not its `li`, so each
+item renders its `label` (the checkbox) above its `div` (the text).
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Lay out `ul[data-type=taskList] > li` as a row (`display: flex`,
+aligned to the first line), with the text taking the remaining width.
+
+**Removal test.** In a to-do list, each checkbox sits on the same line as the
+start of its text.
+
+---
+
+## 91. `RichTextField` does not show an image's caption or link while editing
+
+**Needed.** An image's caption and link, set in Image options, are visible in
+the editing area, as they are once the content is displayed.
+
+**Today.** Measured in the browser on 1.13.0 (2026-11-25): Image options saves
+both (`<figure><a href><img></a><figcaption>…</figcaption></figure>` in the
+HTML), but the editing view renders only the image, so the author sees no sign
+that either was set until reopening Image options.
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Render the caption under the image in the editing view, and mark a
+linked image (an icon or the link's address).
+
+**Removal test.** After setting a caption and a link in Image options, the
+caption shows under the image and the image shows that it carries a link.
+
+---
+
+## 92. `RichTextField` highlight keeps the text colour, so light highlights are unreadable on a dark theme
+
+**Needed.** Highlighted text stays readable whatever the theme.
+
+**Today.** Measured in the browser on 1.13.0 (2026-11-25): Highlight writes
+`<mark style="background-color: …; color: inherit">`, so in the dark theme the
+light text is drawn on the light highlight (for example `#fff59d`) and can
+barely be read.
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Give highlighted text a colour that contrasts with the highlight (for
+example dark text on light highlights), while keeping an explicit text colour
+the author set.
+
+**Removal test.** In the dark theme, text highlighted with a light colour
+meets 4.5:1 contrast against the highlight.
+
+---
+
+## 93. Leaving `RichTextField` fullscreen scrolls the page back to the top
+
+**Needed.** Leaving fullscreen returns the author to where they were on the
+page.
+
+**Today.** Measured in the browser on 1.13.0 (2026-11-25), on a report's
+Content tab: the page's scroll container went from 311px to 0 after entering
+and leaving fullscreen. The editing area moves into the fullscreen dialog, the
+page loses its height meanwhile, and the scroll position is not restored.
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Keep the field's height in the page while fullscreen is open, or
+restore the scroll position on exit.
+
+**Removal test.** Scroll a page down to the field, enter and leave fullscreen:
+the page keeps its scroll position.
+
+---
+
+## 94. Switching list type with everything selected adds empty list items
+
+**Needed.** Changing a list's type keeps its items as they are.
+
+**Today.** Measured in the browser on 1.13.0 (2026-11-25): the editor keeps an
+empty trailing paragraph after a list. With the whole content selected, each
+switch (bullet, then numbered, then to-do) also wraps that paragraph, and a new
+one is added after the list, so one empty item more appears at each switch.
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Leave the trailing empty paragraph out of list commands, or drop the
+empty item they create from it.
+
+**Removal test.** Select all on a two-item list and switch its type three
+times: the list still has two items.
+
+---
+
+## 95. `RichTextField` "Align left" writes an explicit `text-align: left`
+
+**Needed.** Left is the default alignment, so choosing it removes the
+alignment instead of storing one.
+
+**Today.** Measured in the browser on 1.13.0 (2026-11-25): Align left writes
+`style="text-align: left;"` on the paragraph, which then overrides an
+inherited alignment (for example a right-to-left template) and adds noise to
+the saved HTML.
+
+**What the product did.** Nothing: no workaround, no marker.
+
+**Ask.** Make Align left unset the alignment (`unsetTextAlign`) rather than set
+it to `left`.
+
+**Removal test.** Centre a paragraph, then choose Align left: the paragraph
+has no `text-align` style left.

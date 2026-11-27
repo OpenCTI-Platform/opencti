@@ -38,8 +38,11 @@ export default class TextFieldPageModel {
       this.parentLocator = root;
       this.inputLocator = root.getByTestId('text-area');
     } else if (type === 'rich-content') {
-      this.parentLocator = root.getByText(label).locator('../..');
-      this.inputLocator = this.parentLocator.getByLabel('Editing area: main');
+      // The design-system RichTextField's editing area is a textbox labelled
+      // by the field's <label>; its root is three levels above that label
+      // (label → title group → label row → field root).
+      this.inputLocator = root.getByRole('textbox', { name: label, exact: true });
+      this.parentLocator = root.getByText(label, { exact: true }).locator('../../..');
     } else if (type === 'search') {
       // The design-system SearchField renders <input type="search">, which maps
       // to the ARIA searchbox role, not textbox. Its own type, rather than a
