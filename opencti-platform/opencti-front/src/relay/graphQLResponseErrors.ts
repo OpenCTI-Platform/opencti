@@ -17,3 +17,12 @@ export const getGraphQLResponseErrors = (error: unknown): GraphQLResponseError[]
   const responseError = error as ThrownResponseError | null | undefined;
   return [...(responseError?.res?.errors ?? []), ...(responseError?.data?.res?.errors ?? [])];
 };
+
+/**
+ * Only the messages of the GraphQL response, not the whole error of the network layer
+ * ("Relay request for ... failed by the following reasons: ..."). The error's own message for any other error.
+ */
+export const getGraphQLResponseErrorsMessage = (error: Error): string => {
+  const messages = getGraphQLResponseErrors(error).flatMap((e) => (e.message ? [e.message] : []));
+  return messages.length > 0 ? messages.join(' ') : error.message;
+};

@@ -1,11 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { MutationParameters, SelectorStoreUpdater } from 'relay-runtime';
 import { UseMutationConfig, VariablesOf } from 'react-relay';
-import { Alert, Box, Typography, List, ListItem, Tooltip, LinearProgress } from '@mui/material';
+import { Alert, Box, Typography, List, ListItem, LinearProgress } from '@mui/material';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../components/i18n';
 import type { Theme } from '../../components/Theme';
 import { CreationFeedbackContext } from './useCreationFeedback';
+import { getGraphQLResponseErrorsMessage } from '../../relay/graphQLResponseErrors';
 
 type ObjectType = 'entities' | 'observables' | 'files';
 
@@ -72,7 +74,8 @@ function useBulkCommit<M extends MutationParameters>({
 
     onBulkCompleted.current = onCompleted;
     // A single object is not a bulk creation: it has no result dialog
-    if (variables.length > 1) bulkCreation?.onBulkStart();
+    const isBulk = variables.length > 1;
+    if (isBulk) bulkCreation?.onBulkStart();
     setCount(variables.length);
     setCurrentCount(0);
     setInError([]);
@@ -141,12 +144,17 @@ function useBulkCommit<M extends MutationParameters>({
           </Typography>
           <List dense>
             {inError.map(([variables, error], index) => {
+              const message = getGraphQLResponseErrorsMessage(error);
               return (
-                <Tooltip key={index} title={error.message}>
-                  <ListItem divider>
-                    {variablesToString(variables)}
-                  </ListItem>
-                </Tooltip>
+                <ListItem key={index} divider sx={{ gap: theme.spacing(2) }}>
+                  <Typography sx={{ flexShrink: 0 }}>{variablesToString(variables)}</Typography>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Typography noWrap tabIndex={0} sx={{ color: 'error.main', minWidth: 0, marginLeft: 'auto' }}>{message}</Typography>
+                    </TooltipTrigger>
+                    <TooltipContent>{message}</TooltipContent>
+                  </Tooltip>
+                </ListItem>
               );
             })}
           </List>
