@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, getDataID, MESSAGING$ } from '../../../../relay/environment';
 import useGranted, { APIACCESS_USETOKEN } from '../../../../utils/hooks/useGranted';
 import { TokenList_node$data } from './__generated__/TokenList_node.graphql';
 import TokenDeleteDialog from './TokenDeleteDialog';
@@ -82,7 +82,8 @@ export const TokenListBase: React.FC<TokenListProps> = ({ node }) => {
         id: deletingToken.id,
       },
       updater: (store: RecordSourceSelectorProxy) => {
-        const userProxy = store.get(node.id);
+        // node is the MeUser, stored under its namespaced key
+        const userProxy = store.get(getDataID(node, 'MeUser') ?? node.id);
         if (!userProxy) return;
         const currentTokens = userProxy.getLinkedRecords('api_tokens');
         if (currentTokens) {

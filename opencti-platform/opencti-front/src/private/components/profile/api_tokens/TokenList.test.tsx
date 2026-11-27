@@ -5,6 +5,8 @@ import testRender, { createMockUserContext } from '../../../../utils/tests/test-
 import { APIACCESS_USETOKEN } from '../../../../utils/hooks/useGranted';
 import { TokenListBase } from './TokenList';
 import { TokenList_node$data } from '@components/profile/api_tokens/__generated__/TokenList_node.graphql';
+import { commitLocalUpdate, commitMutation as relayCommitMutation } from 'relay-runtime';
+import { createMockEnvironment } from 'relay-test-utils';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
 // Mock mutation
@@ -96,6 +98,31 @@ describe('Component: TokenList', () => {
     });
 
     expect(MESSAGING$.notifySuccess).toHaveBeenCalledWith('Token revoked successfully');
+  });
+
+  it('should remove only the revoked token from the profile MeUser, not from the User sharing its id', async () => {
+    const environment = createMockEnvironment();
+    commitLocalUpdate(environment, (store) => {
+      const tokens = ['token-1', 'token-2'].map((id) => store.create(id, 'ApiToken'));
+      // The same user as a MeUser (namespaced key) and as a User (raw id), both with the tokens
+      store.create('MeUser:user-id', 'MeUser').setLinkedRecords(tokens, 'api_tokens');
+      store.create('user-id', 'User').setLinkedRecords(tokens, 'api_tokens');
+    });
+    // Run the real mutation, so its updater runs against the store
+    (commitMutation as Mock).mockImplementation(({ mutation, variables, updater, onCompleted }) => relayCommitMutation(environment, { mutation, variables, updater, onCompleted }));
+    const { user } = testRender(<TokenListBase node={mockNode} />, { userContext });
+
+    await user.click(screen.getAllByLabelText('revoke')[0]);
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Revoke' }));
+    act(() => environment.mock.resolveMostRecentOperation({ data: { userTokenRevoke: 'token-1' } }));
+
+    const tokenIds: Record<string, string[] | undefined> = {};
+    commitLocalUpdate(environment, (store) => {
+      ['MeUser:user-id', 'user-id'].forEach((dataID) => {
+        tokenIds[dataID] = store.get(dataID)?.getLinkedRecords('api_tokens')?.map((token) => token.getDataID());
+      });
+    });
+    expect(tokenIds).toEqual({ 'MeUser:user-id': ['token-2'], 'user-id': ['token-1', 'token-2'] });
   });
 
   it('should render empty state', () => {

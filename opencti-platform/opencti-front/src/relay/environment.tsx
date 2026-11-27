@@ -109,12 +109,25 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
   subscribeFn: subscribeFn as unknown as SubscribeFunction,
 });
 const store = new Store(new RecordSource());
-// Connector: a sync's built-in twin connector shares the sync id (queue key), so
-// it must not collide with the Synchronizer record in the store.
-const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'Connector']);
-// Dashboard variables and presets keep their ids through duplication and import: two dashboards share them, so they
-// are never normalized by id (Relay then keys them under their dashboard).
-const unkeyedTypenames = new Set(['DashboardVariable', 'DashboardPreset']);
+// Types whose id is the id of an object of another type, so they are stored under `Typename:id`.
+// Connector: a sync's built-in twin connector shares the sync id (queue key).
+// The others are light projections reusing the id of the entity they describe (User, Group, Organization,
+// MarkingDefinition, JsonMapper, CsvMapper, feed, deleted element...).
+const namespacedTypenames = new Set([
+  'MeUser', 'PublicSettings', 'Connector',
+  'Creator', 'Assignee', 'Participant', 'Member', 'MeOrganization', 'MemberGroupRestriction', 'RequestAccessMember',
+  'MarkingDefinitionShort', 'IngestionJsonMapperFromImport', 'IngestionDeduplicationUsage', 'ConnectorConfiguration',
+  'NotifierConnector', 'RemoteStreamCollection', 'OpenCtiFile', 'WorkflowEntityRef', 'DraftResolvedId', 'DeletedElement',
+  'RepresentativeWithId', 'AttributeRef',
+]);
+// Types whose id is not unique among objects of the same type, so they are never normalized by id (Relay then keys
+// them under their parent). Dashboard variables and presets, mapper representations: ids kept through duplication and
+// import. DefaultValue, Attribute: the id is a raw value. PlaybookComponentPort: 'out' in every component.
+// XtmCounterpartResult: one per product with the same id. BackgroundTaskError: no unique id.
+const unkeyedTypenames = new Set([
+  'DashboardVariable', 'DashboardPreset', 'CsvMapperRepresentation', 'JsonMapperRepresentation', 'DefaultValue',
+  'Attribute', 'PlaybookComponentPort', 'XtmCounterpartResult', 'BackgroundTaskError',
+]);
 export const getDataID = (fieldValue: { id?: string } | null | undefined, typeName: string) => {
   const id = fieldValue?.id;
   if (!id || unkeyedTypenames.has(typeName)) return null;
@@ -124,6 +137,43 @@ export const getDataID = (fieldValue: { id?: string } | null | undefined, typeNa
   return id;
 };
 export const environment = new Environment({ network, store, getDataID });
+
+// Dev only: Relay only logs store id collisions in the console, which is easy to miss. Show each one once.
+if (import.meta.env.DEV) {
+  const typeCollision = /conflicting types `(\w+)` and `(\w+)`/;
+  const reported = new Set<string>();
+  const consoleError = console.error;
+  // Merged in one toast, as the message bus keeps the last message of a burst and the toast shows one, and delayed,
+  // as collisions found while the app boots come before the toast component listens.
+  // ponytail: fixed delay, a replayed message bus if a collision on boot ever comes after it
+  let pending: string[] = [];
+  const flush = () => {
+    MESSAGING$.notifyError(
+      <>
+        [dev] Relay store: {pending.join(' / ')}
+        <br />
+        Details in the console (filter &quot;conflicting&quot;), fix hints in relay/environment.tsx
+      </>,
+    );
+    pending = [];
+  };
+  const notifyOnce = (key: string, text: string) => {
+    if (!reported.has(key)) {
+      reported.add(key);
+      pending.push(text);
+      if (pending.length === 1) setTimeout(flush, 3000);
+    }
+  };
+  console.error = (...args: unknown[]) => {
+    consoleError(...args);
+    if (typeof args[0] !== 'string') return;
+    const types = typeCollision.exec(args[0]);
+    if (types) {
+      // fix: classify the type in namespacedTypenames or unkeyedTypenames
+      notifyOnce(`types:${types[1]}/${types[2]}`, `${types[1]} and ${types[2]} share an id`);
+    }
+  };
+}
 
 // Components
 interface QueryRendererProps {
