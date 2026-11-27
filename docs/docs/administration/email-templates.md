@@ -62,6 +62,8 @@ You can find them on the right-hand side:
 - **$user.account_lock_after_date (Expire Date)**: Expiry date of the account 
 - **$settings.platform_url (Platform URL)**: Platform URL of the platform
 
+The variables of the locked user (`$locked_user.*`) and of the lock (`$lock.*`) are filled only in the email sent to the administrators when an account is locked, and with an example lock by **Send test email**: see [Account lockout policy](local-auth-lockout.md#email).
+
 #### Additional options
 
 You can use our HTML editor to format your text, but also insert images, to define the email of your choice. 

@@ -24,6 +24,7 @@ import { initializeStreamStack } from './database/stream/stream-handler';
 import { initializeAuthenticationProviders } from './modules/authenticationProvider/providers';
 import { initializeAdminUser } from './modules/user/user-domain';
 import { cleanUpPasswordHistoryWhenDisabled } from './modules/user/user-password-history';
+import { isAuthenticationSecureByDefault } from './modules/user/user-basic-auth';
 import { getHttpMaxRedirects, getInvalidHttpMaxRedirects, isHttpSecureByDefault } from './http/httpConfig';
 import type { BasicStoreEntityMigrationStatus } from './types/store';
 import type { BasicStoreSettings } from './types/settings';
@@ -64,6 +65,14 @@ export const checkHttpSecurity = () => {
       value: invalidMaxRedirects,
       default: getHttpMaxRedirects(),
     });
+  }
+};
+
+export const checkAuthenticationSecurity = () => {
+  if (!isAuthenticationSecureByDefault()) {
+    logApp.warn('[OPENCTI] Authentication secure defaults are disabled (app:authentication:secure_by_default=false): '
+      + 'while API Basic authentication is enabled, it is accepted for the accounts with two-factor authentication, without their second factor. '
+      + 'It will be refused by default in an upcoming version: set APP__AUTHENTICATION__SECURE_BY_DEFAULT=true to opt in now.');
   }
 };
 
@@ -149,7 +158,7 @@ const platformInit = async (withMarkings = true) => {
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
     }
-    // New and existing platforms: the built-in template exists only behind the feature flag of the local authentication lockout
+    // New and existing platforms: the built-in template of the local authentication lockout emails
     await initLockedUserEmailTemplate(context);
     await initExclusionListCache();
 

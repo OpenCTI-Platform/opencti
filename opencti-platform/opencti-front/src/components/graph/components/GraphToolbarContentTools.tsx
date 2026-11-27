@@ -20,7 +20,7 @@ import ContainerAddStixCoreObjectsInLine from '../../../private/components/commo
 import { getRelationshipMainRepresentative } from '../../../utils/defaultRepresentatives';
 import InvestigationEnrichmentTool from '../../../private/components/workspaces/investigations/investigations_enrichment/InvestigationEnrichmentTool';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 export interface GraphToolbarContentToolsProps {
   stixCoreObjectRefetchQuery?: GraphQLTaggedNode;
@@ -62,6 +62,7 @@ const GraphToolbarContentTools = ({
     graphData,
     context,
     rawObjects,
+    readOnly,
     graphState: {
       selectedNodes: rawSelectedNodes,
       selectedLinks: rawSelectedLinks,
@@ -168,15 +169,17 @@ const GraphToolbarContentTools = ({
       )}
       {entity && context === 'investigation' && (
         <>
-          <InvestigationAddStixCoreObjects
-            workspaceId={entity.id}
-            workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
-            targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-            onAdd={addNode}
-            onDelete={removeFromAddPanel}
-            open={isAddEntitiesOpen}
-            onOpenChange={setIsAddEntitiesOpen}
-          />
+          {!readOnly && (
+            <InvestigationAddStixCoreObjects
+              workspaceId={entity.id}
+              workspaceStixCoreObjects={rawObjects.map((o) => ({ node: o }))}
+              targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+              onAdd={addNode}
+              onDelete={removeFromAddPanel}
+              open={isAddEntitiesOpen}
+              onOpenChange={setIsAddEntitiesOpen}
+            />
+          )}
 
           <Security needs={[KNOWLEDGE]}>
             <InvestigationEnrichmentTool
@@ -188,13 +191,16 @@ const GraphToolbarContentTools = ({
       )}
 
       {stixCoreObjectRefetchQuery && relationshipRefetchQuery && (
-        <GraphToolbarEditObject
-          stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
-          relationshipRefetchQuery={relationshipRefetchQuery}
-        />
+        // The pencil edits the knowledge itself, not the graph: same right as on the entity's page.
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <GraphToolbarEditObject
+            stixCoreObjectRefetchQuery={stixCoreObjectRefetchQuery}
+            relationshipRefetchQuery={relationshipRefetchQuery}
+          />
+        </Security>
       )}
 
-      {onAddRelation && entity && (
+      {onAddRelation && entity && !readOnly && (
         <>
           <GraphToolbarItem
             Icon={<LinkOutlined />}
@@ -246,7 +252,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {entity && (
+      {entity && !readOnly && (
         <>
           <GraphToolbarItem
             Icon={<VisibilityOutlined />}
@@ -274,7 +280,7 @@ const GraphToolbarContentTools = ({
         </>
       )}
 
-      {(onDeleteRelation || onRemove) && entity && (
+      {(onDeleteRelation || onRemove) && entity && !readOnly && (
         <>
           <GraphToolbarItem
             Icon={<DeleteOutlined />}

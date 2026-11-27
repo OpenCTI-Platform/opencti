@@ -27,6 +27,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { ObjectToParse } from '../../../../components/graph/utils/useGraphParser';
 import { useFormatter } from '../../../../components/i18n';
+import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useGranted, { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import InvestigationViewSwitcher, { INVESTIGATION_MATRIX_EXPORT_ID, useInvestigationView } from './InvestigationViewSwitcher';
 import InvestigationMatrix from './matrix/InvestigationMatrix';
 import { useInvestigationMatrixSettings } from './matrix/investigationMatrixSettings';
@@ -455,7 +457,7 @@ const InvestigationGraphComponent = ({
   const { t_i18n } = useFormatter();
   const view = useInvestigationView();
   const bannerHeight = useSettingsMessagesBannerHeight();
-  const { rawObjects } = useGraphContext();
+  const { rawObjects, readOnly } = useGraphContext();
 
   const {
     addLink,
@@ -494,6 +496,8 @@ const InvestigationGraphComponent = ({
   };
 
   const savePositions = (positions: OctiGraphPositions) => {
+    // The server refuses the positions of a member who cannot change the investigation: they stay in this view only.
+    if (readOnly) return;
     commitEditPositions({
       variables: {
         id: investigation.id,
@@ -647,6 +651,10 @@ const InvestigationGraphLoader = ({
   ...otherProps
 }: InvestigationGraphLoaderProps) => {
   const localStorageKey = `investigation-graph-${investigationId}`;
+  const { currentUserAccessRight } = useFragment(investigationGraphFragment, otherProps.dataInvestigation);
+  const { canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
+  // Every change to the graph goes through workspaceFieldPatch, which needs one of these capabilities.
+  const canUpdateWorkspace = useGranted([EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]);
 
   const {
     data: { workspace },
@@ -689,6 +697,7 @@ const InvestigationGraphLoader = ({
       objects={objects}
       positions={positions}
       context="investigation"
+      readOnly={!canEdit || !canUpdateWorkspace}
     >
       <InvestigationGraphComponent
         currentData={dataLoaded}

@@ -1,7 +1,9 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '@components/Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const Malwares = lazy(() => import('./Malwares'));
@@ -14,54 +16,77 @@ const Vulnerabilities = lazy(() => import('./Vulnerabilities'));
 const RootVulnerabilities = lazy(() => import('./vulnerabilities/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Malware')) {
-    redirect = 'malwares';
-  } else if (!useIsHiddenEntity('Channel')) {
-    redirect = 'channels';
-  } else if (!useIsHiddenEntity('Tool')) {
-    redirect = 'tools';
-  } else if (!useIsHiddenEntity('Vulnerability')) {
-    redirect = 'vulnerabilities';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('arsenal'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/arsenal/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/malwares"
-          element={boundaryWrapper(Malwares)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/malwares">
+              {boundaryWrapper(Malwares)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/malwares/:malwareId/*"
-          element={boundaryWrapper(RootMalware)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/malwares">
+              {boundaryWrapper(RootMalware)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/channels"
-          element={boundaryWrapper(Channels)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/channels">
+              {boundaryWrapper(Channels)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/channels/:channelId/*"
-          element={boundaryWrapper(RootChannel)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/channels">
+              {boundaryWrapper(RootChannel)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/tools"
-          element={boundaryWrapper(Tools)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/tools">
+              {boundaryWrapper(Tools)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/tools/:toolId/*"
-          element={boundaryWrapper(RootTool)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/tools">
+              {boundaryWrapper(RootTool)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/vulnerabilities"
-          element={boundaryWrapper(Vulnerabilities)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/vulnerabilities">
+              {boundaryWrapper(Vulnerabilities)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/vulnerabilities/:vulnerabilityId/*"
-          element={boundaryWrapper(RootVulnerabilities)}
+          element={(
+            <EntryGuard path="/dashboard/arsenal/vulnerabilities">
+              {boundaryWrapper(RootVulnerabilities)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

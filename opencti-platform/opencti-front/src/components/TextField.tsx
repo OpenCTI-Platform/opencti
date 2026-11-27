@@ -61,30 +61,48 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>((props, for
   } = props;
   const { enabled, configured } = useAI();
 
+  // The value before the current edit, compared on blur to submit a changed value only. An edit starts on the
+  // first focus or change: the number stepper changes the value before it focuses the input, so the value seen
+  // on that focus is already the new one.
+  const initialValueOnFocus = useRef<string | null>(null);
+  const fieldValue = props.field.value;
+
   const internalOnChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
+    if (initialValueOnFocus.current === null) {
+      initialValueOnFocus.current = isNil(fieldValue) ? '' : String(fieldValue);
+    }
     setFieldValue(name, value);
     if (typeof onChange === 'function') {
       onChange(name, value);
     }
-  }, [onChange, setFieldValue, name]);
-
-  const initialValueOnFocus = useRef<string | null>(null);
+  }, [onChange, setFieldValue, name, fieldValue]);
 
   const internalOnFocus = useCallback((event: FocusEvent<HTMLInputElement>) => {
-    initialValueOnFocus.current = event.target.value;
+    if (initialValueOnFocus.current === null) {
+      initialValueOnFocus.current = event.target.value;
+    }
     if (typeof onFocus === 'function') {
       onFocus(name);
     }
   }, [onFocus, name]);
 
+  const isTypeNumber = props.type === 'number';
   const internalOnBlur = useCallback((event: FocusEvent<HTMLInputElement>) => {
+    // A click on the number stepper moves the focus to its button, which then focuses the input back:
+    // the edit goes on, and the value is submitted once the focus leaves the field.
+    const { relatedTarget } = event;
+    if (isTypeNumber && relatedTarget instanceof HTMLButtonElement && event.target.parentElement?.contains(relatedTarget)) {
+      return;
+    }
     const { value } = event.target;
+    const initialValue = initialValueOnFocus.current;
+    initialValueOnFocus.current = null;
     setFieldTouched(name, true);
-    if (typeof onSubmit === 'function' && value !== initialValueOnFocus.current) {
+    if (typeof onSubmit === 'function' && value !== initialValue) {
       onSubmit(name, value || '');
     }
-  }, [onSubmit, setFieldTouched, name]);
+  }, [onSubmit, setFieldTouched, name, isTypeNumber]);
 
   const internalOnPaste = useCallback((event: ClipboardEvent<HTMLInputElement>) => {
     // onBeforePaste can be used to alter the pasted content

@@ -21,6 +21,7 @@ import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
+import { buildRetentionAuditInput, buildRetentionAuditMessage, newRetentionRunSummary, recordRetentionDeleted, recordRetentionFailure } from './retentionManager-utils';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -93,14 +94,12 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
     logApp.info(`[OPENCTI] Retention manager skipping inactive rule "${name}"`);
     return;
   }
-  logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
   const before = utcDate().subtract(maxNumber, unit ?? 'days');
   const result = await getElementsToDelete(context, scope, before, filters);
+  logApp.info('[OPENCTI] Retention manager executing rule', { id, name, scope, matching_count: result.pageInfo.globalCount });
   let remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
-  let deletedCount = elements.length;
-  // Collect deleted history entries details for audit log
-  const deletedHistoryEntries: Array<{ id: string; timestamp: string }> = [];
+  const summary = newRetentionRunSummary();
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
@@ -113,23 +112,17 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
           const humanDuration = moment.duration(utcDate(up).diff(utcDate())).humanize();
           await deleteElement(context, scope, scope === 'knowledge' ? node.internal_id : node.id, { knowledgeType: node.entity_type });
           logApp.debug(`[OPENCTI] Retention manager deleting ${node.id} after ${humanDuration}`);
-
-          if (scope === 'history' || scope === 'activity') {
-            deletedHistoryEntries.push({
-              id: node.id,
-              timestamp: (node as any).timestamp ?? up,
-            });
-          }
+          recordRetentionDeleted(summary, scope, { id: node.id, entity_type: node.entity_type, timestamp: (node as any).timestamp ?? up });
         } else {
           // remove element from counters, since we can't delete it
           remainingDeletions -= 1;
-          deletedCount -= 1;
           logApp.debug(`[OPENCTI] Retention manager cannot delete ${node.id}.`);
         }
       } catch (err: any) {
         // Only log the error if not an already deleted message (that can happen though concurrency deletion)
         if (err?.extensions?.code !== ALREADY_DELETED_ERROR) {
           logApp.warn('[OPENCTI-MODULE] Retention manager error', { cause: err, id: node.id, manager: 'RETENTION_MANAGER' });
+          recordRetentionFailure(summary, node.id, err);
         }
       }
     };
@@ -151,25 +144,28 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
   const patch = {
     last_execution_date: now(),
     remaining_count: remainingDeletions,
-    last_deleted_count: deletedCount,
+    last_deleted_count: summary.deletedCount,
+    // Cleared by a run without error
+    last_error: summary.lastError,
   };
   await patchAttribute(context, RETENTION_MANAGER_USER, id, ENTITY_TYPE_RETENTION_RULE, patch);
-  // Publish audit log for history/activity scope deletions (these are internal objects and do not
-  // generate stream events automatically via storeDeleteEvent, so we log explicitly here)
-  if ((scope === 'history' || scope === 'activity') && deletedCount > 0) {
+  if (summary.failedCount > 0) {
+    const meta = { id, name, scope, deleted_count: summary.deletedCount, failed_count: summary.failedCount };
+    logApp.warn('[OPENCTI] Retention manager rule executed with errors', meta);
+  }
+  // Publish an audit summary of the run, for every scope: one rule can delete a full batch per run,
+  // and history/activity/file entries generate no stream event of their own
+  if (summary.deletedCount > 0 || summary.failedCount > 0) {
     await publishUserAction({
       user: RETENTION_MANAGER_USER,
       event_type: 'mutation',
       event_scope: 'delete',
       event_access: 'administration',
-      message: `Retention rule \`${name}\` deleted \`${deletedCount}\` \`${scope}\` entries`,
+      message: buildRetentionAuditMessage(name, scope, summary),
       context_data: {
         id,
         entity_type: ENTITY_TYPE_RETENTION_RULE,
-        input: {
-          deleted_count: deletedCount,
-          deleted_entries: deletedHistoryEntries,
-        },
+        input: buildRetentionAuditInput(scope, summary),
       },
     });
   }

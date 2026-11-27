@@ -51,6 +51,8 @@ export interface ConfigPresetComputedItem {
   translatable: boolean;
   // Whether the item already exists on the platform
   exists: boolean;
+  // Whether the item already exists on the platform as its default (or the default of its entity type)
+  existsAsDefault?: boolean;
   // Whether the item conflicts with one of the platform (it exists, or another one has its name): the user chooses what to do with it
   conflict: boolean;
   // The values the preview shows of the item, when it shows some
@@ -96,6 +98,10 @@ export interface ConfigPresetImportPlan {
   fintelDesignNames?: Set<string>;
   // The ids of the fintel designs the earlier items of a dry run would rename: their current name is free again. The preview only
   renamedFintelDesignIds?: Set<string>;
+  // The names, by entity type, the fintel templates of the earlier items of a dry run would take (copied, created or renamed). The preview only
+  fintelTemplateNames?: Set<string>;
+  // The ids of the fintel templates the earlier items of a dry run would rename: their current name is free again. The preview only
+  renamedFintelTemplateIds?: Set<string>;
   // The names (normalized) with the main entity type of the form intakes the earlier items of an import hold, dry run or not
   formIntakeKeys?: Set<string>;
   // The standard ids of the roles the earlier items of a dry run would create

@@ -169,6 +169,13 @@ type MeUser implements BasicObject & InternalObject {
   unsubscribed_news_feed_types: [String!]
   can_manage_sensitive_config: Boolean
   draftContext: DraftWorkspace
+  login_history: [UserLogin!]
+}
+
+type UserLogin {
+  id: ID!
+  timestamp: DateTime!
+  provider: String
 }
 
 type SessionDetail {

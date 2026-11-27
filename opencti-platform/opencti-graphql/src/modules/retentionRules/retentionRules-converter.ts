@@ -16,6 +16,7 @@ const convertRetentionRuleToStix = (instance: StoreEntityRetentionRule): StixRet
     last_execution_date: instance.last_execution_date,
     last_deleted_count: instance.last_deleted_count,
     remaining_count: instance.remaining_count,
+    last_error: instance.last_error,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

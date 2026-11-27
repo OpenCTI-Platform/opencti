@@ -1,7 +1,9 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '../Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const Incidents = lazy(() => import('./Incidents'));
@@ -12,44 +14,61 @@ const StixSightingRelationships = lazy(() => import('./StixSightingRelationships
 const StixSightingRelationship = lazy(() => import('./stix_sighting_relationships/StixSightingRelationship'));
 
 const Root = () => {
-  let redirect;
-  if (!useIsHiddenEntity('Incident')) {
-    redirect = 'incidents';
-  } else if (!useIsHiddenEntity('stix-sighting-relationship')) {
-    redirect = 'sightings';
-  } else {
-    redirect = 'observed_data';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('events'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/events/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/incidents"
-          element={boundaryWrapper(Incidents)}
+          element={(
+            <EntryGuard path="/dashboard/events/incidents">
+              {boundaryWrapper(Incidents)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/incidents/:incidentId/*"
-          element={boundaryWrapper(RootIncident)}
+          element={(
+            <EntryGuard path="/dashboard/events/incidents">
+              {boundaryWrapper(RootIncident)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/observed_data"
-          element={boundaryWrapper(ObservedDatas)}
+          element={(
+            <EntryGuard path="/dashboard/events/observed_data">
+              {boundaryWrapper(ObservedDatas)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/observed_data/:observedDataId/*"
-          element={boundaryWrapper(RootObservedData)}
+          element={(
+            <EntryGuard path="/dashboard/events/observed_data">
+              {boundaryWrapper(RootObservedData)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/sightings"
-          element={boundaryWrapper(StixSightingRelationships)}
+          element={(
+            <EntryGuard path="/dashboard/events/sightings">
+              {boundaryWrapper(StixSightingRelationships)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/sightings/:sightingId/*"
-          element={boundaryWrapper(StixSightingRelationship)}
+          element={(
+            <EntryGuard path="/dashboard/events/sightings">
+              {boundaryWrapper(StixSightingRelationship)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

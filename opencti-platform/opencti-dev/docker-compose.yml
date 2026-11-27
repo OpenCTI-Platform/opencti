@@ -7,7 +7,7 @@ services:
       - 6379:6379
   opencti-dev-redis-insight:
     container_name: opencti-dev-redis-insight
-    image: redislabs/redisinsight:3.8.0@sha256:b5e19ee240abef6edb435871b90ff8a210995422e8e018ab61c0339d318a1f84
+    image: redislabs/redisinsight:3.10.1@sha256:7aea9c96ee8e34518d7d692c02a081f6e46ff9230e7779212aa10a65c423c18a
     restart: unless-stopped
     ports:
       - 8001:8001
@@ -190,7 +190,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
     profiles: [keycloak]
-    image: keycloak/keycloak:26.8.2@sha256:c68e286cacd87b942ac1939a0a1481461109d6acd3a57dc496969a319a76bbf0
+    image: keycloak/keycloak:26.8.2@sha256:7e66a96e4739239070aeaf72e4c5decf0f7f682cfc725b9f7ea2b336eaba38b3
     volumes:
       - keycloakdata:/opt/keycloak/data
       - ./keycloak-configuration:/opt/keycloak/data/import

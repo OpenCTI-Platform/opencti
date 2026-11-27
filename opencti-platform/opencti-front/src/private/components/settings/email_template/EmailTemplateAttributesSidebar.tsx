@@ -8,7 +8,6 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { renderWidgetIcon } from '../../../../utils/widget/widgetUtils';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 export const EMAIL_TEMPLATE_SIDEBAR_WIDTH = 350;
 
@@ -105,7 +104,6 @@ const AttributesSection = ({ title, attributes, isFirst = false }: { title: stri
 const EmailTemplateAttributesSidebar = () => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
 
   const paperStyle: SxProps = {
@@ -132,12 +130,8 @@ const EmailTemplateAttributesSidebar = () => {
         </Alert>
         <AttributesSection title={t_i18n('Attributes of the user')} attributes={userAttributes} isFirst />
         <AttributesSection title={t_i18n('Attributes of the platform')} attributes={platformAttributes} />
-        {isFeatureEnable('LOCAL_AUTH_LOCKOUT') && (
-          <>
-            <AttributesSection title={t_i18n('Attributes of the locked user')} attributes={lockedUserAttributes} />
-            <AttributesSection title={t_i18n('Attributes of the lock')} attributes={lockAttributes} />
-          </>
-        )}
+        <AttributesSection title={t_i18n('Attributes of the locked user')} attributes={lockedUserAttributes} />
+        <AttributesSection title={t_i18n('Attributes of the lock')} attributes={lockAttributes} />
       </Drawer>
 
     </>

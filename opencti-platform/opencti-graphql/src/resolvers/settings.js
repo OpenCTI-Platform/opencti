@@ -42,6 +42,7 @@ import { isSessionPresenceSupported } from '../modules/session/session-presence-
 import { isApiBasicAuthEnabled } from '../modules/user/user-basic-auth';
 import { readXtmHubTokenFor } from '../utils/settings.helper';
 import { getSessionMaxLifetime } from '../database/session';
+import { readLoginHistoryCount } from '../modules/user/user-login-history';
 
 const settingsResolvers = {
   Query: {
@@ -67,6 +68,7 @@ const settingsResolvers = {
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     platform_session_presence_enabled: (settings) => settings.platform_session_presence_enabled ?? false,
     platform_session_presence_supported: () => isSessionPresenceSupported(),
+    platform_login_history_count: (settings) => readLoginHistoryCount(settings),
     platform_email: (settings) => smtpConfiguredEmail(settings),
     xtm_hub_token: (settings, __, context) => readXtmHubTokenFor(context.user, settings),
     platform_email_configurable: () => isEmailRewriteAllowed(),

@@ -39,7 +39,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { ingestionHealthAttributes } from '../ingestionHealth/ingestionHealth-attributes';
 import { ENTITY_TYPE_WORKSPACE, WORK_INVESTIGATION_STATUS_VALUES } from '../workspace/workspace-types';
-import { LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
+import { SESSION_PRESENCE_FEATURE_FLAG } from '../../config/conf';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
@@ -154,10 +154,10 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'pir_match_from', label: 'Match Pir with source of relationship', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       // Automatic lock of the local authentication lockout: the type of lock, the duration of a temporary lock in minutes,
       // the max attempts reached and where the last failed attempt came from (login form, Basic auth, MFA code, forgotten password)
-      { name: 'lock_type', label: 'Lock type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-      { name: 'lock_duration', label: 'Lock duration in minutes', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-      { name: 'max_attempts', label: 'Max attempts', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-      { name: 'lock_source', label: 'Lock source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+      { name: 'lock_type', label: 'Lock type', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      { name: 'lock_duration', label: 'Lock duration in minutes', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      { name: 'max_attempts', label: 'Max attempts', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      { name: 'lock_source', label: 'Lock source', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
       history_changes,
       ingestion_health_changes,
     ],
@@ -235,12 +235,12 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'password_policy_min_uppercase', label: 'Min policy uppercase', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_validity_days', label: 'Password validity in days', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'password_policy_history_count', label: 'Password history count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
-    { name: 'local_auth_lockout_enabled', label: 'Local authentication lockout enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-    { name: 'local_auth_lockout_max_attempts', label: 'Local authentication lockout max attempts', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-    { name: 'local_auth_lockout_admin_max_attempts', label: 'Local authentication lockout max attempts for administrative accounts', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-    { name: 'local_auth_lockout_final_action', label: 'Local authentication lockout final action', type: 'string', format: 'enum', values: ['temporary', 'permanent'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-    { name: 'local_auth_lockout_window', label: 'Local authentication lockout window in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
-    { name: 'local_auth_lockout_duration', label: 'Local authentication lockout duration in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: LOCAL_AUTH_LOCKOUT_FEATURE_FLAG },
+    { name: 'local_auth_lockout_enabled', label: 'Local authentication lockout enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'local_auth_lockout_max_attempts', label: 'Local authentication lockout max attempts', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'local_auth_lockout_admin_max_attempts', label: 'Local authentication lockout max attempts for administrative accounts', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'local_auth_lockout_final_action', label: 'Local authentication lockout final action', type: 'string', format: 'enum', values: ['temporary', 'permanent'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'local_auth_lockout_window', label: 'Local authentication lockout window in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'local_auth_lockout_duration', label: 'Local authentication lockout duration in minutes', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'api_basic_auth_enabled', label: 'API Basic authentication enabled', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_whitemark', label: 'Whitemark', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'enterprise_license', label: 'Enterprise edition license', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
@@ -259,12 +259,15 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'xtm_hub_available_news_feed_types', label: 'XTM Hub available news feed types', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: false, isFilterable: false },
     { name: 'xtm_hub_commercial_model', label: 'XTM Hub commercial model', type: 'string', format: 'enum', values: ['saas', 'other'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'xtm_hub_organization_name', label: 'XTM Hub organization name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'xtm_hub_key_version', label: 'XTM Hub key version', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'xtm_hub_key_enrolled_at', label: 'XTM Hub key enrollment date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'filigran_chatbot_ai_cgu_status', label: 'XTM1 CGU acceptance status', type: 'string', format: 'enum', values: ['pending', 'disabled', 'enabled'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_bootstrap_status', label: 'Platform bootstrap status', type: 'string', format: 'enum', values: ['pending', 'completed'], editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false, featureFlag: CONFIG_PRESET_FEATURE_FLAG },
     { name: 'platform_ai_enabled', label: 'AI insight activation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_notifier_auto_trigger_assignee', label: 'Auto-trigger notifications for assignees/participants', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_session_max_concurrent', label: 'Max concurrent sessions (0 equals no maximum)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'platform_session_presence_enabled', label: 'Logout when the last tab is closed', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false, featureFlag: SESSION_PRESENCE_FEATURE_FLAG },
+    { name: 'platform_login_history_count', label: 'Number of last logins shown in the user profile', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'local_auth', label: 'Local authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'cert_auth', label: 'Client certificate authentication', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'headers_auth', label: 'Header authentication configuration', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

@@ -128,8 +128,7 @@ const processStreamResult = async (results: Array<any>, callback: any, withInter
   return lastEventId;
 };
 export const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
-  // keyPrefix is not applied to XINFO: Redis declares its key on the STREAM subcommand, which ioredis does not model
-  const redisStreamName = `${REDIS_PREFIX}${checkStreamName(streamName)}`;
+  const redisStreamName = checkStreamName(streamName);
   const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
   const info: any = {};
   for (let i = 0; i < res.length; i += 2) {

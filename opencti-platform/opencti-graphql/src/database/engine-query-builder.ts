@@ -1575,6 +1575,8 @@ export type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   filters?: FilterGroup | null;
   noFiltersChecking?: boolean;
   noRegardingOfFilterIdsCheck?: boolean;
+  // Filters completed by elCompleteFilters, used in place of `filters`: nothing is checked or resolved again
+  completedFilters?: CompletedFilterGroup;
   historyFiltering?: boolean;
   startDate?: any;
   endDate?: any;
@@ -1585,6 +1587,33 @@ export type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
    * MUST NEVER be populated from user/GraphQL/JSON input.
    */
   internalScriptFilters?: string[];
+};
+// A filter group checked, converted and completed by elCompleteFilters, the only function that makes one: raw filters
+// cannot be passed as completed filters, their special keys would reach the engine unresolved
+declare const completedFilterGroupBrand: unique symbol;
+export type CompletedFilterGroup = FilterGroup & { readonly [completedFilterGroupBrand]: true };
+export type CompleteFiltersOpts = Pick<QueryBodyBuilderOpts, 'filters' | 'noFiltersChecking' | 'noRegardingOfFilterIdsCheck'>;
+// The filters of a query checked, converted and completed, as elQueryBodyBuilder reads them: their special keys are
+// resolved with the access of the user, which takes requests for some of them (up to ES_MAX_PAGINATION entities for
+// each of dynamicFrom and dynamicTo). Queries on the same filters resolve them once: each one gets the result as
+// `completedFilters`. Completing them again is not possible, a completed entity type filter being refused.
+// An empty group without any filter.
+export const elCompleteFilters = async (
+  context: AuthContext,
+  user: AuthUser,
+  options: CompleteFiltersOpts,
+  deps: EngineQueryDeps,
+): Promise<CompletedFilterGroup> => {
+  const { filters, noFiltersChecking, noRegardingOfFilterIdsCheck = false } = options;
+  const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
+    return deps.elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
+  };
+  const convertedFilters = await checkAndConvertFilters(context, user, filters, user.id, elFindByIdsToMap, { noFiltersChecking });
+  if (!convertedFilters || !isFilterGroupNotEmpty(convertedFilters)) {
+    return { mode: FilterMode.And, filters: [], filterGroups: [] } as unknown as CompletedFilterGroup;
+  }
+  const completedFilters = await deps.completeSpecialFilterKeys(context, user, convertedFilters, { noRegardingOfFilterIdsCheck });
+  return completedFilters as CompletedFilterGroup;
 };
 export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options: QueryBodyBuilderOpts, deps: EngineQueryDeps) => {
   const {
@@ -1608,12 +1637,12 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
     dateAttribute = null,
     includeAuthorities = false,
     noRegardingOfFilterIdsCheck = false,
+    completedFilters: givenCompletedFilters,
     internalScriptFilters = [],
   } = options;
-  const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
-    return deps.elFindByIds<BasicStoreObject>(c, u, i, { ...o, toMap: true }) as Promise<Record<string, BasicStoreObject>>;
-  };
-  const convertedFilters = await checkAndConvertFilters(context, user, filters, user.id, elFindByIdsToMap, { noFiltersChecking });
+  const allCompletedFilters = givenCompletedFilters
+    ?? await elCompleteFilters(context, user, { filters, noFiltersChecking, noRegardingOfFilterIdsCheck }, deps);
+  const completedFilters = isFilterGroupNotEmpty(allCompletedFilters) ? allCompletedFilters : undefined;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering: any[] = [];
   // Handle marking restrictions
@@ -1643,14 +1672,14 @@ export const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, o
       specialFiltersContent.push({ key: TYPE_FILTER, values: R.flatten(types) });
     }
   }
-  const completeFilters = specialFiltersContent.length > 0 ? {
-    mode: FilterMode.And,
-    filters: specialFiltersContent,
-    filterGroups: isFilterGroupNotEmpty(convertedFilters) ? [convertedFilters as FilterGroup] : [],
-  } : convertedFilters;
-  // Handle filters
-  if (completeFilters && isFilterGroupNotEmpty(completeFilters)) {
-    const finalFilters = await deps.completeSpecialFilterKeys(context, user, completeFilters, { noRegardingOfFilterIdsCheck });
+  // Handle filters: the special keys and the filters together, the filters first
+  let finalFilters: FilterGroup | undefined = completedFilters;
+  if (specialFiltersContent.length > 0) {
+    const specialFiltersGroup = { mode: FilterMode.And, filters: specialFiltersContent, filterGroups: [] };
+    const specialFilters = await deps.completeSpecialFilterKeys(context, user, specialFiltersGroup, { noRegardingOfFilterIdsCheck });
+    finalFilters = { ...specialFilters, filterGroups: [...(completedFilters ? [completedFilters] : []), ...specialFilters.filterGroups] };
+  }
+  if (finalFilters) {
     const { subQuery: filtersSubQuery } = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);

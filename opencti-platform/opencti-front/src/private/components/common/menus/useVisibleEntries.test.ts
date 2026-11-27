@@ -136,6 +136,16 @@ describe('Hook: useVisibleEntries', () => {
       expect(testRenderHook(() => useVisibleEntries(entries)).hook.result.current.map(({ label }) => label)).toEqual(['Observables']);
     });
 
+    it('with `ignoreHidden`, keeps an entry whose entity type is hidden, but still hides a disabled trash', () => {
+      const entries: MenuEntry[] = [
+        { path: '/malwares', label: 'Malwares', entityType: 'Malware' },
+        { path: '/dashboard/trash', label: 'Trash' },
+      ];
+      hiddenEntities = ['Malware'];
+      trashEnabled = false;
+      expect(testRenderHook(() => useVisibleEntries(entries, { ignoreHidden: true })).hook.result.current.map(({ path }) => path)).toEqual(['/malwares']);
+    });
+
     it('hides the trash when it is disabled', () => {
       const entries: MenuEntry[] = [{ path: '/dashboard/trash', label: 'Trash' }];
       expect(visible(entries)).toEqual(['/dashboard/trash']);

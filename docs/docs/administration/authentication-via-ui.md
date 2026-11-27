@@ -40,6 +40,29 @@ The "Enforce Two-Factor Authentication" button is available, allowing administra
 It is possible to specify the amount of concurrent sessions allowed on your platform.
 By default, there is no limit (0 means that there is no maximum number of sessions). If you want to restrict it, simply replace this value by the amount of concurrent sessions you want to allow on OpenCTI.
 
+### Last logins shown in the user profile
+
+!!! tip "Enterprise edition"
+
+    The last logins are read from the [activity log](audit/overview.md), which is available under the "OpenCTI Enterprise Edition" license.
+
+Each user can see their own last successful logins in their profile, in a "Last logins" card. It lets them spot a login they did not make with their identity, and then change their password and contact an administrator.
+
+The number of logins shown is set in the "Sessions" card, with "Last logins shown in the user profile". It accepts an integer from 0 to 50. By default, it is 0, and the card is hidden from every profile.
+
+For each login, the card shows:
+
+- the date and time of the login;
+- the authentication provider used: `local` for the local login form, the identifier of the strategy for an SSO or LDAP login, `cert` for a client certificate, `headers` for HTTP headers.
+
+A user only ever sees their own logins: the card never shows the logins of another user, whatever their capabilities. Administrators keep reading all the logins, successful or failed, in the activity log.
+
+The logins come from the login events of the activity log, so:
+
+- logins made before the Enterprise Edition was activated are not shown;
+- logins deleted by an "Activity" [retention policy](retentions.md) are not shown;
+- a login is recorded once the first factor is validated: a login stopped at the two-factor authentication step is still listed.
+
 ## Create a new configuration
 
 When navigating to Parameters / Authentications, you will land on a screen to manage your authentication strategies.
@@ -79,6 +102,8 @@ In the local authentication drawer, the **Allow API Basic authentication** switc
 
 - A new platform starts with it disabled. A platform upgraded from a version without this setting starts with it enabled: disable it once your scripts and integrations use API tokens.
 - While it is disabled, every Basic request is refused, for every user, administrators and the `Bypass all capabilities` capability included. The request is handled as unauthenticated, and it is not counted as a failed login attempt.
+
+While it is enabled, Basic authentication never asks for the second factor. The `app:authentication:secure_by_default` [configuration key](../deployment/configuration.md) refuses it to the accounts that two-factor authentication applies to: the accounts that enabled it, or every account when two-factor authentication is mandatory. Those accounts must use an API token: their requests are refused before the password is checked, and are not counted as failed login attempts. The key is disabled by default for now, and will be enabled by default in an upcoming version. Until then, the platform logs a warning with the id of each account that still uses Basic authentication with two-factor authentication, at most once per hour, to find the integrations to migrate.
 
 #### Define password policy
 
@@ -176,6 +201,10 @@ With an Enterprise Edition license, each refused reuse is recorded in the audit 
 Password hashes, current and previous, are stored in the user documents of Elasticsearch / OpenSearch: protect backups of the database accordingly. The history cannot be read or written through the API.
 
 While the rule is enabled (a value of `1` or more), a local account's password change must be sent on its own: combining it with other fields is refused with "The password must be changed on its own". The exception is `user_service_account`, which may accompany the password; when switching account type, the supplied password is ignored. With the rule disabled, existing API calls are unchanged.
+
+#### Account lockout policy
+
+To lock accounts after repeated failed login attempts, see [Account lockout policy](local-auth-lockout.md).
 
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.

@@ -22,6 +22,7 @@ import { ALL_CONNECTORS } from './configPreset-connectors-fixtures';
 import { ALL_RSS_FEEDS, ALL_TAXII_FEEDS } from './configPreset-feeds-fixtures';
 import { ALL_EMAIL_TEMPLATES } from './configPreset-emailTemplates-fixtures';
 import { ALL_FINTEL_DESIGNS } from './configPreset-fintelDesigns-fixtures';
+import { ALL_FINTEL_TEMPLATES } from './configPreset-fintelTemplates-fixtures';
 import { ALL_DASHBOARDS } from './configPreset-dashboards-fixtures';
 import { ALL_FORM_INTAKES, FORM_REFERENCED_ENTITIES } from './configPreset-formIntakes-fixtures';
 import { ALL_PLAYBOOKS } from './configPreset-playbooks-fixtures';
@@ -53,6 +54,7 @@ const FIXTURE_ENTITIES: Record<string, { id: string; name?: string; definition?:
   IngestionTaxii: ALL_TAXII_FEEDS,
   EmailTemplate: ALL_EMAIL_TEMPLATES,
   FintelDesign: ALL_FINTEL_DESIGNS,
+  FintelTemplate: ALL_FINTEL_TEMPLATES,
   Workspace: ALL_DASHBOARDS,
   Form: ALL_FORM_INTAKES,
   CustomView: ALL_CUSTOM_VIEWS,

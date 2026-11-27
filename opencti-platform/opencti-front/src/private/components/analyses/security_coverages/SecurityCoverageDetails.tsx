@@ -21,7 +21,8 @@ import Label from '../../../../components/common/label/Label';
 import { EMPTY_VALUE } from '../../../../utils/String';
 
 const securityCoverageDetailsFragment = graphql`
-  fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage {
+  fragment SecurityCoverageDetails_securityCoverage on SecurityCoverage
+  @argumentDefinitions(vulnerabilityFilters: { type: "FilterGroup" }) {
     id
     entity_type
     customFieldValues {
@@ -37,16 +38,18 @@ const securityCoverageDetailsFragment = graphql`
           main
       }
     }
-    ...SecurityCoverageVulnerabilities_securityCoverage
+    ...SecurityCoverageVulnerabilities_securityCoverage @arguments(filters: $vulnerabilityFilters)
   }
 `;
 
 interface SecurityCoverageDetailsProps {
   securityCoverage: SecurityCoverageDetails_securityCoverage$key;
+  isResultScoped?: boolean;
 }
 
 const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> = ({
   securityCoverage,
+  isResultScoped = false,
 }) => {
   const { t_i18n } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
@@ -96,7 +99,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
           </Grid>
           <CustomFieldValuesDisplay entityType={data.entity_type} values={data.customFieldValues ?? []} />
           <Grid size={12}>
-            <SecurityCoverageVulnerabilities securityCoverage={data} />
+            <SecurityCoverageVulnerabilities securityCoverage={data} isResultScoped={isResultScoped} />
           </Grid>
         </Grid>
       </Card>

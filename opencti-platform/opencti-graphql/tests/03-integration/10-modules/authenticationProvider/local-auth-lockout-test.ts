@@ -253,15 +253,6 @@ describe('Local authentication lockout', () => {
   });
 
   describe('Activation', () => {
-    it('should not lock when the feature flag is disabled', async () => {
-      vi.spyOn(conf, 'isFeatureEnabled').mockReturnValue(false);
-      for (let i = 0; i < 5; i += 1) {
-        await expectBadCredentials(login(LOCKOUT_USER.email, WRONG_PASSWORD));
-      }
-      const user = await login(LOCKOUT_USER.email, LOCKOUT_USER.password);
-      expect(user.user_email).toEqual(LOCKOUT_USER.email);
-    });
-
     it('should not lock when the lockout is disabled in the settings', async () => {
       await setLockoutPolicy({ ...LOCKOUT_POLICY, local_auth_lockout_enabled: false });
       for (let i = 0; i < 5; i += 1) {
@@ -568,16 +559,6 @@ describe('Local authentication lockout', () => {
       await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
       // Enabling the lockout again does not bring back the previous failures
       await setLockoutPolicy(LOCKOUT_POLICY);
-      expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
-    });
-
-    it('should reset the lockout on a login accepted while the feature flag is disabled', async () => {
-      await failLogin(LOCKOUT_USER.email, 2);
-      const isFeatureEnabled = conf.isFeatureEnabled;
-      vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((flag: string) => (flag === conf.LOCAL_AUTH_LOCKOUT_FEATURE_FLAG ? false : isFeatureEnabled(flag)));
-      await sessionLoginAs(LOCKOUT_USER.email, LOCKOUT_USER.password);
-      vi.mocked(conf.isFeatureEnabled).mockRestore();
-      // Enabling the flag again does not bring back the previous failures
       expect(await failuresOf(LOCKOUT_USER.email)).toEqual(0);
     });
 

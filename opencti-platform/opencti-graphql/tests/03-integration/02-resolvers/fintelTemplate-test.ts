@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQueryHelper';
+import { createUploadFromBuffer, queryAsAdmin } from '../../utils/testQueryHelper';
 import { addFilter } from '../../../src/utils/filtering/filtering-utils';
 import { type FintelTemplateWidgetAddInput, WidgetPerspective } from '../../../src/generated/graphql';
 import { SELF_ID } from '../../../src/utils/fintelTemplate/__fintelTemplateWidgets';
@@ -487,6 +487,44 @@ describe('Fintel template resolver standard behavior', () => {
     `;
     await queryAsAdmin({ query: DELETE_QUERY, variables: { id: secondTemplateId } });
   });
+  it('should fintel template exported as a file and imported back as another template, its widgets included', async () => {
+    const EXPORT_QUERY = gql`
+      query fintelTemplateExport($id: ID!) {
+        fintelTemplate(id: $id) {
+          name
+          settings_types
+          fintel_template_widgets { variable_name }
+          toConfigurationExport
+        }
+      }
+    `;
+    const IMPORT_MUTATION = gql`
+      mutation fintelTemplateConfigurationImport($file: Upload!) {
+        fintelTemplateConfigurationImport(file: $file) {
+          id
+          name
+          settings_types
+          fintel_template_widgets { variable_name }
+        }
+      }
+    `;
+    const { data: exported } = await queryAsAdmin({ query: EXPORT_QUERY, variables: { id: fintelTemplateInternalId } });
+    const file = JSON.parse(exported?.fintelTemplate.toConfigurationExport);
+    expect(file).toMatchObject({ type: 'fintelTemplate', configuration: { name: exported?.fintelTemplate.name, settings_types: ['Report'] } });
+    // The filters of the widgets are objects in the file
+    expect(typeof file.configuration.fintel_template_widgets[0].widget.dataSelection[0].filters).toBe('object');
+
+    const upload = createUploadFromBuffer(Buffer.from(exported?.fintelTemplate.toConfigurationExport), 'template.json', 'application/json');
+    const { data: imported, errors } = await queryAsAdmin({ query: IMPORT_MUTATION, variables: { file: upload } });
+    expect(errors).toBeUndefined();
+    const importedTemplate = imported?.fintelTemplateConfigurationImport;
+    expect(importedTemplate.id).not.toBe(fintelTemplateInternalId);
+    expect(importedTemplate).toMatchObject({ name: exported?.fintelTemplate.name, settings_types: ['Report'] });
+    // The widgets of the file only: no built-in widget is added twice
+    expect(importedTemplate.fintel_template_widgets).toEqual(exported?.fintelTemplate.fintel_template_widgets);
+    await queryAsAdmin({ query: gql`mutation fintelTemplateDelete($id: ID!) { fintelTemplateDelete(id: $id) }`, variables: { id: importedTemplate.id } });
+  });
+
   it('should fintel template deleted', async () => {
     const DELETE_QUERY = gql`
       mutation fintelTemplateDelete($id: ID!) {

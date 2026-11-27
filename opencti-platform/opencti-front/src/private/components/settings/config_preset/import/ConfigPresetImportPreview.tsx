@@ -36,6 +36,7 @@ import {
 import { ConfigPresetItemRow } from '../ConfigPresetItemRow';
 import ConfigPresetImportActions from './ConfigPresetImportActions';
 import ConfigPresetImportMessages from './ConfigPresetImportMessages';
+import useConfigPresetDefaultNote from './useConfigPresetDefaultNote';
 import ConfigPresetResultLine, { CODE_UNCHANGED, translateReasons } from './ConfigPresetResultLine';
 import ConfigPresetCredentialsDialog from './ConfigPresetCredentialsDialog';
 import ConfigPresetCredentialsItemRow from './ConfigPresetCredentialsItemRow';
@@ -71,6 +72,7 @@ const configPresetImportPreviewQuery = graphql`
           label
           translatable
           isDefault
+          existsAsDefault
           exists
           conflict
           isEnabled
@@ -172,12 +174,7 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
   onFileMissing,
 }) => {
   const { t_i18n } = useFormatter();
-  // The types whose default item stays the default of the platform when it is added as a copy, and what the row says then.
-  // Literals in the calls, so that the extraction of the translation keys finds them
-  const keptDefaultNotes: Record<string, string> = {
-    branding: t_i18n('The platform keeps its current default theme.'),
-    fintelDesigns: t_i18n('The platform keeps its current default fintel design.'),
-  };
+  const defaultNoteOf = useConfigPresetDefaultNote();
   const theme = useTheme<Theme>();
   const environment = useRelayEnvironment();
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -491,9 +488,16 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
           const hasChoice = item.conflict && isImportedItem(type.key, item.key) && type.modes.length > 1;
           const result = results?.[`${type.key}/${item.key}`];
           // The types the import hides: the row alone only says that the item is there
-          // A copy of the default theme or of the default fintel design is another item: the platform keeps its current default
-          const keptDefaultNote = keptDefaultNotes[type.key];
-          const keepsDefault = !!keptDefaultNote && hasChoice && item.isDefault && importModes[configImportModeKey(type.key, item.key)] === 'COPY';
+          // What the import does to the default of the platform (or of the entity type): a copy keeps it, any other import changes it.
+          // Nothing changes for an item the platform already has as it is
+          const defaultNote = defaultNoteOf(type.key, item, {
+            imported: isImportedItem(type.key, item.key),
+            hasChoice,
+            mode: importModes[configImportModeKey(type.key, item.key)],
+          });
+          // A default the import does not write is not said: the item is skipped or fails. Without expected results yet, the note says what the import would do
+          const isWritten = !result || result.status === 'CREATED' || result.status === 'OVERWRITTEN';
+          const shownDefaultNote = defaultNote?.kind === 'becomes' && !isWritten ? undefined : defaultNote;
           const shownResult = result && isResultShown(result, hasChoice) ? result : null;
           // An item that is created has nothing to flag, and its reason says how (the copy of an item that exists): the tag is for what is not a plain creation
           const hasStatus = !!shownResult && shownResult.code !== CODE_UNCHANGED && !(shownResult.status === 'CREATED' && shownResult.reason);
@@ -569,9 +573,9 @@ const ConfigPresetImportPreview: FunctionComponent<ConfigPresetImportPreviewProp
                   </div>
                 ) : undefined}
               />
-              {keepsDefault && (
+              {shownDefaultNote && (
                 <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginLeft: theme.spacing(3.5) }}>
-                  {keptDefaultNote}
+                  {shownDefaultNote.text}
                 </Text>
               )}
               {hiddenTypes && (

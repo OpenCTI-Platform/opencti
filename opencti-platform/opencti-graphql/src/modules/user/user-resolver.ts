@@ -67,6 +67,7 @@ import { getNotifiers } from '../notifier/notifier-domain';
 import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../../schema/internalRelationship';
 import { loadCreator } from '../../database/members';
 import { issueConnectorJWT } from '../connector/connector-domain';
+import { findUserLoginHistory } from './user-login-history';
 
 const userResolvers: Resolvers = {
   Query: {
@@ -128,6 +129,8 @@ const userResolvers: Resolvers = {
     effective_confidence_level: (current, _, context) => getUserEffectiveConfidenceLevel(current, context) as any,
     personal_notifiers: (current, _, context) => getNotifiers(context, context.user, current.personal_notifiers),
     api_tokens: async (current, _, context) => context.batch.tokenBatchLoader.load(current),
+    // Only the logins of the authenticated user, whatever the resolved element
+    login_history: (_, __, context) => findUserLoginHistory(context, context.user),
   },
   UserSession: {
     user: (session, _, context) => loadCreator(context, context.user, session.user_id),

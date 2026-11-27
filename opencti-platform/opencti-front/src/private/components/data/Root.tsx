@@ -1,25 +1,15 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useParams } from 'react-router';
 import { boundaryWrapper } from '../Error';
-import useGranted, {
-  AUTOMATION_AUTMANAGE,
-  BYPASS,
-  CSVMAPPERS,
-  INGESTION,
-  INGESTION_SETINGESTIONS,
-  KNOWLEDGE,
-  KNOWLEDGE_KNASKIMPORT,
-  KNOWLEDGE_KNUPDATE,
-  MODULES,
-  TAXIIAPI,
-} from '../../../utils/hooks/useGranted';
-import useHelper from '../../../utils/hooks/useHelper';
-import { capabilitiesOf } from '../nav/menuEntries';
+import EntryGuard from '../nav/EntryGuard';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
+import { entriesUnder } from '../nav/menuEntries';
+import { integrations } from '../integrations/Integrations.entries';
 import Loader from '../../../components/Loader';
 
 const CsvMappers = lazy(() => import('./CsvMappers'));
 const JsonMappers = lazy(() => import('./JsonMappers'));
-const Security = lazy(() => import('../../../utils/Security'));
 const Entities = lazy(() => import('./Entities'));
 const Relationships = lazy(() => import('./Relationships'));
 const Tasks = lazy(() => import('./Tasks'));
@@ -49,36 +39,12 @@ const LegacyFormRedirect = () => {
   return <Navigate to={{ pathname: `/dashboard/integrations/feeds/form/${formId}`, search: window.location.search }} replace={true} />;
 };
 
+// Ingestion-only users have no Data page anymore: the ingestion section moved to the top-level Integrations menu.
+const dataEntries = [...sectionEntries('data'), integrations];
+
 const Root = () => {
-  const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
-  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, CSVMAPPERS, AUTOMATION_AUTMANAGE]);
-  const isGrantedToSharing = useGranted([TAXIIAPI]);
-  const isGrantedToManage = useGranted([BYPASS]);
-
-  let redirect: string;
-  if (isGrantedToKnowledge) {
-    redirect = '/dashboard/data/entities';
-  } else if (isGrantedToImport) {
-    redirect = '/dashboard/data/import';
-  } else if (isGrantedToProcessing) {
-    redirect = '/dashboard/data/processing';
-  } else if (isGrantedToSharing) {
-    redirect = '/dashboard/data/sharing';
-  } else if (isGrantedToManage) {
-    redirect = '/dashboard/data/restriction';
-  } else if (isGrantedToIngestion) {
-    // Ingestion-only users have no Data screen anymore: the ingestion section
-    // moved to the top-level Integrations menu.
-    redirect = '/dashboard/integrations';
-  } else {
-    redirect = '/dashboard';
-  }
-
-  const isGrantedToAutomation = useGranted([AUTOMATION_AUTMANAGE]);
-  const { isFeatureEnable } = useHelper();
-  const isDataSanityManagerEnabled = isFeatureEnable('DATA_SANITY_MANAGER');
+  const redirect = useFirstVisiblePath(dataEntries);
+  const processingRedirect = useFirstVisiblePath(entriesUnder('/dashboard/data/processing'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -88,11 +54,19 @@ const Root = () => {
         />
         <Route
           path="/entities"
-          element={boundaryWrapper(Entities)}
+          element={(
+            <EntryGuard path="/dashboard/data/entities">
+              {boundaryWrapper(Entities)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/relationships"
-          element={boundaryWrapper(Relationships)}
+          element={(
+            <EntryGuard path="/dashboard/data/relationships">
+              {boundaryWrapper(Relationships)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/ingestion"
@@ -148,7 +122,11 @@ const Root = () => {
         />
         <Route
           path="/import/*"
-          element={boundaryWrapper(RootImport)}
+          element={(
+            <EntryGuard path="/dashboard/data/import">
+              {boundaryWrapper(RootImport)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/sharing"
@@ -156,82 +134,87 @@ const Root = () => {
         />
         <Route
           path="/sharing/streams"
-          element={boundaryWrapper(Stream)}
-        />
-        <Route
-          path="/sharing/feeds"
-          element={boundaryWrapper(Feed)}
-        />
-        <Route
-          path="/sharing/taxii"
-          element={boundaryWrapper(Taxii)}
-        />
-        <Route
-          path="/processing"
           element={(
-            <Security
-              needs={[KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]}
-              placeholder={(
-                <Security
-                  needs={[CSVMAPPERS]}
-                  placeholder={<Navigate to="/dashboard/data/processing/tasks" />}
-                >
-                  <Navigate to="/dashboard/data/processing/csv_mapper" />
-                </Security>
-              )}
-            >
-              <Navigate to={isGrantedToAutomation ? '/dashboard/data/processing/automation' : '/dashboard/data/processing/tasks'} />
-            </Security>
+            <EntryGuard path="/dashboard/data/sharing/streams">
+              {boundaryWrapper(Stream)}
+            </EntryGuard>
           )}
         />
         <Route
+          path="/sharing/feeds"
+          element={(
+            <EntryGuard path="/dashboard/data/sharing/feeds">
+              {boundaryWrapper(Feed)}
+            </EntryGuard>
+          )}
+        />
+        <Route
+          path="/sharing/taxii"
+          element={(
+            <EntryGuard path="/dashboard/data/sharing/taxii">
+              {boundaryWrapper(Taxii)}
+            </EntryGuard>
+          )}
+        />
+        <Route
+          path="/processing"
+          element={<Navigate to={processingRedirect} replace={true} />}
+        />
+        <Route
           path="/processing/automation"
-          element={boundaryWrapper(Playbooks)}
+          element={(
+            <EntryGuard path="/dashboard/data/processing/automation">
+              {boundaryWrapper(Playbooks)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/processing/automation/:playbookId"
-          element={boundaryWrapper(RootPlaybook)}
+          element={(
+            <EntryGuard path="/dashboard/data/processing/automation">
+              {boundaryWrapper(RootPlaybook)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/processing/csv_mapper"
           element={(
-            <Security
-              needs={capabilitiesOf('/dashboard/data/processing/csv_mapper')}
-              placeholder={<Navigate to="/dashboard" />}
-            >
+            <EntryGuard path="/dashboard/data/processing/csv_mapper">
               <CsvMappers />
-            </Security>
+            </EntryGuard>
           )}
         />
         <Route
           path="/processing/json_mapper"
           element={(
-            <Security
-              needs={capabilitiesOf('/dashboard/data/processing/json_mapper')}
-              placeholder={<Navigate to="/dashboard" />}
-            >
+            <EntryGuard path="/dashboard/data/processing/json_mapper">
               <JsonMappers />
-            </Security>
+            </EntryGuard>
           )}
         />
         <Route
           path="/processing/tasks"
           element={(
-            <Security
-              needs={capabilitiesOf('/dashboard/data/processing/tasks')}
-              placeholder={<Navigate to="/dashboard" />}
-            >
+            <EntryGuard path="/dashboard/data/processing/tasks">
               <Tasks />
-            </Security>
+            </EntryGuard>
           )}
         />
         <Route
           path="/restriction/*"
-          element={boundaryWrapper(Management)}
+          element={(
+            <EntryGuard path="/dashboard/data/restriction">
+              {boundaryWrapper(Management)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/health/*"
-          element={isDataSanityManagerEnabled ? boundaryWrapper(Health) : <Navigate to="/dashboard" />}
+          element={(
+            <EntryGuard path="/dashboard/data/health">
+              {boundaryWrapper(Health)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

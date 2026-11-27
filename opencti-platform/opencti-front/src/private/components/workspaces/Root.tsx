@@ -1,40 +1,39 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router';
+import { Route, Routes } from 'react-router';
 import Workspaces from './Workspaces';
 import RootDashboard from './dashboards/Root';
 import RootInvestigation from './investigations/Root';
-import { EXPLORE, INVESTIGATION } from '../../../utils/hooks/useGranted';
-import Security from '../../../utils/Security';
+import EntryGuard from '../nav/EntryGuard';
 import PublicDashboard from './dashboards/public_dashboards/PublicDashboards';
 
 const DashboardRoute = () => (
-  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+  <EntryGuard path="/dashboard/workspaces/dashboards">
     <Workspaces type="dashboard" />
-  </Security>
+  </EntryGuard>
 );
 
 const DashboardWorkspaceRoute = () => (
-  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+  <EntryGuard path="/dashboard/workspaces/dashboards">
     <RootDashboard />
-  </Security>
+  </EntryGuard>
 );
 
 const PublicDashboardRoute = () => (
-  <Security needs={[EXPLORE]} placeholder={<Navigate to="/dashboard" />}>
+  <EntryGuard path="/dashboard/workspaces/dashboards_public">
     <PublicDashboard />
-  </Security>
+  </EntryGuard>
 );
 
 const InvestigationRoute = () => (
-  <Security needs={[INVESTIGATION]} placeholder={<Navigate to="/dashboard" />}>
+  <EntryGuard path="/dashboard/workspaces/investigations">
     <Workspaces type="investigation" />
-  </Security>
+  </EntryGuard>
 );
 
 const InvestigationWorkspaceRoute = () => (
-  <Security needs={[INVESTIGATION]} placeholder={<Navigate to="/dashboard" />}>
+  <EntryGuard path="/dashboard/workspaces/investigations">
     <RootInvestigation />
-  </Security>
+  </EntryGuard>
 );
 
 const Root = () => (

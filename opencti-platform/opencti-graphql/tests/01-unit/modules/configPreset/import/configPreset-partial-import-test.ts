@@ -107,6 +107,24 @@ describe('Config preset partial import', () => {
       expect(resolveConfigPresetPartialImportItems(inherited, views, null, 'Report')).toEqual([]);
     });
 
+    it('takes the items whose scope key holds the value when it is a list: the entity types of the fintel templates', () => {
+      const TEMPLATE_REPORT = 'finteltemplate--11111111-2222-5333-8444-555555555555';
+      const TEMPLATE_GROUPING = 'finteltemplate--aaaaaaaa-bbbb-5ccc-8ddd-eeeeeeeeeeee';
+      const templatePath = (id: string) => `customization/fintel_templates/${id}.json`;
+      const templatesBundle: ConfigPresetBundle = {
+        ...bundle,
+        items: [
+          ...bundle.items,
+          { type: 'fintelTemplates', id: TEMPLATE_REPORT, path: templatePath(TEMPLATE_REPORT), configuration: { name: 'Executive Summary', settings_types: [' Report '] } },
+          { type: 'fintelTemplates', id: TEMPLATE_GROUPING, path: templatePath(TEMPLATE_GROUPING), configuration: { name: 'Executive Summary', settings_types: ['Grouping'] } },
+        ],
+      };
+      const templates = family('fintelTemplates');
+      expect(resolveConfigPresetPartialImportItems(templatesBundle, templates, null, report).map(({ id }) => id)).toEqual([TEMPLATE_REPORT]);
+      expect(resolveConfigPresetPartialImportItems(templatesBundle, templates, null, 'Grouping').map(({ id }) => id)).toEqual([TEMPLATE_GROUPING]);
+      expect(() => resolveConfigPresetPartialImportItems(templatesBundle, templates, [TEMPLATE_GROUPING], report)).toThrow('Unknown configuration preset item');
+    });
+
     it('refuses a scope for a type that does not declare a scope key', () => {
       expect(() => resolveConfigPresetPartialImportItems(bundle, family('branding'), null, 'Report')).toThrow('This configuration type cannot be scoped');
     });

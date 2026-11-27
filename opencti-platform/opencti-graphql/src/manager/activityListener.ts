@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
-import { auditLogTypes, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logAudit } from '../config/conf';
+import { auditLogTypes, logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
 import { storeActivityEvent } from '../database/stream/stream-handler';
 import { getEntityFromCache } from '../database/cache';
@@ -32,12 +32,9 @@ import { buildConfigPresetExportMessage, buildConfigPresetImportMessage } from '
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const UNSUPPORTED_INTPUT_PROPS = ['_id', 'sort', 'i_attributes', 'i_relation']; // add 'objectOrganization' ?
-// The automatic locks of the local authentication lockout only exist behind its feature flag: their scope is not offered in the filters without it
-const isLocalAuthLockoutEnabled = isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG);
 export const EVENT_SCOPE_VALUES = [
   'create', 'update', 'delete', 'merge', 'read', 'search', 'enrich', 'download', 'import', 'export', 'send', 'login', 'logout', 'unauthorized', 'disseminate', 'forgot',
-  'critical', 'degraded', 'recovered',
-  ...(isLocalAuthLockoutEnabled ? ['lock'] : []),
+  'critical', 'degraded', 'recovered', 'lock',
 ];
 export const EVENT_TYPE_VALUES = ['authentication', 'read', 'mutation', 'file', 'command', 'ingestion_health'];
 export const EVENT_ACCESS_VALUES = ['extended', 'administration'];

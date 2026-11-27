@@ -14,6 +14,7 @@ import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSI
 import { sessionAuthenticateUser, userWithOrigin } from '../modules/user/user-domain';
 import { checkIpWhitelistForRequest } from './ipWhitelistMiddleware';
 import { getXtmJwks } from '../domain/xtm-auth';
+import { getXtmHubJwks } from '../modules/xtm/hub/xtm-hub-key';
 import { downloadFile, getFileContent } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
@@ -381,6 +382,18 @@ const createApp = async (app, schema) => {
       res.json(jwks);
     } catch (e) {
       logApp.error('[XTM_AUTH] Error serving JWKS', { cause: e });
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  app.get(`${basePath}/xtm/hub/jwks`, async (_req, res) => {
+    try {
+      const jwks = await getXtmHubJwks();
+      res.set('Content-Type', 'application/json');
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+      res.json(jwks);
+    } catch (e) {
+      logApp.error('[XTM_HUB] Error serving JWKS', { cause: e });
       res.status(500).json({ error: 'Internal server error' });
     }
   });

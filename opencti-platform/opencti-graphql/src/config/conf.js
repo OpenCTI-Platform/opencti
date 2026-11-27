@@ -629,9 +629,6 @@ export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? []
 export const FEATURE_FLAG_ALL = '*';
 export const isFeatureEnabled = (feature) => ENABLED_FEATURE_FLAGS.includes(FEATURE_FLAG_ALL) || ENABLED_FEATURE_FLAGS.includes(feature);
 
-// Local authentication lockout policy feature flag (use isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) to check activation)
-export const LOCAL_AUTH_LOCKOUT_FEATURE_FLAG = 'LOCAL_AUTH_LOCKOUT';
-
 // Connector versions decoupled from the platform version (use isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)
 // to check activation): remote catalog synchronization and connector update detection.
 export const DECOUPLING_VERSIONS_FEATURE_FLAG = 'DECOUPLING_VERSIONS';

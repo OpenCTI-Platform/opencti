@@ -11,7 +11,7 @@ permissions: {}
 jobs:
   check-pr-title-convention:
     name: Check that PR title follows convention
-    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
+    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' && github.event.pull_request.user.login != 'opencti-renovate[bot]' }}
     runs-on: ubuntu-26.04
     permissions:
       contents: read

@@ -20,7 +20,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { notify } from '../database/redis';
-import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import type { CertAuthConfigInput, HeadersAuthConfigInput, LocalAuthConfigInput } from '../generated/graphql';
 import { getEntityFromCache } from '../database/cache';
@@ -77,9 +77,6 @@ export const LOCAL_AUTH_LOCKOUT_WINDOW_LIMIT = 1440; // minutes, the window is c
 export const LOCAL_AUTH_LOCKOUT_DURATION_LIMIT = 1440;
 
 const buildLocalAuthLockoutPatch = async (context: AuthContext, input: LocalAuthConfigInput) => {
-  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
-    return {};
-  }
   const patch: Partial<Pick<LocalAuthConfigInput, LocalAuthLockoutKey>> = Object.fromEntries(
     LOCAL_AUTH_LOCKOUT_KEYS.filter((key) => input[key] !== undefined).map((key) => [key, input[key]]),
   );

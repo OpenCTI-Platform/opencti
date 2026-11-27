@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Loader from '../../../components/Loader';
+import EntryGuard from '../nav/EntryGuard';
 
 const Integrations = lazy(() => import('./Integrations'));
 const RootConnector = lazy(() => import('@components/data/connectors/Root'));
@@ -24,7 +25,11 @@ const Root = () => {
         />
         <Route
           path="/connectors/:connectorId/*"
-          element={<RootConnector />}
+          element={(
+            <EntryGuard path="/dashboard/integrations">
+              <RootConnector />
+            </EntryGuard>
+          )}
         />
         <Route
           path="/catalog"
@@ -32,15 +37,27 @@ const Root = () => {
         />
         <Route
           path="/catalog/:connectorSlug"
-          element={boundaryWrapper(IngestionCatalogConnector)}
+          element={(
+            <EntryGuard path="/dashboard/integrations">
+              {boundaryWrapper(IngestionCatalogConnector)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/feeds/:feedKind/:feedId"
-          element={boundaryWrapper(FeedDetail)}
+          element={(
+            <EntryGuard path="/dashboard/integrations">
+              {boundaryWrapper(FeedDetail)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/:tab"
-          element={boundaryWrapper(Integrations)}
+          element={(
+            <EntryGuard path="/dashboard/integrations">
+              {boundaryWrapper(Integrations)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

@@ -6,7 +6,7 @@ jobs:
   check-organization:
     name: Check if PR author is an OpenCTI-Platform member and add label
     # except for renovate
-    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' }}
+    if: ${{ github.event.pull_request.user.login != 'renovate[bot]' && github.event.pull_request.user.login != 'opencti-renovate[bot]' }}
     runs-on: ubuntu-26.04
     permissions:
       contents: read

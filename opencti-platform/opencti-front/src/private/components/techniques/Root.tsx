@@ -1,7 +1,9 @@
 import { Suspense, lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
+import EntryGuard from '../nav/EntryGuard';
 import { boundaryWrapper } from '../Error';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import useFirstVisiblePath from '../common/menus/useFirstVisiblePath';
+import { sectionEntries } from '../nav/navSections';
 import Loader from '../../../components/Loader';
 
 const AttackPatterns = lazy(() => import('./AttackPatterns'));
@@ -16,64 +18,93 @@ const DataSources = lazy(() => import('./DataSources'));
 const RootDataSource = lazy(() => import('./data_sources/Root'));
 
 const Root = () => {
-  let redirect: string | null = null;
-  if (!useIsHiddenEntity('Attack-Pattern')) {
-    redirect = 'attack_patterns';
-  } else if (!useIsHiddenEntity('Narrative')) {
-    redirect = 'narratives';
-  } else if (!useIsHiddenEntity('Course-Of-Action')) {
-    redirect = 'courses_of_action';
-  } else if (!useIsHiddenEntity('Data-Component')) {
-    redirect = 'data_components';
-  } else if (!useIsHiddenEntity('Data-Source')) {
-    redirect = 'data_sources';
-  }
+  const redirect = useFirstVisiblePath(sectionEntries('techniques'));
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/techniques/${redirect}`} replace={true} />}
+          element={<Navigate to={redirect} replace={true} />}
         />
         <Route
           path="/attack_patterns"
-          element={boundaryWrapper(AttackPatterns)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/attack_patterns">
+              {boundaryWrapper(AttackPatterns)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/attack_patterns/:attackPatternId/*"
-          element={boundaryWrapper(RootAttackPattern)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/attack_patterns">
+              {boundaryWrapper(RootAttackPattern)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/narratives"
-          element={boundaryWrapper(Narratives)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/narratives">
+              {boundaryWrapper(Narratives)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/narratives/:narrativeId/*"
-          element={boundaryWrapper(RootNarrative)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/narratives">
+              {boundaryWrapper(RootNarrative)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/courses_of_action"
-          element={boundaryWrapper(CoursesOfAction)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/courses_of_action">
+              {boundaryWrapper(CoursesOfAction)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/courses_of_action/:courseOfActionId/*"
-          element={boundaryWrapper(RootCourseOfAction)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/courses_of_action">
+              {boundaryWrapper(RootCourseOfAction)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/data_components"
-          element={boundaryWrapper(DataComponents)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/data_components">
+              {boundaryWrapper(DataComponents)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/data_components/:dataComponentId/*"
-          element={boundaryWrapper(RootDataComponent)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/data_components">
+              {boundaryWrapper(RootDataComponent)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/data_sources"
-          element={boundaryWrapper(DataSources)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/data_sources">
+              {boundaryWrapper(DataSources)}
+            </EntryGuard>
+          )}
         />
         <Route
           path="/data_sources/:dataSourceId/*"
-          element={boundaryWrapper(RootDataSource)}
+          element={(
+            <EntryGuard path="/dashboard/techniques/data_sources">
+              {boundaryWrapper(RootDataSource)}
+            </EntryGuard>
+          )}
         />
       </Routes>
     </Suspense>

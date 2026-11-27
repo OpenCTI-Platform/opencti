@@ -16,10 +16,12 @@ import { SecurityCoverageTestedEntitiesChart_securityCoverage$key } from './__ge
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 
 const securityCoverageRelationshipDistributionFragment = graphql`
-    fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage{
+    fragment SecurityCoverageTestedEntitiesChart_securityCoverage on SecurityCoverage
+    @argumentDefinitions(fromId: { type: "[String!]" }) {
         totalCountPerEntityType : coveredEntitiesDistribution(
             field:"entity_type", 
-            relationship_type: "has-covered", 
+            relationship_type: "has-covered",
+            fromId: $fromId,
             operation:count,
             filters: {
               mode: and
@@ -33,7 +35,8 @@ const securityCoverageRelationshipDistributionFragment = graphql`
         }
         testedCountPerEntityType: coveredEntitiesDistribution(
             field:"entity_type", 
-            relationship_type: "has-covered", 
+            relationship_type: "has-covered",
+            fromId: $fromId,
             operation:count, 
             filters: {
             mode: and
@@ -51,6 +54,7 @@ const securityCoverageRelationshipDistributionFragment = graphql`
 
 interface Props {
   securityCoverage: SecurityCoverageTestedEntitiesChart_securityCoverage$key;
+  isResultScoped?: boolean;
 }
 
 function normalizeDistribution(
@@ -68,7 +72,7 @@ function normalizeDistribution(
     }));
 }
 
-const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securityCoverage }) => {
+const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securityCoverage, isResultScoped = false }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const data = useFragment(securityCoverageRelationshipDistributionFragment, securityCoverage);
@@ -139,7 +143,7 @@ const SecurityCoverageTestedEntitiesChart: FunctionComponent<Props> = ({ securit
           }}
         >
           <span>{t_i18n('Tested entities')}</span>
-          <Tooltip title={t_i18n('Total count of entities tested in Security Coverage Result(s)')}>
+          <Tooltip title={isResultScoped ? t_i18n('Count of entities tested in the selected Security Coverage Result') : t_i18n('Total count of entities tested in Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         </Stack>
