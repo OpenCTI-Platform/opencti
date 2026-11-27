@@ -155,6 +155,9 @@
     "trash": {
       "enabled": true
     },
+    "delete": {
+      "max_snapshot_relations": 50000
+    },
     "bootstrap_wizard": {
       "enabled": true
     },

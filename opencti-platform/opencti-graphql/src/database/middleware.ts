@@ -76,6 +76,9 @@ import {
   type ConnectionSide,
   elCompleteFilters,
   elConnectionTypesRanking,
+  DELETE_MAX_SNAPSHOT_RELATIONS,
+  elControlSnapshotDelete,
+  elCount,
   elDeleteElements,
   elFindByIds,
   type ElFindByIdsOpts,
@@ -4934,6 +4937,28 @@ type InternalDeleteElementByIdOpts = LoadByIdsWithDependeciesOpts & EventOpts & 
   forceDelete?: boolean;
   forceRefresh?: boolean;
 };
+// Loading an element with its refs keeps every outgoing ref in memory, and so does its delete event.
+// Refuse the delete before that load when the element has more outgoing refs than the cap.
+const controlDeleteOutgoingRefs = async (context: AuthContext, user: AuthUser, id: string, type: string) => {
+  const opts = { type, includeDeletedInDraft: true, baseData: true };
+  const [element] = await elFindByIds<BasicStoreBase>(context, user, id, opts) as BasicStoreBase[];
+  if (!element) {
+    throw AlreadyDeletedError({ id });
+  }
+  // The refs of the from and to of a relationship are loaded with it
+  const fromIds = [element.internal_id];
+  if (element.base_type === BASE_TYPE_RELATION) {
+    const relation = element as BasicStoreRelation;
+    fromIds.push(relation.fromId, relation.toId);
+  }
+  const filters = { mode: FilterMode.And, filters: [{ key: ['fromId'], values: fromIds }], filterGroups: [] };
+  const countOpts = { types: STIX_REF_RELATIONSHIP_TYPES, filters, terminateAfter: DELETE_MAX_SNAPSHOT_RELATIONS + 1 };
+  const refsCount = await elCount(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES, countOpts);
+  if (refsCount > DELETE_MAX_SNAPSHOT_RELATIONS) {
+    throw FunctionalError('Cannot delete element: too many references', { id: element.internal_id, max_relations: DELETE_MAX_SNAPSHOT_RELATIONS });
+  }
+};
+
 export const internalDeleteElementById = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
@@ -4943,6 +4968,7 @@ export const internalDeleteElementById = async <T extends StoreObject>(
 ) => {
   let lock;
   let event;
+  await controlDeleteOutgoingRefs(context, user, id, type);
   const element = await storeLoadByIdWithRefs<T>(context, user, id, { ...opts, type, includeDeletedInDraft: true });
 
   if (!element) {
@@ -5026,7 +5052,7 @@ export const internalDeleteElementById = async <T extends StoreObject>(
         message: opts.commitMessage,
         external_references: references.map((ref) => convertExternalReferenceToStix(ref as StoreEntity)),
       } : undefined;
-      await elDeleteElements(context, user, [element]);
+      await elDeleteElements(context, user, [element], { signal: lock.signal });
       // Publish event in the stream
       const eventPromise = storeUpdateEvent(context, user, previous as StoreObject, instance as StoreObject, changes, { ...opts, commit: commit as unknown as any });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
@@ -5040,6 +5066,8 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       const forceDelete = !!opts.forceDelete || !isTrashableElement;
       const isTrashEnabled = conf.get('app:trash:enabled');
       if (isTrashEnabled && !forceDelete) {
+        // The trash is capped: refuse before the files of the element are hidden
+        await elControlSnapshotDelete(context, user, [element], { isDraftDelete: false });
         // mark indexed files as removed to exclude them from search
         await elUpdateRemovedFiles(element, true);
       } else {
@@ -5048,7 +5076,8 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       }
       // Delete all linked elements
       const forceRefresh = opts.forceRefresh ?? true;
-      await elDeleteElements(context, user, [element], { forceDelete, forceRefresh });
+      const snapshotChecked = isTrashEnabled && !forceDelete;
+      await elDeleteElements(context, user, [element], { forceDelete, forceRefresh, snapshotChecked, signal: lock.signal });
       // Publish event in the stream
       event = await storeDeleteEvent(context, user, element, opts);
     }
