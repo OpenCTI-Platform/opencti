@@ -12,7 +12,7 @@
 
 > **Community workshop:** Join us as Taylor Walton (of SOCFortress) walks through his working SOC stack: OpenCTI → OpenAEV → Wazuh → Velociraptor. Taylor will be joined by OpenCTI's product owner to cover what's coming next for OpenCTI and OpenAEV.
 >
-> [Register](https://events.filigran.io/register/e751635a-9aec-49f5-801c-40cfded49c87?utm_medium=community&utm_source=github) · Dec 10 at 10 AM New York City time
+> [Register](https://events.filigran.io/register/e751635a-9aec-49f5-801c-40cfded49c87?utm_medium=community&utm_source=github&utm_campaign=Dec-2026-Community-Workshop) · Dec 10 at 10 AM New York City time
 >
 > Join us on the
 > [Filigran Community Slack](https://community.filigran.io/?utm_medium=community&utm_source=github).
