@@ -105,10 +105,12 @@ const renderObjectLabelField = ({
 }: FieldRendererContext): React.ReactNode => {
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
   const fieldValue = getNestedValue(values, fieldName) ?? '';
+  const displayLabel = field.label || field.attributeMapping.attributeName;
 
   return (
     <ObjectLabelField
       name={fieldName}
+      label={displayLabel}
       style={fieldSpacingContainerStyle}
       required={field.isMandatory}
       setFieldValue={setFieldValue}

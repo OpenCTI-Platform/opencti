@@ -28,6 +28,7 @@ const OptionText = styled('div')({
 interface ObjectLabelFieldProps {
   style?: React.CSSProperties;
   name: string;
+  label?: string;
   helpertext?: string;
   dryrun?: boolean;
   required?: boolean;
@@ -40,6 +41,7 @@ interface ObjectLabelFieldProps {
 const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   style,
   name,
+  label,
   helpertext,
   dryrun = false,
   required = false,
@@ -90,7 +92,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
         name={name}
         required={required}
         multiple={true}
-        label={t_i18n('Labels')}
+        label={label ?? t_i18n('Labels')}
         helperText={helpertext}
 
         noOptionsText={t_i18n('No available options')}
