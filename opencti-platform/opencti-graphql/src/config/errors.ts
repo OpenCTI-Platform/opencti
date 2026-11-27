@@ -12,7 +12,7 @@ export const DOC_INDICATOR_PATTERN_EXCLUDED = 'INDICATOR_PATTERN_EXCLUDED';
 // End region DOC CODE
 
 const CATEGORY_TECHNICAL = 'TECHNICAL';
-const CATEGORY_BUSINESS = 'BUSINESS';
+export const CATEGORY_BUSINESS = 'BUSINESS';
 
 export const error = (type: string, message: string, data?: any) => {
   return new GraphQLError(message, { extensions: { code: type, data } });

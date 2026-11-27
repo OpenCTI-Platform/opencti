@@ -54,6 +54,7 @@
     },
     "graphql": {
       "secure_by_default": false,
+      "show_error_details": true,
       "armor_protection": {
         "max_depth": 20,
         "max_directives": 20,

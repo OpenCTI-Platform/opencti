@@ -1,6 +1,7 @@
 import { ApolloServer } from '@apollo/server';
+import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { ApolloArmor } from '@escape.tech/graphql-armor';
-import { dissocPath } from 'ramda';
+import { dissoc, dissocPath, pick } from 'ramda';
 import { createValidation as createAliasBatch } from 'graphql-no-alias';
 import { BREAK, getOperationAST, GraphQLError, parse, specifiedRules, validate, visit } from 'graphql';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
@@ -16,7 +17,17 @@ import conf, {
   PLAYGROUND_ENABLED,
   PLAYGROUND_INTROSPECTION_DISABLED,
 } from '../config/conf';
-import { AuthRequired, BadUserInputError, muteError, ResourceNotFoundError } from '../config/errors';
+import {
+  AUTH_ERRORS,
+  AuthRequired,
+  BadUserInputError,
+  CATEGORY_BUSINESS,
+  LTS_REQUIRED_ACTIVATION,
+  muteError,
+  RESOURCE_NOT_FOUND_ERROR,
+  ResourceNotFoundError,
+} from '../config/errors';
+import { getRequestId, resolveRequestId, SERVER_ERROR_MESSAGE } from '../http/httpUtils';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
@@ -122,14 +133,66 @@ const createGraphqlProtection = () => {
     pushAll(validationRules, armor.protect().validationRules);
   }
   const formatGraphqlErrorMessage = (message) => (blockFieldSuggestion ? removeSuggestions(message) : message);
-  return { validationRules, parseOptions, formatGraphqlErrorMessage };
+  const hideErrorDetails = !booleanConf('app:graphql:show_error_details', true);
+  return { validationRules, parseOptions, formatGraphqlErrorMessage, hideErrorDetails };
+};
+
+// Written for the caller; any other non-business error can name internal components (indices, search requests, hosts).
+const CLIENT_ERROR_CODES = new Set([
+  ...AUTH_ERRORS,
+  LTS_REQUIRED_ACTIVATION,
+  RESOURCE_NOT_FOUND_ERROR,
+  ApolloServerErrorCode.GRAPHQL_PARSE_FAILED,
+  ApolloServerErrorCode.GRAPHQL_VALIDATION_FAILED,
+  ApolloServerErrorCode.BAD_USER_INPUT,
+  ApolloServerErrorCode.BAD_REQUEST,
+  ApolloServerErrorCode.OPERATION_RESOLUTION_FAILURE,
+  ApolloServerErrorCode.PERSISTED_QUERY_NOT_FOUND,
+  ApolloServerErrorCode.PERSISTED_QUERY_NOT_SUPPORTED,
+]);
+
+export const isClientGraphqlError = (formattedError, error) => {
+  const code = formattedError.extensions?.code;
+  if (!code) {
+    // Parse and validation errors of graphql-js over WebSocket: they carry no code and wrap no error
+    return error instanceof GraphQLError && !error.originalError;
+  }
+  return CLIENT_ERROR_CODES.has(code) || formattedError.extensions.data?.genre === CATEGORY_BUSINESS;
+};
+
+export const hideGraphqlErrorDetails = (formattedError, error) => {
+  const { message, extensions = {} } = formattedError;
+  const position = pick(['locations', 'path', 'name'], formattedError);
+  if (!isClientGraphqlError(formattedError, error)) {
+    const code = extensions.code ?? ApolloServerErrorCode.INTERNAL_SERVER_ERROR;
+    return { ...position, message: SERVER_ERROR_MESSAGE, extensions: { code } };
+  }
+  const clientExtensions = pick(['code'], extensions);
+  if (extensions.data) {
+    clientExtensions.data = dissoc('cause', extensions.data);
+  }
+  return { ...position, message, extensions: clientExtensions };
 };
 
 // graphql-ws validates the operation before building its context: authenticate, parse and validate in onSubscribe instead.
 // The context function is the one of the HTTP server, it throws when the user is not authenticated.
 export const createSubscriptionServerOptions = ({ schema, protection, context }) => {
-  const { validationRules, parseOptions, formatGraphqlErrorMessage } = protection;
-  const formatErrors = (errors) => errors.map((error) => ({ ...error.toJSON(), message: formatGraphqlErrorMessage(error.message) }));
+  const { validationRules, parseOptions, formatGraphqlErrorMessage, hideErrorDetails } = protection;
+  const formatError = (error) => {
+    const formattedError = { ...error.toJSON(), message: formatGraphqlErrorMessage(error.message) };
+    if (!hideErrorDetails) {
+      return formattedError;
+    }
+    const hiddenError = hideGraphqlErrorDetails(formattedError, error);
+    if (isClientGraphqlError(formattedError, error)) {
+      return hiddenError;
+    }
+    // No Apollo logger plugin over WebSocket: the hidden error is logged here, with the id given to the client.
+    const requestId = resolveRequestId(undefined);
+    logApp.error('[GRAPHQL] WebSocket operation error', { cause: error, request_id: requestId });
+    return { ...hiddenError, extensions: { ...hiddenError.extensions, request_id: requestId } };
+  };
+  const formatErrors = (errors) => errors.map(formatError);
   return {
     schema,
     onSubscribe: async (ctx, _id, payload) => {
@@ -158,6 +221,8 @@ export const createSubscriptionServerOptions = ({ schema, protection, context })
     },
     onError: (_ctx, _id, _payload, errors) => formatErrors(errors),
     onNext: (_ctx, _id, _payload, _args, result) => (result.errors ? { ...result, errors: formatErrors(result.errors) } : result),
+    // Outside production, graphql-ws closes the socket with the message of an internal error as reason
+    ...(hideErrorDetails ? { isProd: true } : {}),
   };
 };
 
@@ -202,6 +267,22 @@ const createApolloServer = (schema = createSchema()) => {
   if (ENABLED_METRICS) {
     apolloPlugins.push(telemetryPlugin);
   }
+  if (protection.hideErrorDetails) {
+    apolloPlugins.push({
+      requestDidStart: () => ({
+        willSendResponse: ({ response, contextValue }) => {
+          const requestId = contextValue?.res ? getRequestId(contextValue.res) : undefined;
+          if (!requestId || response.body.kind !== 'single' || !response.body.singleResult.errors) {
+            return;
+          }
+          response.body.singleResult.errors = response.body.singleResult.errors.map((error) => ({
+            ...error,
+            extensions: { ...error.extensions, request_id: requestId },
+          }));
+        },
+      }),
+    });
+  }
 
   apolloPlugins.push({
     // see https://www.apollographql.com/docs/apollo-server/integrations/plugins-event-reference
@@ -231,9 +312,16 @@ const createApolloServer = (schema = createSchema()) => {
       warn: (msg) => logApp.warn(`[APOLLO] ${msg}`),
       error: (msg) => logApp.error(`[APOLLO] ${msg}`),
     },
-    formatError: (error) => {
+    formatError: (formattedError, error) => {
       // To maintain compatibility with client in version 3.
-      const enrichedError = { ...error, message: protection.formatGraphqlErrorMessage(error.message), name: error.extensions?.code ?? error.name };
+      const enrichedError = {
+        ...formattedError,
+        message: protection.formatGraphqlErrorMessage(formattedError.message),
+        name: formattedError.extensions?.code ?? formattedError.name,
+      };
+      if (protection.hideErrorDetails) {
+        return hideGraphqlErrorDetails(enrichedError, error);
+      }
       // Remove the exception stack in production.
       return DEV_MODE ? enrichedError : dissocPath(['extensions', 'exception'], enrichedError);
     },
