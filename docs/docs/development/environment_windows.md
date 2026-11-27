@@ -10,7 +10,7 @@ Development stack require some base software that need to be installed.
 
 Platform dependencies in development are deployed through container management, so you need to install a container stack.
 
-We currently support docker and postman.
+We currently support docker and podman.
 
 Docker Desktop from - [https://docs.docker.com/desktop/install/windows-install/](https://docs.docker.com/desktop/install/windows-install/)
 
@@ -27,22 +27,24 @@ Docker Desktop from - [https://docs.docker.com/desktop/install/windows-install/]
 ## NodeJS and yarn
 
 The platform is developed on NodeJS technology, so you need to install node and the Yarn package manager.
+It requires Node.js 22.18.0 or later (the `engines` field of `package.json`), and the standard Docker image and the CI use Node.js 22.
 
-- Install NodeJS from - [https://nodejs.org/download/release/v16.20.0/node-v16.20.0-x64.msi](https://nodejs.org/download/release/v16.20.0/node-v16.20.0-x64.msi)
+- Install Node.js 22 with the Windows Installer (.msi) from - [https://nodejs.org/en/download](https://nodejs.org/en/download)
    - Select the option for installing Chocolatey on the Tools for Native Modules screen
-       - Will do this install for you automatically - [https://chocolatey.org/packages/visualstudio2019-workload-vctools](https://chocolatey.org/packages/visualstudio2019-workload-vctools)
-       - Includes Python 3.11.4
+       - This option installs Python and the Visual Studio Build Tools through Chocolatey
    - Shell out to CMD prompt as Administrator and install/run:
        - `pip3 install pywin32`
 
-- Install corepack in order to use Yarn ([https://yarnpkg.com/getting-started/install](https://yarnpkg.com/getting-started/install))
-   - Open CMD as Administrator and run the following command:
+- Install corepack in order to use Yarn ([https://yarnpkg.com/getting-started/install](https://yarnpkg.com/getting-started/install)). The repository pins its Yarn version in the `packageManager` field of `package.json`, and corepack runs that version for you.
+   - Open CMD as Administrator and run the following commands:
        - `npm install -g corepack`
+       - `corepack enable`
 
 ## Python runtime
 
-For worker and connectors, a python runtime is needed. Even if you already have a python runtime installed through node installation, 
-on windows some nodejs package will be recompiled with python and C++ runtime. 
+For worker and connectors, a python runtime is needed. Use Python 3.10, 3.11 or 3.12: the CI tests the Python client (pycti) with these versions.
+Even if you already have a python runtime installed through node installation, 
+on windows some nodejs package will be recompiled with python and C++ runtime: `node-calls-python` is a native module compiled during `yarn install` (`re2` is also compiled when no prebuilt binary is available). 
 
 For this reason **Visual Studio Build Tools** is required.
 
