@@ -70,6 +70,12 @@ export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contex
 
 // Create Network
 let subscriptionClient: ReturnType<typeof createClient> | undefined;
+// The socket is also the presence of the tab: after a network loss or a sleep, the server may have closed it
+// without the browser knowing (half-open socket), and the tab would stay without presence while in use.
+// The client pings the server, and terminates the socket to reconnect when no pong comes back in time.
+const KEEP_ALIVE_INTERVAL = 10000;
+const PONG_TIMEOUT = 5000;
+let pongTimeout: ReturnType<typeof setTimeout> | undefined;
 const loc = window.location;
 const isSecure = loc.protocol === 'https:' ? 's' : '';
 const subscriptionUrl = `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`;
@@ -85,6 +91,22 @@ const subscribeFn = (request: RequestParameters, variables: Variables) => {
       retryWait: (retries) => new Promise((resolve) => {
         setTimeout(resolve, Math.min(1000 * 2 ** retries, 10000) + Math.floor(Math.random() * 2700 + 300));
       }),
+      keepAlive: KEEP_ALIVE_INTERVAL,
+      on: {
+        ping: (received) => {
+          if (!received) {
+            clearTimeout(pongTimeout);
+            // Terminate rather than close: a close handshake would wait for a server that is gone
+            pongTimeout = setTimeout(() => subscriptionClient?.terminate(), PONG_TIMEOUT);
+          }
+        },
+        pong: (received) => {
+          if (received) {
+            clearTimeout(pongTimeout);
+          }
+        },
+        closed: () => clearTimeout(pongTimeout),
+      },
     });
   }
   const client = subscriptionClient;

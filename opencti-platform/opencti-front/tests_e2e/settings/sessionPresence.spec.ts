@@ -2,6 +2,7 @@ import type { Browser, BrowserContext, Page, TestInfo } from '@playwright/test';
 import { expect, prefixUrl, test } from '../fixtures/baseFixtures';
 import DashboardPage from '../model/dashboard.pageModel';
 import LoginFormPageModel from '../model/form/loginForm.pageModel';
+import TopMenuProfilePage from '../model/menu/topMenuProfile.pageModel';
 import { getSettings, patchSettings } from '../dataForTesting/settings.data';
 
 // Must match app:session_presence:grace_period of the tested platform
@@ -111,6 +112,50 @@ test.describe('Logout when the last tab is closed', { tag: ['@ce', '@groupff'] }
     await presence;
     await tab.waitForTimeout(GRACE_PERIOD + SETTLE_DELAY);
     expect(await isSessionAlive(session)).toBe(true);
+
+    await session.close();
+  });
+
+  test('should logout a session whose tabs are all closed together', async ({ browser, page }, testInfo) => {
+    const { context: session, tab: firstTab } = await openSession(browser, testInfo);
+    const { context: otherSession } = await openSession(browser, testInfo);
+    const secondTab = await openTab(session);
+
+    await Promise.all([firstTab.close(), secondTab.close()]);
+    await expect.poll(() => isSessionAlive(session), { timeout: GRACE_PERIOD + SETTLE_DELAY, intervals: [2000] }).toBe(false);
+    expect(await isSessionAlive(otherSession)).toBe(true);
+    expect(await isSessionAlive(page.context())).toBe(true);
+
+    await session.close();
+    await otherSession.close();
+  });
+
+  test('should keep the session when a new tab is opened during the grace period', async ({ browser }, testInfo) => {
+    const { context: session, tab } = await openSession(browser, testInfo);
+
+    // The last tab is closed, then a new tab of the same session comes back before the end of the grace period
+    await tab.close();
+    const newTab = await openTab(session);
+    await newTab.waitForTimeout(GRACE_PERIOD + SETTLE_DELAY);
+    expect(await isSessionAlive(session)).toBe(true);
+
+    await session.close();
+  });
+
+  test('should keep the explicit logout unchanged', async ({ browser, page }, testInfo) => {
+    const { context: session, tab } = await openSession(browser, testInfo);
+
+    await new TopMenuProfilePage(tab).logout();
+    expect(await isSessionAlive(session)).toBe(false);
+
+    // Signing in again right away: the check pending for the previous session must not logout the new one
+    const presence = waitForPresence(tab);
+    await new LoginFormPageModel(tab).login();
+    await expect(new DashboardPage(tab).getPage()).toBeVisible();
+    await presence;
+    await tab.waitForTimeout(GRACE_PERIOD + SETTLE_DELAY);
+    expect(await isSessionAlive(session)).toBe(true);
+    expect(await isSessionAlive(page.context())).toBe(true);
 
     await session.close();
   });
