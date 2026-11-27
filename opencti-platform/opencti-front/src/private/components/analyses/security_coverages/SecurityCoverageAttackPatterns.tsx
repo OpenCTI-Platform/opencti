@@ -2,7 +2,7 @@ import Typography from '@mui/material/Typography';
 import { ViewListOutlined, ViewModuleOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { ButtonGroup, ButtonGroupItem, IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useEffect, useMemo, useState } from 'react';
-import { createFragmentContainer, graphql, useFragment } from 'react-relay';
+import { createFragmentContainer, graphql, PreloadedQuery, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 // fds:keep-mui the library Tooltip is a compound API; this call site converts with the wider Tooltip wave
 import Tooltip from '@mui/material/Tooltip';
@@ -17,6 +17,7 @@ import SecurityCoverageCoveredList from './SecurityCoverageCoveredList';
 import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
 import { SecurityCoverageAttackPatternsFragment$data } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
+import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -49,11 +50,15 @@ const GLYPH = { fontSize: 16 };
 interface SecurityCoverageAttackPatternsProps {
   securityCoverage: SecurityCoverageAttackPatternsFragment$data;
   dataKillChains: SecurityCoverageAttackPatternsKillChainPhasesFragment$key;
+  isResultScoped?: boolean;
+  matrixQueryRef?: PreloadedQuery<AttackPatternsMatrixQuery>;
 }
 
 const SecurityCoverageAttackPatternsComponent = ({
   securityCoverage,
   dataKillChains,
+  isResultScoped = false,
+  matrixQueryRef,
 }: SecurityCoverageAttackPatternsProps) => {
   const { t_i18n } = useFormatter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -105,7 +110,7 @@ const SecurityCoverageAttackPatternsComponent = ({
           }}
         >
           <span>{t_i18n('Attack patterns coverage')}</span>
-          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+          <Tooltip title={isResultScoped ? t_i18n('Coverage score from the selected Security Coverage Result') : t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         </Stack>
@@ -201,6 +206,7 @@ const SecurityCoverageAttackPatternsComponent = ({
             searchTerm={searchTerm}
             selectedKillChain={selectedKillChain}
             isModeOnlyActive={isModeOnlyActive}
+            matrixQueryRef={matrixQueryRef}
           />
         </>
       ) : (
@@ -257,12 +263,14 @@ const SecurityCoverageAttackPatterns = createFragmentContainer(
   SecurityCoverageAttackPatternsComponent,
   {
     securityCoverage: graphql`
-      fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
+      fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage
+      @argumentDefinitions(filters: { type: "FilterGroup" }) {
         id
         attPatterns: coveredAttackPatterns(
           orderBy: created_at
           orderMode: asc
           first: 5000
+          filters: $filters
         ) {
           count
           entities {
@@ -279,7 +287,7 @@ const SecurityCoverageAttackPatterns = createFragmentContainer(
             }
           }
         }
-        ...SecurityCoverageAttackPatternsMatrix_securityCoverage
+        ...SecurityCoverageAttackPatternsMatrix_securityCoverage @arguments(filters: $filters)
       }
     `,
   },

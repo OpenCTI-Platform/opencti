@@ -25,10 +25,12 @@ const MAX_VULNERABILITIES = 5000;
 
 interface SecurityCoverageVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
+  isResultScoped?: boolean;
 }
 
 const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCoverageVulnerabilitiesProps> = ({
   securityCoverage,
+  isResultScoped = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -41,7 +43,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
     <div>
       <Label
         action={(
-          <Tooltip title={t_i18n('Average coverage score from Security Coverage Result(s)')}>
+          <Tooltip title={isResultScoped ? t_i18n('Coverage score from the selected Security Coverage Result') : t_i18n('Average coverage score from Security Coverage Result(s)')}>
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         )}
@@ -106,11 +108,13 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
   SecurityCoverageVulnerabilitiesComponent,
   {
     securityCoverage: graphql`
-      fragment SecurityCoverageVulnerabilities_securityCoverage on SecurityCoverage {
+      fragment SecurityCoverageVulnerabilities_securityCoverage on SecurityCoverage
+      @argumentDefinitions(filters: { type: "FilterGroup" }) {
         vulnerabilities: coveredVulnerabilities(
           orderBy: created_at
           orderMode: asc
           first: 5000
+          filters: $filters
         ) {
           count
           entities {
