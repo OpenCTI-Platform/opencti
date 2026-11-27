@@ -1,37 +1,155 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { promisify } from 'node:util';
+import { setTimeout as wait } from 'node:timers/promises';
 import SessionStoreMemory from '../../../src/database/sessionStore-memory';
 
-const destroy = (store: SessionStoreMemory, sid: string) => new Promise<{ sessionId: string; session?: unknown; deleted: boolean }>((resolve, reject) => {
-  store.destroy(sid, (error: unknown, result: { sessionId: string; session?: unknown; deleted: boolean }) => (error ? reject(error) : resolve(result)));
+const ONE_DAY = 86400000;
+const SESSION_TIMEOUT = 1200000;
+
+const buildSession = (userId: string, maxAge: number | null = SESSION_TIMEOUT) => ({
+  cookie: { originalMaxAge: maxAge, maxAge, httpOnly: true, path: '/' },
+  user: { id: userId, session_creation: '2026-01-01T00:00:00.000Z' },
 });
 
-// The session is put in the cache directly, as the store would save it
-const set = (store: SessionStoreMemory, sid: string, session: unknown) => {
-  store.store.set(sid, JSON.stringify(session));
+type StoreSession = ReturnType<typeof buildSession> & { redis_key_id?: string; redis_key_ttl?: number };
+type Callback<T> = (error: unknown, result?: T) => void;
+type StoreMethod<A extends unknown[], T> = (...args: [...A, Callback<T>]) => void;
+
+const stores: SessionStoreMemory[] = [];
+const createStore = (options: { ttl?: number } = {}) => {
+  const store = new SessionStoreMemory(options);
+  stores.push(store);
+  // the express-session store API is callback based, as used by the session middleware and the sessions management
+  const call = <A extends unknown[], T>(method: StoreMethod<A, T>) => promisify(method.bind(store)) as (...args: A) => Promise<T>;
+  return {
+    store,
+    get: call<[string], StoreSession | undefined>(store.get),
+    set: call<[string, StoreSession], void>(store.set),
+    touch: call<[string, StoreSession], void>(store.touch),
+    destroy: call<[string], { sessionId: string; session?: StoreSession; deleted: boolean }>(store.destroy),
+    all: call<[], StoreSession[]>(store.all),
+    ids: call<[], string[]>(store.ids),
+    clear: call<[], void>(store.clear),
+    length: call<[], number>(store.length),
+  };
 };
 
-describe('SessionStoreMemory destroy', () => {
-  it('should delete the session and call back with it', async () => {
-    const store = new SessionStoreMemory();
-    set(store, 'sid', { user: { id: 'user-id' }, cookie: {} });
+afterEach(() => {
+  stores.splice(0).forEach((store) => store.stopInterval());
+});
 
-    const result = await destroy(store, 'sid');
-
-    expect(result).toEqual({ sessionId: 'sid', session: { user: { id: 'user-id' }, cookie: {} }, deleted: true });
-    expect(store.store.has('sid')).toBe(false);
+describe('SessionStoreMemory', () => {
+  it('should store and retrieve a session', async () => {
+    const { get, set } = createStore();
+    const session = buildSession('user-1');
+    await set('sid-1', session);
+    expect(await get('sid-1')).toEqual(session);
+    expect(await get('unknown-sid')).toBeUndefined();
   });
 
-  it('should tell only the first call that it deleted the session', async () => {
-    const store = new SessionStoreMemory();
-    set(store, 'sid', { user: { id: 'user-id' }, cookie: {} });
-
-    const results = await Promise.all([destroy(store, 'sid'), destroy(store, 'sid')]);
-
-    expect(results.map((r) => r.deleted)).toEqual([true, false]);
+  it('should expire the session after the cookie max age, in milliseconds', async () => {
+    const { store, set } = createStore();
+    await set('sid-1', buildSession('user-1'));
+    const remainingTTL = store.store.getRemainingTTL('sid-1');
+    expect(remainingTTL).toBeGreaterThan(SESSION_TIMEOUT - 1000);
+    expect(remainingTTL).toBeLessThanOrEqual(SESSION_TIMEOUT);
   });
 
-  it('should call back for a session that does not exist', async () => {
-    const store = new SessionStoreMemory();
-    expect(await destroy(store, 'unknown')).toEqual({ sessionId: 'unknown', session: undefined, deleted: false });
+  it('should expire a session cookie after one day', async () => {
+    const { store, set } = createStore();
+    await set('sid-1', buildSession('user-1', null));
+    const remainingTTL = store.store.getRemainingTTL('sid-1');
+    expect(remainingTTL).toBeGreaterThan(ONE_DAY - 1000);
+    expect(remainingTTL).toBeLessThanOrEqual(ONE_DAY);
+  });
+
+  it.each([0, -1000])('should not keep a session whose cookie max age is %i', async (maxAge) => {
+    const { get, set, touch } = createStore();
+    await set('sid-1', buildSession('user-1', maxAge));
+    expect(await get('sid-1')).toBeUndefined();
+    await set('sid-2', buildSession('user-2'));
+    await touch('sid-2', buildSession('user-2', maxAge));
+    expect(await get('sid-2')).toBeUndefined();
+  });
+
+  it('should not return an expired session', async () => {
+    const { get, set } = createStore({ ttl: 20 });
+    await set('sid-1', buildSession('user-1'));
+    expect(await get('sid-1')).toBeDefined();
+    await wait(50);
+    expect(await get('sid-1')).toBeUndefined();
+  });
+
+  it('should prune the expired sessions', async () => {
+    const { store, set, length } = createStore({ ttl: 20 });
+    await set('sid-1', buildSession('user-1'));
+    expect(await length()).toBe(1);
+    await wait(50);
+    store.prune();
+    expect(await length()).toBe(0);
+  });
+
+  it('should extend the session and update its cookie on touch', async () => {
+    const { store, get, set, touch } = createStore();
+    await set('sid-1', buildSession('user-1', 1000));
+    const touchedSession = buildSession('user-1', SESSION_TIMEOUT);
+    await touch('sid-1', touchedSession);
+    expect((await get('sid-1'))?.cookie).toEqual(touchedSession.cookie);
+    expect(store.store.getRemainingTTL('sid-1')).toBeGreaterThan(SESSION_TIMEOUT - 1000);
+  });
+
+  it('should not create a session on touch', async () => {
+    const { get, touch } = createStore();
+    await touch('sid-1', buildSession('user-1'));
+    expect(await get('sid-1')).toBeUndefined();
+  });
+
+  it('should destroy the session and call back with it, like the redis store', async () => {
+    const { get, set, destroy } = createStore();
+    const session = buildSession('user-1');
+    await set('sid-1', session);
+    expect(await destroy('sid-1')).toEqual({ sessionId: 'sess:sid-1', session, deleted: true });
+    expect(await get('sid-1')).toBeUndefined();
+  });
+
+  it('should report the deletion only to the first of concurrent destroys', async () => {
+    const { set, destroy } = createStore();
+    const session = buildSession('user-1');
+    await set('sid-1', session);
+    const results = await Promise.all([destroy('sid-1'), destroy('sid-1')]);
+    expect(results.map((result) => result.deleted)).toEqual([true, false]);
+  });
+
+  it('should call back when destroying an unknown session', async () => {
+    const { destroy } = createStore();
+    expect(await destroy('unknown-sid')).toEqual({ sessionId: 'sess:unknown-sid', session: undefined, deleted: false });
+  });
+
+  it('should not report the deletion of an expired session', async () => {
+    const { set, destroy } = createStore({ ttl: 20 });
+    await set('sid-1', buildSession('user-1'));
+    await wait(50);
+    expect(await destroy('sid-1')).toEqual({ sessionId: 'sess:sid-1', session: undefined, deleted: false });
+  });
+
+  it('should list the sessions decorated like the redis store', async () => {
+    const { all, set, ids } = createStore();
+    await set('sid-1', buildSession('user-1'));
+    await set('sid-2', buildSession('user-2'));
+    const sessions = await all();
+    expect(sessions).toHaveLength(2);
+    const firstSession = sessions.find((s) => s.user.id === 'user-1');
+    expect(firstSession?.redis_key_id).toBe('sess:sid-1');
+    expect(firstSession?.redis_key_ttl).toBe(SESSION_TIMEOUT / 1000);
+    expect(await ids()).toEqual(expect.arrayContaining(['sid-1', 'sid-2']));
+  });
+
+  it('should count and clear the sessions', async () => {
+    const { set, clear, length } = createStore();
+    await set('sid-1', buildSession('user-1'));
+    await set('sid-2', buildSession('user-2'));
+    expect(await length()).toBe(2);
+    await clear();
+    expect(await length()).toBe(0);
   });
 });
