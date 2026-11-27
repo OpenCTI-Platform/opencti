@@ -101,7 +101,8 @@ testCreatedCounter.relationship = 202;
 // Plus 3 created and deleted by workflow-entity-write-test
 // Includes 5 created and deleted by the has-covered cleanup tests of securityCoverage-utils-test
 // 2 by securityCoverage-results-filters-test and vocabulary-coverage-usages-test
-testCreatedCounter.report = 87;
+// Plus 1 created and deleted by workflow-reset-authorized-members-test
+testCreatedCounter.report = 88;
 testCreatedCounter.sighting = 8; // 3 created and deleted by relations-deduplication-test
 // 1 created and deleted by stixCyberObservable-test (software purl)
 testCreatedCounter.software = 3;
@@ -148,7 +149,8 @@ testUpdatedCounter['attack-pattern'] = 11;
 testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
 // Includes 3 by the has-covered cleanup tests of securityCoverage-utils-test (objects removed)
-testUpdatedCounter.report = 36; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
+// Includes 3 by workflow-reset-authorized-members-test (access restricted, status written, access reset by the transition)
+testUpdatedCounter.report = 39; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -283,7 +285,8 @@ testDeletedCounter.relationship = 23; // includes 5 created and deleted by stixR
 // Plus 3 created and deleted by workflow-entity-write-test
 // Includes 5 by the has-covered cleanup tests of securityCoverage-utils-test
 // 2 by securityCoverage-results-filters-test and vocabulary-coverage-usages-test
-testDeletedCounter.report = 78;
+// Plus 1 created and deleted by workflow-reset-authorized-members-test
+testDeletedCounter.report = 79;
 testDeletedCounter.sighting = 5; // 3 created and deleted by relations-deduplication-test
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;

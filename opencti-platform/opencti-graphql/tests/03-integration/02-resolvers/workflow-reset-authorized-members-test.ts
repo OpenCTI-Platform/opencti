@@ -25,6 +25,7 @@ const TRIGGER_WORKFLOW_EVENT_MUTATION = gql`
       success
       newState
       reason
+      entity { id ... on Report { authorized_members { member_id } } }
     }
   }
 `;
@@ -58,15 +59,6 @@ describe('Workflow resetAuthorizedMembers transition action (Report)', () => {
 
   beforeAll(async () => {
     vi.spyOn(ee, 'checkEnterpriseEdition').mockResolvedValue();
-    const report = await queryAsAdminWithSuccess({
-      query: REPORT_ADD_MUTATION,
-      variables: { input: { name: `Reset authorized members report ${Date.now()}`, published: new Date().toISOString() } },
-    });
-    reportId = report.data.reportAdd.id;
-    await queryAsAdminWithSuccess({
-      query: REPORT_EDIT_AUTHORIZED_MEMBERS_MUTATION,
-      variables: { id: reportId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] },
-    });
     await queryAsAdmin({ query: WORKFLOW_DEFINITION_DELETE_MUTATION, variables: { entityType: 'Report' } });
     await queryAsAdminWithSuccess({
       query: WORKFLOW_DEFINITION_SET_MUTATION,
@@ -76,12 +68,22 @@ describe('Workflow resetAuthorizedMembers transition action (Report)', () => {
           id: 'report-reset-authorized-members',
           name: 'Report reset authorized members',
           initialState: 'open',
-          states: [{ statusId: 'open' }, { statusId: 'released' }],
-          transitions: [{ from: 'open', to: 'released', event: 'release_event', syncActions: [{ type: 'resetAuthorizedMembers' }] }],
+          states: [{ statusId: 'open' }, { statusId: 'validated' }],
+          transitions: [{ from: 'open', to: 'validated', event: 'release_event', syncActions: [{ type: 'resetAuthorizedMembers' }] }],
         }),
       },
     });
     await queryAsAdminWithSuccess({ query: WORKFLOW_DEFINITION_PUBLISH_MUTATION, variables: { entityType: 'Report' } });
+    // Created once the workflow is published, so its only status write is the transition one (counted in syncCountHelper)
+    const report = await queryAsAdminWithSuccess({
+      query: REPORT_ADD_MUTATION,
+      variables: { input: { name: `Reset authorized members report ${Date.now()}`, published: new Date().toISOString() } },
+    });
+    reportId = report.data.reportAdd.id;
+    await queryAsAdminWithSuccess({
+      query: REPORT_EDIT_AUTHORIZED_MEMBERS_MUTATION,
+      variables: { id: reportId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] },
+    });
   });
 
   afterAll(async () => {
@@ -100,7 +102,10 @@ describe('Workflow resetAuthorizedMembers transition action (Report)', () => {
     });
     expect(trigger.data.triggerWorkflowEvent.reason).toBeNull();
     expect(trigger.data.triggerWorkflowEvent.success).toBe(true);
-    expect(trigger.data.triggerWorkflowEvent.newState).toBe('released');
+    expect(trigger.data.triggerWorkflowEvent.newState).toBe('validated');
+    // The payload carries the entity as the sync actions left it, so the UI drops the restriction at once
+    expect(trigger.data.triggerWorkflowEvent.entity.id).toBe(reportId);
+    expect(trigger.data.triggerWorkflowEvent.entity.authorized_members ?? []).toEqual([]);
 
     const after = await queryAsAdminWithSuccess({ query: REPORT_AUTHORIZED_MEMBERS_QUERY, variables: { id: reportId } });
     expect(after.data.report.authorized_members ?? []).toEqual([]);

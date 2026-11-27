@@ -97,33 +97,6 @@ export const workflowStatusStixDomainObjectFragment = graphql`
     objectParticipant {
       id
     }
-    # A transition can reset the access restriction: the headers read it from the store
-    ... on Container {
-      authorized_members {
-        id
-        member_id
-        name
-        entity_type
-        access_right
-        groups_restriction {
-          id
-          name
-        }
-      }
-    }
-    ... on Organization {
-      authorized_members {
-        id
-        member_id
-        name
-        entity_type
-        access_right
-        groups_restriction {
-          id
-          name
-        }
-      }
-    }
     workflowInstance {
       ...WorkflowStatus_workflowInstance @relay(mask: false)
     }
@@ -143,9 +116,48 @@ export const workflowStatusTriggerMutation = graphql`
       entity {
         ... on DraftWorkspace {
           ...WorkflowStatus_data
+          authorizedMembers {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
+              id
+              name
+            }
+          }
         }
         ... on StixDomainObject {
           ...WorkflowStatusStixDomainObject_data
+        }
+        # A transition can reset the access restriction: the headers read it from the store.
+        # Selected here, not in the polled fragment, so the poll never resolves members.
+        ... on Container {
+          authorized_members {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
+              id
+              name
+            }
+          }
+        }
+        ... on Organization {
+          authorized_members {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
+              id
+              name
+            }
+          }
         }
       }
     }
@@ -233,6 +245,34 @@ export const workflowSetStatusMutation = graphql`
       entity {
         ... on StixDomainObject {
           ...WorkflowStatusStixDomainObject_data
+        }
+        # A transition can reset the access restriction: the headers read it from the store.
+        # Selected here, not in the polled fragment, so the poll never resolves members.
+        ... on Container {
+          authorized_members {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
+              id
+              name
+            }
+          }
+        }
+        ... on Organization {
+          authorized_members {
+            id
+            member_id
+            name
+            entity_type
+            access_right
+            groups_restriction {
+              id
+              name
+            }
+          }
         }
       }
     }

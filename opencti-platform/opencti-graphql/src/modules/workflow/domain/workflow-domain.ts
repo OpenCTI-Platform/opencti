@@ -2370,6 +2370,13 @@ const recordUndeletedShareTasks = async (
   return 'Some container share tasks or direct grants could not be undone or recorded: an administrator must clean them up';
 };
 
+// Sync actions (reset authorized members, ...) write the entity after it was loaded: return what they left behind.
+// Best effort, the transition is already committed: falls back to the loaded entity when the reload fails
+// or the actions took the user's access away.
+const reloadTransitionedEntity = async <T>(context: AuthContext, user: AuthUser, entityId: string, entity: T) => {
+  return (await storeLoadById(context, user, entityId, 'Basic-Object').catch(() => undefined)) ?? entity;
+};
+
 export const triggerWorkflowEvent = async (
   context: AuthContext,
   user: AuthUser,
@@ -2627,7 +2634,7 @@ export const triggerWorkflowEvent = async (
         success: true,
         executionStatus: 'pending',
         instance: workflowInstance,
-        entity,
+        entity: await reloadTransitionedEntity(context, user, entityId, entity),
       };
     }
 
@@ -2683,7 +2690,7 @@ export const triggerWorkflowEvent = async (
       await notifyWorkflowTransitionComment(executionContext, entity as BasicStoreEntity, eventName, comment, user.id);
     }
 
-    return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity };
+    return { success: true, newState, executionStatus: 'completed', instance: workflowInstance, entity: await reloadTransitionedEntity(context, user, entityId, entity) };
   } catch (error) {
     const reason = error instanceof Error ? error.message : 'Unknown error';
     return {
@@ -2900,7 +2907,7 @@ const executeWorkflowBypass = async (
         { key: 'pendingError', value: [null] },
         { key: 'pendingTransition', value: [JSON.stringify(pendingTransition)] },
       ]);
-      return { success: true, executionStatus: 'pending', entity };
+      return { success: true, executionStatus: 'pending', entity: await reloadTransitionedEntity(context, user, entityId, entity) };
     }
     let history;
     try {
@@ -2927,7 +2934,7 @@ const executeWorkflowBypass = async (
     } else if (requestAccessStatus) {
       await mirrorRequestAccessStatus(executionContext, executionUser, entity.internal_id || entity.id, requestAccessStatus);
     }
-    return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity };
+    return { success: true, newState: targetStatus.template_id, executionStatus: 'completed', entity: await reloadTransitionedEntity(context, user, entityId, entity) };
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error);
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [

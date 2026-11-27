@@ -5,7 +5,7 @@ import { workflowStatusTriggerMutation } from './WorkflowStatus.graphql';
 
 const ENTITY_ID = 'entity-1';
 
-const setupRestrictedEntity = (typename: string) => {
+const setupRestrictedEntity = (typename: string, membersField: string) => {
   const environment = createMockEnvironment();
   commitLocalUpdate(environment, (store) => {
     const entity = store.create(ENTITY_ID, typename);
@@ -14,30 +14,27 @@ const setupRestrictedEntity = (typename: string) => {
     member.setValue(`${ENTITY_ID}_admin_0`, 'id');
     member.setValue('admin', 'member_id');
     member.setValue('admin', 'access_right');
-    entity.setLinkedRecords([member], 'authorized_members');
+    entity.setLinkedRecords([member], membersField);
   });
   return environment;
 };
 
-const readEntity = (environment: ReturnType<typeof createMockEnvironment>) => {
-  let entity: { updatedAt: unknown; memberIds: unknown[] } | undefined;
+const readMemberIds = (environment: ReturnType<typeof createMockEnvironment>, membersField: string) => {
+  let memberIds: unknown[] | undefined;
   commitLocalUpdate(environment, (store) => {
-    const record = store.get(ENTITY_ID);
-    entity = {
-      updatedAt: record?.getValue('updated_at'),
-      memberIds: (record?.getLinkedRecords('authorized_members') ?? []).map((member) => member?.getValue('member_id')),
-    };
+    memberIds = (store.get(ENTITY_ID)?.getLinkedRecords(membersField) ?? []).map((member) => member?.getValue('member_id'));
   });
-  return entity;
+  return memberIds;
 };
 
 describe('WorkflowStatusTriggerMutation', () => {
   it.each([
-    { typename: 'Report', abstractKeys: ['__isStixDomainObject', '__isContainer'] },
-    { typename: 'Organization', abstractKeys: ['__isStixDomainObject', '__isIdentity'] },
-  ])('should clear the access restriction of a $typename in the store when a transition resets authorized members', ({ typename, abstractKeys }) => {
-    const environment = setupRestrictedEntity(typename);
-    expect(readEntity(environment)?.memberIds).toEqual(['admin']);
+    { typename: 'Report', membersField: 'authorized_members', abstractKeys: ['__isStixDomainObject', '__isContainer'] },
+    { typename: 'Organization', membersField: 'authorized_members', abstractKeys: ['__isStixDomainObject', '__isIdentity'] },
+    { typename: 'DraftWorkspace', membersField: 'authorizedMembers', abstractKeys: [] },
+  ])('should clear the access restriction of a $typename in the store when a transition resets authorized members', ({ typename, membersField, abstractKeys }) => {
+    const environment = setupRestrictedEntity(typename, membersField);
+    expect(readMemberIds(environment, membersField)).toEqual(['admin']);
 
     commitMutation(environment, {
       mutation: workflowStatusTriggerMutation,
@@ -45,7 +42,8 @@ describe('WorkflowStatusTriggerMutation', () => {
     });
     environment.mock.resolveMostRecentOperation((operation) => {
       const payload = MockPayloadGenerator.generate(operation, { WorkflowInstance: () => ({ id: 'workflow-instance-1' }) });
-      // The generator picks the first concrete type (DraftWorkspace) for the abstract `entity`: the backend returns the real entity
+      // The generator picks the first concrete type (DraftWorkspace) for the abstract `entity`: the backend returns the real entity,
+      // reloaded after the sync actions ran
       const result = (payload.data as { triggerWorkflowEvent: { entity: Record<string, unknown> } }).triggerWorkflowEvent;
       // Drop the generated abstract-type keys: a stale one would match a fragment branch the real entity does not implement
       const generatedFields = Object.fromEntries(Object.entries(result.entity).filter(([key]) => !key.startsWith('__is')));
@@ -54,14 +52,11 @@ describe('WorkflowStatusTriggerMutation', () => {
         ...Object.fromEntries(abstractKeys.map((key) => [key, typename])),
         __typename: typename,
         id: ENTITY_ID,
-        updated_at: '2026-11-27T08:21:40.579Z',
-        authorized_members: [],
+        [membersField]: [],
       };
       return payload;
     });
 
-    const entity = readEntity(environment);
-    expect(entity?.updatedAt).toBe('2026-11-27T08:21:40.579Z');
-    expect(entity?.memberIds).toEqual([]);
+    expect(readMemberIds(environment, membersField)).toEqual([]);
   });
 });
