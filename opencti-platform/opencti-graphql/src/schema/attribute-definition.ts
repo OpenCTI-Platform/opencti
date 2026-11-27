@@ -523,6 +523,11 @@ export const coverageInformation: NestedObjectAttribute = {
     { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: true },
   ],
+  representative: (item: any, _translate, _ = DefaultFormating): string => {
+    const name = item.coverage_name ?? '-';
+    const score = item.coverage_score === null || item.coverage_score === undefined ? '-' : `${item.coverage_score}%`;
+    return `${name}: ${score}`;
+  },
 };
 
 export const opinionsMetrics: ObjectAttribute = {
