@@ -47,39 +47,38 @@ import WorkflowTransitionInputs, {
   hasTransitionComment,
   WORKFLOW_TRANSITION_COMMENT_FIELD_ID,
 } from './WorkflowTransitionInputs';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../../utils/filters/filtersUtils';
+import { blockingConditionKeys, parseBlockingConditions } from './blockedTransitionConditions';
+import BlockedTransitionDialog from './BlockedTransitionDialog';
 
-const parseBlockingConditions = (blockingConditions: string | null | undefined): FilterGroup | null => {
-  if (!blockingConditions) return null;
-  try {
-    return JSON.parse(blockingConditions) as FilterGroup;
-  } catch {
-    return null;
-  }
-};
+type BlockedTransition = NonNullable<WorkflowStatus_data$data['workflowInstance']>['blockedTransitions'][number];
 
-// A disabled transition carries the knowledge condition the entity does not meet yet.
-// The tooltip wraps the item from outside: a disabled item ignores pointer events.
-const BlockedTransitionTooltip = ({ event, blockingConditions, children }: {
+// Names the fields a locked transition waits for; the values live in the dialog.
+const BlockedTransitionSummary = ({ event, entityType, blockingConditions }: {
   event: string;
+  entityType: string;
   blockingConditions: string | null | undefined;
-  children: React.ReactNode;
 }) => {
   const { t_i18n } = useFormatter();
-  const filters = parseBlockingConditions(blockingConditions);
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType([entityType]);
+  const keys = blockingConditionKeys(parseBlockingConditions(blockingConditions));
+  if (keys.length === 0) return null;
+  const labels = keys.map((key) => t_i18n(getFilterDefinitionFromFilterKeysMap(key, filterKeysMap)?.label ?? key));
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span data-testid={`workflow-blocked-transition-${event}`} style={{ display: 'block' }}>
-          {children}
-        </span>
-      </TooltipTrigger>
-      <TooltipContent>
-        <Text as="span" variant="content-compact">{t_i18n('Requires')}</Text>
-        {filters && <FilterIconButton filters={filters} variant="small" />}
-      </TooltipContent>
-    </Tooltip>
+    <span
+      data-testid={`workflow-blocked-summary-${event}`}
+      style={{
+        fontSize: 12,
+        color: 'var(--text-default-secondary)',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        overflowWrap: 'anywhere',
+      }}
+    >
+      {`${t_i18n('Requires')} ${labels.join(', ')} · ${t_i18n('Details')}`}
+    </span>
   );
 };
 
@@ -145,6 +144,8 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [blockedDialog, setBlockedDialog] = useState<BlockedTransition | null>(null);
+  const nextStatusRef = useRef<HTMLButtonElement>(null);
   const { me } = useAuth();
   const isBypass = isBypassUser(me);
 
@@ -330,6 +331,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           <Menu open={menuOpen} onOpenChange={setMenuOpen}>
             <MenuTrigger asChild>
               <Button
+                ref={nextStatusRef}
                 size={buttonSize}
                 disabled={approving || clearing || !!wizard}
                 endIcon={!menuOpen ? (<ArrowDropDownOutlined />) : (<ArrowDropUpOutlined />)}
@@ -361,19 +363,24 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                 );
               })}
               {blockedTransitions.map((transition) => (
-                <BlockedTransitionTooltip
+                // Focusable and clickable so the reason can be read; it opens the dialog and never fires the transition.
+                <MenuItem
                   key={transition.event}
-                  event={transition.event}
-                  blockingConditions={transition.blockingConditions}
+                  data-testid={`workflow-blocked-transition-${transition.event}`}
+                  aria-disabled="true"
+                  onSelect={() => setBlockedDialog(transition)}
+                  style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal', gap: 8, alignItems: 'flex-start', color: 'var(--text-default-secondary)' }}
                 >
-                  <MenuItem
-                    disabled
-                    style={{ height: 'auto', minHeight: 36, whiteSpace: 'normal', gap: 8 }}
-                  >
-                    <LockOutlined fontSize="small" />
+                  <LockOutlined fontSize="small" />
+                  <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                     <span style={{ overflowWrap: 'anywhere' }}>{transition.event}</span>
-                  </MenuItem>
-                </BlockedTransitionTooltip>
+                    <BlockedTransitionSummary
+                      event={transition.event}
+                      entityType={entityType}
+                      blockingConditions={transition.blockingConditions}
+                    />
+                  </span>
+                </MenuItem>
               ))}
             </MenuContent>
           </Menu>
@@ -381,11 +388,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           <>
             {workflowInstance.allowedTransitions.map(renderTransitionButton)}
             {blockedTransitions.map((transition) => (
-              <BlockedTransitionTooltip
-                key={transition.event}
-                event={transition.event}
-                blockingConditions={transition.blockingConditions}
-              >
+              <React.Fragment key={transition.event}>
                 {transitionButtons ? (
                   <FdsButton priority="secondary" disabled>
                     {transition.event}
@@ -395,7 +398,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                     {transition.event}
                   </Button>
                 )}
-              </BlockedTransitionTooltip>
+              </React.Fragment>
             ))}
           </>
         )}
@@ -490,6 +493,19 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
             );
           }}
         </Formik>
+      )}
+      {/* Mounted once the menu has closed: opening a modal dialog while the
+          menu still holds the focus trap leaves the page unclickable. */}
+      {blockedDialog && !menuOpen && (
+        <BlockedTransitionDialog
+          open
+          onClose={() => setBlockedDialog(null)}
+          event={blockedDialog.event}
+          entityType={entityType}
+          toStatusName={blockedDialog.toStatus?.template?.name}
+          blockingConditions={blockedDialog.blockingConditions}
+          returnFocusTo={nextStatusRef}
+        />
       )}
     </>
   );

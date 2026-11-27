@@ -1,4 +1,4 @@
-import React, { FunctionComponent, Suspense, useMemo } from 'react';
+import React, { FunctionComponent, RefObject, Suspense, useMemo } from 'react';
 import { PreloadedQuery } from 'react-relay';
 import { Button, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Text } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
@@ -94,6 +94,9 @@ interface BlockedTransitionDialogProps {
   entityType: string;
   toStatusName: string | undefined;
   blockingConditions: string | null | undefined;
+  // The dialog has no trigger of its own (it opens from a menu item), so Radix
+  // cannot restore focus on close: this element gets it back instead.
+  returnFocusTo?: RefObject<HTMLElement | null>;
 }
 
 const BlockedTransitionDialog: FunctionComponent<BlockedTransitionDialogProps> = ({
@@ -103,6 +106,7 @@ const BlockedTransitionDialog: FunctionComponent<BlockedTransitionDialogProps> =
   entityType,
   toStatusName,
   blockingConditions,
+  returnFocusTo,
 }) => {
   const { t_i18n } = useFormatter();
   const openEdition = useEntityEditionOpener();
@@ -119,7 +123,15 @@ const BlockedTransitionDialog: FunctionComponent<BlockedTransitionDialogProps> =
         if (!isOpen) onClose();
       }}
     >
-      <DialogContent size="sm" data-testid="workflow-blocked-dialog">
+      <DialogContent
+        size="sm"
+        data-testid="workflow-blocked-dialog"
+        onCloseAutoFocus={(e) => {
+          if (!returnFocusTo?.current) return;
+          e.preventDefault();
+          returnFocusTo.current.focus();
+        }}
+      >
         <DialogTitle>{t_i18n('“{event}” is not available yet', { values: { event } })}</DialogTitle>
         <DialogDescription>
           {t_i18n('Meet every condition below to move this {entityType} to {status}.', {
