@@ -7005,5 +7005,7 @@
   "Not found across the XTM Platform": "Не найдено на платформе XTM",
   "Found": "Найдено",
   "Not found": "Не найдено",
-  "Unavailable": "Недоступно"
+  "Unavailable": "Недоступно",
+  "No public user is configured": "Публичный пользователь не настроен",
+  "Depending on the platform configuration, it is served with full access to the platform data, ignoring markings and organizations, or it is refused. A user must be selected to share it.": "В зависимости от конфигурации платформы он предоставляется с полным доступом к данным платформы без учета маркировок и организаций либо отклоняется. Чтобы поделиться им, необходимо выбрать пользователя."
 }

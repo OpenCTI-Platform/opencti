@@ -9,6 +9,8 @@ import { checkSystemDependencies } from './boot-utils';
 import { checkDefaultCredentials } from './config/default-credentials';
 import { getSessionMaxLifetime } from './database/session';
 import { checkSmtpSecurity } from './database/smtp';
+import { checkPublicSharingsWithoutUser } from './modules/dataSharing/dataSharing-utils';
+import { executionContext } from './utils/access';
 import { startLivenessServer, stopLivenessServer } from './http/httpLiveness';
 import { startEngineHealthMonitor, stopEngineHealthMonitor } from './database/engine-monitoring';
 import { startPlatformHealthMonitor, stopPlatformHealthMonitor } from './telemetry/platformHealthMetrics';
@@ -92,6 +94,12 @@ const doPlatformStart = async () => {
     }
     // Needs the settings in cache, to read the SMTP configuration stored in the database
     await checkSmtpSecurity();
+    // Needs the platform initialized, to list the public collections stored in the database
+    try {
+      await checkPublicSharingsWithoutUser(executionContext('public_sharing_check'));
+    } catch (publicSharingError) {
+      logApp.error('[OPENCTI] Public collections check failed', { cause: publicSharingError });
+    }
     // Start the platform health monitoring before the API so /health can answer from collected state
     try {
       await startPlatformHealthMonitor();

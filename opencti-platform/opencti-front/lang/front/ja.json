@@ -7005,5 +7005,7 @@
   "Not found across the XTM Platform": "XTM プラットフォームで見つかりません",
   "Found": "見つかりました",
   "Not found": "見つかりません",
-  "Unavailable": "利用できません"
+  "Unavailable": "利用できません",
+  "No public user is configured": "公開ユーザーが設定されていません",
+  "Depending on the platform configuration, it is served with full access to the platform data, ignoring markings and organizations, or it is refused. A user must be selected to share it.": "プラットフォームの設定に応じて、マーキングや組織を無視してプラットフォームのデータへの完全なアクセスで提供されるか、拒否されます。共有するにはユーザーを選択する必要があります。"
 }

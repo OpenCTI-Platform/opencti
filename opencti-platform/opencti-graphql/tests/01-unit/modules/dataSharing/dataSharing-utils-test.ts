@@ -1,11 +1,20 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as Cache from '../../../../src/database/cache';
 import * as Middleware from '../../../../src/database/middleware';
 import * as MiddlewareLoader from '../../../../src/database/middleware-loader';
 import * as Redis from '../../../../src/database/redis';
 import * as UserActionListener from '../../../../src/listener/UserActionListener';
 import { SYSTEM_USER } from '../../../../src/utils/access';
-import { disablePublicSharingForDeletedUser, resolvePublicUser, validatePublicUserId } from '../../../../src/modules/dataSharing/dataSharing-utils';
+import conf, { logApp, prepareLogMetadata } from '../../../../src/config/conf';
+import { booleanTrueFilter } from '../../../../src/utils/filtering/filtering-utils';
+import {
+  checkPublicSharingsWithoutUser,
+  disablePublicSharingForDeletedUser,
+  findPublicSharingsWithoutUser,
+  resetPublicSharingWarnings,
+  resolvePublicUser,
+  validatePublicUserId,
+} from '../../../../src/modules/dataSharing/dataSharing-utils';
 
 vi.mock('../../../../src/database/cache');
 vi.mock('../../../../src/database/redis');
@@ -28,42 +37,165 @@ vi.mock('../../../../src/config/conf', async () => {
 
 describe('resolvePublicUser', () => {
   const mockContext = { source: 'testing' } as any;
+  const SECURE_KEY = 'app:data_sharing:secure_by_default';
+  const taxiiWithoutUser = { id: 'taxii-1', entity_type: 'TaxiiCollection', name: 'Legacy taxii', taxii_public: true } as any;
+  const feedWithoutUser = { id: 'feed-1', entity_type: 'Feed', name: 'Legacy feed', feed_public: true, feed_public_user_id: null } as any;
+  const streamWithoutUser = { id: 'stream-1', entity_type: 'StreamCollection', name: 'Legacy stream', stream_public: true, stream_public_user_id: '' } as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetPublicSharingWarnings();
+  });
+  afterEach(() => {
+    conf.clear(SECURE_KEY);
+  });
+
+  it('should warn once per collection, not on every request', async () => {
+    await resolvePublicUser(mockContext, taxiiWithoutUser);
+    await resolvePublicUser(mockContext, taxiiWithoutUser);
+    await resolvePublicUser(mockContext, feedWithoutUser);
+    expect(logApp.warn).toHaveBeenCalledTimes(2);
+  });
+
+  describe('without a public user, app:data_sharing:secure_by_default=false', () => {
+    it.each([
+      ['a TAXII collection', taxiiWithoutUser],
+      ['a CSV feed', feedWithoutUser],
+      ['a live stream', streamWithoutUser],
+    ])('should fall back to SYSTEM_USER for %s and warn with the collection', async (_, sharing) => {
+      const result = await resolvePublicUser(mockContext, sharing);
+      expect(result).toBe(SYSTEM_USER);
+      expect(logApp.warn).toHaveBeenCalledWith(
+        expect.stringContaining('app:data_sharing:secure_by_default=false'),
+        { entity_type: sharing.entity_type, id: sharing.id, name: sharing.name },
+      );
+    });
+  });
+
+  describe('without a public user, app:data_sharing:secure_by_default=true', () => {
+    it.each([
+      ['a TAXII collection', taxiiWithoutUser, 'Taxii collection'],
+      ['a CSV feed', feedWithoutUser, 'csv feed'],
+      ['a live stream', streamWithoutUser, 'live stream'],
+    ])('should refuse to serve %s, naming it', async (_, sharing, label) => {
+      conf.set(SECURE_KEY, true);
+      const promise = resolvePublicUser(mockContext, sharing);
+      // The id, not the name: the message is also the reason phrase of the live stream answer, which only takes latin-1
+      await expect(promise).rejects.toThrow(`The public ${label} ${sharing.id} has no public user`);
+      await expect(promise).rejects.toMatchObject({ extensions: { code: 'FORBIDDEN_ACCESS', data: { http_status: 403 } } });
+      expect(logApp.warn).toHaveBeenCalledWith(
+        expect.stringContaining('app:data_sharing:secure_by_default=true'),
+        { entity_type: sharing.entity_type, id: sharing.id, name: sharing.name },
+      );
+    });
+  });
+
+  it.each([false, true])('should return the configured public user whatever the switch (%s)', async (secure) => {
+    conf.set(SECURE_KEY, secure);
+    const realUserId = 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb';
+    const mockUser = { id: realUserId, name: 'Real User' } as any;
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[realUserId, mockUser]]) as any);
+
+    const result = await resolvePublicUser(mockContext, { ...taxiiWithoutUser, taxii_public_user_id: realUserId });
+    expect(result).toBe(mockUser);
+    expect(logApp.warn).not.toHaveBeenCalled();
+  });
+
+  it('should throw FunctionalError when the public user is an internal system user', async () => {
+    await expect(resolvePublicUser(mockContext, { ...streamWithoutUser, stream_public_user_id: SYSTEM_USER.id }))
+      .rejects.toThrow('Cannot use an internal system user for public sharing');
+  });
+
+  it('should throw FunctionalError when the public user no longer exists in the platform cache', async () => {
+    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
+    await expect(resolvePublicUser(mockContext, { ...feedWithoutUser, feed_public_user_id: 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' }))
+      .rejects.toThrow('The user configured for this public sharing no longer exists');
+  });
+});
+
+describe('findPublicSharingsWithoutUser', () => {
+  const mockContext = { source: 'testing' } as any;
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should return SYSTEM_USER when userId is null', async () => {
-    const result = await resolvePublicUser(mockContext, null);
-    expect(result).toBe(SYSTEM_USER);
+  it('should list only the public collections without a public user, of every type', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
+      if (types?.[0] === 'Feed') {
+        return [
+          { id: 'feed-1', entity_type: 'Feed', name: 'Public feed without user', feed_public: true },
+          { id: 'feed-2', entity_type: 'Feed', name: 'Public feed with user', feed_public: true, feed_public_user_id: 'user-id' },
+          { id: 'feed-3', entity_type: 'Feed', name: 'Private feed', feed_public: false },
+        ] as any;
+      }
+      if (types?.[0] === 'TaxiiCollection') {
+        return [{ id: 'taxii-1', entity_type: 'TaxiiCollection', name: 'Public taxii without user', taxii_public: true, taxii_public_user_id: null }] as any;
+      }
+      if (types?.[0] === 'StreamCollection') {
+        return [{ id: 'stream-1', entity_type: 'StreamCollection', name: 'Private stream', stream_public: false }] as any;
+      }
+      return [];
+    });
+
+    const result = await findPublicSharingsWithoutUser(mockContext);
+
+    // Only the public ones are read
+    expect(MiddlewareLoader.fullEntitiesList).toHaveBeenCalledWith(mockContext, SYSTEM_USER, ['Feed'], { filters: booleanTrueFilter('feed_public') });
+    expect(result).toEqual([
+      { entity_type: 'Feed', id: 'feed-1', name: 'Public feed without user' },
+      { entity_type: 'TaxiiCollection', id: 'taxii-1', name: 'Public taxii without user' },
+    ]);
+  });
+});
+
+describe('checkPublicSharingsWithoutUser', () => {
+  const mockContext = { source: 'testing' } as any;
+  const SECURE_KEY = 'app:data_sharing:secure_by_default';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  afterEach(() => {
+    conf.clear(SECURE_KEY);
   });
 
-  it('should return SYSTEM_USER when userId is undefined', async () => {
-    const result = await resolvePublicUser(mockContext, undefined);
-    expect(result).toBe(SYSTEM_USER);
+  it('should not warn when every public collection has a public user', async () => {
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockResolvedValue([]);
+    await checkPublicSharingsWithoutUser(mockContext);
+    expect(logApp.warn).not.toHaveBeenCalled();
   });
 
-  it('should throw FunctionalError when userId is an internal system user id', async () => {
-    const internalUserId = SYSTEM_USER.id; // '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505'
-    await expect(resolvePublicUser(mockContext, internalUserId))
-      .rejects.toThrow('Cannot use an internal system user for public sharing');
+  it.each([
+    [false, 'served with full access to the platform data'],
+    [true, 'refused'],
+  ])('should warn with the count, then each public collection without a public user (switch %s)', async (secure, verdict) => {
+    conf.set(SECURE_KEY, secure);
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => {
+      if (types?.[0] === 'StreamCollection') {
+        return [{ id: 'stream-1', entity_type: 'StreamCollection', name: 'Legacy stream', stream_public: true }] as any;
+      }
+      return [];
+    });
+
+    await checkPublicSharingsWithoutUser(mockContext);
+
+    expect(logApp.warn).toHaveBeenCalledTimes(2);
+    const [message, meta] = vi.mocked(logApp.warn).mock.calls[0];
+    expect(message).toContain(verdict);
+    expect(message).toContain(`app:data_sharing:secure_by_default=${secure}`);
+    expect(meta).toEqual({ count: 1 });
+    expect(vi.mocked(logApp.warn).mock.calls[1][1]).toEqual({ collection: { entity_type: 'StreamCollection', id: 'stream-1', name: 'Legacy stream' } });
   });
 
-  it('should throw FunctionalError when user no longer exists in the platform cache', async () => {
-    const nonExistentUserId = 'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa';
-    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map() as any);
+  it('should log every collection, beyond the size limits of the log metadata', async () => {
+    const streams = Array.from({ length: 120 }, (_, index) => ({ id: `stream-${index}`, entity_type: 'StreamCollection', name: `Legacy stream ${index}`, stream_public: true }));
+    vi.mocked(MiddlewareLoader.fullEntitiesList).mockImplementation(async (_ctx, _user, types) => (types?.[0] === 'StreamCollection' ? streams as any : []));
 
-    await expect(resolvePublicUser(mockContext, nonExistentUserId))
-      .rejects.toThrow('The user configured for this public sharing no longer exists');
-  });
+    await checkPublicSharingsWithoutUser(mockContext);
 
-  it('should return the resolved user when found in the platform cache', async () => {
-    const realUserId = 'bbbbbbbb-bbbb-4bbb-bbbb-bbbbbbbbbbbb';
-    const mockUser = { id: realUserId, name: 'Real User' } as any;
-    vi.mocked(Cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[realUserId, mockUser]]) as any);
-
-    const result = await resolvePublicUser(mockContext, realUserId);
-    expect(result).toBe(mockUser);
+    const loggedIds = vi.mocked(logApp.warn).mock.calls.slice(1).map(([, meta]) => (prepareLogMetadata(meta) as any).collection?.id);
+    expect(loggedIds).toEqual(streams.map(({ id }) => id));
   });
 });
 

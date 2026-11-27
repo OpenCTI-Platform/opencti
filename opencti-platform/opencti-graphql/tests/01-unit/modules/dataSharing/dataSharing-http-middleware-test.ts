@@ -62,6 +62,8 @@ import initHttpRollingFeeds from '../../../../src/http/httpRollingFeed.js';
 import { findById as findFeedById } from '../../../../src/modules/dataSharing/feed-domain';
 import { checkDraftInContext } from '../../../../src/http/httpServer-draft';
 import { emptyFilterGroup } from '../../../../src/utils/filtering/filtering-utils';
+import { ForbiddenAccess } from '../../../../src/config/errors';
+import { logApp } from '../../../../src/config/conf';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -136,6 +138,7 @@ describe('authenticateForPublic middleware', () => {
     expect(next).toHaveBeenCalled();
     expect(req.user).toBe(MOCK_PUBLIC_USER);
     expect(req.userId).toBe('public-user-id');
+    expect(resolvePublicUser).toHaveBeenCalledWith(mockContext, MOCK_STREAM_COLLECTION);
     expect(res.status).not.toHaveBeenCalled();
   });
 
@@ -208,6 +211,23 @@ describe('authenticateForPublic middleware', () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.statusMessage).toBe('Public stream configuration error');
+  });
+
+  it('answers 403 with the refusal message and no error log when the public stream is refused', async () => {
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: null } as any);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([MOCK_STREAM_COLLECTION] as any);
+    vi.mocked(resolvePublicUser).mockRejectedValue(ForbiddenAccess('The public live stream stream-1 has no public user'));
+
+    const req = makeMockReq({ id: 'stream-1' });
+    const res = makeMockRes();
+    const next = vi.fn();
+
+    await authenticateForPublic(req, res, next);
+
+    expect(next).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.statusMessage).toBe('The public live stream stream-1 has no public user');
+    expect(logApp.error).not.toHaveBeenCalled();
   });
 
   it('calls next() with authenticated user on a private stream', async () => {
@@ -428,6 +448,7 @@ describe('extractUserAndCollection middleware helper (TAXII)', () => {
     expect(result.context).toBeDefined();
     expect(result.user).toBe(MOCK_PUBLIC_USER);
     expect(result.collection).toBe(MOCK_TAXII_COLLECTION);
+    expect(resolvePublicUser).toHaveBeenCalledWith(result.context, MOCK_TAXII_COLLECTION);
   });
 
   it('throws ForbiddenAccess when collection not found', async () => {
@@ -467,7 +488,7 @@ describe('resolveUserForFeed helper', () => {
 
     const result = await resolveUserForFeed(context, feed);
 
-    expect(resolvePublicUser).toHaveBeenCalledWith(context, 'public-id');
+    expect(resolvePublicUser).toHaveBeenCalledWith(context, feed);
     expect(result).toEqual({ id: 'public-user' });
     expect(result).not.toBe(adminUser);
   });
@@ -479,7 +500,7 @@ describe('resolveUserForFeed helper', () => {
 
     const result = await resolveUserForFeed(context, feed);
 
-    expect(resolvePublicUser).toHaveBeenCalledWith(context, 'public-id');
+    expect(resolvePublicUser).toHaveBeenCalledWith(context, feed);
     expect(result).toEqual({ id: 'public-user' });
   });
 });

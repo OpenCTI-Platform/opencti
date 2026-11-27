@@ -345,7 +345,7 @@ export const authenticateForPublic = async (req, res, next) => {
       // so validate the draft context explicitly before it is used by the stream processor.
       await checkDraftInContext(context);
       const user = collection?.stream_public
-        ? await resolvePublicUser(context, collection.stream_public_user_id)
+        ? await resolvePublicUser(context, collection)
         : context.user;
       req.user = user;
       req.userId = user.id;
@@ -356,8 +356,14 @@ export const authenticateForPublic = async (req, res, next) => {
         context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
       }
     } catch (e) {
+      // A caller error (public stream refused, public user misconfigured) is answered with its own status, like TAXII and CSV feeds
+      if (isUserFacingError(e)) {
+        res.statusMessage = e.message;
+        sendErrorStatus(req, res, e.extensions?.data?.http_status ?? 500);
+        return;
+      }
       logApp.error('Error in public stream configuration', { cause: e, request_id: getRequestId(res) });
-      res.statusMessage = isUserFacingError(e) ? e.message : 'Public stream configuration error';
+      res.statusMessage = 'Public stream configuration error';
       sendErrorStatus(req, res, 500);
       return;
     }

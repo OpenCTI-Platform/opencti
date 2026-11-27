@@ -18,7 +18,7 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
-import { validatePublicUserId } from './dataSharing-utils';
+import { assertSingleSharingInputs, isPublicUserMissingAfterEdit, validatePublicUserId } from './dataSharing-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditContext, EditInput, QueryTaxiiCollectionsArgs, TaxiiCollectionAddInput } from '../../generated/graphql';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store.d';
@@ -72,17 +72,14 @@ export const taxiiCollectionEditField = async (context: AuthContext, user: AuthU
   if (input.some((item) => publicFields.includes(item.key)) && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public Taxii collection settings');
   }
+  assertSingleSharingInputs(ENTITY_TYPE_TAXII_COLLECTION, input);
   const publicUserIdItem = input.find((item) => item.key === 'taxii_public_user_id');
   if (publicUserIdItem?.value?.[0]) {
     await validatePublicUserId(context, publicUserIdItem.value[0]);
   }
-  const settingPublicTrue = input.find((item) => item.key === 'taxii_public' && item.value?.[0] === 'true');
-  if (settingPublicTrue) {
-    const existingCollection = await findById(context, user, collectionId);
-    const effectiveUserId = publicUserIdItem?.value?.[0] ?? existingCollection?.taxii_public_user_id;
-    if (!effectiveUserId) {
-      throw FunctionalError('A user must be configured when the Taxii collection is public');
-    }
+  // A public collection needs a public user: when it is made public, and when its public user is cleared
+  if (await isPublicUserMissingAfterEdit(ENTITY_TYPE_TAXII_COLLECTION, input, () => findById(context, user, collectionId))) {
+    throw FunctionalError('A user must be configured when the Taxii collection is public');
   }
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };

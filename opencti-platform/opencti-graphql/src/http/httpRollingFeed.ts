@@ -295,7 +295,7 @@ export const buildCsvLines = async (context: any, user: any, elements: any[], fe
 };
 
 export const resolveUserForFeed = async (context: AuthContext, feed: BasicStoreEntityFeed): Promise<AuthUser> => {
-  if (feed.feed_public) return resolvePublicUser(context, feed.feed_public_user_id);
+  if (feed.feed_public) return resolvePublicUser(context, feed);
   if (context.user) return context.user;
   throw ForbiddenAccess();
 };

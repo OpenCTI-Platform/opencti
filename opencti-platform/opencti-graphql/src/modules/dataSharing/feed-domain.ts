@@ -101,8 +101,15 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   if (publicFieldsChanged && !isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     throw FunctionalError('You must have the SETTINGS_SETACCESSES capability to modify public feed settings');
   }
-  if (input.feed_public && !input.feed_public_user_id) {
-    throw FunctionalError('A user must be configured when the feed is public');
+  // A public feed needs a public user: when it is made public, and when its public user is cleared.
+  // The stored document is replaced key by key: an absent key keeps its stored value
+  const touchesPublicUser = input.feed_public_user_id !== undefined;
+  if (input.feed_public || touchesPublicUser) {
+    const isPublic = input.feed_public ?? feed.feed_public;
+    const publicUserId = touchesPublicUser ? input.feed_public_user_id : feed.feed_public_user_id;
+    if (isPublic && !publicUserId) {
+      throw FunctionalError('A user must be configured when the feed is public');
+    }
   }
   if (input.feed_public_user_id) {
     await validatePublicUserId(context, input.feed_public_user_id);

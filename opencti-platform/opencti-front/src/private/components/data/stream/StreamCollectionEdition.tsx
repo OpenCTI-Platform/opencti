@@ -28,6 +28,7 @@ import {
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatorField from '../../common/form/CreatorField';
+import PublicSharingUserMissingAlert from '../PublicSharingUserMissingAlert';
 import { convertAuthorizedMembers, convertUser } from '../../../../utils/edition';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -245,6 +246,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
                 }}
               />
             )}
+            {streamCollection.stream_public && !streamCollection.stream_public_user_id && <PublicSharingUserMissingAlert />}
           </Alert>
           <Box sx={{
             marginTop: '20px',
@@ -320,6 +322,7 @@ const StreamCollectionEditionFragment = createFragmentContainer(
                 origin_filters
                 stream_live
                 stream_public
+                stream_public_user_id
                 stream_public_user {
                     id
                     entity_type

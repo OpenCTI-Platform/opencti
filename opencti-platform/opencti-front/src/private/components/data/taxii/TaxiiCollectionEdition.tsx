@@ -22,6 +22,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import { useTheme } from '@mui/material/styles';
 import CreatorField from '../../common/form/CreatorField';
+import PublicSharingUserMissingAlert from '../PublicSharingUserMissingAlert';
 
 interface TaxiiCollectionCreationForm {
   restricted_members: FieldOption[] | null;
@@ -223,6 +224,7 @@ const TaxiiCollectionEditionContainer: FunctionComponent<{ taxiiCollection: Taxi
                 }}
               />
             )}
+            {taxiiCollection.taxii_public && !taxiiCollection.taxii_public_user_id && <PublicSharingUserMissingAlert />}
           </Alert>
           <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
             <FormControlLabel
@@ -277,6 +279,7 @@ const TaxiiCollectionEditionFragment = createFragmentContainer(
         description
         filters
         taxii_public
+        taxii_public_user_id
         taxii_public_user {
           id
           entity_type
