@@ -13,6 +13,7 @@ import createApp, {
   shouldIncludeHealthDetails,
 } from '../../../src/http/httpPlatform';
 import { sanitizeReferer } from '../../../src/http/httpUtils';
+import { ResourceNotFoundError } from '../../../src/config/errors';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 import { createAuthenticatedContext } from '../../../src/http/httpAuthenticatedContext';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
@@ -358,6 +359,41 @@ describe('storage routes: draft authorization', () => {
 
     expect(checkDraftInContext).toHaveBeenCalledWith(DENIED_CONTEXT);
     expect(res.status).toHaveBeenCalledWith(503);
+  });
+});
+
+describe('storage routes: file not found or restricted', () => {
+  const handlers = [
+    ['handleStorageGet', handleStorageGet, { file: ['a', 'b.txt'] }],
+    ['handleStorageView', handleStorageView, { file: ['a', 'b.txt'] }],
+    ['handleStorageViewEmbedded', handleStorageViewEmbedded, { 0: 'x', 1: 'entity-id', 2: 'y', 3: 'b.txt' }],
+    ['handleStorageHtml', handleStorageHtml, { file: ['a', 'b.md'] }],
+    ['handleStorageEncrypted', handleStorageEncrypted, { file: ['a', 'b.txt'] }],
+  ] as const;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(createAuthenticatedContext).mockResolvedValue({ user: { id: 'user-a' } } as any);
+    vi.mocked(checkDraftInContext).mockResolvedValue(undefined as any);
+    vi.mocked(internalLoadById).mockResolvedValue({ entity_type: 'Report' } as any);
+  });
+
+  it.each(handlers)('%s answers 404 with a warn log', async (_name, handler, params) => {
+    vi.mocked(loadFile).mockRejectedValue(ResourceNotFoundError('File not found or restricted', { filename: 'a/b.txt' }));
+    const res = makeStorageRes();
+    await handler(makeStorageReq(params), res);
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.send).toHaveBeenCalledWith(expect.objectContaining({ error: 'File not found or restricted' }));
+    expect(logApp.warn).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ filename: 'a/b.txt' }));
+    expect(logApp.error).not.toHaveBeenCalled();
+  });
+
+  it.each(handlers)('%s keeps 503 with an error log for any other failure', async (_name, handler, params) => {
+    vi.mocked(loadFile).mockRejectedValue(new Error('storage is down'));
+    const res = makeStorageRes();
+    await handler(makeStorageReq(params), res);
+    expect(res.status).toHaveBeenCalledWith(503);
+    expect(logApp.error).toHaveBeenCalled();
   });
 });
 

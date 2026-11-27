@@ -117,7 +117,7 @@ describe('Config preset bundle storage round trip', () => {
 
   it('refuses the bundle to a knowledge user without BYPASS', async () => {
     const res = await storageGet(fileId, editorAuthorization);
-    expect(res.status).not.toBe(200);
+    expect(res.status).toBe(404);
     expect(((await res.json()) as { error: string }).error).toBe('File not found or restricted');
   });
 
@@ -128,7 +128,7 @@ describe('Config preset bundle storage round trip', () => {
     expect(adminRes.status).toBe(200);
     await adminRes.arrayBuffer();
     const res = await storageGet(variant, editorAuthorization);
-    expect(res.status).not.toBe(200);
+    expect(res.status).toBe(404);
     expect(((await res.json()) as { error: string }).error).toBe('File not found or restricted');
   });
 

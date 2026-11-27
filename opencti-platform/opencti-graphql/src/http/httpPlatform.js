@@ -70,7 +70,7 @@ import { CERT_PROVIDER } from '../modules/authenticationProvider/provider-cert';
 import { HEADERS_PROVIDER } from '../modules/authenticationProvider/provider-headers';
 import { AuthenticationProviderError } from '../modules/authenticationProvider/providers-logger';
 import { buildDefaultHelmetParameters, buildPublicHelmetParameters } from './httpUtils';
-import { AuthenticationFailure } from '../config/errors';
+import { AuthenticationFailure, RESOURCE_NOT_FOUND_ERROR } from '../config/errors';
 import { getMaxPayloadBodySize } from './httpConfig';
 import { CATALOG_LOGO_VIEW_PATH, handleCatalogLogoViewRequest } from '../modules/catalog/catalog-http';
 
@@ -111,6 +111,19 @@ const sendMissingStorageFile = (res, fileId) => {
   res.type('json').status(404).send({ status: 'error', error: 'File not found' });
 };
 
+// A missing or restricted file is a 404 (the same one, so the response does not reveal that the file exists),
+// any other failure is a 503.
+const sendStorageError = (res, e, message) => {
+  if (e?.extensions?.code === RESOURCE_NOT_FOUND_ERROR) {
+    logApp.warn('[FILE STORAGE] File not found or restricted', { filename: e.extensions.data?.filename, request_id: getRequestId(res) });
+    res.status(404).send(errorBody(res, e));
+    return;
+  }
+  setCookieError(res, e.message);
+  logApp.error(message, { cause: e, request_id: getRequestId(res) });
+  res.status(503).send(errorBody(res, e));
+};
+
 export const decodeStoragePath = (fileParts = []) => fileParts
   .map((part) => {
     try {
@@ -147,9 +160,7 @@ export const handleStorageGet = async (req, res) => {
     stream.pipe(res);
   } catch (e) {
     stream?.destroy();
-    setCookieError(res, e.message);
-    logApp.error('Error getting storage get file', { cause: e, request_id: getRequestId(res) });
-    res.status(503).send(errorBody(res, e));
+    sendStorageError(res, e, 'Error getting storage get file');
   }
 };
 
@@ -186,9 +197,7 @@ export const handleStorageView = async (req, res) => {
     stream.pipe(res);
   } catch (e) {
     stream?.destroy();
-    setCookieError(res, e.message);
-    logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
-    res.status(503).send(errorBody(res, e));
+    sendStorageError(res, e, 'Error getting storage view file');
   }
 };
 
@@ -237,9 +246,7 @@ export const handleStorageViewEmbedded = async (req, res) => {
     stream.pipe(res);
   } catch (e) {
     stream?.destroy();
-    setCookieError(res, e.message);
-    logApp.error('Error getting storage view file', { cause: e, request_id: getRequestId(res) });
-    res.status(503).send(errorBody(res, e));
+    sendStorageError(res, e, 'Error getting storage view file');
   }
 };
 
@@ -268,9 +275,7 @@ export const handleStorageHtml = async (req, res) => {
       res.send('Unsupported file type');
     }
   } catch (e) {
-    setCookieError(res, e.message);
-    logApp.error('Error getting html file', { cause: e, request_id: getRequestId(res) });
-    res.status(503).send(errorBody(res, e));
+    sendStorageError(res, e, 'Error getting html file');
   }
 };
 
@@ -303,9 +308,7 @@ export const handleStorageEncrypted = async (req, res) => {
     archive.pipe(res);
   } catch (e) {
     stream?.destroy();
-    setCookieError(res, e.message);
-    logApp.error('Error getting encrypted file', { cause: e, request_id: getRequestId(res) });
-    res.status(503).send(errorBody(res, e));
+    sendStorageError(res, e, 'Error getting encrypted file');
   }
 };
 
