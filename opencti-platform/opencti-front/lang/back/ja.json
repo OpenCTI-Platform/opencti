@@ -1112,6 +1112,8 @@
   "Service name": "サービス名",
   "Service status": "サービスステータス",
   "Service type": "サービスタイプ",
+  "Session presence manager": "セッション・プレゼンス・マネージャー",
+  "SESSION_PRESENCE_MANAGER": "セッション・プレゼンス・マネージャー",
   "Setting": "最終実行開始日",
   "Severity": "ソース",
   "SHA-1": "SHA-1",

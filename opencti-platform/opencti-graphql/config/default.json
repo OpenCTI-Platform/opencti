@@ -116,7 +116,8 @@
     "session_max_lifetime": 0,
     "session_manager": "shared",
     "session_presence": {
-      "grace_period": 30000
+      "grace_period": 30000,
+      "lease_ttl": 30000
     },
     "concurrency": {
       "retry_count": 100,
@@ -382,6 +383,11 @@
     "enabled": true,
     "lock_key": "retention_manager_lock",
     "interval": 30000
+  },
+  "session_presence_manager": {
+    "enabled": true,
+    "lock_key": "session_presence_manager_lock",
+    "interval": 5000
   },
   "file_index_manager": {
     "enabled": true,

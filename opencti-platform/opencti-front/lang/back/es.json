@@ -1112,6 +1112,8 @@
   "Service name": "Nombre del servicio",
   "Service status": "Estado del servicio",
   "Service type": "Tipo de servicio",
+  "Session presence manager": "Gestor de presencia de sesiones",
+  "SESSION_PRESENCE_MANAGER": "Gestor de presencia de sesiones",
   "Setting": "Configuración",
   "Severity": "Gravedad",
   "SHA-1": "SHA-1",

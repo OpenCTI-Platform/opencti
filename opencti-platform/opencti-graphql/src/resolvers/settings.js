@@ -38,7 +38,7 @@ import { isAuthenticationForcedFromEnv } from '../modules/authenticationProvider
 import { updateCertAuth, updateHeaderAuth, updateLocalAuth } from '../domain/setting-auth';
 import { readPasswordHistoryCount } from '../modules/user/user-password-history';
 import { LOCAL_AUTH_LOCKOUT_DEFAULTS } from '../domain/local-auth-lockout-defaults';
-import { isSessionPresenceSupported } from '../modules/session/session-presence-domain';
+import { isSessionPresenceManagerEnabled, isSessionPresenceSupported } from '../modules/session/session-presence-domain';
 import { isApiBasicAuthEnabled } from '../modules/user/user-basic-auth';
 import { readXtmHubTokenFor } from '../utils/settings.helper';
 import { getSessionMaxLifetime } from '../database/session';
@@ -66,6 +66,7 @@ const settingsResolvers = {
     platform_ip_whitelist_exclusions: (settings, __, context) => internalFindByIds(context, context.user, settings.platform_ip_whitelist_exclusion_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     platform_session_presence_enabled: (settings) => settings.platform_session_presence_enabled ?? false,
+    platform_session_presence_manager_enabled: () => isSessionPresenceManagerEnabled(),
     platform_session_presence_supported: () => isSessionPresenceSupported(),
     platform_email: (settings) => smtpConfiguredEmail(settings),
     xtm_hub_token: (settings, __, context) => readXtmHubTokenFor(context.user, settings),
