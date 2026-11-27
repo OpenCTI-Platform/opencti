@@ -34,6 +34,13 @@ By doing this, you are actively helping us to improve the quality of the entire 
 <!-- _NOTE: Test coverage is, by default, mandatory. It will help us improve the stability of the platform. If you consider tests are not relevant for this PR, reach out and explain why._ -->
 <!-- For completed items, change [ ] to [x]. -->
 
+### Slack handle (optional)
+<!--
+If you are on the Filigran Community Slack (https://community.filigran.io), you can add your handle
+so reviewers can reach you if they have questions about this PR. Note that this PR is public.
+-->
+*
+
 ### Further comments
 
 <!--
