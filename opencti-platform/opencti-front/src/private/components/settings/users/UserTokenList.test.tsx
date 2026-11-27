@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, Mock } from 'vitest';
 import React from 'react';
 import { screen, within } from '@testing-library/react';
-import testRender from '../../../../utils/tests/test-render';
+import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import { UserTokenList } from './UserTokenList';
 import { UserTokenList_node$data } from './__generated__/UserTokenList_node.graphql';
 import { MESSAGING$, commitMutation } from '../../../../relay/environment';
@@ -17,6 +17,16 @@ vi.mock('../../../../relay/environment', async () => {
       notifyError: vi.fn(),
     },
   };
+});
+
+const adminContext = createMockUserContext({
+  me: { name: 'admin', capabilities: [{ name: 'SETTINGS_SETACCESSES' }] },
+});
+
+// An organization administrator manages users of its organization through the
+// virtual VIRTUAL_ORGANIZATION_ADMIN capability, without SETTINGS_SETACCESSES.
+const orgAdminContext = createMockUserContext({
+  me: { name: 'org-admin', capabilities: [{ name: 'VIRTUAL_ORGANIZATION_ADMIN' }] },
 });
 
 describe('Component: UserTokenList', () => {
@@ -39,7 +49,10 @@ describe('Component: UserTokenList', () => {
   });
 
   it('should handle token revocation via admin mutation', async () => {
-    const { user } = testRender(<UserTokenList node={mockNode} onCloseDrawer={() => {}} />);
+    const { user } = testRender(
+      <UserTokenList node={mockNode} onCloseDrawer={() => {}} />,
+      { userContext: adminContext },
+    );
     const commitMutationMock = commitMutation as Mock;
 
     // Click revoke
@@ -82,8 +95,25 @@ describe('Component: UserTokenList', () => {
         openDrawer={true}
         onCloseDrawer={() => {}}
       />,
+      { userContext: adminContext },
     );
 
     expect(screen.getByText('Generate a new token')).toBeInTheDocument();
+  });
+
+  it('should list tokens without revoke or generate actions for an organization administrator', () => {
+    testRender(
+      <UserTokenList
+        node={mockNode}
+        openDrawer={true}
+        onCloseDrawer={() => {}}
+      />,
+      { userContext: orgAdminContext },
+    );
+
+    expect(screen.getByText('Admin View Token')).toBeInTheDocument();
+    expect(screen.queryByText('Actions')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Revoke')).not.toBeInTheDocument();
+    expect(screen.queryByText('Generate a new token')).not.toBeInTheDocument();
   });
 });

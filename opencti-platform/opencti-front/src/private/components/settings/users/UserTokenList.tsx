@@ -11,6 +11,7 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import TokenDeleteDialog from '../../profile/api_tokens/TokenDeleteDialog';
 import UserTokenCreationDrawer from './UserTokenCreationDrawer';
 import { UserTokenList_node$data } from './__generated__/UserTokenList_node.graphql';
@@ -46,6 +47,9 @@ interface UserTokenListProps {
 export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false, onCloseDrawer, node }) => {
   const { t_i18n, nsdt } = useFormatter();
   const [deletingToken, setDeletingToken] = useState<{ id: string; name: string } | null>(null);
+  // Generating or revoking another user's token requires SETTINGS_SETACCESSES on the
+  // backend. Organization administrators can see the tokens but not manage them.
+  const canManageTokens = useGranted([SETTINGS_SETACCESSES]);
 
   const tokens = node.api_tokens || [];
   const now = new Date();
@@ -131,7 +135,7 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
                 <TableCell>{t_i18n('Name')}</TableCell>
                 <TableCell>{t_i18n('Last Used')}</TableCell>
                 <TableCell>{t_i18n('Expires At')}</TableCell>
-                <TableCell align="right">{t_i18n('Actions')}</TableCell>
+                {canManageTokens && <TableCell align="right">{t_i18n('Actions')}</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -146,18 +150,20 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
                     {' '}
                     {getExpirationStatus(token.expires_at)}
                   </TableCell>
-                  <TableCell align="right">
-                    <Tooltip title={t_i18n('Revoke')}>
-                      <IconButton
-                        variant="default"
-                        priority="tertiary"
-                        size="sm"
-                        aria-label={t_i18n('Revoke')}
-                        onClick={() => handleOpenDelete({ id: token.id, name: token.name || '' })}
-                        icon={<Delete fontSize="small" />}
-                      />
-                    </Tooltip>
-                  </TableCell>
+                  {canManageTokens && (
+                    <TableCell align="right">
+                      <Tooltip title={t_i18n('Revoke')}>
+                        <IconButton
+                          variant="default"
+                          priority="tertiary"
+                          size="sm"
+                          aria-label={t_i18n('Revoke')}
+                          onClick={() => handleOpenDelete({ id: token.id, name: token.name || '' })}
+                          icon={<Delete fontSize="small" />}
+                        />
+                      </Tooltip>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -165,18 +171,22 @@ export const UserTokenList: React.FC<UserTokenListProps> = ({ openDrawer = false
         </TableContainer>
       )}
 
-      <TokenDeleteDialog
-        token={deletingToken}
-        open={deletingToken !== null}
-        onClose={handleCloseDelete}
-        onDelete={submitDelete}
-      />
+      {canManageTokens && (
+        <>
+          <TokenDeleteDialog
+            token={deletingToken}
+            open={deletingToken !== null}
+            onClose={handleCloseDelete}
+            onDelete={submitDelete}
+          />
 
-      <UserTokenCreationDrawer
-        userId={node.id}
-        open={openDrawer}
-        onClose={onCloseDrawer}
-      />
+          <UserTokenCreationDrawer
+            userId={node.id}
+            open={openDrawer}
+            onClose={onCloseDrawer}
+          />
+        </>
+      )}
     </div>
   );
 };

@@ -391,7 +391,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 }}
                 >
                   <Label
-                    action={(
+                    // Organization administrators can see the tokens but not generate them.
+                    action={userHasSettingsCapability && (
                       <Button
                         variant="tertiary"
                         size="small"
