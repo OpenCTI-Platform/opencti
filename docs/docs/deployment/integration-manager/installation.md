@@ -24,10 +24,22 @@
   - Production: Kubernetes service account with appropriate RBAC
   - Development: Docker socket access or Portainer API access
 
+### Version compatibility
+
+OpenCTI 7.260224.0 and later require XTM Composer 2.0 or later (see [Breaking changes](../breaking-changes.md#xtm-composer-version-compatibility)).
+
+The examples on this page use the `latest` image tag, which follows every new release: a new pull of the image can upgrade XTM Composer without notice. In production, replace `latest` with a release tag from the [XTM Composer releases](https://github.com/FiligranHQ/xtm-composer/releases), and check the [breaking changes](../breaking-changes.md) before you upgrade OpenCTI.
+
 ## Installation methods
 
 Create a configuration file based on your environment or add extra environment variables in the following steps.
 See [Configuration Reference](configuration.md) for more information on required configuration.
+
+!!! warning "Configuration directory"
+
+    XTM Composer reads `config/default.yaml`, then `config/<COMPOSER_ENV>.yaml` if it exists, from its working directory: `/opt/xtm-composer` in the Docker image. Mount your own settings as a single file, for example `/opt/xtm-composer/config/production.yaml` with `COMPOSER_ENV=production`: it only needs the settings that differ from the defaults.
+
+    Mounting a directory over `/opt/xtm-composer/config` hides the `default.yaml` of the image, and XTM Composer fails to start unless the directory contains a complete `default.yaml`.
 
 ## Production environment (Kubernetes)
 
@@ -49,10 +61,10 @@ kubectl create secret generic xtm-composer-keys \
   -n xtm-composer
 ```
 
-3. Create ConfigMap for configuration:
+3. Create ConfigMap for configuration (the settings that differ from the defaults, loaded with `COMPOSER_ENV=production`):
 ```bash
 kubectl create configmap xtm-composer-config \
-  --from-file=default.yaml=config/default.yaml \
+  --from-file=production.yaml=config/production.yaml \
   -n xtm-composer
 ```
 
@@ -78,6 +90,11 @@ rules:
 - apiGroups: [""]
   resources: ["pods", "pods/log"]
   verbs: ["get", "watch", "list"]
+# Secrets: needed only when a private registry with credentials (daemon:registry)
+# or a proxy CA (https_proxy_ca) is configured
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -123,7 +140,8 @@ spec:
           value: "/keys/private_key.pem"
         volumeMounts:
         - name: config
-          mountPath: /config
+          mountPath: /opt/xtm-composer/config/production.yaml
+          subPath: production.yaml
         - name: keys
           mountPath: /keys
       volumes:
@@ -142,10 +160,11 @@ EOF
 ### Docker installation with CLI
 
 ```bash
-# Pull the latest image
+# Pull the image
 docker pull filigran/xtm-composer:latest
 
-# Create configuration directory
+# Create configuration directory, then write your settings to
+# /opt/xtm-composer/config/development.yaml (loaded with COMPOSER_ENV=development)
 mkdir -p /opt/xtm-composer/config
 
 # Generate RSA private key (PKCS#8 format, as required by XTM Composer)
@@ -154,9 +173,10 @@ openssl genpkey -algorithm RSA -out /opt/xtm-composer/private_key_4096.pem -pkey
 # Run container
 docker run -d \
   --name xtm-composer \
-  -v /opt/xtm-composer/config:/config \
+  -v /opt/xtm-composer/config/development.yaml:/opt/xtm-composer/config/development.yaml \
   -v /opt/xtm-composer/private_key_4096.pem:/keys/private_key.pem \
   -e COMPOSER_ENV=development \
+  -e MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem \
   filigran/xtm-composer:latest
 ```
 
@@ -185,7 +205,7 @@ services:
       - MANAGER__ID=dev-manager
       - MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem
     volumes:
-      - xtm-composer-config:/config
+      - xtm-composer-config:/opt/xtm-composer/config
       - xtm-composer-keys:/keys
     restart: unless-stopped
     networks:
@@ -208,7 +228,7 @@ networks:
      ```bash
      openssl genpkey -algorithm RSA -out /keys/private_key.pem -pkeyopt rsa_keygen_bits:4096
      ```
-   - Copy your configuration files to `/config`
+   - Copy your configuration file to `/opt/xtm-composer/config/development.yaml` (loaded with `COMPOSER_ENV=development`). On first creation, Docker fills the named volume with the `default.yaml` of the image; this copy is not updated when you upgrade the image
 
 #### Method 2: Deploy via Docker Compose
 
@@ -247,16 +267,22 @@ services:
       - COMPOSER_ENV=development
       - MANAGER__ID=dev-manager
       - MANAGER__CREDENTIALS_KEY_FILEPATH=/keys/private_key.pem
+      # Must be reachable from XTM Composer and from the connector containers
+      - OPENCTI__URL=http://opencti:8080
+      - OPENCTI__TOKEN=ChangeMe  # OpenCTI API token
+      - OPENCTI__DAEMON__SELECTOR=docker
+      # Network of your OpenCTI stack, where the connector containers are started
+      - OPENCTI__DAEMON__DOCKER__NETWORK_MODE=opencti_default
     volumes:
-      - ./config:/config
-      - ./keys:/keys
+      - /var/run/docker.sock:/var/run/docker.sock  # Required by the docker selector
+      - ./keys:/keys:ro
     restart: unless-stopped
-    ports:
-      - "8080:8080"  # If web interface is available
+    networks:
+      - opencti_default
 
-volumes:
-  xtm-composer-config:
-  xtm-composer-keys:
+networks:
+  opencti_default:
+    external: true
 ```
 
 Deploy with:
