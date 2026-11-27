@@ -250,17 +250,17 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
-  it('"Reset authorized members" switch is checked when action is present', () => {
+  it('"Remove access restriction" switch is checked when action is present', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [{ type: WorkflowActionType.resetAuthorizedMembers }] });
-    const resetSwitch = screen.getByRole('switch', { name: /reset authorized members/i });
+    const resetSwitch = screen.getByRole('switch', { name: /remove access restriction/i });
     expect((resetSwitch as HTMLInputElement).checked).toBe(true);
   });
 
-  it('toggling "Reset authorized members" ON adds a reset action without params', async () => {
+  it('toggling "Remove access restriction" ON adds a reset action without params', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, onSubmit);
 
-    await user.click(screen.getByRole('switch', { name: /reset authorized members/i }));
+    await user.click(screen.getByRole('switch', { name: /remove access restriction/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -269,7 +269,7 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
-  it('toggling "Reset authorized members" ON replaces "Update authorized members" but keeps other actions', async () => {
+  it('toggling "Remove access restriction" ON replaces "Update authorized members" but keeps other actions', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({
       event: 'approve',
@@ -280,7 +280,7 @@ describe('TransitionForm – action toggles', () => {
       ],
     }, onSubmit);
 
-    await user.click(screen.getByRole('switch', { name: /reset authorized members/i }));
+    await user.click(screen.getByRole('switch', { name: /remove access restriction/i }));
 
     document.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true }));
 
@@ -290,7 +290,7 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
-  it('toggling "Update authorized members" ON replaces "Reset authorized members"', async () => {
+  it('toggling "Update authorized members" ON replaces "Remove access restriction"', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({
       event: 'approve',
@@ -308,9 +308,9 @@ describe('TransitionForm – action toggles', () => {
     });
   });
 
-  it('hides "Reset authorized members" for an entity type without authorized members', () => {
+  it('hides "Remove access restriction" for an entity type without authorized members', () => {
     renderForm({ event: 'approve', comment: CommentMode.disabled, syncActions: [] }, vi.fn(), 'Malware');
-    expect(screen.queryByRole('switch', { name: /reset authorized members/i })).toBeNull();
+    expect(screen.queryByRole('switch', { name: /remove access restriction/i })).toBeNull();
   });
 
   it('"Validate draft" switch is unchecked when action is absent', () => {

@@ -392,9 +392,9 @@ describe('StatusForm – Request access outcome', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Reset authorized members
+// Remove access restriction
 // ---------------------------------------------------------------------------
-describe('StatusForm – reset authorized members', () => {
+describe('StatusForm – remove access restriction', () => {
   beforeEach(() => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
   });
@@ -408,14 +408,14 @@ describe('StatusForm – reset authorized members', () => {
   it('disables the reset switches in Community Edition', () => {
     vi.mocked(useEnterpriseEdition).mockReturnValue(false);
     renderForm({ onEnter: [], onExit: [] });
-    expect((screen.getByRole('switch', { name: /reset authorized members on enter/i }) as HTMLInputElement).disabled).toBe(true);
-    expect((screen.getByRole('switch', { name: /reset authorized members on exit/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /remove access restriction on enter/i }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('switch', { name: /remove access restriction on exit/i }) as HTMLInputElement).disabled).toBe(true);
   });
 
-  it('toggling "Reset authorized members on enter" ON adds a reset action without params', async () => {
+  it('toggling "Remove access restriction on enter" ON adds a reset action without params', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ onEnter: [], onExit: [] }, onSubmit);
-    await user.click(screen.getByRole('switch', { name: /reset authorized members on enter/i }));
+    await user.click(screen.getByRole('switch', { name: /remove access restriction on enter/i }));
     const values = await submittedValues(onSubmit);
     expect(values.onEnter).toEqual([{ type: WorkflowActionType.resetAuthorizedMembers }]);
     expect(values.onExit).toEqual([]);
@@ -427,7 +427,7 @@ describe('StatusForm – reset authorized members', () => {
       onEnter: [],
       onExit: [{ type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [] } }],
     }, onSubmit);
-    await user.click(screen.getByRole('switch', { name: /reset authorized members on exit/i }));
+    await user.click(screen.getByRole('switch', { name: /remove access restriction on exit/i }));
     const values = await submittedValues(onSubmit);
     expect(values.onExit).toEqual([{ type: WorkflowActionType.resetAuthorizedMembers }]);
   });
@@ -443,7 +443,7 @@ describe('StatusForm – reset authorized members', () => {
   it('toggling reset OFF removes the reset action', async () => {
     const onSubmit = vi.fn();
     const { user } = renderForm({ onEnter: [{ type: WorkflowActionType.resetAuthorizedMembers }], onExit: [] }, onSubmit);
-    await user.click(screen.getByRole('switch', { name: /reset authorized members on enter/i }));
+    await user.click(screen.getByRole('switch', { name: /remove access restriction on enter/i }));
     const values = await submittedValues(onSubmit);
     expect(values.onEnter).toEqual([]);
   });

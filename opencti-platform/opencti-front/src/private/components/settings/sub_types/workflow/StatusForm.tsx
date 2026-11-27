@@ -157,7 +157,7 @@ const StatusForm = ({ entityType, scope, workflowStatusIds = {} }: StatusFormPro
                     data-testid="workflow-status-onenter-reset-authorized-members-toggle"
                   />
                 )}
-                label={t_i18n('Reset authorized members on enter')}
+                label={t_i18n('Remove access restriction on enter')}
               />
               {hasUpdateAuthorizedMembersOnEnter && <WorkflowFieldList name={WorkflowDataType.onEnter} actionType={WorkflowActionType.updateAuthorizedMembers} />}
             </>
@@ -207,7 +207,7 @@ const StatusForm = ({ entityType, scope, workflowStatusIds = {} }: StatusFormPro
                 data-testid="workflow-status-onexit-reset-authorized-members-toggle"
               />
             )}
-            label={t_i18n('Reset authorized members on exit')}
+            label={t_i18n('Remove access restriction on exit')}
           />
           {hasUpdateAuthorizedMembersOnExit && <WorkflowFieldList name={WorkflowDataType.onExit} actionType={WorkflowActionType.updateAuthorizedMembers} />}
         </Box>
