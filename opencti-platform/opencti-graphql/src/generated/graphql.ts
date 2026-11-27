@@ -31891,6 +31891,7 @@ export type SecurityCoverageResultAddInput = {
   noTriggerImport?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   resultOf: Scalars['String']['input'];
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
