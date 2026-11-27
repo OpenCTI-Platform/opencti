@@ -103,6 +103,38 @@ export const workflowStatusStixDomainObjectFragment = graphql`
   }
 `;
 
+// A transition can reset the access restriction, and the headers read it from the store: every operation that
+// returns the entity after a transition selects it. Kept out of the fragment the entity pages embed, so loading a
+// page never resolves members for nothing.
+export const workflowStatusAuthorizedMembersFragment = graphql`
+  fragment WorkflowStatusAuthorizedMembers_data on StixDomainObject {
+    ... on Container {
+      authorized_members {
+        ...WorkflowStatusMemberAccess_data @relay(mask: false)
+      }
+    }
+    ... on Organization {
+      authorized_members {
+        ...WorkflowStatusMemberAccess_data @relay(mask: false)
+      }
+    }
+  }
+`;
+
+export const workflowStatusMemberAccessFragment = graphql`
+  fragment WorkflowStatusMemberAccess_data on MemberAccess {
+    id
+    member_id
+    name
+    entity_type
+    access_right
+    groups_restriction {
+      id
+      name
+    }
+  }
+`;
+
 export const workflowStatusTriggerMutation = graphql`
   mutation WorkflowStatusTriggerMutation($entityId: String!, $eventName: String!, $comment: String, $runtimeParams: JSON, $closingReason: String) {
     triggerWorkflowEvent(entityId: $entityId, eventName: $eventName, comment: $comment, runtimeParams: $runtimeParams, closingReason: $closingReason) {
@@ -117,48 +149,13 @@ export const workflowStatusTriggerMutation = graphql`
         ... on DraftWorkspace {
           ...WorkflowStatus_data
           authorizedMembers {
-            id
-            member_id
-            name
-            entity_type
-            access_right
-            groups_restriction {
-              id
-              name
-            }
+            ...WorkflowStatusMemberAccess_data @relay(mask: false)
           }
         }
         ... on StixDomainObject {
           ...WorkflowStatusStixDomainObject_data
         }
-        # A transition can reset the access restriction: the headers read it from the store.
-        # Selected here, not in the polled fragment, so the poll never resolves members.
-        ... on Container {
-          authorized_members {
-            id
-            member_id
-            name
-            entity_type
-            access_right
-            groups_restriction {
-              id
-              name
-            }
-          }
-        }
-        ... on Organization {
-          authorized_members {
-            id
-            member_id
-            name
-            entity_type
-            access_right
-            groups_restriction {
-              id
-              name
-            }
-          }
-        }
+        ...WorkflowStatusAuthorizedMembers_data
       }
     }
   }
@@ -169,6 +166,8 @@ export const workflowStatusEntityQuery = graphql`
     stixDomainObject(id: $id) {
       id
       ...WorkflowStatusStixDomainObject_data
+      # Polled while a transition with async actions runs: its sync actions (reset authorized members...) run then
+      ...WorkflowStatusAuthorizedMembers_data
       status {
         id
         order
@@ -246,34 +245,7 @@ export const workflowSetStatusMutation = graphql`
         ... on StixDomainObject {
           ...WorkflowStatusStixDomainObject_data
         }
-        # A transition can reset the access restriction: the headers read it from the store.
-        # Selected here, not in the polled fragment, so the poll never resolves members.
-        ... on Container {
-          authorized_members {
-            id
-            member_id
-            name
-            entity_type
-            access_right
-            groups_restriction {
-              id
-              name
-            }
-          }
-        }
-        ... on Organization {
-          authorized_members {
-            id
-            member_id
-            name
-            entity_type
-            access_right
-            groups_restriction {
-              id
-              name
-            }
-          }
-        }
+        ...WorkflowStatusAuthorizedMembers_data
       }
     }
   }
