@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Readable } from 'stream';
 import { addStixCyberObservable, stixCyberObservableDelete } from '../../../src/domain/stixCyberObservable';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
@@ -7,6 +7,45 @@ import { mergeEntities, storeLoadByIdWithRefs } from '../../../src/database/midd
 import type { BasicStoreCommon } from '../../../src/types/store';
 import { requestFileFromStorageAsAdmin } from '../../utils/testQueryHelper';
 import { paginatedForPathWithEnrichment, findById as documentFindById } from '../../../src/modules/internal/document/document-domain';
+import * as pythonBridge from '../../../src/python/pythonBridge';
+import { logApp } from '../../../src/config/conf';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
+
+describe('Testing observable creation when its indicator cannot be created', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should create the observable without createdIndicator and log the indicator failure', async () => {
+    // GIVEN the indicator pattern cannot be generated
+    vi.spyOn(pythonBridge, 'createStixPattern').mockResolvedValue(null);
+    const logInfo = vi.spyOn(logApp, 'info');
+    const input = {
+      type: ENTITY_DOMAIN_NAME,
+      createIndicator: true,
+      DomainName: { value: 'indicator-failure-domain-test.com' },
+    };
+
+    // WHEN the observable is created with createIndicator
+    const created = await addStixCyberObservable(testContext, ADMIN_USER, input);
+
+    // THEN the error is swallowed: the observable is created and returned, without indicator
+    expect(created.id).toBeDefined();
+    expect(created.entity_type).toEqual(ENTITY_DOMAIN_NAME);
+    expect(created.value).toEqual('indicator-failure-domain-test.com');
+    expect(created.createdIndicator).toBeUndefined();
+    const stored = await storeLoadById(testContext, ADMIN_USER, created.id, ENTITY_DOMAIN_NAME);
+    expect(stored).toBeDefined();
+    // AND the failure is logged
+    const failureLog = logInfo.mock.calls.find((args) => args[0] === '[OPENCTI] Cannot create indicator');
+    expect(failureLog).toBeDefined();
+    expect((failureLog?.[1] as { error: Error }).error.message).toEqual('Cannot create indicator - cant generate pattern.');
+
+    // Cleanup
+    await stixCyberObservableDelete(testContext, ADMIN_USER, created.id);
+  });
+});
 
 describe('Testing Artifact merge with files on S3', () => {
   const adminContext = { user: ADMIN_USER, source: 'stixCyberObservableDomain-test', otp_mandatory: false, user_inside_platform_organization: false } as AuthContext;

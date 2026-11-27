@@ -34,6 +34,7 @@ testCreatedCounter['course-of-action'] = 4;
 testCreatedCounter.credential = 1;
 testCreatedCounter['data-component'] = 2;
 testCreatedCounter['data-source'] = 2;
+testCreatedCounter['domain-name'] = 1; // created and deleted by stixCyberObservable-test (indicator returned on creation)
 testCreatedCounter.directory = 3; // created and deleted by stixRefRelationships-test
 testCreatedCounter['email-addr'] = 1;
 testCreatedCounter.event = 2;
@@ -50,7 +51,8 @@ testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 9; // 2 created and deleted by upsert-limit-dates-test
 // Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
-testCreatedCounter.indicator = 65;
+// Includes 1 created and deleted by stixCyberObservable-test (indicator returned on creation)
+testCreatedCounter.indicator = 66;
 testCreatedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
@@ -96,7 +98,8 @@ testCreatedCounter['ssh-key'] = 1;
 // 6 has-covered created by securityCoverage-results-filters-test (5) and vocabulary-coverage-usages-test (1), deleted with their targets
 // +1 subtechnique-of created by attackPattern-test, removed with its sub-technique
 // +1 publishes created by stixCoreObject-test (regardingOf on publishes), removed with its channel
-testCreatedCounter.relationship = 202;
+// 1 based-on created by stixCyberObservable-test (indicator returned on creation), removed with its indicator
+testCreatedCounter.relationship = 203;
 // Includes 11 created and deleted by stixCoreObject-test and 5 by publicDashboard-test (time series breakdown), and 1 by audit-test (audits breakdown)
 // Plus 3 created and deleted by workflow-entity-write-test
 // Includes 5 created and deleted by the has-covered cleanup tests of securityCoverage-utils-test
@@ -228,6 +231,7 @@ testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;
 testDeletedCounter['data-source'] = 2;
 testDeletedCounter.directory = 3; // created and deleted by stixRefRelationships-test
+testDeletedCounter['domain-name'] = 1; // created and deleted by stixCyberObservable-test (indicator returned on creation)
 testDeletedCounter['email-addr'] = 1;
 testDeletedCounter.event = 2;
 testDeletedCounter['external-reference'] = 1;
@@ -240,7 +244,8 @@ testDeletedCounter.grouping = 2;
 testDeletedCounter.identity = 47;
 testDeletedCounter.incident = 8; // 2 by upsert-limit-dates-test
 // Includes 1 created and deleted by markingDefinition-test (OASIS TLP 2.0 RED id)
-testDeletedCounter.indicator = 37;
+// Includes 1 created and deleted by stixCyberObservable-test (indicator returned on creation)
+testDeletedCounter.indicator = 38;
 testDeletedCounter.infrastructure = 1;
 // Counts for:
 // - 2 created and deleted by enrichment-liveness-test
