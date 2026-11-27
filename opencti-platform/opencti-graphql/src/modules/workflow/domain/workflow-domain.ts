@@ -2374,7 +2374,11 @@ const recordUndeletedShareTasks = async (
 // Best effort, the transition is already committed: falls back to the loaded entity when the reload fails
 // or the actions took the user's access away.
 const reloadTransitionedEntity = async <T>(context: AuthContext, user: AuthUser, entityId: string, entity: T) => {
-  return (await storeLoadById(context, user, entityId, 'Basic-Object').catch(() => undefined)) ?? entity;
+  try {
+    return (await storeLoadById(context, user, entityId, 'Basic-Object')) ?? entity;
+  } catch {
+    return entity;
+  }
 };
 
 export const triggerWorkflowEvent = async (
