@@ -7,7 +7,6 @@ import {
   type RequestAccessAddInput,
   type RequestAccessConfiguration,
   type RequestAccessConfigureInput,
-  type RequestAccessMember,
   StatusOrdering,
   StatusScope,
   VocabularyCategory,
@@ -66,8 +65,8 @@ import {
 } from '../workflow/domain/workflow-request-access';
 import { REQUEST_ACCESS_MAX_LENGTH, resolveRequestAccessWorkflowState } from '../workflow/domain/workflow-domain';
 
-// having an id is required for Relay
-const REQUEST_ACCESS_CONFIGURATION_ID = '7059b2f9-86d4-419b-9fde-adf825090820';
+// Relay keys records by id: each entity setting has its own configuration, so its own id
+const requestAccessConfigurationId = (entitySetting: BasicStoreEntityEntitySetting) => `${entitySetting.id}-request-access`;
 
 export enum ActionStatus {
   APPROVED = 'APPROVED',
@@ -285,7 +284,7 @@ export const getRequestAccessConfiguration = async (
 
     if (approvalAdminIds.length > 0) {
       for (let i = 0; i < approvalAdminIds.length; i += 1) {
-        const group: BasicGroupEntity = await findGroupById(context, user, approvalAdminIds[0]) as unknown as BasicGroupEntity;
+        const group: BasicGroupEntity = await findGroupById(context, user, approvalAdminIds[i]) as unknown as BasicGroupEntity;
         logApp.debug('[OPENCTI-MODULE][Request Access] approval_admin members:', { group });
         // group previously selected can be deleted at some point.
         if (group) {
@@ -301,7 +300,7 @@ export const getRequestAccessConfiguration = async (
     declined_status: declinedStatus,
     approved_status: approvedStatus,
     approval_admin: allAdmins,
-    id: REQUEST_ACCESS_CONFIGURATION_ID,
+    id: requestAccessConfigurationId(entitySetting),
   };
   logApp.debug('[OPENCTI-MODULE][Request Access] getRequestAccessConfiguration result:', requestAccessConfigResult);
   return requestAccessConfigResult;
@@ -369,30 +368,8 @@ export const configureRequestAccess = async (context: AuthContext, user: AuthUse
   ];
   const updated = await entitySettingEditField(context, user, rfiEntitySettings.id, editInput);
   logApp.debug('[OPENCTI-MODULE][Request access] - Update result', { updated });
-
-  const approvalAdminsMembers: RequestAccessMember[] = [];
-  if (approval_admin.length > 0) {
-    for (let i = 0; i < approval_admin.length; i += 1) {
-      const approvalAdminId = approval_admin[i];
-      if (approvalAdminId) {
-        const groupData: BasicGroupEntity = await findGroupById(context, user, approvalAdminId) as unknown as BasicGroupEntity;
-        if (groupData) {
-          approvalAdminsMembers.push({
-            id: groupData.id,
-            name: groupData.name,
-          });
-        }
-      }
-    }
-  }
-  const requestAccessConfigResult: RequestAccessConfiguration = {
-    declined_status: declinedStatusData,
-    approved_status: approvedStatusData,
-    approval_admin: approvalAdminsMembers,
-    id: REQUEST_ACCESS_CONFIGURATION_ID,
-  };
-  logApp.debug('[OPENCTI-MODULE][Request access] - requestAccessConfigResult', { requestAccessConfigResult });
-  return requestAccessConfigResult;
+  // What is stored, not only the input: a status left out of the input is kept, and must not come back as null
+  return getRequestAccessConfiguration(context, user, updated as BasicStoreEntityEntitySetting);
 };
 
 // The request record is stored as JSON of at most REQUEST_ACCESS_MAX_LENGTH characters. JSON escaping can multiply
