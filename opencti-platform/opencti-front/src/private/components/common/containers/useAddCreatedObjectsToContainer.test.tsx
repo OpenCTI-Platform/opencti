@@ -52,10 +52,10 @@ const flushBatch = async () => {
 // "Update without references" needs this capability
 const canSkipReferences = createMockUserContext({ me: { capabilities: [{ name: KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE }] } });
 
-type ReferencesHandle = { onCreated: (o: CreatedObject) => void };
+type ReferencesHandle = { onCreated: (o: CreatedObject) => void; onBulkStart: () => void };
 const ReferencesHarness = forwardRef<ReferencesHandle, { args: Args }>(({ args }, ref) => {
-  const { onCreated, referencesDialog } = useAddCreatedObjectsToContainer(args);
-  useImperativeHandle(ref, () => ({ onCreated }));
+  const { onCreated, referencesDialog, bulkCreation } = useAddCreatedObjectsToContainer(args);
+  useImperativeHandle(ref, () => ({ onCreated, onBulkStart: () => bulkCreation?.onBulkStart() }));
   return <>{referencesDialog}</>;
 });
 ReferencesHarness.displayName = 'ReferencesHarness';
@@ -167,6 +167,26 @@ describe('useAddCreatedObjectsToContainer', () => {
 
     expect(notifySuccess).toHaveBeenCalledOnce();
     expect(notifySuccess.mock.calls[0][1].action.label).toBe('Undo');
+  });
+
+  it('adds the objects held by a bulk creation when the panel is gone before it ends', async () => {
+    const hook = renderAddHook(baseArgs());
+
+    act(() => hook.result.current.bulkCreation?.onBulkStart());
+    act(() => hook.result.current.onCreated(observable('o1')));
+    // The panel is gone (e.g. navigation) before the form could end the bulk creation
+    const { onCreated } = hook.result.current;
+    hook.unmount();
+    await flushBatch();
+
+    expect(vi.mocked(addObjectToContainer).mock.calls.map(([call]) => call.objectId)).toEqual(['o1']);
+    expect(notifySuccess).toHaveBeenCalledOnce();
+    expect(notifySuccess.mock.calls[0][1].action.label).toBe('Undo');
+
+    // A creation of that bulk still answering afterwards is added too
+    act(() => onCreated(observable('o2')));
+    await flushBatch();
+    expect(vi.mocked(addObjectToContainer).mock.calls.map(([call]) => call.objectId)).toEqual(['o1', 'o2']);
   });
 
   it('gives no bulk feedback when nothing is added automatically', () => {
@@ -344,6 +364,21 @@ describe('useAddCreatedObjectsToContainer', () => {
     const handle = React.createRef<ReferencesHandle>();
     const { unmount } = testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
 
+    act(() => handle.current?.onCreated(observable('o1')));
+    unmount();
+    await flushBatch();
+
+    expect(addObjectToContainer).not.toHaveBeenCalled();
+    expect(notifyWarning).toHaveBeenCalledOnce();
+    expect(notifyWarning.mock.calls[0][0]).toContain('created but not added to the');
+  });
+
+  it('warns when the panel is gone during a bulk creation when references are enforced', async () => {
+    const notifyWarning = vi.spyOn(MESSAGING$, 'notifyWarning').mockImplementation(() => {});
+    const handle = React.createRef<ReferencesHandle>();
+    const { unmount } = testRender(<ReferencesHarness ref={handle} args={{ ...baseArgs(), enableReferences: true }} />, { userContext: canSkipReferences });
+
+    act(() => handle.current?.onBulkStart());
     act(() => handle.current?.onCreated(observable('o1')));
     unmount();
     await flushBatch();

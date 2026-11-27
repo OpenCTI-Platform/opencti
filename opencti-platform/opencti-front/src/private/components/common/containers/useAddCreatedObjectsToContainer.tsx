@@ -122,6 +122,9 @@ export const useAddCreatedObjectsToContainer = (args: UseAddCreatedObjectsToCont
       referencesResolverRef.current = null;
       pendingReferencesRef.current = null;
       resolve?.(null);
+      // The form cannot end a bulk creation anymore: what it created is added, or the cancellation is warned, as after any creation
+      bulkRef.current = null;
+      flushHeldObjects();
     };
   }, []);
 
