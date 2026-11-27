@@ -190,6 +190,7 @@ export const containerTypes = [
   'Observed-Data',
 ];
 
+// The backend lists the same types (FINTEL_TEMPLATE_ENTITY_TYPES in modules/fintelTemplate/fintelTemplate-domain.ts): change both together
 export const typesWithFintelTemplates = [
   // Containers
   'Report',

@@ -9,6 +9,7 @@ import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useHelper from '../../../../utils/hooks/useHelper';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { AuthenticationGlobalSettingsQuery } from './__generated__/AuthenticationGlobalSettingsQuery.graphql';
@@ -23,6 +24,7 @@ const authenticationGlobalSettingsQuery = graphql`
       platform_session_max_lifetime
       platform_session_presence_enabled
       platform_session_presence_supported
+      platform_login_history_count
     }
   }
 `;
@@ -35,6 +37,7 @@ const authenticationGlobalSettingsMutation = graphql`
         otp_mandatory
         platform_session_max_concurrent
         platform_session_presence_enabled
+        platform_login_history_count
       }
     }
   }
@@ -44,6 +47,8 @@ const validationSchema = Yup.object().shape({
   otp_mandatory: Yup.boolean(),
   platform_session_max_concurrent: Yup.number().nullable(),
   platform_session_presence_enabled: Yup.boolean(),
+  // Same bounds as the platform (LOGIN_HISTORY_MAX_COUNT)
+  platform_login_history_count: Yup.number().integer().min(0).max(50),
 });
 
 // The logout when the last tab is closed can be enabled while several nodes serve the API, but then never applies
@@ -65,6 +70,7 @@ const SessionPresenceUnsupportedAlert = ({ isSupported }: { isSupported: boolean
 const AuthenticationGlobalSettingsContent = () => {
   const { t_i18n } = useFormatter();
   const { isFeatureEnable } = useHelper();
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const data = useLazyLoadQuery<AuthenticationGlobalSettingsQuery>(authenticationGlobalSettingsQuery, {});
   const settings = data.settings;
@@ -94,6 +100,7 @@ const AuthenticationGlobalSettingsContent = () => {
     // Comes from the platform configuration: only displayed
     platform_session_max_lifetime: formatSessionMaxLifetime(settings.platform_session_max_lifetime ?? 0, t_i18n),
     platform_session_presence_enabled: settings.platform_session_presence_enabled,
+    platform_login_history_count: settings.platform_login_history_count ?? 0,
   };
 
   return (
@@ -157,6 +164,22 @@ const AuthenticationGlobalSettingsContent = () => {
                   <SessionPresenceUnsupportedAlert isSupported={settings.platform_session_presence_supported} />
                 </>
               )}
+              {/* The margin stays on a wrapper: a style on the field would move it off the design-system Input */}
+              <div style={{ marginTop: 20 }}>
+                <Field
+                  component={TextField}
+                  type="number"
+                  variant="outlined"
+                  min={0}
+                  max={50}
+                  name="platform_login_history_count"
+                  label={t_i18n('Last logins shown in the user profile (0 to hide them)')}
+                  fullWidth
+                  disabled={!isEnterpriseEdition}
+                  helperText={t_i18n('The logins are read from the activity log: available with the Enterprise Edition only.')}
+                  onSubmit={(name: string, value: string) => handleSubmitField(name, value !== '' ? value : '0')}
+                />
+              </div>
             </Card>
           </Grid>
         </Grid>

@@ -7,6 +7,11 @@ describe('getDataID', () => {
     expect(getDataID({ id }, 'Connector')).not.toBe(getDataID({ id }, 'Synchronizer'));
   });
 
+  it('does not collide a UserLogin with the Log of the same activity event', () => {
+    const id = '5a1c0e2b-0000-4000-8000-000000000000';
+    expect(getDataID({ id }, 'UserLogin')).not.toBe(getDataID({ id }, 'Log'));
+  });
+
   it('keeps the raw id for other types', () => {
     expect(getDataID({ id: 'abc' }, 'Synchronizer')).toBe('abc');
   });

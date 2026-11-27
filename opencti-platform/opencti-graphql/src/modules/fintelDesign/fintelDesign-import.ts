@@ -29,6 +29,8 @@ export interface FintelDesignImportLogo {
 export type FintelDesignImportResult = ConfigImportResult<FintelDesignImportConfiguration, FintelDesignImportCode> & {
   // The name of a copy: the one of the configuration, or the free one it takes when the design exists
   copyName?: string;
+  // The design exists here and is already the default of the platform: importing it as the default changes nothing of the default
+  existsAsDefault?: boolean;
 };
 
 const COLOR_FIELDS = ['gradiantFromColor', 'gradiantToColor', 'textColor'] as const;
@@ -112,43 +114,31 @@ const createFintelDesign = async (
   }
 };
 
-// The one place where a fintel design is imported: validates, finds the design by its standard id and writes it with its logo.
-// A refusal is a result, not an error. A dry run decides the same result and writes nothing.
-// add: the design must not exist yet. overwrite: a design with the same standard id is patched, else it is created.
-// copy: the design is created, under a free name and a new standard id when its own exists.
-// The default design of the bundle becomes the default of the platform, unless it is added as a copy of a design that exists, which is
-// another design: as in the UI, the domain then takes the default away from the previous one, so the platform keeps exactly one.
-// `default: false` is never written: the previous default loses it only because another one is set, so the platform never ends up
-// without a default.
-// A value that is null or absent is left untouched, and so is the logo when the bundle has none.
-export const importFintelDesign = async (
+// The import of a design once it is valid and its design on this platform, if any, is read
+const importLoadedFintelDesign = async (
   context: AuthContext,
   user: AuthUser,
-  configuration: unknown,
+  data: FintelDesignImportConfiguration,
+  existing: BasicStoreEntityFintelDesign | undefined,
   logoFile: FintelDesignImportLogo | undefined,
   options: FintelDesignImportOptions,
 ): Promise<FintelDesignImportResult> => {
   const { mode, dryRun = false, reservedNames, renamedIds } = options;
-  const parsed = fintelDesignImportSchema.safeParse(configuration);
-  if (!parsed.success) {
-    return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
-  }
-  const { standard_id: standardId, ...design } = parsed.data;
-  const existing = await storeLoadById<BasicStoreEntityFintelDesign>(context, user, standardId, ENTITY_TYPE_FINTEL_DESIGN);
+  const { standard_id: standardId, ...design } = data;
   if (existing && mode === ConfigImportMode.Add) {
-    return refused('failed', 'exists', 'Fintel design already exists', true, parsed.data);
+    return refused('failed', 'exists', 'Fintel design already exists', true, data);
   }
   let logo: { content: Buffer; extension: string } | undefined;
   if (logoFile) {
     const content = await logoFile.read(FINTEL_DESIGN_LOGO_MAX_SIZE);
     if (!content) {
-      return refused('failed', 'logo_too_large', 'The logo of the fintel design is too large', !!existing, parsed.data);
+      return refused('failed', 'logo_too_large', 'The logo of the fintel design is too large', !!existing, data);
     }
     // The format is recognized from the first bytes, and the logo must go on to the end of it: a logo cut short is stored, but a browser
     // cannot show it, and the reports of the design cannot be generated
     const extension = await fintelDesignLogoExtension(content);
     if (!extension || !isCompleteFintelDesignLogo(content, extension)) {
-      return refused('failed', 'logo_invalid', 'The logo of the fintel design is not a supported image', !!existing, parsed.data);
+      return refused('failed', 'logo_invalid', 'The logo of the fintel design is not a supported image', !!existing, data);
     }
     logo = { content, extension };
   }
@@ -158,11 +148,11 @@ export const importFintelDesign = async (
       ? await freeConfigImportName(design.name, (candidate) => isNameTaken(context, user, candidate, options), { maxLength: FINTEL_DESIGN_NAME_MAX_LENGTH })
       : design.name;
     if (!name) {
-      return refused('failed', 'name_conflict', 'Fintel design name already exists', !!existing, parsed.data);
+      return refused('failed', 'name_conflict', 'Fintel design name already exists', !!existing, data);
     }
     reservedNames?.add(name);
     const reason = name === design.name ? undefined : `Added as "${configImportReasonValue(name)}"`;
-    const copy: FintelDesignImportResult = { status: 'created', exists: !!existing, configuration: parsed.data, copyName: name, reason };
+    const copy: FintelDesignImportResult = { status: 'created', exists: !!existing, configuration: data, copyName: name, reason };
     if (!dryRun) {
       // A copy of a design that exists is another design, never the default: the platform keeps its own, as for the themes.
       // A design that does not exist yet is the design of the bundle, the default when it is the default of the bundle
@@ -175,7 +165,7 @@ export const importFintelDesign = async (
     if (!dryRun) {
       await createFintelDesign(context, user, design, logo, standardId);
     }
-    return { status: 'created', exists: false, configuration: parsed.data };
+    return { status: 'created', exists: false, configuration: data };
   }
   const patch: EditInput[] = [];
   if (design.name !== existing.name) {
@@ -195,7 +185,7 @@ export const importFintelDesign = async (
   }
   const hasNewLogo = !!logo && !(await hasSameLogo(existing, logo.content));
   if (patch.length === 0 && !hasNewLogo) {
-    return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, parsed.data);
+    return refused('skipped', 'unchanged', CONFIG_IMPORT_UNCHANGED_REASON, true, data);
   }
   reservedNames?.add(design.name);
   if (design.name !== existing.name) {
@@ -204,5 +194,31 @@ export const importFintelDesign = async (
   if (!dryRun) {
     await fintelDesignEditField(context, user, { id: existing.id, input: patch, file: hasNewLogo && logo ? toLogoUpload(logo) : undefined });
   }
-  return { status: 'overwritten', exists: true, configuration: parsed.data };
+  return { status: 'overwritten', exists: true, configuration: data };
+};
+
+// The one place where a fintel design is imported: validates, finds the design by its standard id and writes it with its logo.
+// A refusal is a result, not an error. A dry run decides the same result and writes nothing.
+// add: the design must not exist yet. overwrite: a design with the same standard id is patched, else it is created.
+// copy: the design is created, under a free name and a new standard id when its own exists.
+// The default design of the bundle becomes the default of the platform, unless it is added as a copy of a design that exists, which is
+// another design: as in the UI, the domain then takes the default away from the previous one, so the platform keeps exactly one.
+// `default: false` is never written: the previous default loses it only because another one is set, so the platform never ends up
+// without a default.
+// A value that is null or absent is left untouched, and so is the logo when the bundle has none.
+export const importFintelDesign = async (
+  context: AuthContext,
+  user: AuthUser,
+  configuration: unknown,
+  logoFile: FintelDesignImportLogo | undefined,
+  options: FintelDesignImportOptions,
+): Promise<FintelDesignImportResult> => {
+  const parsed = fintelDesignImportSchema.safeParse(configuration);
+  if (!parsed.success) {
+    return refused('failed', 'invalid', configImportValidationReason(parsed.error), false);
+  }
+  const existing = await storeLoadById<BasicStoreEntityFintelDesign>(context, user, parsed.data.standard_id, ENTITY_TYPE_FINTEL_DESIGN);
+  const result = await importLoadedFintelDesign(context, user, parsed.data, existing, logoFile, options);
+  // Whether the design is already the default of the platform: a preview says nothing of a default the import does not change
+  return { ...result, existsAsDefault: existing?.default === true };
 };

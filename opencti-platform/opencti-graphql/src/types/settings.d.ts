@@ -81,6 +81,8 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_available_news_feed_types?: string[];
   xtm_hub_commercial_model?: XtmHubCommercialModel;
   xtm_hub_organization_name?: string;
+  xtm_hub_key_version?: number;
+  xtm_hub_key_enrolled_at?: Date;
   platform_ai_enabled: boolean;
   platform_notifier_auto_trigger_assignee?: boolean;
   filigran_chatbot_ai_cgu_status: CguStatus;
@@ -95,6 +97,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   headers_auth?: HeadersAuthConfig;
   platform_session_max_concurrent?: number;
   platform_session_presence_enabled?: boolean;
+  platform_login_history_count?: number;
   password_policy_min_length?: number;
   password_policy_max_length?: number;
   password_policy_min_symbols?: number;

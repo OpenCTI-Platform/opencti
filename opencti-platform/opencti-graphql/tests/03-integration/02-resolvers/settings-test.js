@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { gunzipSync } from 'node:zlib';
 import gql from 'graphql-tag';
 import { head } from 'ramda';
@@ -6,7 +6,13 @@ import { createUploadFromTestDataFile, queryAsAdmin, queryAsUserIsExpectedForbid
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { downloadFile, downloadFileRange } from '../../../src/database/raw-file-storage';
-import { USER_EDITOR, USER_PLATFORM_ADMIN, USER_SECURITY } from '../../utils/testQuery';
+import { testContext, USER_EDITOR, USER_PLATFORM_ADMIN, USER_SECURITY } from '../../utils/testQuery';
+import * as enterpriseEdition from '../../../src/enterprise-edition/ee';
+import { buildActivityHistoryElements } from '../../../src/manager/activityManager';
+import { elIndexElements, elRawDeleteByQuery } from '../../../src/database/engine';
+import { READ_INDEX_HISTORY } from '../../../src/database/utils';
+import { ENTITY_TYPE_ACTIVITY } from '../../../src/schema/internalObject';
+import { SYSTEM_USER } from '../../../src/utils/access';
 
 const ABOUT_QUERY = gql`
   query about {
@@ -447,6 +453,139 @@ const REMOVE_MESSAGE_QUERY = gql`
     }
   }
 `;
+
+const EDIT_LOGIN_HISTORY_QUERY = gql`
+  mutation SettingsLoginHistoryEdit($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        platform_login_history_count
+      }
+    }
+  }
+`;
+
+const ME_LOGIN_HISTORY_QUERY = gql`
+  query meLoginHistory {
+    me {
+      id
+      login_history {
+        id
+        timestamp
+        provider
+      }
+    }
+  }
+`;
+
+describe('Settings resolver login history', () => {
+  let settingsInternalId;
+  const editLoginHistoryCount = async (value) => {
+    const queryResult = await queryAsAdmin({
+      query: EDIT_LOGIN_HISTORY_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_login_history_count', value: [value] }] },
+    });
+    // The login history reads the count from the settings cache
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    return queryResult;
+  };
+
+  beforeAll(async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });
+    settingsInternalId = queryResult.data.settings.id;
+  });
+
+  afterAll(async () => {
+    await editLoginHistoryCount('0');
+  });
+
+  it('should update the login history count', async () => {
+    const queryResult = await editLoginHistoryCount('5');
+    expect(queryResult.data.settingsEdit.fieldPatch.platform_login_history_count).toEqual(5);
+  });
+
+  it('should reject a login history count out of range', async () => {
+    const queryResult = await editLoginHistoryCount('51');
+    expect(queryResult.errors).toBeDefined();
+    expect(queryResult.errors[0].message).toContain('between 0 and 50');
+  });
+
+  it('should reject a login history count edited by a user without the capability', async () => {
+    await queryAsUserIsExpectedForbidden(USER_SECURITY, {
+      query: EDIT_LOGIN_HISTORY_QUERY,
+      variables: { id: settingsInternalId, input: [{ key: 'platform_login_history_count', value: ['3'] }] },
+    });
+  });
+
+  describe('with the logins of two users in the activity log', () => {
+    const eventIds = [];
+    let editorLoginId;
+    let securityLoginId;
+
+    // A successful login event, as published at the session creation and stored by the activity manager
+    const loginEvent = (id, userId, provider) => ({
+      id,
+      event: 'authentication',
+      data: {
+        version: '4',
+        type: 'authentication',
+        event_access: 'administration',
+        prevent_indexing: false,
+        event_scope: 'login',
+        message: 'successfully logged in',
+        status: 'success',
+        origin: { user_id: userId, group_ids: [], organization_ids: [], user_metadata: {} },
+        data: { provider },
+      },
+    });
+    const meLoginHistory = async (user) => {
+      const queryResult = await queryAsUserWithSuccess(user, { query: ME_LOGIN_HISTORY_QUERY, variables: {} });
+      return queryResult.data.me;
+    };
+
+    beforeAll(async () => {
+      // The activity log is only filled with an Enterprise Edition licence
+      vi.spyOn(enterpriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true);
+      await editLoginHistoryCount('5');
+      // The users are logged in by token here: their login events are indexed directly, as the newest ones
+      const { id: editorId } = await meLoginHistory(USER_EDITOR);
+      const { id: securityId } = await meLoginHistory(USER_SECURITY);
+      const now = Date.now();
+      editorLoginId = `${now}-0`;
+      securityLoginId = `${now + 1}-0`;
+      eventIds.push(editorLoginId, securityLoginId);
+      const elements = await buildActivityHistoryElements(testContext, [
+        loginEvent(editorLoginId, editorId, 'local'),
+        loginEvent(securityLoginId, securityId, 'local'),
+      ]);
+      await elIndexElements(testContext, SYSTEM_USER, ENTITY_TYPE_ACTIVITY, elements);
+    });
+
+    afterAll(async () => {
+      await elRawDeleteByQuery({ index: READ_INDEX_HISTORY, refresh: true, body: { query: { ids: { values: eventIds } } } });
+      vi.restoreAllMocks();
+    });
+
+    it('should give each user their own logins only', async () => {
+      const editor = await meLoginHistory(USER_EDITOR);
+      const editorLoginIds = editor.login_history.map((login) => login.id);
+      expect(editorLoginIds).toContain(editorLoginId);
+      expect(editorLoginIds).not.toContain(securityLoginId);
+      expect(editor.login_history.find((login) => login.id === editorLoginId).provider).toEqual('local');
+      const security = await meLoginHistory(USER_SECURITY);
+      const securityLoginIds = security.login_history.map((login) => login.id);
+      expect(securityLoginIds).toContain(securityLoginId);
+      expect(securityLoginIds).not.toContain(editorLoginId);
+    });
+
+    it('should give no login without an Enterprise Edition licence', async () => {
+      vi.spyOn(enterpriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(false);
+      const editor = await meLoginHistory(USER_EDITOR);
+      expect(editor.login_history).toEqual([]);
+      vi.spyOn(enterpriseEdition, 'isEnterpriseEditionFromSettings').mockReturnValue(true);
+    });
+  });
+});
 
 describe('Settings resolver messages behavior', () => {
   it('should edit messages', async () => {

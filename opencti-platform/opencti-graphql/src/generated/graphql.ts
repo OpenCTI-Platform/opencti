@@ -4690,6 +4690,7 @@ export type ConfigPresetImportItem = {
   credentials: Array<ConfigPresetImportCredential>;
   dependsOn: Array<ConfigPresetItemReference>;
   exists: Scalars['Boolean']['output'];
+  existsAsDefault: Scalars['Boolean']['output'];
   fields: Array<ConfigPresetImportField>;
   isDefault: Scalars['Boolean']['output'];
   isEnabled?: Maybe<Scalars['Boolean']['output']>;
@@ -17471,6 +17472,7 @@ export type MeUser = BasicObject & InternalObject & {
   individual_id?: Maybe<Scalars['String']['output']>;
   language?: Maybe<Scalars['String']['output']>;
   lastname?: Maybe<Scalars['String']['output']>;
+  login_history?: Maybe<Array<UserLogin>>;
   max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   monochrome_labels?: Maybe<Scalars['Boolean']['output']>;
@@ -32299,6 +32301,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_ip_whitelist_enabled?: Maybe<Scalars['Boolean']['output']>;
   platform_ip_whitelist_exclusions?: Maybe<Array<Member>>;
   platform_language?: Maybe<Scalars['String']['output']>;
+  platform_login_history_count?: Maybe<Scalars['Int']['output']>;
   platform_login_message?: Maybe<Scalars['String']['output']>;
   platform_map_countries_custom_file?: Maybe<MapCustomFile>;
   platform_map_custom_file?: Maybe<MapCustomFile>;
@@ -39054,6 +39057,13 @@ export type UserInfoMappingInput = {
   name_expr: Scalars['String']['input'];
 };
 
+export type UserLogin = {
+  __typename?: 'UserLogin';
+  id: Scalars['ID']['output'];
+  provider?: Maybe<Scalars['String']['output']>;
+  timestamp: Scalars['DateTime']['output'];
+};
+
 export type UserLoginInput = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
@@ -43105,6 +43115,7 @@ export type ResolversTypes = ResolversObject<{
   UserEditMutations: ResolverTypeWrapper<Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['User']>, contextPatch?: Maybe<ResolversTypes['User']>, fieldPatch?: Maybe<ResolversTypes['User']>, organizationAdd?: Maybe<ResolversTypes['User']>, organizationDelete?: Maybe<ResolversTypes['User']>, relationAdd?: Maybe<ResolversTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversTypes['User']> }>;
   UserInfoMapping: ResolverTypeWrapper<UserInfoMapping>;
   UserInfoMappingInput: UserInfoMappingInput;
+  UserLogin: ResolverTypeWrapper<UserLogin>;
   UserLoginInput: UserLoginInput;
   UserMergeCoverage: ResolverTypeWrapper<UserMergeCoverage>;
   UserMergeCoverageRow: ResolverTypeWrapper<UserMergeCoverageRow>;
@@ -44205,6 +44216,7 @@ export type ResolversParentTypes = ResolversObject<{
   UserEditMutations: Omit<UserEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'organizationAdd' | 'organizationDelete' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['User']>, contextPatch?: Maybe<ResolversParentTypes['User']>, fieldPatch?: Maybe<ResolversParentTypes['User']>, organizationAdd?: Maybe<ResolversParentTypes['User']>, organizationDelete?: Maybe<ResolversParentTypes['User']>, relationAdd?: Maybe<ResolversParentTypes['InternalRelationship']>, relationDelete?: Maybe<ResolversParentTypes['User']> };
   UserInfoMapping: UserInfoMapping;
   UserInfoMappingInput: UserInfoMappingInput;
+  UserLogin: UserLogin;
   UserLoginInput: UserLoginInput;
   UserMergeCoverage: UserMergeCoverage;
   UserMergeCoverageRow: UserMergeCoverageRow;
@@ -45841,6 +45853,7 @@ export type ConfigPresetImportItemResolvers<ContextType = any, ParentType extend
   credentials?: Resolver<Array<ResolversTypes['ConfigPresetImportCredential']>, ParentType, ContextType>;
   dependsOn?: Resolver<Array<ResolversTypes['ConfigPresetItemReference']>, ParentType, ContextType>;
   exists?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  existsAsDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['ConfigPresetImportField']>, ParentType, ContextType>;
   isDefault?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -50405,6 +50418,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  login_history?: Resolver<Maybe<Array<ResolversTypes['UserLogin']>>, ParentType, ContextType>;
   max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   monochrome_labels?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -53978,6 +53992,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_ip_whitelist_enabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_ip_whitelist_exclusions?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   platform_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_login_history_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_login_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_map_countries_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
   platform_map_custom_file?: Resolver<Maybe<ResolversTypes['MapCustomFile']>, ParentType, ContextType>;
@@ -56156,6 +56171,12 @@ export type UserInfoMappingResolvers<ContextType = any, ParentType extends Resol
   name_expr?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type UserLoginResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserLogin'] = ResolversParentTypes['UserLogin']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  provider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
 export type UserMergeCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserMergeCoverage'] = ResolversParentTypes['UserMergeCoverage']> = ResolversObject<{
   covered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   gating_uncovered_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -57719,6 +57740,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   UserEdge?: UserEdgeResolvers<ContextType>;
   UserEditMutations?: UserEditMutationsResolvers<ContextType>;
   UserInfoMapping?: UserInfoMappingResolvers<ContextType>;
+  UserLogin?: UserLoginResolvers<ContextType>;
   UserMergeCoverage?: UserMergeCoverageResolvers<ContextType>;
   UserMergeCoverageRow?: UserMergeCoverageRowResolvers<ContextType>;
   UserMergeExecutionReport?: UserMergeExecutionReportResolvers<ContextType>;
