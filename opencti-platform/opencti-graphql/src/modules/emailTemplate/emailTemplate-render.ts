@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon';
-import { isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../../config/conf';
 import { safeRender } from '../../utils/safeEjs.client';
 import { sanitizeUser } from '../../utils/templateContextSanitizer';
 
@@ -33,7 +32,6 @@ const RECIPIENT_VARIABLES: [string, string][] = [
   ['$user.account_lock_after_date', '<%= user.account_lock_after_date %>'],
   ['$settings.platform_url', '<%= platformUrl %>'],
 ];
-// Only behind the feature flag of the local authentication lockout: without it, they stay as written
 const LOCK_VARIABLES: [string, string][] = [
   ['$locked_user.firstname', '<%= locked_user.firstname %>'],
   ['$locked_user.lastname', '<%= locked_user.lastname %>'],
@@ -61,14 +59,14 @@ export const buildTemplateRecipient = (recipient: TemplateRecipient) => {
 };
 
 export const preprocessEmailTemplate = (templateBody: string) => {
-  const variables = isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG) ? [...RECIPIENT_VARIABLES, ...LOCK_VARIABLES] : RECIPIENT_VARIABLES;
-  return variables.reduce((body, [variable, value]) => body.split(variable).join(value), templateBody);
+  return [...RECIPIENT_VARIABLES, ...LOCK_VARIABLES].reduce((body, [variable, value]) => body.split(variable).join(value), templateBody);
 };
 
 const formatLockDate = (date: Date) => DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM-dd HH:mm \'UTC\'');
 
 // A template has no condition: $lock.unlock is the sentence that fits the lock, the end of a temporary lock,
-// or the administrator who must unlock a permanent one. Without a lock (a test email for example), every lock variable is empty
+// or the administrator who must unlock a permanent one. Without a lock (an email sent to a user for example), every lock variable is empty.
+// The "Send test email" button passes an example lock instead
 const buildLockData = (lockedUserData?: LockedUserEmailData) => {
   if (!lockedUserData) {
     return {

@@ -15,8 +15,9 @@ describe('Activity context data mapping without feature flags', () => {
   const contextDataAttribute = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_ACTIVITY, 'context_data') as ObjectAttribute;
   const mappedFields = contextDataAttribute.mappings.map(({ name }) => name);
 
-  it('should not map the fields of a disabled feature', () => {
-    expect(mappedFields).not.toContain('lock_source');
+  it('should map the fields of a lock, given by the local authentication lockout', () => {
+    // The mapping of the context data is strict: without the fields, the indexing of the lock fails
+    expect(mappedFields).toEqual(expect.arrayContaining(['lock_type', 'lock_duration', 'max_attempts', 'lock_source']));
   });
 
   it('should map the reason of a logout, given by the end of a session over its maximum lifetime', () => {

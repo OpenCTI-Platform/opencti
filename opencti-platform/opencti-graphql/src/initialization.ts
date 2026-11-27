@@ -158,7 +158,7 @@ const platformInit = async (withMarkings = true) => {
       await initManagerConfigurations(context, SYSTEM_USER);
       await initDecayRules(context, SYSTEM_USER);
     }
-    // New and existing platforms: the built-in template exists only behind the feature flag of the local authentication lockout
+    // New and existing platforms: the built-in template of the local authentication lockout emails
     await initLockedUserEmailTemplate(context);
     await initExclusionListCache();
 

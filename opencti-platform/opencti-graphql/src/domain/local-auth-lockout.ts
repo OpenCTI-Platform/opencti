@@ -5,7 +5,7 @@
 // The permanent lock lasts until an administrator sets the account back to Active, or until a login with another provider.
 
 import { v4 as uuid } from 'uuid';
-import { ACCOUNT_STATUSES, ENABLED_DEMO_MODE, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG, logApp } from '../config/conf';
+import { ACCOUNT_STATUSES, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { type LocalAuthLockoutTimings, type LocalAuthLockType, redisClearLocalAuthLockout, redisRecordLocalAuthAttempt, redisReleaseLocalAuthAttempt } from '../database/redis';
@@ -66,9 +66,6 @@ const loadPlatformUser = async (context: AuthContext, userId?: string) => {
 
 // Returns the policy of the email, and its user (undefined for an unknown email), only when the lockout is enabled
 const getLockoutPolicy = async (userId?: string): Promise<{ timings: LocalAuthLockoutTimings; user?: AuthUser } | undefined> => {
-  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
-    return undefined;
-  }
   const context = executionContext('local_auth_lockout');
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (!(settings.local_auth_lockout_enabled ?? LOCAL_AUTH_LOCKOUT_DEFAULTS.local_auth_lockout_enabled)) {
@@ -195,7 +192,7 @@ export const loadLocalAuthLockout = async (email: string, userId?: string) => {
 };
 
 // Called once a login is fully accepted (local, Basic auth, another provider or a valid MFA code): resets the lockout of the email.
-// Also when the lockout or its feature flag is disabled, so that enabling it again never brings back an old lock
+// Also when the lockout is disabled, so that enabling it again never brings back an old lock
 export const clearLocalAuthLockout = async (email: string) => {
   await redisClearLocalAuthLockout(hashSHA256(normalizeEmail(email)));
 };

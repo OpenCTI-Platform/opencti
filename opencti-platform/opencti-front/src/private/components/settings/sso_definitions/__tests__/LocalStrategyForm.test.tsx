@@ -9,11 +9,6 @@ vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
   default: () => [commitFnMock, false],
 }));
 
-let lockoutFlag = false;
-vi.mock('../../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => flag === 'LOCAL_AUTH_LOCKOUT' && lockoutFlag }),
-}));
-
 const mockUseLazyLoadQuery = vi.fn();
 vi.mock('react-relay', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-relay')>();
@@ -61,7 +56,6 @@ const historyInput = () => screen.getByRole('spinbutton', { name: HISTORY_LABEL 
 describe('LocalStrategyForm, password history', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    lockoutFlag = false;
   });
 
   it('shows the saved count, bounded from 0 to 24', () => {
@@ -118,7 +112,6 @@ const ADMIN_HINT = 'The built-in admin account is never locked: it is the accoun
 describe('LocalStrategyForm, account lockout policy', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    lockoutFlag = true;
   });
 
   it('says that a window of 0 has no time limit', () => {
@@ -144,7 +137,6 @@ const basicAuthSwitch = () => screen.getByRole('switch', { name: BASIC_AUTH_LABE
 describe('LocalStrategyForm, API Basic authentication', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    lockoutFlag = false;
   });
 
   it('shows the saved setting and recommends API tokens', () => {

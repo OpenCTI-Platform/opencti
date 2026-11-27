@@ -24,7 +24,7 @@ import { FunctionalError } from '../../config/errors';
 import { updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
-import { BUS_TOPICS, isFeatureEnabled, LOCAL_AUTH_LOCKOUT_FEATURE_FLAG } from '../../config/conf';
+import { BUS_TOPICS } from '../../config/conf';
 import { addEmailTemplateCreatedCount } from '../../manager/telemetryManager';
 import { SYSTEM_USER } from '../../utils/access';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../database/locked-user-email-template-input';
@@ -59,8 +59,7 @@ export const findEmailTemplatesByName = async (context: AuthContext, user: AuthU
 };
 
 // The "Send test email" button: no account is locked, so the lock variables show an example lock,
-// so that the administrator sees what the email of a lock looks like.
-// Without the feature flag of the local authentication lockout, they stay as written
+// so that the administrator sees what the email of a lock looks like
 export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -82,12 +81,8 @@ export const addEmailTemplate = async (context: AuthContext, user: AuthUser, inp
 };
 
 // Creates the built-in template of the email sent to the administrators when the local authentication lockout locks an account,
-// unless a template of the same name exists. Called at each startup while the feature flag exists, so that enabling the flag later
-// still creates it: a migration runs only once. When the flag is removed, this becomes a migration and the platform init
+// unless a template of the same name exists. Called at each startup, on new and existing platforms: a deleted template is created again
 export const initLockedUserEmailTemplate = async (context: AuthContext) => {
-  if (!isFeatureEnabled(LOCAL_AUTH_LOCKOUT_FEATURE_FLAG)) {
-    return undefined;
-  }
   const existingTemplate = await findLockedUserEmailTemplate(context);
   if (existingTemplate) {
     return existingTemplate;

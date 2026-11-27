@@ -59,7 +59,7 @@ const initializePlatform = async () => {
   resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   await initializeAdminUser(context);
   await initDefaultNotifiers(context);
-  // As platformInit: the built-in template exists only behind the feature flag of the local authentication lockout
+  // As platformInit: the built-in template of the local authentication lockout emails
   await initLockedUserEmailTemplate(context);
   await initializeAuthenticationProviders(context);
   logApp.info(`[vitest-global-setup] Platform initialized in ${new Date().getTime() - stopTime} ms`);

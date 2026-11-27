@@ -11,7 +11,6 @@ import TextField from '../../../../components/TextField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import useHelper from '../../../../utils/hooks/useHelper';
 import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import Alert from '../../../../components/Alert';
@@ -147,8 +146,6 @@ interface LocalStrategyFormProps {
 const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-  const { isFeatureEnable } = useHelper();
-  const isLockoutFeatureEnabled = isFeatureEnable('LOCAL_AUTH_LOCKOUT');
   const data = useLazyLoadQuery<LocalStrategyFormQuery>(localStrategyFormQuery, {});
   const settings = data.settings;
   const isConfigurationFromEnv = settings.is_authentication_by_env ?? false;
@@ -221,7 +218,7 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
           password_policy_min_uppercase: Number(values.password_policy_min_uppercase) || 0,
           password_policy_validity_days: Number(values.password_policy_validity_days) || 0,
           password_policy_history_count: Number(values.password_policy_history_count) || 0,
-          ...(isLockoutFeatureEnabled && lockoutInput),
+          ...lockoutInput,
           // Sent only when the switch changed: a missing value means the admin never chose, which a later release relies on
           ...(values.api_basic_auth_enabled !== initialValues.api_basic_auth_enabled && { api_basic_auth_enabled: values.api_basic_auth_enabled }),
         },
@@ -365,72 +362,68 @@ const LocalStrategyForm = ({ onCancel }: LocalStrategyFormProps) => {
             step={1}
             fullWidth
           />
-          {isLockoutFeatureEnabled && (
+          <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>
+            {t_i18n('Account lockout policy')}
+          </Typography>
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="local_auth_lockout_enabled"
+            label={t_i18n('Lock accounts after repeated failed login attempts')}
+          />
+          {values.local_auth_lockout_enabled && (
             <>
-              <Typography variant="h4" gutterBottom style={{ marginBottom: 20, marginTop: 20 }}>
-                {t_i18n('Account lockout policy')}
-              </Typography>
+              {/* The built-in admin is the break-glass account: it is never locked, so it should be disabled once it is not needed */}
+              <div className="mt-5">
+                <Alert content={t_i18n('The built-in admin account is never locked: it is the account to unlock the other administrators. Once other administrators exist, disable it with APP__ADMIN__EXTERNALLY_MANAGED=true.')} />
+              </div>
               <Field
-                component={SwitchField}
-                type="checkbox"
-                name="local_auth_lockout_enabled"
-                label={t_i18n('Lock accounts after repeated failed login attempts')}
+                component={TextField}
+                type="number"
+                variant="outlined"
+                className="mt-5"
+                name="local_auth_lockout_max_attempts"
+                label={t_i18n('Maximum number of failed login attempts for users')}
+                fullWidth
               />
-              {values.local_auth_lockout_enabled && (
-                <>
-                  {/* The built-in admin is the break-glass account: it is never locked, so it should be disabled once it is not needed */}
-                  <div className="mt-5">
-                    <Alert content={t_i18n('The built-in admin account is never locked: it is the account to unlock the other administrators. Once other administrators exist, disable it with APP__ADMIN__EXTERNALLY_MANAGED=true.')} />
-                  </div>
-                  <Field
-                    component={TextField}
-                    type="number"
-                    variant="outlined"
-                    className="mt-5"
-                    name="local_auth_lockout_max_attempts"
-                    label={t_i18n('Maximum number of failed login attempts for users')}
-                    fullWidth
-                  />
-                  <Field
-                    component={TextField}
-                    type="number"
-                    variant="outlined"
-                    className="mt-5"
-                    name="local_auth_lockout_admin_max_attempts"
-                    label={t_i18n('Maximum number of failed login attempts for administrators')}
-                    fullWidth
-                  />
-                  <Field
-                    component={SelectFieldFds}
-                    className="mt-5"
-                    name="local_auth_lockout_final_action"
-                    label={t_i18n('Action when the maximum number of failed login attempts is reached')}
-                    fullWidth
-                  >
-                    <SelectItem value="temporary">{t_i18n('Lock for the temporary lock duration')}</SelectItem>
-                    <SelectItem value="permanent">{t_i18n('Lock until an administrator unlocks the account')}</SelectItem>
-                  </Field>
-                  <Field
-                    component={TextField}
-                    type="number"
-                    variant="outlined"
-                    className="mt-5"
-                    name="local_auth_lockout_window"
-                    label={`${t_i18n('Failed login attempts counter reset after (minutes)')} (${t_i18n('0 = no time limit')})`}
-                    fullWidth
-                  />
-                  {values.local_auth_lockout_final_action === 'temporary' && (
-                    <Field
-                      component={TextField}
-                      type="number"
-                      variant="outlined"
-                      className="mt-5"
-                      name="local_auth_lockout_duration"
-                      label={t_i18n('Temporary lock duration (minutes)')}
-                      fullWidth
-                    />
-                  )}
-                </>
+              <Field
+                component={TextField}
+                type="number"
+                variant="outlined"
+                className="mt-5"
+                name="local_auth_lockout_admin_max_attempts"
+                label={t_i18n('Maximum number of failed login attempts for administrators')}
+                fullWidth
+              />
+              <Field
+                component={SelectFieldFds}
+                className="mt-5"
+                name="local_auth_lockout_final_action"
+                label={t_i18n('Action when the maximum number of failed login attempts is reached')}
+                fullWidth
+              >
+                <SelectItem value="temporary">{t_i18n('Lock for the temporary lock duration')}</SelectItem>
+                <SelectItem value="permanent">{t_i18n('Lock until an administrator unlocks the account')}</SelectItem>
+              </Field>
+              <Field
+                component={TextField}
+                type="number"
+                variant="outlined"
+                className="mt-5"
+                name="local_auth_lockout_window"
+                label={`${t_i18n('Failed login attempts counter reset after (minutes)')} (${t_i18n('0 = no time limit')})`}
+                fullWidth
+              />
+              {values.local_auth_lockout_final_action === 'temporary' && (
+                <Field
+                  component={TextField}
+                  type="number"
+                  variant="outlined"
+                  className="mt-5"
+                  name="local_auth_lockout_duration"
+                  label={t_i18n('Temporary lock duration (minutes)')}
+                  fullWidth
+                />
               )}
             </>
           )}

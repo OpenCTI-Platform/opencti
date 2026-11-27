@@ -1,12 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../../src/database/locked-user-email-template-input';
 import { buildTemplateRecipient, type LockedUserEmailData, type LockedUserLock, renderEmailTemplate } from '../../../../src/modules/emailTemplate/emailTemplate-render';
-
-const flags = vi.hoisted(() => ({ lockout: true }));
-vi.mock('../../../../src/config/conf', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../../../src/config/conf')>()),
-  isFeatureEnabled: vi.fn((flag: string) => flag !== 'LOCAL_AUTH_LOCKOUT' || flags.lockout),
-}));
 
 // The recipient is an administrator, the locked user another account
 const RECIPIENT = { name: 'admin', firstname: 'Ada', lastname: 'Admin', user_email: 'admin@opencti.io' };
@@ -26,10 +20,6 @@ const render = (templateBody: string, lockedUserData?: LockedUserEmailData) => r
 });
 
 describe('Email template rendering', () => {
-  beforeEach(() => {
-    flags.lockout = true;
-  });
-
   it('should render the recipient and the platform variables', async () => {
     const html = await render('$user.firstname $user.lastname ($user.name, $user.user_email) of $user.objectOrganization on $settings.platform_url');
     expect(html).toEqual('Ada Admin (admin, admin@opencti.io) of Filigran on https://opencti.example.com');
@@ -66,12 +56,6 @@ describe('Email template rendering', () => {
   it('should render the lock variables empty without any lock, such as in a test email', async () => {
     const html = await render('[$locked_user.name][$lock.date][$lock.unlock]');
     expect(html).toEqual('[][][]');
-  });
-
-  it('should keep the lock variables as written without the feature flag', async () => {
-    flags.lockout = false;
-    const html = await render('$user.name $locked_user.name $lock.unlock', temporaryLock);
-    expect(html).toEqual('admin $locked_user.name $lock.unlock');
   });
 
   it('should render the built-in template with the locked user and the date of the lock', async () => {

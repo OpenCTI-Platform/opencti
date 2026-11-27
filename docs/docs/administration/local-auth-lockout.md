@@ -1,14 +1,5 @@
 # Account lockout policy
 
-!!! warning "Unreleased feature"
-
-    This page documents the account lockout policy of the local authentication. It is only available when the `LOCAL_AUTH_LOCKOUT` feature flag is enabled (`APP__ENABLED_DEV_FEATURES='["LOCAL_AUTH_LOCKOUT"]'`), and this page is not published. When the flag is off, nothing is counted, nothing is locked and the settings are hidden.
-
-    When the feature is released: move this page to `administration/local-auth-lockout.md`, add it to `nav` in `mkdocs.yml` after **Authentication**, and link it from:
-
-    - `administration/authentication-via-ui.md`, at the end of **Local Authentication**: "To lock accounts after repeated failed login attempts, see [Account lockout policy](local-auth-lockout.md).";
-    - `administration/users.md`, under **Account status**, after the **Locked** value: "The [account lockout policy](local-auth-lockout.md) can also set an account to Locked after repeated failed login attempts.".
-
 The account lockout policy protects the local accounts against password guessing. When someone fails to log in too many times on the same account, the account is locked: for some minutes, or until an administrator unlocks it.
 
 It only applies to the local authentication (email and password). Accounts that log in with SSO or LDAP are protected by their identity provider.
@@ -92,7 +83,7 @@ When an existing account is locked, the administrators who can unlock it get an 
 - the active users with the **Manage credentials** capability (or **Bypass all capabilities**);
 - with the organization segregation, the administrators of the organizations of the locked user.
 
-The email gives the account, the number of failed attempts, the date of the lock and, for a temporary lock, its end date. Dates are in UTC. An SMTP server must be configured (see [SMTP configuration](../administration/smtp-configuration.md)).
+The email gives the account, the number of failed attempts, the date of the lock and, for a temporary lock, its end date. Dates are in UTC. An SMTP server must be configured (see [SMTP configuration](smtp-configuration.md)).
 
 The administrators get at most one email per account and per hour: an attacker can lock the same account again each time a temporary lock ends. Every lock is still recorded in the activity log. A successful login, or setting the account back to **Active**, ends this delay.
 

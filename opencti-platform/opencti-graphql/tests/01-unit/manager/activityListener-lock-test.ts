@@ -33,7 +33,6 @@ describe('Activity listener: local authentication lock', () => {
   });
 
   it('offers the lock scope in the activity filters', () => {
-    // The test configuration enables every feature flag, including LOCAL_AUTH_LOCKOUT
     expect(EVENT_SCOPE_VALUES).toContain('lock');
   });
 
