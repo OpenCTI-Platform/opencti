@@ -124,7 +124,7 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
-        flags: opencti-graphql
+        flags: opencti-graphql-integration
         fail_ci_if_error: false
         override_branch: ${{ github.head_ref || github.ref_name }}
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -273,7 +273,7 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
-        flags: opencti-graphql
+        flags: opencti-graphql-rules
         fail_ci_if_error: false
         override_branch: ${{ github.head_ref || github.ref_name }}
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
@@ -362,7 +362,7 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ github.workspace }}/opencti-platform/opencti-graphql/coverage/coverage-final.json
-        flags: opencti-graphql
+        flags: opencti-graphql-unit
         fail_ci_if_error: false
         override_branch: ${{ github.head_ref || github.ref_name }}
         override_commit: ${{ github.event.pull_request.head.sha || github.sha }}

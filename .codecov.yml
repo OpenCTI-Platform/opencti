@@ -6,10 +6,11 @@ coverage:
         # Coverage may drop by up to 0.5 point versus the base commit, to absorb noise from non-deterministic test runs
         threshold: 0.5%
         informational: true
+      # Informational, as in every other Filigran repository: patch coverage is the merge gate
       opencti-graphql-mandatory:
         target: auto
         threshold: 0.5%
-        informational: false
+        informational: true
         paths:
           - opencti-platform/opencti-graphql/src
           # Background workers, streams and raw HTTP routes are hard to reach from API tests
@@ -48,3 +49,29 @@ coverage:
         paths:
           - client-python
           - "!client-python/pycti/connector/"
+
+# A job that has not uploaded keeps the coverage of the parent commit.
+flag_management:
+  default_rules:
+    carryforward: false
+  individual_flags:
+    - name: opencti-graphql-unit
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-graphql/
+    - name: opencti-graphql-integration
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-graphql/
+    - name: opencti-graphql-rules
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-graphql/
+    - name: opencti-front
+      carryforward: true
+      paths:
+        - opencti-platform/opencti-front/
+    - name: opencti-client-python
+      carryforward: true
+      paths:
+        - client-python/
