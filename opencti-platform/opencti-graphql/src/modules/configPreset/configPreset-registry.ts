@@ -23,6 +23,7 @@ import { vocabulariesFamily } from './registry/vocabularies-configPreset-registr
 import { statusTemplatesFamily } from './registry/statusTemplates-configPreset-registry';
 import { caseTemplatesFamily } from './registry/caseTemplates-configPreset-registry';
 import { fintelDesignsFamily } from './registry/fintelDesigns-configPreset-registry';
+import { fintelTemplatesFamily } from './registry/fintelTemplates-configPreset-registry';
 import { customViewsFamily } from './registry/customViews-configPreset-registry';
 import { dashboardsFamily } from './registry/dashboards-configPreset-registry';
 import { formIntakesFamily } from './registry/formIntakes-configPreset-registry';
@@ -60,6 +61,7 @@ export const CONFIG_PRESET_FAMILIES: ConfigPresetFamilyDefinition[] = [
   playbooksFamily,
   ruleEngineFamily,
   fintelDesignsFamily,
+  fintelTemplatesFamily,
 ];
 
 // How the result of an item is shown next to its family: the name of its type, its place in the registry and its group.

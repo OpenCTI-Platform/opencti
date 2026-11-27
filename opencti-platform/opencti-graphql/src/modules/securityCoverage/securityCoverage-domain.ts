@@ -272,12 +272,18 @@ export const listSecurityCoverageResults = (
   return internalFindByIds(context, user, getSecurityCoverageResultIds(securityCoverage)) as Promise<BasicStoreEntitySecurityCoverageResult[]>;
 };
 
+// Only the results the user can access: loadThroughDenormalized would also return a "Restricted" placeholder
+// (with the real id) for each result the user cannot see, which must not be listed nor selectable.
 export const loadSecurityCoverageResults = async (
   context: AuthContext,
   user: AuthUser,
   securityCoverage: BasicStoreEntitySecurityCoverage,
 ): Promise<BasicStoreEntitySecurityCoverageResult[]> => {
-  return loadThroughDenormalized(context, user, securityCoverage, INPUT_RESULT_OF);
+  const resultIds = getSecurityCoverageResultIds(securityCoverage);
+  const results = await listSecurityCoverageResults(context, user, securityCoverage);
+  // The search does not keep the order of the ids: restore the order of the denormalized result ids
+  const resultsById = new Map(results.map((result) => [result.id, result]));
+  return resultIds.flatMap((id) => resultsById.get(id) ?? []);
 };
 
 type CoveredRelation = BasicStoreRelation & { coverage_information?: CoverageInformation[] };

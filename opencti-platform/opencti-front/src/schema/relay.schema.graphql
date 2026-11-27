@@ -2307,6 +2307,7 @@ type ConfigPresetImportItem {
   credentials: [ConfigPresetImportCredential!]!
   dependsOn: [ConfigPresetItemReference!]!
   exists: Boolean!
+  existsAsDefault: Boolean!
   fields: [ConfigPresetImportField!]!
   isDefault: Boolean!
   isEnabled: Boolean
@@ -9090,6 +9091,7 @@ type MeUser implements BasicObject & InternalObject {
   individual_id: String
   language: String
   lastname: String
+  login_history: [UserLogin!]
   max_shareable_marking: [MarkingDefinition!]
   metrics: [Metric]
   monochrome_labels: Boolean
@@ -9101,7 +9103,6 @@ type MeUser implements BasicObject & InternalObject {
   otp_qr: String
   parent_types: [String!]!
   password_valid_until: DateTime
-  pastel_colours: Boolean
   personal_notifiers: [Notifier!]
   representative: Representative!
   restrict_delete: Boolean
@@ -13970,6 +13971,7 @@ type Settings implements BasicObject & InternalObject & IntlSettings & ThemeSett
   platform_ip_whitelist_enabled: Boolean
   platform_ip_whitelist_exclusions: [Member!]
   platform_language: String
+  platform_login_history_count: Int
   platform_login_message: String
   platform_map_countries_custom_file: MapCustomFile
   platform_map_custom_file: MapCustomFile
@@ -17134,7 +17136,6 @@ type User implements BasicObject & InternalObject {
   otp_qr: String
   parent_types: [String!]!
   password_valid_until: DateTime
-  pastel_colours: Boolean
   personal_notifiers: [Notifier!]
   refreshed_at: DateTime
   representative: Representative!
@@ -17364,6 +17365,12 @@ input UserInfoMappingInput {
   firstname_expr: String
   lastname_expr: String
   name_expr: String!
+}
+
+type UserLogin {
+  id: ID!
+  provider: String
+  timestamp: DateTime!
 }
 
 input UserLoginInput {

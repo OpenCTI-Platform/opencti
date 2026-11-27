@@ -73,7 +73,8 @@ const readUploadedBundle = async (file: Promise<FileUploadData>): Promise<{ bund
 // The bundle without the items of the family that are out of the scope: a screen that is about one value (the entity type of its custom views)
 // neither shows nor imports the others. An id of an item out of the scope is then unknown, as any other id the bundle does not have.
 // The key is the one the family declares, looked up in the configuration of the item as its own property only (the configuration comes from the
-// bundle). The values are compared trimmed, as the import schema of the family trims them.
+// bundle). The values are compared trimmed, as the import schema of the family trims them. The value is one string (the entity type of a custom
+// view), or a list of strings that holds the scope (the entity types of a fintel template).
 const scopeBundle = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefinition, scope: string | null | undefined): ConfigPresetBundle => {
   if (scope === null || scope === undefined) {
     return bundle;
@@ -82,9 +83,10 @@ const scopeBundle = (bundle: ConfigPresetBundle, family: ConfigPresetFamilyDefin
   if (!scopeKey) {
     throw FunctionalError('This configuration type cannot be scoped', { type: family.id });
   }
+  const isScopeValue = (value: unknown) => typeof value === 'string' && value.trim() === scope.trim();
   const isInScope = ({ configuration }: ConfigPresetBundleItem) => {
     const value = Object.hasOwn(configuration, scopeKey) ? configuration[scopeKey] : undefined;
-    return typeof value === 'string' && value.trim() === scope.trim();
+    return Array.isArray(value) ? value.some(isScopeValue) : isScopeValue(value);
   };
   return { ...bundle, items: bundle.items.filter((item) => item.type !== family.id || isInScope(item)) };
 };

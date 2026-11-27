@@ -18,7 +18,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
-import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIdsMapped, storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -48,6 +48,28 @@ export const canCustomizeTemplate = async (context: AuthContext) => {
     throw ForbiddenAccess();
   }
 };
+
+// The entity types that have FINTEL templates: the ones whose page shows them. A template of another type is shown nowhere.
+// The front lists the same types (typesWithFintelTemplates in utils/hooks/useAttributes.ts): change both together
+export const FINTEL_TEMPLATE_ENTITY_TYPES = [
+  // Containers
+  'Report',
+  'Grouping',
+  'Case-Incident',
+  'Case-Rfi',
+  'Case-Rft',
+  // Stix Domain Objects
+  'Threat-Actor',
+  'Threat-Actor-Individual',
+  'Threat-Actor-Group',
+  'Intrusion-Set',
+  'Campaign',
+  'Malware',
+  'Vulnerability',
+  'Incident',
+];
+
+export const isFintelTemplateAvailableForEntityType = (entityType: string) => FINTEL_TEMPLATE_ENTITY_TYPES.includes(entityType);
 
 export const canViewTemplates = async (context: AuthContext) => {
   const isEE = await isEnterpriseEdition(context);
@@ -134,10 +156,11 @@ const applyUniqueDefaultTemplateConstraint = async (
   return results.map(({ element }) => element);
 };
 
+// standard_id is not part of FintelTemplateAddInput: only internal callers (the import of a configuration preset) set it
 export const addFintelTemplate = async (
   context: AuthContext,
   user: AuthUser,
-  input: FintelTemplateAddInput,
+  input: FintelTemplateAddInput & { standard_id?: string },
   preventDefaultWidgets = false,
 ) => {
   // check rights
@@ -361,6 +384,45 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
 
 const MINIMAL_VERSION_FOR_IMPORT = '6.5.0';
 
+// The instance an attribute widget shows when it is a given entity, and not the one the template is applied to (SELF_ID): its id converted as the
+// ids of the filters are, to its standard id for an export and to the id of this platform for an import. A reference the platform does not have
+// is kept as it is. The ids are replaced in place
+const convertWidgetsInstanceIds = async (context: AuthContext, user: AuthUser, widgets: { dataSelection?: { instance_id?: string | null }[] }[], from: 'internal' | 'stix') => {
+  const selections = widgets.flatMap(({ dataSelection }) => dataSelection ?? [])
+    .filter(({ instance_id }) => typeof instance_id === 'string' && instance_id !== '' && instance_id !== SELF_ID);
+  if (selections.length === 0) {
+    return;
+  }
+  const ids = [...new Set(selections.map(({ instance_id }) => instance_id as string))];
+  const instances = await internalFindByIdsMapped(context, user, ids, { baseData: true, mapWithAllIds: true });
+  selections.forEach((selection) => {
+    const instance = instances[selection.instance_id as string];
+    if (instance) {
+      // eslint-disable-next-line no-param-reassign
+      selection.instance_id = from === 'internal' ? instance.standard_id : instance.internal_id;
+    }
+  });
+};
+
+// The widgets of a template in the export format: the filters as objects, with the standard ids of what they and the instance they show point to
+export const toExportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidget[]) => {
+  const widgets = templateWidgets.map(({ widget }) => ({
+    ...widget,
+    dataSelection: widget.dataSelection.map((selection) => ({
+      ...selection,
+      filters: JSON.parse(selection.filters ?? '{}'),
+      dynamicFrom: JSON.parse(selection.dynamicFrom ?? '{}'),
+      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}'),
+    })),
+  }));
+  await convertWidgetsIds(context, user, widgets, 'internal');
+  await convertWidgetsInstanceIds(context, user, widgets, 'internal');
+  return templateWidgets.map(({ variable_name }, i) => ({
+    variable_name,
+    widget: widgets[i],
+  }));
+};
+
 export const fintelTemplateExport = async (context: AuthContext, user: AuthUser, template: BasicStoreEntityFintelTemplate) => {
   const {
     name,
@@ -375,20 +437,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
     include_back_page_by_default,
   } = template;
 
-  const widgets = fintel_template_widgets.map(({ widget }) => ({
-    ...widget,
-    dataSelection: widget.dataSelection.map((selection) => ({
-      ...selection,
-      filters: JSON.parse(selection.filters ?? '{}'),
-      dynamicFrom: JSON.parse(selection.dynamicFrom ?? '{}'),
-      dynamicTo: JSON.parse(selection.dynamicTo ?? '{}'),
-    })),
-  }));
-  await convertWidgetsIds(context, user, widgets, 'internal');
-  const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
-    variable_name,
-    widget: widgets[i],
-  }));
+  const exportWidgets = await toExportedFintelTemplateWidgets(context, user, fintel_template_widgets);
 
   return JSON.stringify({
     openCTI_version: pjson.version,
@@ -408,7 +457,7 @@ export const fintelTemplateExport = async (context: AuthContext, user: AuthUser,
   });
 };
 
-type FintelTemplateWidgetFromImport = {
+export type FintelTemplateWidgetFromImport = {
   variable_name: string;
   widget: Widget & {
     dataSelection: WidgetDataSelection & {
@@ -417,6 +466,29 @@ type FintelTemplateWidgetFromImport = {
       dynamicTo: FilterGroup;
     };
   };
+};
+
+// The filters as the platform stores them: a filter group as JSON text, or none
+const toStoredFilters = (filters: unknown) => (filters === null || filters === undefined ? undefined : JSON.stringify(filters));
+
+// The widgets of an exported template with the ids of this platform, in their filters and for the instance they show, the filters as the
+// platform stores them. A reference this platform does not have is kept as it is
+export const toImportedFintelTemplateWidgets = async (context: AuthContext, user: AuthUser, templateWidgets: FintelTemplateWidgetFromImport[]) => {
+  const widgets = templateWidgets.map(({ widget }) => widget);
+  await convertWidgetsIds(context, user, widgets, 'stix');
+  await convertWidgetsInstanceIds(context, user, widgets, 'stix');
+  return templateWidgets.map(({ variable_name }, i) => ({
+    variable_name,
+    widget: {
+      ...widgets[i],
+      dataSelection: widgets[i].dataSelection.map((selection) => ({
+        ...selection,
+        filters: toStoredFilters(selection.filters),
+        dynamicFrom: toStoredFilters(selection.dynamicFrom),
+        dynamicTo: toStoredFilters(selection.dynamicTo),
+      })),
+    },
+  }));
 };
 
 export const fintelTemplateConfigurationImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
@@ -430,24 +502,9 @@ export const fintelTemplateConfigurationImport = async (context: AuthContext, us
     );
   }
 
-  const widgets = fintel_template_widgets.map(({ widget }) => widget);
-  await convertWidgetsIds(context, user, widgets, 'stix');
-  const exportWidgets = fintel_template_widgets.map(({ variable_name }, i) => ({
-    variable_name,
-    widget: {
-      ...widgets[i],
-      dataSelection: widgets[i].dataSelection.map((selection) => ({
-        ...selection,
-        filters: JSON.stringify(selection.filters),
-        dynamicFrom: JSON.stringify(selection.dynamicFrom),
-        dynamicTo: JSON.stringify(selection.dynamicTo),
-      })),
-    },
-  }));
-
   const fintelInput = {
     ...parsedData.configuration,
-    fintel_template_widgets: exportWidgets,
+    fintel_template_widgets: await toImportedFintelTemplateWidgets(context, user, fintel_template_widgets),
   };
 
   return addFintelTemplate(context, user, fintelInput, true);

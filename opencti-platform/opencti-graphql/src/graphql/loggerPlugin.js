@@ -4,6 +4,7 @@ import { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { getMemoryStatistics } from '../domain/settings';
 import { AUTH_ERRORS, CLIENT_INPUT_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, isMutedError, ValidationError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
+import { getRequestId } from '../http/httpUtils';
 import { analyzeRequestSensitivity, redactRequestQuery, redactRequestVariables } from '../utils/log-redaction';
 
 const innerCompute = (inners) => {
@@ -86,6 +87,7 @@ export default {
           operation: context.operationName ?? 'Unspecified',
           time: elapsed,
           size,
+          request_id: context.contextValue.res ? getRequestId(context.contextValue.res) : undefined,
         };
         // Handle extended error option
         if (appLogExtendedErrors) {

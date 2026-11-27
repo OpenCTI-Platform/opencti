@@ -111,7 +111,8 @@ const network = new RelayNetworkLayer([fetchMiddleware, uploadMiddleware()], {
 const store = new Store(new RecordSource());
 // Connector: a sync's built-in twin connector shares the sync id (queue key), so
 // it must not collide with the Synchronizer record in the store.
-const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'Connector']);
+// A UserLogin is keyed by the id of its activity log event, the same id as the Log of that event in the audit view.
+const namespacedTypenames = new Set(['MeUser', 'PublicSettings', 'Connector', 'UserLogin']);
 // Dashboard variables and presets keep their ids through duplication and import: two dashboards share them, so they
 // are never normalized by id (Relay then keys them under their dashboard).
 const unkeyedTypenames = new Set(['DashboardVariable', 'DashboardPreset']);

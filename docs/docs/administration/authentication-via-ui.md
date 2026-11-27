@@ -40,6 +40,29 @@ The "Enforce Two-Factor Authentication" button is available, allowing administra
 It is possible to specify the amount of concurrent sessions allowed on your platform.
 By default, there is no limit (0 means that there is no maximum number of sessions). If you want to restrict it, simply replace this value by the amount of concurrent sessions you want to allow on OpenCTI.
 
+### Last logins shown in the user profile
+
+!!! tip "Enterprise edition"
+
+    The last logins are read from the [activity log](audit/overview.md), which is available under the "OpenCTI Enterprise Edition" license.
+
+Each user can see their own last successful logins in their profile, in a "Last logins" card. It lets them spot a login they did not make with their identity, and then change their password and contact an administrator.
+
+The number of logins shown is set in the "Sessions" card, with "Last logins shown in the user profile". It accepts an integer from 0 to 50. By default, it is 0, and the card is hidden from every profile.
+
+For each login, the card shows:
+
+- the date and time of the login;
+- the authentication provider used: `local` for the local login form, the identifier of the strategy for an SSO or LDAP login, `cert` for a client certificate, `headers` for HTTP headers.
+
+A user only ever sees their own logins: the card never shows the logins of another user, whatever their capabilities. Administrators keep reading all the logins, successful or failed, in the activity log.
+
+The logins come from the login events of the activity log, so:
+
+- logins made before the Enterprise Edition was activated are not shown;
+- logins deleted by an "Activity" [retention policy](retentions.md) are not shown;
+- a login is recorded once the first factor is validated: a login stopped at the two-factor authentication step is still listed.
+
 ## Create a new configuration
 
 When navigating to Parameters / Authentications, you will land on a screen to manage your authentication strategies.

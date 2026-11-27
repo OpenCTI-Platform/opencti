@@ -64,6 +64,7 @@ import { customStatusTemplate, defaultStatusTemplate } from './configPreset-stat
 import { fraudCaseTemplate, phishingCaseTemplate } from './configPreset-caseTemplates-fixtures';
 import { customEmailTemplate, otherEmailTemplate } from './configPreset-emailTemplates-fixtures';
 import { defaultFintelDesign, nightFintelDesign } from './configPreset-fintelDesigns-fixtures';
+import { groupingFintelTemplate, reportFintelTemplate } from './configPreset-fintelTemplates-fixtures';
 import { executiveDashboard, socDashboard } from './configPreset-dashboards-fixtures';
 import { incidentForm, reportForm } from './configPreset-formIntakes-fixtures';
 import { executiveCustomView, malwareCustomView } from './configPreset-customViews-fixtures';
@@ -413,6 +414,18 @@ describe('Config preset exportable types query', () => {
         ],
         itemsPageInfo: onePage(2),
       },
+      {
+        key: 'fintelTemplates',
+        label: 'Fintel templates',
+        description: 'Fintel templates of the entity types and their widgets',
+        group: { key: 'customization', label: 'Customization' },
+        // By name, named with their entity type, the default of its type marked: no template depends on it
+        items: [
+          { key: reportFintelTemplate.standard_id, label: 'Executive Summary (Report)', translatable: false, dependsOn: [], isDefault: true },
+          { key: groupingFintelTemplate.standard_id, label: 'Incident brief (Grouping)', translatable: false, dependsOn: [], isDefault: false },
+        ],
+        itemsPageInfo: onePage(2),
+      },
     ]);
   });
 
@@ -455,10 +468,11 @@ describe('Config preset exportable types query', () => {
       ['platform', false], ['branding', false], ['messages', false], ['whitemark', true], ['hiddenEntityTypes', false],
       ['markings', false], ['roles', false], ['groups', false], ['policies', false], ['emailTemplates', true], ['labels', false], ['exclusionLists', false], ['killChainPhases', false],
       ['vocabularies', false], ['statusTemplates', false], ['caseTemplates', false], ['dashboards', false], ['customViews', false], ['connectors', true],
-      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true],
+      ['rssFeeds', false], ['csvFeeds', false], ['jsonFeeds', false], ['taxiiFeeds', false], ['formIntakes', false], ['playbooks', true], ['ruleEngine', false], ['fintelDesigns', true], ['fintelTemplates', true],
     ]);
     expect(types.find((type) => type.key === 'emailTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'fintelDesigns')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
+    expect(types.find((type) => type.key === 'fintelTemplates')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     expect(types.find((type) => type.key === 'whitemark')).toMatchObject({ lockedByEnterpriseEdition: true, items: [], itemsPageInfo: { hasNextPage: false, globalCount: 0 } });
     enterpriseEdition.enabled = true;
     const licensed = await graphql({ schema: buildSchema(), source, contextValue: { user: bypassUser } });
@@ -517,6 +531,7 @@ describe('Config preset exportable types query', () => {
       ['playbooks', 'automationRules'],
       ['ruleEngine', 'automationRules'],
       ['fintelDesigns', 'customization'],
+      ['fintelTemplates', 'customization'],
     ]);
     expect(types[0].items).toEqual([{ key: 'entity-id', label: 'User data label', translatable: false, dependsOn: [], isDefault: false, isEnabled: null }]);
     expect(types[0].itemsPageInfo.globalCount).toBe(25);

@@ -65,7 +65,7 @@ const fintelDesignsImporter: ConfigPresetImporter = {
       reservedNames: plan.fintelDesignNames,
       renamedIds: plan.renamedFintelDesignIds,
     });
-    return { ...base, exists: result.exists, conflict: result.exists, status: result.status, reason: result.reason, code: result.code };
+    return { ...base, exists: result.exists, existsAsDefault: result.existsAsDefault, conflict: result.exists, status: result.status, reason: result.reason, code: result.code };
   },
   apply: async (context, user, item, computed, mode) => {
     return toAppliedStatus(await importFintelDesign(context, user, item.configuration, item.attachment, { mode }), computed);
