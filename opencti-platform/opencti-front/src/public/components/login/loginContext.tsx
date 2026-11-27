@@ -25,8 +25,12 @@ type ContextValue = LoginContextData & {
 
 const LoginContext = createContext<ContextValue>(undefined);
 
-export const LoginContextProvider = ({ children }: PropsWithChildren) => {
-  const [data, setData] = useState<LoginContextData>({ email: '' });
+type LoginContextProviderProps = PropsWithChildren<{
+  initialValues?: Partial<LoginContextData>;
+}>;
+
+export const LoginContextProvider = ({ children, initialValues }: LoginContextProviderProps) => {
+  const [data, setData] = useState<LoginContextData>({ email: '', ...initialValues });
 
   const setValue = <K extends keyof LoginContextData>(
     key: K,

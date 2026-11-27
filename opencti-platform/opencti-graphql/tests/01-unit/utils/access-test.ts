@@ -540,7 +540,7 @@ describe('checkOTPValidationStatus testing', () => {
       otp_mandatory: true,
       user_otp_validated: false,
     });
-    expect(checkOTPValidationStatus(context, true)).toEqual(OTPValidationStatus.VALID);
+    expect(checkOTPValidationStatus(context, { allowUnprotectedOTP: true })).toEqual(OTPValidationStatus.VALID);
   });
 
   it('should require activation when OTP is mandatory, not validated and not activated', () => {

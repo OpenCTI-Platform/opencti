@@ -27,6 +27,7 @@ import {
   FUNCTIONAL_ERRORS,
   LTS_REQUIRED_ACTIVATION,
   muteError,
+  PasswordChangeRequired,
   RESOURCE_NOT_FOUND_ERROR,
   ResourceNotFoundError,
   WORK_NOT_ALIVE_ERROR,
@@ -205,6 +206,10 @@ export const createSubscriptionServerOptions = ({ schema, protection, context })
     schema,
     onSubscribe: async (ctx, _id, payload) => {
       const contextValue = await context(ctx);
+      // The subscription fields resolve with `subscribe`, which the auth directive does not wrap
+      if (contextValue.password_change_required) {
+        return [PasswordChangeRequired()];
+      }
       let document;
       try {
         document = parse(payload.query, parseOptions);
@@ -216,7 +221,7 @@ export const createSubscriptionServerOptions = ({ schema, protection, context })
         return validationErrors;
       }
       try {
-        checkIntrospection(document, contextValue.user);
+        checkIntrospection(document, contextValue.password_change_required ? undefined : contextValue.user);
       } catch (error) {
         return [error];
       }
@@ -263,7 +268,7 @@ const createApolloServer = (schema = createSchema()) => {
     requestDidStart: () => {
       return {
         didResolveOperation: ({ contextValue, document }) => {
-          checkIntrospection(document, contextValue?.user);
+          checkIntrospection(document, contextValue?.password_change_required ? undefined : contextValue?.user);
         },
       };
     },

@@ -104,9 +104,8 @@ const LoginPage: FunctionComponent<LoginPageProps> = ({ settings }) => {
           </Typography>
         )}
 
-        {consentOk
-          && providers.filter((p) => p.type === 'FORM').length > 0
-          && (showLoginForm || !!resetPwdStep || !!forcePasswordChange)
+        {/* The session of an expired password is already open: its change needs neither the consent nor the login form */}
+        {(!!forcePasswordChange || (consentOk && hasAuthForm && (showLoginForm || !!resetPwdStep)))
           && (
             <Card
               sx={{

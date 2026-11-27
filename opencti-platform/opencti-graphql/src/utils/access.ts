@@ -681,31 +681,40 @@ export enum OTPValidationStatus {
   AUTHENTICATION_REQUIRED,
   ACTIVATION_REQUIRED,
   VALIDATION_REQUIRED,
+  PASSWORD_CHANGE_REQUIRED,
 }
-export const checkOTPValidationStatus = (context: AuthContext, allowUnprotectedOTP?: boolean): OTPValidationStatus => {
+// What the user of the context can access: the 2FA step first, then the change of an expired password.
+// - allowUnprotectedOTP: the operation is open before the 2FA step (the 2FA operations themselves, logout)
+// - allowExpiredPassword: the operation is open to a session that must change its expired password (meEdit, logout)
+export const checkOTPValidationStatus = (
+  context: AuthContext,
+  { allowUnprotectedOTP = false, allowExpiredPassword = false }: { allowUnprotectedOTP?: boolean; allowExpiredPassword?: boolean } = {},
+): OTPValidationStatus => {
   // Get user from the session
   const { user, otp_mandatory, user_otp_validated } = context;
   // User must be authenticated.
   if (!user) {
     return OTPValidationStatus.AUTHENTICATION_REQUIRED;
   }
-  if (!allowUnprotectedOTP) {
-    // If the platform enforce OTP
-    if (otp_mandatory) {
-      // If user have not validated is OTP in session
-      // by default user_otp_validated is true for direct api usage
-      if (!user_otp_validated) {
-        // If OTP is not setup, return a specific error
-        if (!user.otp_activated) {
-          return OTPValidationStatus.ACTIVATION_REQUIRED;
-        }
-        // If already setup but not validated, return the validation screen
-        return OTPValidationStatus.VALIDATION_REQUIRED;
-      }
-    } else if (user.otp_activated && !user_otp_validated) {
-      // If user self activate OTP, session must be validated
-      return OTPValidationStatus.VALIDATION_REQUIRED;
+  // 2FA status, computed even when the operation is open before the step, so it is known below
+  let otpStatus = OTPValidationStatus.VALID;
+  if (otp_mandatory) {
+    // by default user_otp_validated is true for direct api usage
+    if (!user_otp_validated) {
+      // ACTIVATION when OTP is not setup yet, VALIDATION when setup but not validated in session
+      otpStatus = user.otp_activated ? OTPValidationStatus.VALIDATION_REQUIRED : OTPValidationStatus.ACTIVATION_REQUIRED;
     }
+  } else if (user.otp_activated && !user_otp_validated) {
+    // If user self activate OTP, session must be validated
+    otpStatus = OTPValidationStatus.VALIDATION_REQUIRED;
+  }
+  const otpPending = otpStatus !== OTPValidationStatus.VALID;
+  if (!allowUnprotectedOTP && otpPending) {
+    return otpStatus;
+  }
+  // The password is changed after the 2FA step: while this step is pending on an unprotected operation, it stays open
+  if (context.password_change_required && !allowExpiredPassword && !(allowUnprotectedOTP && otpPending)) {
+    return OTPValidationStatus.PASSWORD_CHANGE_REQUIRED;
   }
   return OTPValidationStatus.VALID;
 };

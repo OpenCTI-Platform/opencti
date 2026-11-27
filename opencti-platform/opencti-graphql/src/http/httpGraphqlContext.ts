@@ -2,13 +2,13 @@ import type { Request, Response } from 'express';
 import { WorkNotALiveError } from '../config/errors';
 import { redisGetWork } from '../database/redis';
 import { isVerifiedFormSubmission } from '../modules/form/form-submission-context';
-import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { createAuthenticatedContext, GRAPHQL_CONTEXT_NAME } from './httpAuthenticatedContext';
 import { checkDraftInContext } from './httpServer-draft';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../schema/general';
 
 // Context of a /graphql call
 export const createGraphqlContext = async (req: Request, res: Response) => {
-  const executeContext = await createAuthenticatedContext(req, res, 'api');
+  const executeContext = await createAuthenticatedContext(req, res, GRAPHQL_CONTEXT_NAME);
   // When context is related to a work, we need to check work status
   if (executeContext.workId) {
     // The work hash is read once for both checks: the same liveness rule as isWorkAlive, then the form submission binding
