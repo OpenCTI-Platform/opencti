@@ -148,6 +148,10 @@ describe('check safeRender on invalid cases', () => {
     expect(() => safeRender(template, data)).toThrowError(VerifierParsingError);
   });
 
+  it('should explain why a template with HTML comment markers in its code is refused', () => {
+    expect(() => safeRender('<% let a = 2; a <!-- a %>', data)).toThrowError(/HTML comment markers/);
+  });
+
   it('safeRender should fail with VerifierIllegalAccessError for invalid context', () => {
     expect(() => safeRender('', { eval: 1 })).toThrowError(VerifierIllegalAccessError);
     expect(() => safeRender('<% Object.assign({}, user) %>', { user: { freeze: 1 } })).toThrowError(VerifierIllegalAccessError);
@@ -542,6 +546,16 @@ describe('check safeRender with escape', () => {
 
   it('should let the template data shadow escape', () => {
     expect(safeRender('<%- escape("a b:c") %>', { escape: (s: string) => s.toUpperCase() })).toEqual('A B:C');
+  });
+
+  it('should surface the message of an error thrown by a custom escape function', () => {
+    const escape = (s: string) => {
+      if (s === 'bad') {
+        throw new Error('bad escape');
+      }
+      return s;
+    };
+    expect(safeRender('<% let m = "none"; try { %><%= "bad" %><% } catch (e) { m = e.message; } %><%= m %>', {}, { escape })).toEqual('bad escape');
   });
 });
 
@@ -1033,6 +1047,17 @@ describe('check safeRender with functions in data', () => {
     const data = { pick: (matrix: { value: string; result: number }[], value: string) => matrix.find((m) => m.value === value)?.result };
     const options = { delimiter: '?', async: true, maxExecutedStatementCount: 10000, maxExecutionDuration: 5000 };
     expect(await createSafeEjsSandbox().safeRender('<?- pick([{ value: "high", result: 90 }], "high") ?>', data, options)).toEqual('90');
+  });
+
+  it('should refuse a promise returned by a data function', () => {
+    const template = '<% let m = "none"; try { load(); } catch (e) { m = e.message; } %><%= m %>';
+    expect(safeRender(template, { load: async () => 42 })).toEqual('Promises are not supported in template data');
+  });
+
+  it('should refuse a promise passed in the data with a host error', () => {
+    const render = () => safeRender('<%= value %>', { value: Promise.resolve(42) });
+    expect(render).toThrowError(Error);
+    expect(render).toThrowError('Promises are not supported in template data');
   });
 });
 

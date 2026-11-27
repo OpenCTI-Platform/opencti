@@ -145,7 +145,13 @@ const createSafeContext = (
     ]),
   );
 
-  const safeData = realm.clone(data ?? {});
+  let safeData: Record<string, unknown>;
+  try {
+    safeData = realm.clone(data ?? {});
+  } catch (error) {
+    // The copy runs in the sandbox realm: hand the caller a host error
+    throw restoreError(error as { name?: string; message?: string; stack?: string });
+  }
 
   const parts: Record<string, unknown>[] = [globals, safeData, guards];
   if (useNotificationTool) {
@@ -320,9 +326,8 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
 };
 
 const transformTemplate = (template: string, code: string, context: string[], async: boolean, shouldYield: boolean) => {
-  // HTML-like comments are not supported in template code
   if (code.includes('<!--') || code.includes('-->')) {
-    throw new VerifierParsingError('Invalid javascript');
+    throw new VerifierParsingError('HTML comment markers (<!-- and -->) are not allowed inside template tags');
   }
 
   context.forEach((name) => {
@@ -674,23 +679,26 @@ interface SafeRealm {
 // inherited method dies with the per-render context instead of carrying to the next render. A function
 // value (only main-thread callers pass any) is replaced by a sandbox-realm wrapper that copies its
 // receiver, arguments and result the same way, so a function passed along in either direction is
-// wrapped too.
-const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
-  clone: sandbox.runInContext(`(value) => {
+// wrapped too. One sandbox-realm translator turns every host error a template could catch into a
+// sandbox error carrying only its name and message.
+const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => {
+  const translateError = sandbox.runInContext(`(error) => {
+    let message = '';
+    let name = 'Error';
+    try {
+      if (error != null) {
+        message = error.message == null ? '' : String(error.message);
+        name = error.name == null ? 'Error' : String(error.name);
+      }
+    } catch { /* keep the defaults */ }
+    const translated = new Error(message);
+    translated.name = name;
+    return translated;
+  }`);
+  const withTranslator = <T>(code: string) => (sandbox.runInContext(code) as (translate: unknown) => T)(translateError);
+  return {
+    clone: withTranslator<SafeRealm['clone']>(`(translateError) => (value) => {
     const brand = Object.prototype.toString;
-    const translateError = (error) => {
-      let message = '';
-      let name = 'Error';
-      try {
-        if (error != null) {
-          message = error.message == null ? '' : String(error.message);
-          name = error.name == null ? 'Error' : String(error.name);
-        }
-      } catch { /* keep the defaults */ }
-      const translated = new Error(message);
-      translated.name = name;
-      return translated;
-    };
     const wrapFunction = (fn, seen) => {
       const wrapper = function (...args) {
         try {
@@ -720,6 +728,7 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
       if (value === null || typeof value !== 'object') { return value; }
       const existing = seen.get(value);
       if (existing) { return existing; }
+      if (typeof value.then === 'function') { throw new Error('Promises are not supported in template data'); }
       const tag = brand.call(value);
       if (tag === '[object Date]') { const copy = new Date(value.getTime()); seen.set(value, copy); return copy; }
       if (tag === '[object RegExp]') { const copy = new RegExp(value.source, value.flags); seen.set(value, copy); return copy; }
@@ -781,20 +790,14 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
       return copyInto(value, {}, seen);
     };
     return clone(value, new Map());
-  }`) as SafeRealm['clone'],
-  makeGuards: sandbox.runInContext(`(host) => {
+  }`),
+    makeGuards: withTranslator<SafeRealm['makeGuards']>(`(translateError) => (host) => {
     // A host check throws a host-realm error; a template could catch it and reach the worker's shared
-    // Error.prototype. Re-throw a sandbox-realm error carrying only the name and message (no host
-    // object, no cause), so a caught error belongs to the per-render context.
-    const rethrow = (error) => {
-      const translated = new Error(error == null ? '' : error.message);
-      translated.name = error == null ? 'Error' : error.name;
-      return translated;
-    };
+    // Error.prototype, so it is re-thrown as a sandbox-realm error.
     const guards = {};
-    guards[host.statementName] = () => { try { host.checkStatement(); } catch (error) { throw rethrow(error); } };
-    guards[host.statementAsyncName] = async () => { try { await host.checkStatementAsync(); } catch (error) { throw rethrow(error); } };
-    guards[host.propertyName] = (name) => { try { return host.checkProperty(name); } catch (error) { throw rethrow(error); } };
+    guards[host.statementName] = () => { try { host.checkStatement(); } catch (error) { throw translateError(error); } };
+    guards[host.statementAsyncName] = async () => { try { await host.checkStatementAsync(); } catch (error) { throw translateError(error); } };
+    guards[host.propertyName] = (name) => { try { return host.checkProperty(name); } catch (error) { throw translateError(error); } };
     guards[host.objectName] = Object.freeze({
       keys: Object.keys,
       values: Object.values,
@@ -807,7 +810,7 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
             const pairs = Object.entries(source);
             for (let j = 0; j < pairs.length; j += 1) {
               let key;
-              try { key = host.checkProperty(pairs[j][0]); } catch (error) { throw rethrow(error); }
+              try { key = host.checkProperty(pairs[j][0]); } catch (error) { throw translateError(error); }
               target[key] = pairs[j][1];
             }
           }
@@ -823,20 +826,17 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
     guards[host.iterateAsyncName] = async function* (iterable) { for await (const item of iterable) { statement(); yield item; } };
     guards[host.iterateKeysName] = function* (object) { for (const key in object) { statement(); yield key; } };
     return guards;
-  }`) as SafeRealm['makeGuards'],
-  makeOcti: sandbox.runInContext('(render) => ({ markdownToHtml: render })') as SafeRealm['makeOcti'],
-  // Wraps a host callback a template can reach (the markdown tool, the JSON escape, the include
-  // barrier) in a sandbox-realm function that translates a host exception into a sandbox-realm error,
-  // so a template that catches one cannot reach a host prototype through it.
-  wrapCallback: sandbox.runInContext(`(fn) => (...args) => {
-    try { return fn(...args); } catch (error) {
-      const translated = new Error(error == null ? '' : error.message);
-      translated.name = error == null ? 'Error' : error.name;
-      throw translated;
-    }
-  }`) as SafeRealm['wrapCallback'],
-  assemble: sandbox.runInContext('(parts) => Object.assign({}, ...parts)') as SafeRealm['assemble'],
-});
+  }`),
+    makeOcti: sandbox.runInContext('(render) => ({ markdownToHtml: render })') as SafeRealm['makeOcti'],
+    // Wraps a host callback a template can reach (the markdown tool, the JSON escape, the include
+    // barrier) in a sandbox-realm function that translates a host exception into a sandbox-realm error,
+    // so a template that catches one cannot reach a host prototype through it.
+    wrapCallback: withTranslator<SafeRealm['wrapCallback']>(`(translateError) => (fn) => (...args) => {
+    try { return fn(...args); } catch (error) { throw translateError(error); }
+  }`),
+    assemble: sandbox.runInContext('(parts) => Object.assign({}, ...parts)') as SafeRealm['assemble'],
+  };
+};
 
 const verifierErrorConstructors: Record<string, new (message: string) => VerifierError> = {
   VerifierParsingError,
