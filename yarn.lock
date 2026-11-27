@@ -14475,10 +14475,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:15.3.0":
-  version: 15.3.0
-  resolution: "graphql@npm:15.3.0"
-  checksum: 10c0/b75622aad9aa5436154d5c6b7a082cf3266654d779fb4f7ba3919f1b96626bf89426307e682cb9b88a0427c13cfd0d10ac0e12315719703e431297184fdd67aa
+"graphql@npm:15.11.0":
+  version: 15.11.0
+  resolution: "graphql@npm:15.11.0"
+  checksum: 10c0/6ee882045cfc612a117ee21a5e9e0cc96f01128360b1782fa03ca76eb307deacd9ebc579a2cddd979cd274d2728e66212b4402d23659ca1b644bc0af70079878
   languageName: node
   linkType: hard
 
