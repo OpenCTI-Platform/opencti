@@ -38,13 +38,15 @@ vi.mock('../../../../common/form/ObjectMarkingField', () => ({
 vi.mock('../../../../common/form/ObjectLabelField', () => ({
   default: ({
     name,
+    label,
     required,
     values,
   }: {
     name: string;
+    label: string;
     required: boolean;
     values: unknown;
-  }) => <div data-testid="object-label-field">{`${name}:${required}:${JSON.stringify(values)}`}</div>,
+  }) => <div data-testid="object-label-field">{`${name}:${label}:${required}:${JSON.stringify(values)}`}</div>,
 }));
 
 vi.mock('../../../../common/form/ExternalReferencesField', () => ({
@@ -165,13 +167,13 @@ describe('date and reference field renderers', () => {
 
     const nonPrefixedRender = renderField(
       'objectLabel',
-      { name: 'labels' },
+      { name: 'labels', label: 'Labels (select ncc.report.threatpulse.monthly)' },
       {
         values: { labels: values },
       },
     );
     expect(nonPrefixedRender.getByTestId('object-label-field')).toHaveTextContent(
-      `labels:false:${JSON.stringify(values)}`,
+      `labels:Labels (select ncc.report.threatpulse.monthly):false:${JSON.stringify(values)}`,
     );
 
     cleanup();
@@ -190,7 +192,7 @@ describe('date and reference field renderers', () => {
       },
     );
     expect(prefixedRender.getByTestId('object-label-field')).toHaveTextContent(
-      `metadata.labels:false:${JSON.stringify(values)}`,
+      `metadata.labels:Reference:false:${JSON.stringify(values)}`,
     );
   });
 
