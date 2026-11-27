@@ -12,10 +12,9 @@ import {
   INGESTION_DEDUPLICATION_TTL,
 } from '../../database/ingestionDeduplication';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { enforceEnableFeatureFlag, SYSTEM_USER } from '../../utils/access';
+import { enforceEnableFeatureFlag, isUserHasCapability, MODULES, SYSTEM_USER } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, FilterMode, type IngestionDeduplicationRuleAddInput } from '../../generated/graphql';
-import { connectorIdFromIngestId } from '../../domain/connector';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { CachedConnector } from '../connector/connector-types';
 import {
@@ -33,7 +32,11 @@ import {
 
 const TOPICS = BUS_TOPICS[ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE];
 
-export { findIngestionDeduplicationRules };
+// Sorted for display only: the import path reads the rules unsorted
+export const findUserIngestionDeduplicationRules = async (context: AuthContext, userId: string) => {
+  const rules = await findIngestionDeduplicationRules(context, userId);
+  return [...rules].sort((a, b) => a.target_type.localeCompare(b.target_type));
+};
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityIngestionDeduplicationRule>(context, user, id, ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE);
@@ -161,18 +164,17 @@ const DEDUPLICATED_FEED_TYPES = [
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 ];
 
-// Every ingestion running as this user, except the connector being looked at and the feed it is the built-in twin of
-export const findUserIngestionUsages = async (context: AuthContext, user: AuthUser, userId: string, excludeConnectorId?: string | null) => {
+// Every ingestion running as this user
+export const findUserIngestionUsages = async (context: AuthContext, user: AuthUser, userId: string) => {
   const userFilter = { mode: FilterMode.And, filters: [{ key: ['user_id'], values: [userId] }], filterGroups: [] };
   // Loaded as the caller: a feed restricted to other members must not show, even by name
+  // Connectors are only listed to readers who can access them, as the connectors query requires
+  const canAccessConnectors = isUserHasCapability(user, MODULES);
   const [connectors, feeds] = await Promise.all([
-    getEntitiesListFromCache<CachedConnector>(context, user, ENTITY_TYPE_CONNECTOR),
+    canAccessConnectors ? getEntitiesListFromCache<CachedConnector>(context, user, ENTITY_TYPE_CONNECTOR) : [],
     fullEntitiesList(context, user, DEDUPLICATED_FEED_TYPES, { filters: userFilter }),
   ]);
   // Built-in connectors are the twins of feeds, which are listed as such
   const userConnectors = connectors.filter((connector) => !connector.built_in && connector.connector_user_id === userId);
-  const isExcluded = (id: string) => !!excludeConnectorId && (id === excludeConnectorId || connectorIdFromIngestId(id) === excludeConnectorId);
-  return [...userConnectors, ...feeds]
-    .filter((element) => !isExcluded(element.id))
-    .map((element) => ({ id: element.id, name: element.name, entity_type: element.entity_type }));
+  return [...userConnectors, ...feeds].map((element) => ({ id: element.id, name: element.name, entity_type: element.entity_type }));
 };
