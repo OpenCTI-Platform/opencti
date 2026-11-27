@@ -13727,6 +13727,7 @@ input SecurityCoverageResultAddInput {
   noTriggerImport: [Boolean]
   objectLabel: [String]
   objectMarking: [String]
+  objectOrganization: [String]
   resultOf: String!
   revoked: Boolean
   stix_id: StixId

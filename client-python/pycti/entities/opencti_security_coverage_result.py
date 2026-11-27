@@ -265,6 +265,8 @@ class SecurityCoverageResult:
         :type objectMarking: list
         :param objectLabel: (optional) list of label IDs
         :type objectLabel: list
+        :param objectOrganization: (optional) list of organization IDs the result is shared with
+        :type objectOrganization: list
         :param externalReferences: (optional) list of external reference IDs
         :type externalReferences: list
         :param external_uri: (optional) external URI
@@ -292,6 +294,7 @@ class SecurityCoverageResult:
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
+        granted_refs = kwargs.get("objectOrganization", None)
         result_of = kwargs.get("resultOf", None)
         external_references = kwargs.get("externalReferences", None)
         external_uri = kwargs.get("external_uri", None)
@@ -334,6 +337,7 @@ class SecurityCoverageResult:
                         "createdBy": created_by,
                         "objectMarking": object_marking,
                         "objectLabel": object_label,
+                        "objectOrganization": granted_refs,
                         "resultOf": result_of,
                         "external_uri": external_uri,
                         "externalReferences": external_references,
@@ -444,6 +448,11 @@ class SecurityCoverageResult:
                 x_opencti_stix_ids=(
                     stix_object["x_opencti_stix_ids"]
                     if "x_opencti_stix_ids" in stix_object
+                    else None
+                ),
+                objectOrganization=(
+                    stix_object["x_opencti_granted_refs"]
+                    if "x_opencti_granted_refs" in stix_object
                     else None
                 ),
                 files=extras.get("files"),

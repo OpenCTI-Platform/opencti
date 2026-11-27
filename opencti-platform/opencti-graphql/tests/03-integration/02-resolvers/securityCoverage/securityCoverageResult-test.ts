@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin } from '../../../utils/testQueryHelper';
+import { TEST_ORGANIZATION } from '../../../utils/testQuery';
 
 const GET_SECURITY_COVERAGES = gql`
  query SecurityCoverages {
@@ -55,6 +56,9 @@ const CREATE_MUTATION = gql`
   mutation CreateSecurityCoverageResult($input: SecurityCoverageResultAddInput!) {
     securityCoverageResultAdd(input: $input) {
       id
+      objectOrganization {
+        name
+      }
       external_uri
       coverage_last_result
       coverage_valid_from
@@ -111,6 +115,8 @@ describe('SecurityCoverageResult resolver', () => {
             coverage_score: 50,
           }],
           external_uri: 'http://localhost/admin/scenarios/d49dd003-3498-441f-96a8-a533067b1322',
+          // A playbook or a sync shares the result with organizations at ingestion (#20501)
+          objectOrganization: [TEST_ORGANIZATION.id],
         },
       },
     });
@@ -123,6 +129,7 @@ describe('SecurityCoverageResult resolver', () => {
     expect(securityCoverageResultData.external_uri).toEqual('http://localhost/admin/scenarios/d49dd003-3498-441f-96a8-a533067b1322');
     expect(securityCoverageResultData.coverage_information[0].coverage_name).toEqual('vulnerability');
     expect(securityCoverageResultData.coverage_information[0].coverage_score).toEqual(50);
+    expect(securityCoverageResultData.objectOrganization.map((o: { name: string }) => o.name)).toEqual([TEST_ORGANIZATION.name]);
     createdScrId = securityCoverageResultData.id;
   });
 

@@ -207,6 +207,7 @@ input SecurityCoverageResultAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   created: DateTime
   modified: DateTime
   revoked: Boolean
