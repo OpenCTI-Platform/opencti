@@ -199,6 +199,12 @@ describe('sequencer batch plan (plan 0009 D1/D2/D3)', () => {
       const newerWaiting = waitingOf();
       expect(buildBatchPlan([newerWaiting, olderReady], resolve, new Set(), options).deferred)
         .toEqual([{ intent: olderReady, reason: 'relation' }, { intent: newerWaiting, reason: 'queued_producer', waitingOn: ['identity--y'] }]);
+      // the first case, the ready write naming the source by another id of the same element: one key, the same order
+      const olderWaitingAgain = waitingOf();
+      const newerAliased = intentOf({ kind: 'relation', input: { fromId: 'malware--alias', toId: 'attack-pattern--b' }, candidateIds: ['relationship--stix2', 'malware--alias', 'attack-pattern--b'], user: 'misp' });
+      const aliased = (id: string) => (id === 'malware--alias' ? 'int-malware--a' : resolve(id));
+      expect(buildBatchPlan([olderWaitingAgain, newerAliased], aliased, new Set(), options).deferred)
+        .toEqual([{ intent: olderWaitingAgain, reason: 'queued_producer', waitingOn: ['identity--y'] }, { intent: newerAliased, reason: 'relation' }]);
     });
 
     it('keeps the chain steps of one target in their order in the lane, whatever each waits on (round 7)', () => {

@@ -536,12 +536,16 @@ describe('park book: one park deadline per intent, whatever path brings it back 
 
   it('holds on 1,000 random shapes: every intent settles, one deadline per park wait, no stateless re-plan, never expired outside a park', () => {
     const failures: string[] = [];
+    let outOfOrderSeeds = 0;
     for (let seed = 1; seed <= 1000; seed += 1) {
       const run = simulate(randomRun(seed));
       const problems = liveProblems(run);
       if (problems.length > 0) failures.push(`seed ${seed}: ${problems.join(', ')}`);
+      if (run.outOfOrder.length > 0) outOfOrderSeeds += 1;
     }
     expect(failures).toEqual([]);
+    // task 0050 lead 43, a ratchet: same-key writes applied out of arrival order on 470 seeds (2026-11-26), never more
+    expect(outOfOrderSeeds).toBeLessThanOrEqual(470);
   });
 
   it('keeps a parked intent expired on its way back through a lane', () => {

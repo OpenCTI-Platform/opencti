@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildBatchPlan, canonicalKey, classifyPhase, orderApplicable } from '../../../src/database/sequencer/sequencer-batch-plan';
+import { buildBatchPlan, canonicalKey, classifyPhase, inArrivalOrderPerKey, orderApplicable } from '../../../src/database/sequencer/sequencer-batch-plan';
 import type { BatchPlan, BatchPlanOptions, CoalesceGroup, DeferReason } from '../../../src/database/sequencer/sequencer-batch-plan';
 import { intentEndpointIds, intentOwnIds } from '../../../src/database/sequencer/sequencer-intent';
 import type { SequencerIntent } from '../../../src/database/sequencer/sequencer-intent';
@@ -415,7 +415,7 @@ const shapeOf = (plan: BatchPlan, batch: SequencerIntent[]) => JSON.stringify({
   ids: batch.map((i) => i.id),
 });
 
-// Lead 38: the lane of a key is a FIFO, so a plan defers the writes of one key oldest first (arrivedAt, then batch
+// task 0050 lead 38: the lane of a key is a FIFO, so a plan defers the writes of one key oldest first (arrivedAt, then batch
 // index), companions included. Returns the keys whose deferrals are out of that order.
 const lanesOutOfArrivalOrder = (plan: BatchPlan, batch: SequencerIntent[], resolveId: (id: string) => string | null): string[] => {
   const index = new Map(batch.map((intent, i) => [intent.id, i]));
@@ -625,6 +625,55 @@ describe('sequencer batch plan oracle (Kahn order, lazy norm)', () => {
       expect(lanesOutOfArrivalOrder(plan, batch, resolveId), `seed ${seed}`).toEqual([]);
     }
     expect(absorbed).toBeGreaterThan(100);
+  });
+
+  // task 0050 lead 38, the reorder itself: the planner checks above pin the per-key order of the deferrals, not their
+  // positions across keys nor the key they are grouped by (a global sort, a sort per kind or a key on the raw ids
+  // passed them). Endpoints and targets have aliases (two ids of one element), so the canonical key differs from the
+  // raw one; ages tie on arrivedAt, the batch index breaks the tie.
+  it('reorders deferrals by arrival within each canonical key, every position keeping its key, on 3,000 random lists', () => {
+    const aliases: Record<string, string | null> = {
+      'malware--a': 'int-a', 'malware--a2': 'int-a', 'malware--b': 'int-b', 'malware--c': null,
+      'attack-pattern--x': 'int-x', 'attack-pattern--x2': 'int-x', 'attack-pattern--y': null,
+    };
+    const resolveId = (id: string) => aliases[id] ?? null;
+    const ids = Object.keys(aliases);
+    let aliasedReorders = 0;
+    let crossKeyLists = 0;
+    for (let seed = 1; seed <= 3000; seed += 1) {
+      const rnd = lcg(seed);
+      const pick = <T>(values: T[]): T => values[Math.floor(rnd() * values.length)];
+      const batch: SequencerIntent[] = Array.from({ length: 2 + Math.floor(rnd() * 10) }, (_, n) => ({
+        id: `i${n}`,
+        arrivedAt: Math.floor(rnd() * 4),
+        ...(rnd() < 0.6
+          ? { kind: 'relation', type: 'uses', input: { fromId: pick(ids.slice(0, 4)), toId: pick(ids.slice(4)) }, candidateIds: [] }
+          : { kind: 'entity', type: 'Malware', input: {}, candidateIds: [pick(ids.slice(0, 4))] }),
+      } as any));
+      const deferrals = batch.filter(() => rnd() < 0.8).map((intent) => ({ intent }))
+        .map((d) => ({ d, r: rnd() })).sort((x, y) => x.r - y.r).map(({ d }) => d);
+      const reordered = inArrivalOrderPerKey(deferrals, batch, resolveId);
+      const keyOf = (d: { intent: SequencerIntent }) => canonicalKey(d.intent, resolveId);
+      const rawKeyOf = (d: { intent: SequencerIntent }) => canonicalKey(d.intent, () => null);
+      const index = new Map(batch.map((intent, i) => [intent.id, i]));
+      const age = (d: { intent: SequencerIntent }) => d.intent.arrivedAt * 100 + (index.get(d.intent.id) ?? 0);
+      // the same deferrals, each position keeping its key
+      expect(new Set(reordered), `seed ${seed}`).toEqual(new Set(deferrals));
+      expect(reordered.length, `seed ${seed}`).toBe(deferrals.length);
+      expect(reordered.map(keyOf), `seed ${seed}`).toEqual(deferrals.map(keyOf));
+      // each canonical key oldest first
+      const byKey = new Map<string, { intent: SequencerIntent }[]>();
+      reordered.forEach((d) => byKey.set(keyOf(d), [...(byKey.get(keyOf(d)) ?? []), d]));
+      byKey.forEach((lane, key) => {
+        const ages = lane.map(age);
+        expect(ages, `seed ${seed} ${key}`).toEqual([...ages].sort((x, y) => x - y));
+      });
+      // power: an alias pair reordered, keys interleaved out of arrival order
+      if (reordered.some((d, i) => rawKeyOf(d) !== rawKeyOf(deferrals[i]))) aliasedReorders += 1;
+      if (deferrals.some((d, i) => i > 0 && keyOf(d) !== keyOf(deferrals[i - 1]) && age(d) < age(deferrals[i - 1]))) crossKeyLists += 1;
+    }
+    expect(aliasedReorders).toBeGreaterThan(600);
+    expect(crossKeyLists).toBeGreaterThan(2000);
   });
 
   it('orders a container emptied by the dead strip as phase 0, as the former planner did', () => {

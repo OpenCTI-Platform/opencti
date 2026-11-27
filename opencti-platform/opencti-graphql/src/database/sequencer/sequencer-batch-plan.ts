@@ -391,11 +391,12 @@ export const orderApplicable = (groups: { leader: SequencerIntent; absorbed: Seq
   return order;
 };
 
-// task 0040 lead 36: the lane of a key is a FIFO, so the deferrals of one key go to it oldest first (arrivedAt, then
+// task 0050 lead 38: the lane of a key is a FIFO, so the deferrals of one key go to it oldest first (arrivedAt, then
 // batch index), each key keeping its positions in the list. A companion waiting on the same queued producer as its
 // older head took its step-1 slot ahead of it: both woke on the landing and the newer write applied first
 // (review 2026-11-25). The batch index alone is not the age: the loop puts a fresh arrival ahead of the parked set.
-const inArrivalOrderPerKey = <D extends { intent: SequencerIntent }>(
+// Exported for its property test.
+export const inArrivalOrderPerKey = <D extends { intent: SequencerIntent }>(
   deferrals: D[],
   batch: SequencerIntent[],
   resolveId: (id: string) => string | null,
