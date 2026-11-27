@@ -134,8 +134,7 @@ const attemptLogin = async (page: Page, loginForm: LoginFormPageModel, password:
   await expect(page.getByText(message)).toBeVisible();
 };
 
-// The feature needs the LOCAL_AUTH_LOCKOUT flag, on for the `@groupff` e2e group (`dev_features: '["*"]'`).
-test.describe('Local authentication lockout', { tag: ['@ce', '@groupff'] }, () => {
+test.describe('Local authentication lockout', { tag: ['@ce'] }, () => {
   test.describe.configure({ mode: 'serial' });
 
   let settingsId: string;

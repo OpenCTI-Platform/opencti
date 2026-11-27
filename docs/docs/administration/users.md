@@ -208,10 +208,10 @@ Account status can have four values:
 
 * Active: a user active will be able to log in
 * Inactive: an inactive user will not be able to log in
-* Locked: a locked user will not be able to log in
+* Locked: a locked user will not be able to log in. The [account lockout policy](local-auth-lockout.md) can also set an account to Locked after repeated failed login attempts.
 * Expired: an expired user will not be able to log in. A user can be in an expired state because an **Account Expiry Date** has been defined for this user, and we are past this date. It ensures automatically that the user will not be able to log in after that date.
 
-Only the expired status can be automatically set (given the account expiry date). The other statuses can be set manually or through mass operations within the user management screen. 
+Only the expired and locked statuses can be automatically set (given the account expiry date, or by the account lockout policy). The other statuses can be set manually or through mass operations within the user management screen. 
 
 ### Merging users
 

@@ -202,6 +202,10 @@ Password hashes, current and previous, are stored in the user documents of Elast
 
 While the rule is enabled (a value of `1` or more), a local account's password change must be sent on its own: combining it with other fields is refused with "The password must be changed on its own". The exception is `user_service_account`, which may accompany the password; when switching account type, the supplied password is ignored. With the rule disabled, existing API calls are unchanged.
 
+#### Account lockout policy
+
+To lock accounts after repeated failed login attempts, see [Account lockout policy](local-auth-lockout.md).
+
 ### HTTP headers
 Unless this authentication strategy was defined before migrating, it should be disabled by default.
 To enable it, simply toggle it on via the toggle present in the drawer and edit all the fields according to your needs.

@@ -1,5 +1,4 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as conf from '../../../../src/config/conf';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
 import { deleteInternalObject } from '../../../../src/domain/internalObject';
@@ -9,8 +8,6 @@ import * as smtp from '../../../../src/database/smtp';
 import { type BasicStoreEntityEmailTemplate, ENTITY_TYPE_EMAIL_TEMPLATE } from '../../../../src/modules/emailTemplate/emailTemplate-types';
 import { LOCKED_USER_EMAIL_TEMPLATE_INPUT } from '../../../../src/database/locked-user-email-template-input';
 import { addFilter } from '../../../../src/utils/filtering/filtering-utils';
-
-const { isFeatureEnabled } = conf;
 
 // The engine matches a name without its case: the templates whose name differs only by its case are found too
 const templatesWithLockedUserName = () => fullEntitiesList<BasicStoreEntityEmailTemplate>(testContext, ADMIN_USER, [ENTITY_TYPE_EMAIL_TEMPLATE], {
@@ -35,7 +32,7 @@ describe('Built-in email template for the locked users', () => {
     vi.restoreAllMocks();
   });
 
-  // The platform init creates it in the tests, where every feature flag is enabled
+  // The platform init creates it in the tests
   afterAll(async () => {
     await deleteLockedUserTemplates();
     await initLockedUserEmailTemplate(testContext);
@@ -75,11 +72,6 @@ describe('Built-in email template for the locked users', () => {
     expect(await lockedUserTemplates()).toHaveLength(1);
   });
 
-  it('should not create the template without the feature flag', async () => {
-    vi.spyOn(conf, 'isFeatureEnabled').mockImplementation((flag: string) => (flag === conf.LOCAL_AUTH_LOCKOUT_FEATURE_FLAG ? false : isFeatureEnabled(flag)));
-    await initLockedUserEmailTemplate(testContext);
-    expect(await lockedUserTemplates()).toHaveLength(0);
-  });
   it('should show a fictional lock in a test email of the template', async () => {
     vi.spyOn(enterpriseEdition, 'checkEnterpriseEdition').mockResolvedValue();
     const sendMail = vi.spyOn(smtp, 'sendMail').mockResolvedValue(undefined);

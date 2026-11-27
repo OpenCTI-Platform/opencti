@@ -257,6 +257,7 @@ nav:
       - Parameters: administration/parameters.md
       - Security:
         - Authentication: administration/authentication-via-ui.md
+        - Account lockout policy: administration/local-auth-lockout.md
         - SMTP configuration: administration/smtp-configuration.md
         - Cookies: administration/cookies.md
         - Policies: administration/policies.md

@@ -1,19 +1,10 @@
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import EmailTemplateAttributesSidebar from './EmailTemplateAttributesSidebar';
 
-let lockoutFlag = false;
-vi.mock('../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: (flag: string) => flag === 'LOCAL_AUTH_LOCKOUT' && lockoutFlag }),
-}));
-
 describe('EmailTemplateAttributesSidebar', () => {
-  beforeEach(() => {
-    lockoutFlag = false;
-  });
-
   it('shows the variables of the recipient and of the platform', () => {
     testRender(<EmailTemplateAttributesSidebar />);
     expect(screen.getByText('Attributes of the user')).toBeInTheDocument();
@@ -21,15 +12,7 @@ describe('EmailTemplateAttributesSidebar', () => {
     expect(screen.getByText('$settings.platform_url (Platform URL)')).toBeInTheDocument();
   });
 
-  it('hides the variables of the locked user and of the lock without the local authentication lockout', () => {
-    testRender(<EmailTemplateAttributesSidebar />);
-    expect(screen.queryByText('Attributes of the locked user')).not.toBeInTheDocument();
-    expect(screen.queryByText('Attributes of the lock')).not.toBeInTheDocument();
-    expect(screen.queryByText(/\$locked_user\./)).not.toBeInTheDocument();
-  });
-
-  it('shows the variables of the locked user and of the lock with the local authentication lockout', () => {
-    lockoutFlag = true;
+  it('shows the variables of the locked user and of the lock', () => {
     testRender(<EmailTemplateAttributesSidebar />);
     expect(screen.getByText('Attributes of the locked user')).toBeInTheDocument();
     expect(screen.getByText('Attributes of the lock')).toBeInTheDocument();
