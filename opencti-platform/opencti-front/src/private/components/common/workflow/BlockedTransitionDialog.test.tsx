@@ -83,6 +83,33 @@ describe('BlockedTransitionDialog', () => {
     expect(screen.getByTestId('workflow-blocked-dialog')).toHaveTextContent(LONG_VALUE);
   });
 
+  it('shows a nested group as one row joined by the group mode', async () => {
+    const nested = {
+      mode: 'and',
+      filters: [filter('description', [LONG_VALUE])],
+      filterGroups: [{ mode: 'or', filters: [filter('name', ['alpha']), filter('name', ['beta'])], filterGroups: [] }],
+    };
+    const { relayEnv } = renderDialog({ blockingConditions: JSON.stringify(nested) });
+    await act(async () => relayEnv.mock.resolveMostRecentOperation({
+      data: {
+        filtersRepresentatives: [LONG_VALUE, 'alpha', 'beta'].map((v) => (
+          { representativeId: v, value: v, entity_type: null, color: null }
+        )),
+      },
+    }));
+    await act(async () => relayEnv.mock.resolveMostRecentOperation({ data: { vocabularyCategories: [] } }));
+    await screen.findByText('alpha', { exact: false });
+    const rows = screen.getAllByTestId('workflow-blocked-dialog-condition');
+    expect(rows).toHaveLength(2);
+    expect(rows[1].textContent).toMatch(/alpha.*OR.*beta/);
+  });
+
+  it('Escape calls onClose', () => {
+    const { onClose } = renderDialog();
+    fireEvent.keyDown(screen.getByTestId('workflow-blocked-dialog'), { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('Dismiss calls onClose', () => {
     const { onClose } = renderDialog();
     fireEvent.click(screen.getByTestId('workflow-blocked-dialog-dismiss'));
