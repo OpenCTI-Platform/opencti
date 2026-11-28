@@ -93,7 +93,7 @@ export const createRetentionRule = async (context: AuthContext, user: AuthUser, 
     message: `creates retention rule \`${retentionRule.name}\``,
     context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
-  return retentionRule;
+  return findById(context, user, retentionRuleId);
 };
 
 // Written by the retention manager only, through patchAttribute
@@ -114,7 +114,7 @@ export const retentionRuleEditField = async (context: AuthContext, user: AuthUse
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for retention rule \`${retentionElement.name}\``,
     context_data: { id: retentionRuleId, entity_type: ENTITY_TYPE_RETENTION_RULE, input },
   });
-  return element;
+  return retentionElement;
 };
 
 export const deleteRetentionRule = async (context: AuthContext, user: AuthUser, retentionRuleId: string) => {
