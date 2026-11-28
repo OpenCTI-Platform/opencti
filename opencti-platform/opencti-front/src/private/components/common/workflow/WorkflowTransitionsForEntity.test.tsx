@@ -3,7 +3,7 @@ import { act, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useFragment, useLazyLoadQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
-import { WorkflowTransitionsForEntity } from './WorkflowTransitions';
+import { WorkflowTransitionsForEntity, type TransitionButtonsOptions } from './WorkflowTransitions';
 import { WorkflowStatusForEntity } from './WorkflowStatus';
 import reportQuery from '../../analyses/reports/__generated__/RootReportQuery.graphql';
 import reportFragment from '../../analyses/reports/__generated__/Report_report.graphql';
@@ -33,14 +33,14 @@ type BlockedTransitions = NonNullable<WorkflowStatusStixDomainObject_data$data['
 const assigneeCondition = { mode: 'and', filters: [{ key: ['objectAssignee'], values: ['@me'], operator: 'eq', mode: 'or' }], filterGroups: [] };
 const blockedAnswer = { event: 'answer', toState: 'C', blockingConditions: JSON.stringify(assigneeCondition), toStatus: status('C') };
 
-const Harness = () => {
+const Harness = ({ transitionButtons }: { transitionButtons?: TransitionButtonsOptions }) => {
   const query = useLazyLoadQuery<RootReportQuery>(reportQuery, { id: 'entity-1' });
   const report = useFragment<Report_report$key>(reportFragment, query.report);
   return report && (
     <>
       <span data-testid="legacy-status">{report.status?.template?.name}</span>
       <WorkflowStatusForEntity data={report} entityType="Report">
-        <WorkflowTransitionsForEntity data={report} entityType="Report" />
+        <WorkflowTransitionsForEntity data={report} entityType="Report" transitionButtons={transitionButtons} />
       </WorkflowStatusForEntity>
     </>
   );
@@ -48,12 +48,14 @@ const Harness = () => {
 
 const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
   allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions,
-  draftContext: { id: string; name: string } | null = null, blockedTransitions: BlockedTransitions = []) => {
+  draftContext: { id: string; name: string } | null = null, blockedTransitions: BlockedTransitions = [],
+  transitionButtons?: TransitionButtonsOptions) => {
   vi.useFakeTimers();
-  const rendered = testRender(<Suspense><Harness /></Suspense>, {
+  const rendered = testRender(<Suspense><Harness transitionButtons={transitionButtons} /></Suspense>, {
     userContext: createMockUserContext({
       me: { capabilities: [{ name: capability }], capabilitiesInDraft: [], draftContext },
       settings: { platform_feature_flags: enabled ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
+      schema: { scrs: [], sdos: [], scos: [], smos: [], filterKeysSchema: new Map([['Report', new Map([['objectAssignee', { filterKey: 'objectAssignee', label: 'Assignees', type: 'id', multiple: true, subEntityTypes: ['Report'], elementsForFilterValuesSearch: [] }]])]]) },
     }),
   });
   await act(async () => rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
@@ -289,32 +291,100 @@ describe('WorkflowTransitionsForEntity refresh', () => {
 });
 
 describe('WorkflowTransitionsForEntity blocked transitions', () => {
-  it('shows a blocked transition as a disabled menu item', async () => {
-    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+  const openMenuWithBlocked = async (blocked = blockedAnswer) => {
+    const rendered = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blocked]);
     vi.useRealTimers();
-    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    await rendered.user.click(screen.getByRole('button', { name: 'Next status' }));
+    return rendered;
+  };
+  const isMutation = (relayEnv: ReturnType<typeof testRender>['relayEnv']) => relayEnv.mock.getAllOperations()
+    .some((operation) => operation.request.node.params.operationKind === 'mutation');
+
+  it('shows a locked menu item that is focusable and aria-disabled', async () => {
+    await openMenuWithBlocked();
     expect(screen.getAllByRole('menuitem')).toHaveLength(2);
-    const blocked = screen.getByRole('menuitem', { name: 'answer' });
-    expect(blocked).toHaveAttribute('aria-disabled', 'true');
-    fireEvent.click(blocked);
-    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    const item = screen.getByTestId('workflow-blocked-transition-answer');
+    expect(item).toHaveAttribute('role', 'menuitem');
+    expect(item).toHaveAttribute('aria-disabled', 'true');
+    expect(item).not.toHaveAttribute('data-disabled');
   });
 
-  it('shows the blocked reason on hover', async () => {
-    const { user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
-    vi.useRealTimers();
-    await user.click(screen.getByRole('button', { name: 'Next status' }));
-    await user.hover(screen.getByTestId('workflow-blocked-transition-answer'));
-    expect((await screen.findAllByText('Requires'))[0]).toBeInTheDocument();
+  it('shows the Requires summary with translated field names', async () => {
+    await openMenuWithBlocked();
+    expect(screen.getByTestId('workflow-blocked-summary-answer')).toHaveTextContent(/Requires .*Assignees.* · Details/);
   });
 
-  it('renders a disabled button when the only transition is blocked', async () => {
-    await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer]);
-    const blocked = screen.getByRole('button', { name: 'answer' });
-    expect(blocked).toBeDisabled();
-    // A lock tells a blocked action apart from the status chip next to it
-    expect(within(blocked).getByTestId('LockOutlinedIcon')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
+  it('clicking the locked item opens the dialog and fires no mutation', async () => {
+    const { relayEnv, user } = await openMenuWithBlocked();
+    await user.click(screen.getByTestId('workflow-blocked-transition-answer'));
+    expect(await screen.findByTestId('workflow-blocked-dialog')).toBeVisible();
+    expect(screen.getByText('Meet every condition below to move this Report to C.')).toBeInTheDocument();
+    expect(isMutation(relayEnv)).toBe(false);
+  });
+
+  it('Enter on the locked item opens the dialog', async () => {
+    const { user } = await openMenuWithBlocked();
+    screen.getByTestId('workflow-blocked-transition-answer').focus();
+    await user.keyboard('{Enter}');
+    expect(await screen.findByTestId('workflow-blocked-dialog')).toBeVisible();
+  });
+
+  it('Dismiss leaves the page clickable and returns focus to Next status', async () => {
+    const { user } = await openMenuWithBlocked();
+    await user.click(screen.getByTestId('workflow-blocked-transition-answer'));
+    await user.click(await screen.findByTestId('workflow-blocked-dialog-dismiss'));
+    expect(screen.queryByTestId('workflow-blocked-dialog')).toBeNull();
+    expect(document.body.style.pointerEvents).not.toBe('none');
+    expect(screen.getByRole('button', { name: 'Next status' })).toHaveFocus();
+  });
+
+  it('no summary line when blockingConditions is invalid JSON', async () => {
+    await openMenuWithBlocked({ ...blockedAnswer, blockingConditions: 'not json' });
+    expect(screen.getByTestId('workflow-blocked-transition-answer')).toBeInTheDocument();
+    expect(screen.queryByTestId('workflow-blocked-summary-answer')).toBeNull();
+  });
+
+  // The default buttons, and the transitionButtons variant (Request for Information processing)
+  describe.each([
+    ['default buttons', undefined],
+    ['transitionButtons', {}],
+  ])('in the button row (%s)', (_variant, transitionButtons) => {
+    const setupButtonRow = async () => {
+      const rendered = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer], transitionButtons);
+      vi.useRealTimers();
+      return rendered;
+    };
+
+    it('renders a locked button that is aria-disabled, not disabled, with the lock icon', async () => {
+      await setupButtonRow();
+      const button = screen.getByTestId('workflow-blocked-transition-answer');
+      expect(button).toHaveAccessibleName('answer');
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
+      // A lock tells a blocked action apart from the status chip next to it
+      expect(within(button).getByTestId('LockOutlinedIcon')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
+    });
+
+    it('has no Requires summary and no tooltip', async () => {
+      const { user } = await setupButtonRow();
+      expect(screen.queryByTestId('workflow-blocked-summary-answer')).toBeNull();
+      await user.hover(screen.getByTestId('workflow-blocked-transition-answer'));
+      expect(screen.queryByRole('tooltip')).toBeNull();
+    });
+
+    it('click opens the dialog and fires no mutation', async () => {
+      const { relayEnv, user } = await setupButtonRow();
+      await user.click(screen.getByTestId('workflow-blocked-transition-answer'));
+      expect(await screen.findByTestId('workflow-blocked-dialog')).toBeVisible();
+      expect(isMutation(relayEnv)).toBe(false);
+    });
+
+    it('Dismiss returns focus to the locked button', async () => {
+      const { user } = await setupButtonRow();
+      await user.click(screen.getByTestId('workflow-blocked-transition-answer'));
+      await user.click(await screen.findByTestId('workflow-blocked-dialog-dismiss'));
+      expect(screen.getByTestId('workflow-blocked-transition-answer')).toHaveFocus();
+    });
   });
 });

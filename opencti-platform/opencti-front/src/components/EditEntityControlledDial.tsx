@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Button, { CustomButtonProps } from '@common/button/Button';
 import { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { CommonProps } from '@mui/material/OverridableComponent';
 import { useFormatter } from './i18n';
 import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
+import { registerEntityEditionOpener } from './entityEditionOpener';
 
 const EditEntityControlledDial = ({
   onOpen,
@@ -20,6 +21,14 @@ const EditEntityControlledDial = ({
   const draftContext = useDraftContext();
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
+  // Let other components (e.g. a blocked workflow transition) open the same drawer
+  const onOpenRef = useRef(onOpen);
+  onOpenRef.current = onOpen;
+  const canOpen = canDisplayButton && !disabled;
+  useEffect(() => {
+    if (!canOpen) return undefined;
+    return registerEntityEditionOpener(() => onOpenRef.current());
+  }, [canOpen]);
   return canDisplayButton ? (
     <Button
       onClick={onOpen}
