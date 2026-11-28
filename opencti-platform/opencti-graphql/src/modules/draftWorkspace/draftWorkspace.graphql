@@ -79,7 +79,7 @@ type DraftWorkspaceEdge {
 
 # Queries
 type Query {
-    draftWorkspace(id: String!): DraftWorkspace @auth(for: [KNOWLEDGE])
+    draftWorkspace(id: String!): DraftWorkspace @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
     draftWorkspaces(
         first: Int
         after: ID
@@ -87,7 +87,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
+    ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
     draftWorkspacesRestricted(
         first: Int
         after: ID
@@ -106,11 +106,11 @@ type Query {
         filters: FilterGroup
         search: String
         draftOperation: DraftOperation
-    ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+    ): StixCoreObjectConnection @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
     draftWorkspaceContainerObjects(
         draftId: String!
         containerId: String!
-    ): [DraftContainerObjectChange!]! @auth(for: [KNOWLEDGE])
+    ): [DraftContainerObjectChange!]! @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
     draftWorkspaceRelationships(
         draftId: String!,
         types: [String]
@@ -120,7 +120,7 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
+    ): StixRelationshipConnection @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
     draftWorkspaceSightingRelationships(
         draftId: String!,
         types: [String]
@@ -130,11 +130,11 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
-    draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]! @auth(for: [KNOWLEDGE])
-    draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]! @auth(for: [KNOWLEDGE])
+    ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
+    draftWorkspaceResolveIds(draftId: String!, ids: [String!]!): [DraftResolvedId!]! @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
+    draftWorkspaceEntityFields(draftId: String!, entityId: String!): [DraftEntityField!]! @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
+    draftWorkspaceEntityRelations(draftId: String!, entityId: String!): [DraftEntityRelation!]! @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
+    draftWorkspaceEntityContainerRefs(draftId: String!, entityId: String!): [DraftEntityContainerRef!]! @auth(for: [KNOWLEDGE], forDraft: [KNOWLEDGE])
     draftWorkspacesNumber(
         dateAttribute: String
         startDate: DateTime
