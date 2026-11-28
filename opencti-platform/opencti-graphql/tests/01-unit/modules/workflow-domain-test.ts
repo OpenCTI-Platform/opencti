@@ -9,7 +9,7 @@ import { BUS_TOPICS } from '../../../src/config/conf';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../src/schema/general';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
-import { elAggregationCount } from '../../../src/database/engine';
+import { elAggregationCount, elRawUpdateByQuery } from '../../../src/database/engine';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { getEntitiesListFromCache } from '../../../src/database/cache';
 import { bypassDraftContext, getDraftContext } from '../../../src/utils/draftContext';
@@ -187,6 +187,7 @@ vi.mock('../../../src/database/engine', async (importOriginal) => {
   return {
     ...actual,
     elAggregationCount: vi.fn(),
+    elRawUpdateByQuery: vi.fn(),
   };
 });
 
@@ -7054,6 +7055,26 @@ describe('scope-aware workflow definitions', () => {
       await deleteWorkflowDefinition(mockContext, mockUser, 'Case-Rfi');
 
       expect(updateAttribute).toHaveBeenCalledWith(mockContext, mockUser, 'entity-setting-id', 'EntitySetting', [{ key: 'workflow_id', value: [null] }]);
+      expect(elRawUpdateByQuery).not.toHaveBeenCalled();
+    });
+
+    it('clears the projected status of drafts when the DraftWorkspace workflow is deleted', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id' } });
+
+      await deleteWorkflowDefinition(mockContext, mockUser, 'DraftWorkspace');
+
+      expect(elRawUpdateByQuery).toHaveBeenCalledTimes(1);
+      const [{ body }] = (elRawUpdateByQuery as any).mock.calls[0];
+      expect(body.script.source).toContain('remove(\'x_opencti_workflow_id\')');
+    });
+
+    it('still deletes the DraftWorkspace workflow when clearing draft statuses fails', async () => {
+      (findByType as any).mockResolvedValue(globalOnlySetting);
+      (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id' } });
+      (elRawUpdateByQuery as any).mockRejectedValueOnce(new Error('es down'));
+
+      await expect(deleteWorkflowDefinition(mockContext, mockUser, 'DraftWorkspace')).resolves.toBeDefined();
     });
   });
 
