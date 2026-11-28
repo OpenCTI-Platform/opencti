@@ -69,6 +69,13 @@ const buildRemoteData = (extensionOverrides: Record<string, unknown>) => ({
   },
 });
 
+const buildTransformRequest = (remoteData: ReturnType<typeof buildRemoteData>) => ({
+  sync: { uri: 'http://remote' },
+  httpClient: {},
+  data: remoteData,
+  context: {},
+});
+
 describe('syncManager transformDataWithReverseIdAndFilesData - workflow status remap', () => {
   beforeEach(() => {
     mockGetEntitySettingFromCache.mockResolvedValue({ sync_workflow_status_by_name: true });
@@ -88,7 +95,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
       workflow_status_name: 'IN_PROGRESS',
       workflow_status_scope: 'Global',
     });
-    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+    const { data } = await transformDataWithReverseIdAndFilesData(buildTransformRequest(remoteData));
 
     expect(mockResolveSyncedWorkflowId).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'Report', 'Global', 'IN_PROGRESS');
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('local-status-id');
@@ -105,7 +112,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
       workflow_status_name: 'UNKNOWN_STATUS',
       workflow_status_scope: 'Global',
     });
-    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+    const { data } = await transformDataWithReverseIdAndFilesData(buildTransformRequest(remoteData));
 
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
     expect(data.extensions[STIX_EXT_OCTI].workflow_status_name).toBeUndefined();
@@ -116,7 +123,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
 
     const remoteData = buildRemoteData({});
-    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+    const { data } = await transformDataWithReverseIdAndFilesData(buildTransformRequest(remoteData));
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBeUndefined();
@@ -131,7 +138,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
       workflow_status_name: 'IN_PROGRESS',
       workflow_status_scope: 'Global',
     });
-    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+    const { data } = await transformDataWithReverseIdAndFilesData(buildTransformRequest(remoteData));
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');
@@ -148,7 +155,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
       workflow_status_name: 'IN_PROGRESS',
       workflow_status_scope: 'Global',
     });
-    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+    const { data } = await transformDataWithReverseIdAndFilesData(buildTransformRequest(remoteData));
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');
@@ -163,7 +170,7 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
       workflow_status_name: 'IN_PROGRESS',
       workflow_status_scope: 'Global',
     });
-    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, {});
+    const { data } = await transformDataWithReverseIdAndFilesData(buildTransformRequest(remoteData));
 
     expect(mockResolveSyncedWorkflowId).not.toHaveBeenCalled();
     expect(data.extensions[STIX_EXT_OCTI].workflow_id).toBe('remote-status-id');

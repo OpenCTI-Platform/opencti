@@ -1175,6 +1175,80 @@ def test_import_observable_creates_refs_before_a_refused_staged_sync_file(
     ]
 
 
+SECOND_STAGED_SYNC_FILE = {
+    **STAGED_SYNC_FILE,
+    "name": "other.pdf",
+    "x_opencti_storage_key": "sync/inflight/sync-id/fedcba9876543210fedcba9876543210/content",
+}
+
+FUNCTIONAL_REFUSAL = ValueError(
+    {"name": "FUNCTIONAL_ERROR", "error_message": "Cannot copy referenced sync file"}
+)
+
+LOCK_FAILURE = ValueError(
+    {
+        "name": "LOCK_ERROR",
+        "error_message": "Execution timeout, too many concurrent call",
+    }
+)
+
+
+def import_report_with_failing_first_staged_file(
+    stix2: OpenCTIStix2, monkeypatch, first_error: ValueError
+) -> list:
+    stix2.opencti.sync_id = "sync-id"
+    monkeypatch.setattr(
+        stix2, "extract_embedded_relationships", no_embedded_relationships
+    )
+    monkeypatch.setattr(
+        stix2.opencti.report,
+        "import_from_stix2",
+        lambda **kwargs: {"id": "report-internal-id", "entity_type": "Report"},
+    )
+    storage_keys = []
+
+    def fail_first_query(query, variables):
+        storage_keys.append(variables["fileRef"]["storage_key"])
+        if len(storage_keys) == 1:
+            raise first_error
+        return {"data": {}}
+
+    monkeypatch.setattr(stix2.opencti, "query", fail_first_query)
+    stix_object = {
+        "id": "report--11111111-1111-4111-8111-111111111111",
+        "type": "report",
+        "name": "Report",
+        "x_opencti_files": [STAGED_SYNC_FILE, SECOND_STAGED_SYNC_FILE],
+    }
+    with pytest.raises(ValueError) as raised:
+        stix2.import_object(stix_object)
+    assert raised.value is first_error
+    return storage_keys
+
+
+def test_import_object_attaches_later_staged_sync_files_after_a_refusal(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    storage_keys = import_report_with_failing_first_staged_file(
+        opencti_stix2_no_server, monkeypatch, FUNCTIONAL_REFUSAL
+    )
+
+    assert storage_keys == [
+        STAGED_SYNC_FILE["x_opencti_storage_key"],
+        SECOND_STAGED_SYNC_FILE["x_opencti_storage_key"],
+    ]
+
+
+def test_import_object_stops_staged_sync_files_on_a_lock_error(
+    opencti_stix2_no_server: OpenCTIStix2, monkeypatch
+):
+    storage_keys = import_report_with_failing_first_staged_file(
+        opencti_stix2_no_server, monkeypatch, LOCK_FAILURE
+    )
+
+    assert storage_keys == [STAGED_SYNC_FILE["x_opencti_storage_key"]]
+
+
 def test_import_object_skips_staged_sync_file_without_sync_id(
     opencti_stix2_no_server: OpenCTIStix2, monkeypatch, caplog
 ):

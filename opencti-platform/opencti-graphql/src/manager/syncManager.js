@@ -1,6 +1,8 @@
+import crypto from 'node:crypto';
+import { Readable } from 'node:stream';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import mime from 'mime-types';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE, logApp } from '../config/conf';
 import { decryptSynchronizerCredential } from '../domain/connector-sync-crypto';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -15,7 +17,7 @@ import { storeLoadById, topEntitiesList } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
 import { pushBundleToWorker } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { getHttpClient } from '../utils/http-client';
+import { getHttpClient, HttpClientError } from '../utils/http-client';
 import { createSyncHttpUri, httpBase } from '../domain/connector-utils';
 import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
@@ -29,11 +31,25 @@ import {
   resolveEmbeddedStoragePathWithContext,
   rewriteMarkdownImageUrls,
 } from '../database/markdown-embedded-images';
+import { rawUpload } from '../database/raw-file-storage';
+import { SYNC_INFLIGHT_STORAGE_PATH } from '../modules/internal/document/document-types';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = conf.get('sync_manager:interval') || 10000;
 const WAIT_TIME_ACTION = 2000;
 const FILE_FETCH_TIMEOUT = conf.get('sync_manager:file_fetch_timeout') || 300_000;
+const FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB = conf.get('sync_manager:file_reference_mode_size_threshold_kb') ?? 5_000;
+const FILE_REFERENCE_MODE_SIZE_THRESHOLD = FILE_REFERENCE_MODE_SIZE_THRESHOLD_KB * 1024;
+const FILE_REFERENCE_MODE_MAX_SIZE_MB = conf.get('sync_manager:file_reference_mode_max_size_mb') ?? 5_120;
+const FILE_REFERENCE_MODE_MAX_SIZE = FILE_REFERENCE_MODE_MAX_SIZE_MB * 1024 * 1024;
+const FILE_STAGING_EVENT_TYPES = ['create', 'update'];
+const STAGING_UPLOAD_RETRY_DELAYS_MS = [1000, 2000, 4000];
+
+class SyncFileTooLargeError extends Error {}
+
+// Retried with backoff then the file is skipped, with a message that never carries the storage key.
+class SyncStagingUploadError extends Error {}
 
 const waitLoopTimer = new InterruptibleTimer();
 
@@ -197,7 +213,159 @@ export const buildSyncStorageFetchUri = (syncUri, storageUri, options = {}) => {
   return null;
 };
 
-export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, data, context) => {
+const replaySyncFileChunks = async function* (chunks, iterator) {
+  try {
+    yield* chunks;
+    let next = await iterator.next();
+    while (!next.done) {
+      yield next.value;
+      next = await iterator.next();
+    }
+  } finally {
+    await iterator.return?.();
+  }
+};
+
+// The sending platform sends no content-length on storage files, so read up to the threshold plus one chunk to decide.
+const readSyncFileUnderThreshold = async (fileStream, headers) => {
+  const contentLength = Number(headers?.['content-length']);
+  const isDeclaredAboveThreshold = Number.isFinite(contentLength) && contentLength > FILE_REFERENCE_MODE_SIZE_THRESHOLD;
+  if (isDeclaredAboveThreshold) {
+    return { stream: fileStream, sourceStream: fileStream };
+  }
+  const iterator = fileStream[Symbol.asyncIterator]();
+  const chunks = [];
+  let readSize = 0;
+  while (readSize <= FILE_REFERENCE_MODE_SIZE_THRESHOLD) {
+    const next = await iterator.next();
+    if (next.done) {
+      return { data: Buffer.concat(chunks) };
+    }
+    chunks.push(next.value);
+    readSize += next.value.length;
+  }
+  const replayStream = Readable.from(replaySyncFileChunks(chunks, iterator), { objectMode: false });
+  return { stream: replayStream, sourceStream: fileStream };
+};
+
+const inlineSyncFile = (entityFile, fileData) => {
+  entityFile.data = fileData.toString('base64');
+};
+
+const readSyncFileFully = async (fileStream) => {
+  const chunks = [];
+  for await (const chunk of fileStream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+};
+
+const isStageableSyncFile = (request) => {
+  const entityType = request.data.extensions[STIX_EXT_OCTI].type;
+  return request.fileStaging.isStagingEvent && entityType !== ENTITY_TYPE_EXTERNAL_REFERENCE;
+};
+
+const limitSyncFileSize = async function* (fileStream) {
+  let readSize = 0;
+  for await (const chunk of fileStream) {
+    readSize += chunk.length;
+    if (readSize > FILE_REFERENCE_MODE_MAX_SIZE) {
+      throw new SyncFileTooLargeError(`File is larger than the ${FILE_REFERENCE_MODE_MAX_SIZE_MB} MB staging limit`);
+    }
+    yield chunk;
+  }
+};
+
+const toStagingError = (uploadError) => {
+  const isSourceFailure = uploadError instanceof HttpClientError;
+  const isTooLarge = uploadError instanceof SyncFileTooLargeError;
+  if (isSourceFailure || isTooLarge) {
+    return uploadError;
+  }
+  return new SyncStagingUploadError(`Sync file staging upload failed (${uploadError?.code ?? uploadError?.name})`);
+};
+
+const stageSyncFile = async (request, syncFile) => {
+  const storageKey = `${SYNC_INFLIGHT_STORAGE_PATH}/${request.sync.internal_id}/${crypto.randomBytes(16).toString('hex')}/content`;
+  const limitedStream = Readable.from(limitSyncFileSize(syncFile.stream), { objectMode: false });
+  try {
+    await rawUpload(storageKey, limitedStream);
+  } catch (uploadError) {
+    syncFile.sourceStream.destroy?.();
+    throw toStagingError(uploadError);
+  }
+  return storageKey;
+};
+
+// An error status carries the unread body stream, which holds the connection until the fetch timeout unless destroyed.
+const fetchSyncFileStream = async (streamClient, fetchUri) => {
+  try {
+    const response = await streamClient.get(fetchUri);
+    return response;
+  } catch (fetchError) {
+    fetchError?.response?.data?.destroy?.();
+    throw fetchError;
+  }
+};
+
+const fetchSyncFileInlineOrStaged = async (stagingRequest) => {
+  const { request, entityFile, fetchUri } = stagingRequest;
+  const { streamClient } = request.fileStaging;
+  const response = await fetchSyncFileStream(streamClient, fetchUri);
+  const syncFile = await readSyncFileUnderThreshold(response.data, response.headers);
+  if (syncFile.data) {
+    inlineSyncFile(entityFile, syncFile.data);
+    return undefined;
+  }
+  if (!isStageableSyncFile(request)) {
+    const fileData = await readSyncFileFully(syncFile.stream);
+    inlineSyncFile(entityFile, fileData);
+    return undefined;
+  }
+  return stageSyncFile(request, syncFile);
+};
+
+// Each attempt fetches the file again, since a failed upload has consumed the previous stream.
+const fetchSyncFileInlineOrStagedWithRetry = async (stagingRequest) => {
+  for (const retryDelayMs of STAGING_UPLOAD_RETRY_DELAYS_MS) {
+    try {
+      const storageKey = await fetchSyncFileInlineOrStaged(stagingRequest);
+      return storageKey;
+    } catch (stagingError) {
+      const isUploadFailure = stagingError instanceof SyncStagingUploadError;
+      if (!isUploadFailure) {
+        throw stagingError;
+      }
+      await wait(retryDelayMs);
+    }
+  }
+  return fetchSyncFileInlineOrStaged(stagingRequest);
+};
+
+// Returns the staged key (reused across retries of the same event), or undefined when the file was inlined.
+const resolveStagedFileKey = async (stagingRequest) => {
+  const { stagedKeys } = stagingRequest.request.fileStaging;
+  if (stagedKeys.has(stagingRequest.index)) {
+    return stagedKeys.get(stagingRequest.index);
+  }
+  const storageKey = await fetchSyncFileInlineOrStagedWithRetry(stagingRequest);
+  const isStaged = storageKey !== undefined;
+  if (isStaged) {
+    stagedKeys.set(stagingRequest.index, storageKey);
+  }
+  return storageKey;
+};
+
+// Undefined when file reference mode is off, so the transform keeps the master behaviour.
+const buildEventFileStaging = (fileStreamClient, eventType) => {
+  if (!fileStreamClient) {
+    return undefined;
+  }
+  return { streamClient: fileStreamClient, stagedKeys: new Map(), isStagingEvent: FILE_STAGING_EVENT_TYPES.includes(eventType) };
+};
+
+export const transformDataWithReverseIdAndFilesData = async (request) => {
+  const { sync, httpClient, data, context, fileStaging } = request;
   const { uri } = sync;
   const processingData = { ...data };
   const octiExtension = processingData.extensions?.[STIX_EXT_OCTI] || {};
@@ -228,10 +396,23 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   for (let index = 0; index < entityFiles.length; index += 1) {
     const entityFile = entityFiles[index];
     const { uri: fileUri } = entityFile;
+    if (fileStaging) {
+      // Drops a staged key the sending platform put on an extension file, only this platform sets them there.
+      delete entityFile.x_opencti_storage_key;
+    }
     try {
       const fetchUri = buildSyncStorageFetchUri(uri, fileUri);
       if (!fetchUri) {
         logApp.warn('[OPENCTI] Sync: Invalid storage file URI, skipping file fetch.', { fileUri });
+        continue;
+      }
+      if (fileStaging) {
+        const storageKey = await resolveStagedFileKey({ request, entityFile, fetchUri, index });
+        if (storageKey) {
+          // A previous attempt may have inlined the file, and pycti reads data before the key.
+          delete entityFile.data;
+          entityFile.x_opencti_storage_key = storageKey;
+        }
         continue;
       }
       const response = await httpClient.get(fetchUri);
@@ -433,6 +614,7 @@ const syncManagerInstance = (syncId) => {
         feature: 'Synchronizer',
       };
       const httpClient = getHttpClient(httpClientOptions);
+      const fileStreamClient = ENABLED_SYNC_MANAGER_FILE_REFERENCE_MODE ? getHttpClient({ ...httpClientOptions, responseType: 'stream' }) : undefined;
       lastState = sync.current_state_date;
       lastEventDate = sync.current_state_date;
       // Reconnection loop: on stream error/close, reconnect from the last saved state.
@@ -476,9 +658,12 @@ const syncManagerInstance = (syncId) => {
             // retry indefinitely until it succeeds or the manager is stopped.
             let processed = false;
             let failed = false;
+            // Kept across retries so a failed push reuses the staged files instead of uploading them again.
+            const fileStaging = buildEventFileStaging(fileStreamClient, eventType);
             while (!processed && running) {
               try {
-                const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(sync, httpClient, stixData, eventContext);
+                const transformRequest = { sync, httpClient, data: stixData, context: eventContext, fileStaging };
+                const { data: syncData, previous_standard } = await transformDataWithReverseIdAndFilesData(transformRequest);
                 const content = buildSyncEventContent({
                   syncId,
                   lastEventId,
