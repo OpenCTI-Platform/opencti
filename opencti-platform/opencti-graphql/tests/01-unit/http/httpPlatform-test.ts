@@ -893,7 +893,7 @@ describe('httpPlatform: /auth/:provider', () => {
     handler?.(buildRequest(provider), res, vi.fn());
 
     expect(passport.authenticate).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(503);
+    expect(res.status).toHaveBeenCalledWith(404);
   });
 });
 
