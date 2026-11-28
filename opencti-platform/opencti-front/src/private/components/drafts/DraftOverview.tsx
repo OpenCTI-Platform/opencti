@@ -29,34 +29,32 @@ const DraftOverview: FunctionComponent<DraftOverviewProps> = ({ draft }) => {
           <DraftEdition draftId={draft.id} overviewData={draft} />
         </Stack>
       )}
-      <div style={{ display: 'flex', gap: 20 }}>
-        <Grid
-          container={true}
-          spacing={3}
-          style={{ marginBottom: 20 }}
-        >
-          {
-            draftOverviewLayoutCustomization.map(({ key, width }) => {
-              switch (key) {
-                case 'details':
-                  return (
-                    <Grid key={key} size={width}>
-                      <DraftDetails draft={draft} />
-                    </Grid>
-                  );
-                case 'basicInformation':
-                  return (
-                    <Grid key={key} size={width}>
-                      <DraftBasicInformation draft={draft} />
-                    </Grid>
-                  );
-                default:
-                  return null;
-              }
-            })
-          }
-        </Grid>
-      </div>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginBottom: 20 }}
+      >
+        {
+          draftOverviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} size={width}>
+                    <DraftDetails draft={draft} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} size={width}>
+                    <DraftBasicInformation draft={draft} />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
+      </Grid>
     </>
   );
 };
