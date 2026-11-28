@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { FRONT_URL } from './tests_e2e/frontUrl';
 
 const BASE_PATH = process.env.APP__BASE_PATH ?? '';
-const BASE_URL = `http://localhost:3000${BASE_PATH}`;
+const BASE_URL = `${FRONT_URL}${BASE_PATH}`;
 
 // https://playwright.dev/docs/browsers
 
@@ -222,7 +223,7 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  webServer: process.env.E2E_FRONT_URL ? undefined : {
     command: `APP__BASE_PATH=${BASE_PATH} yarn start`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,

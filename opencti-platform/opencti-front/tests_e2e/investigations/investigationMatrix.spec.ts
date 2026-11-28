@@ -21,6 +21,9 @@ const BETA = 'T9002 - E2E Beta';
 const GAMMA = 'T9003 - E2E Gamma';
 const UNRELATED = 'T9004 - E2E Unrelated';
 
+// Tooltip titles of the security posture marks, which MUI also sets as the icons' aria-label.
+const SHOULD_COVER = 'Security posture should cover the threat';
+const DOES_NOT_COVER = 'Security posture does not cover the threat';
 // The seed scores T9001 = 3 (A, B and the report) and T9002 = 1 (A): the scale is 1 to 3, T9001 on the last stop, T9002 on the first.
 const LAST_STOP = 4;
 const FIRST_STOP = 0;
@@ -116,12 +119,13 @@ test.describe('Investigation tactics matrix', { tag: ['@ce'] }, () => {
     await page.goto(`${INVESTIGATION_URL}/${investigationId}/matrix`);
     await expect(investigationPage.getMatrixCell(ALPHA)).toBeVisible();
     // No platform selected: no mark at all.
-    await expect(investigationPage.getMatrix().getByTestId('CheckOutlinedIcon')).toHaveCount(0);
+    await expect(investigationPage.getMatrix().getByLabel(SHOULD_COVER, { exact: true })).toHaveCount(0);
+    await expect(investigationPage.getMatrix().getByLabel(DOES_NOT_COVER, { exact: true })).toHaveCount(0);
 
     await investigationPage.selectSecurityPlatform('E2E Matrix platform');
     // The platform should cover T9001 only: a tick on T9001, a cross on T9002.
-    await expect(investigationPage.getMatrixCell(ALPHA).getByTestId('CheckOutlinedIcon')).toBeVisible();
-    await expect(investigationPage.getMatrixCell(BETA).getByTestId('CloseOutlinedIcon')).toBeVisible();
+    await expect(investigationPage.getMatrixCell(ALPHA).getByLabel(SHOULD_COVER, { exact: true })).toBeVisible();
+    await expect(investigationPage.getMatrixCell(BETA).getByLabel(DOES_NOT_COVER, { exact: true })).toBeVisible();
   });
 
   test('The header exports the whole matrix to an image', async ({ page, request }) => {

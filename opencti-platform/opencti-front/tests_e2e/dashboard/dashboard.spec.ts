@@ -235,7 +235,9 @@ test('Dashboard CRUD', { tag: ['@ce'] }, async ({ page }) => {
   await widgetsPage.getItemFromWidgetTimeline(malwareName).click();
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
-  await widgetsPage.getIconFromWidgetTimeline().click();
+  // The timeline card already shows the malware name, so only the URL proves the link navigated.
+  await widgetsPage.getIconFromWidgetTimeline(malwareName).click();
+  await expect(page).toHaveURL(/\/malwares\//);
   await expect(malwareDetailsPage.getTitle(malwareName)).toBeVisible();
 
   // ---------

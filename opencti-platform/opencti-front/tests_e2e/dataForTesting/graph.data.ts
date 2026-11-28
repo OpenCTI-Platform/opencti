@@ -1,5 +1,6 @@
 import { APIRequestContext, PlaywrightWorkerArgs } from '@playwright/test';
 import { graphqlRequest } from './graphql.data';
+import { FRONT_URL } from '../frontUrl';
 
 const BASE_PATH = process.env.APP__BASE_PATH ?? '';
 const AUTH_FILE = 'tests_e2e/.setup/.auth/user.json';
@@ -12,7 +13,7 @@ export const withApiRequest = async <T>(
   playwright: PlaywrightWorkerArgs['playwright'],
   run: (request: APIRequestContext) => Promise<T>,
 ): Promise<T> => {
-  const context = await playwright.request.newContext({ baseURL: 'http://localhost:3000', storageState: AUTH_FILE });
+  const context = await playwright.request.newContext({ baseURL: FRONT_URL, storageState: AUTH_FILE });
   const prefixed = {
     post: (url: string, options?: Parameters<APIRequestContext['post']>[1]) => context.post(`${BASE_PATH}${url}`, options),
   } as APIRequestContext;
