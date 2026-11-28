@@ -17,16 +17,14 @@ const publicUserContext = { locale: 'en-us', tz: 'UTC', unitSystem: 'Metric' } a
 const renderColumn = (
   columnId: string,
   data: unknown,
-  { helpers = {}, flag = false, isPublic = false }: { helpers?: Record<string, unknown>; flag?: boolean; isPublic?: boolean } = {},
+  { helpers = {}, isPublic = false }: { helpers?: Record<string, unknown>; isPublic?: boolean } = {},
 ) => {
   const render = defaultColumnsMap.get(columnId)?.render;
   if (!render) throw new Error(`Column "${columnId}" has no render function`);
   const columnHelpers = { storageHelpers: { handleAddFilter }, ...helpers } as unknown as ColumnHelpers;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return testRender(<div>{render(data as any, columnHelpers)}</div>, {
-    userContext: isPublic ? publicUserContext : createMockUserContext({
-      settings: { platform_feature_flags: flag ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
-    }),
+    userContext: isPublic ? publicUserContext : createMockUserContext(),
   });
 };
 
@@ -114,28 +112,18 @@ describe('dataTableUtils status columns', () => {
   });
 
   it('x_opencti_workflow_id column renders the legacy status when no workflow instance is selected', () => {
-    renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: legacyStatus, workflowEnabled: true }, { flag: true });
+    renderColumn('x_opencti_workflow_id', { entity_type: 'Report', status: legacyStatus, workflowEnabled: true });
     expect(screen.getByText('Legacy status')).toBeInTheDocument();
   });
 
-  it('x_opencti_workflow_id column renders the workflow status when the flag is on', () => {
-    renderColumn('x_opencti_workflow_id', {
-      entity_type: 'Report',
-      status: legacyStatus,
-      workflowEnabled: true,
-      workflowInstance: { id: 'instance-1', currentStatus: workflowStatus },
-    }, { flag: true });
-    expect(screen.getByText('Workflow status')).toBeInTheDocument();
-  });
-
-  it('x_opencti_workflow_id column renders the legacy status when the flag is off', () => {
+  it('x_opencti_workflow_id column renders the workflow status', () => {
     renderColumn('x_opencti_workflow_id', {
       entity_type: 'Report',
       status: legacyStatus,
       workflowEnabled: true,
       workflowInstance: { id: 'instance-1', currentStatus: workflowStatus },
     });
-    expect(screen.getByText('Legacy status')).toBeInTheDocument();
+    expect(screen.getByText('Workflow status')).toBeInTheDocument();
   });
 
   it('x_opencti_workflow_id column renders the legacy status when the workflow instance is not persisted yet', () => {
@@ -144,7 +132,7 @@ describe('dataTableUtils status columns', () => {
       status: legacyStatus,
       workflowEnabled: true,
       workflowInstance: { id: 'initial-report-1', currentStatus: workflowStatus },
-    }, { flag: true });
+    });
     expect(screen.getByText('Legacy status')).toBeInTheDocument();
   });
 
@@ -182,7 +170,7 @@ describe('dataTableUtils status columns', () => {
       status: legacyStatus,
       workflowEnabled: true,
       workflowInstance: { id: 'instance-1', currentStatus: workflowStatus },
-    }, { flag: true });
+    });
     await user.click(screen.getByText('Workflow status'));
     expect(handleAddFilter).toHaveBeenCalledWith('workflow_id', 'status-2', 'eq', expect.objectContaining({ type: 'click' }));
   });

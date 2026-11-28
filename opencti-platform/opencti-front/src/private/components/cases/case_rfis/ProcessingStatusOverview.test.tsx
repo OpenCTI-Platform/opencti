@@ -46,13 +46,12 @@ const makeRfi = ({ transitions = decisionTransitions, isUserCanAction = true, wo
   } : null,
 }) as unknown as CaseRfi_caseRfi$data;
 
-const userContext = (capabilities = ['KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT'], enabled = true) => createMockUserContext({
+const userContext = (capabilities = ['KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT']) => createMockUserContext({
   me: { id: 'user-1', capabilities: capabilities.map((name) => ({ name })), capabilitiesInDraft: [] },
-  settings: { platform_feature_flags: enabled ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
 });
 
-const renderOverview = (rfi = makeRfi(), capabilities?: string[], enabled = true) => {
-  return testRender(<ProcessingStatusOverview data={rfi} />, { userContext: userContext(capabilities, enabled) });
+const renderOverview = (rfi = makeRfi(), capabilities?: string[]) => {
+  return testRender(<ProcessingStatusOverview data={rfi} />, { userContext: userContext(capabilities) });
 };
 
 const confirmAccept = async (rendered: ReturnType<typeof renderOverview>) => {
@@ -143,12 +142,6 @@ describe('ProcessingStatusOverview', () => {
     expect(screen.getByText('Processing status')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Validate' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Decline' })).toBeEnabled();
-    expect(screen.queryByRole('button', { name: 'Accept' })).toBeNull();
-  });
-
-  it('keeps Validate and Decline with the flag off even for a workflow-driven RFI', () => {
-    renderOverview(makeRfi(), undefined, false);
-    expect(screen.getByRole('button', { name: 'Validate' })).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Accept' })).toBeNull();
   });
 

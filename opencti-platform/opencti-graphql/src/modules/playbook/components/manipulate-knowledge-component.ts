@@ -31,7 +31,7 @@ import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 import { pushAll } from '../../../utils/arrayUtil';
-import { ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled, logApp } from '../../../config/conf';
+import { logApp } from '../../../config/conf';
 import { CUSTOM_FIELD_PREFIX } from '../../customField/custom-field-types';
 import { getCustomFieldDefinitionsForEntityType } from '../../customField/custom-field-cache';
 import { buildCustomFieldPlaybookOperations } from '../../customField/custom-field-playbook';
@@ -179,8 +179,7 @@ export const PLAYBOOK_MANIPULATE_KNOWLEDGE_COMPONENT: PlaybookComponent<Manipula
     const { actions, applyToElements, applyWithFilters } = playbookNode.configuration;
     const eventContext = buildPlaybookEventContext(event);
     const isWorkflowStatusAction = (action: ManipulateConfiguration['actions'][number]) => {
-      return isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG) && action.attribute === 'x_opencti_workflow_id'
-        && action.op === EditOperation.Replace && action.apply_transition_actions === true;
+      return action.attribute === 'x_opencti_workflow_id' && action.op === EditOperation.Replace && action.apply_transition_actions === true;
     };
     const workflowStatusActions = actions.filter((action) => isWorkflowStatusAction(action));
     const patchActions = actions.filter((action) => !isWorkflowStatusAction(action));

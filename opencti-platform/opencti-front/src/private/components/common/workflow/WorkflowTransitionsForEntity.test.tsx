@@ -39,21 +39,20 @@ const Harness = () => {
   return report && (
     <>
       <span data-testid="legacy-status">{report.status?.template?.name}</span>
-      <WorkflowStatusForEntity data={report} entityType="Report">
-        <WorkflowTransitionsForEntity data={report} entityType="Report" />
+      <WorkflowStatusForEntity data={report}>
+        <WorkflowTransitionsForEntity data={report} />
       </WorkflowStatusForEntity>
     </>
   );
 };
 
-const setup = async (pendingStatus: string | null = 'pending', enabled = true, access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
+const setup = async (pendingStatus: string | null = 'pending', access = 'edit', capability = 'KNOWLEDGE_KNUPDATE',
   allowedTransitions: NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['allowedTransitions'] = instance(null).allowedTransitions,
   draftContext: { id: string; name: string } | null = null, blockedTransitions: BlockedTransitions = []) => {
   vi.useFakeTimers();
   const rendered = testRender(<Suspense><Harness /></Suspense>, {
     userContext: createMockUserContext({
       me: { capabilities: [{ name: capability }], capabilitiesInDraft: [], draftContext },
-      settings: { platform_feature_flags: enabled ? [{ id: 'ENTITIES_WORKFLOW', enable: true }] : [] },
     }),
   });
   await act(async () => rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
@@ -75,7 +74,7 @@ afterEach(() => vi.useRealTimers());
 
 describe('WorkflowTransitionsForEntity in a draft', () => {
   it('shows the status but no transition, bypass or clear control', async () => {
-    await setup('error', true, 'admin', 'BYPASS', instance(null).allowedTransitions, { id: 'draft-1', name: 'Draft' });
+    await setup('error', 'admin', 'BYPASS', instance(null).allowedTransitions, { id: 'draft-1', name: 'Draft' });
 
     expect(screen.getByText('A')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'approve' })).not.toBeInTheDocument();
@@ -88,7 +87,7 @@ describe('WorkflowTransitionsForEntity in a draft', () => {
 describe('WorkflowTransitionsForEntity refresh', () => {
   it.each([2, 3])('opens a menu for %s entity transitions without executing any of them', async (count) => {
     const transitions = instance(null).allowedTransitions;
-    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [
+    const { relayEnv, user } = await setup(null, 'edit', 'KNOWLEDGE_KNUPDATE', [
       transitions[0],
       { ...transitions[0], event: 'close', actions: ['log'] },
       ...(count === 3 ? [{ ...transitions[0], event: 'review', actions: ['log', 'updateAuthorizedMembers'] }] : []),
@@ -106,7 +105,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
 
   it('supports keyboard dismissal and selection of the first transition', async () => {
     const transition = instance(null).allowedTransitions[0];
-    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [transition, { ...transition, event: 'close' }]);
+    const { relayEnv, user } = await setup(null, 'edit', 'KNOWLEDGE_KNUPDATE', [transition, { ...transition, event: 'close' }]);
     vi.useRealTimers();
     const trigger = screen.getByRole('button', { name: 'Next status' });
     trigger.focus();
@@ -121,7 +120,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
   });
 
   it('allows closing the bypass dialog after a hook failure updates the Relay instance', async () => {
-    const { relayEnv, user } = await setup(null, true, 'edit', 'BYPASS');
+    const { relayEnv, user } = await setup(null, 'edit', 'BYPASS');
     vi.useRealTimers();
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByRole('option', { name: /^1\s*B$/ }));
@@ -136,7 +135,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
   });
 
   it.each(['completed', 'pending'])('refreshes projected status after a %s bypass through the shared owner', async (executionStatus) => {
-    const { relayEnv, user } = await setup(null, true, 'edit', 'BYPASS');
+    const { relayEnv, user } = await setup(null, 'edit', 'BYPASS');
     vi.useRealTimers();
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByRole('option', { name: /^1\s*B$/ }));
@@ -198,8 +197,8 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
   });
 
-  it.each([[false, 'edit'], [true, 'view']] as const)('never polls with enabled=%s and access=%s', async (enabled, access) => {
-    const { relayEnv } = await setup('pending', enabled, access);
+  it('never polls without edit access', async () => {
+    const { relayEnv } = await setup('pending', 'view');
     act(() => vi.advanceTimersByTime(FIVE_SECONDS * 2));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(screen.queryByRole('progressbar')).toBeNull();
@@ -223,7 +222,6 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     const rendered = testRender(<Suspense><Harness /></Suspense>, {
       userContext: createMockUserContext({
         me: { capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }], capabilitiesInDraft: [] },
-        settings: { platform_feature_flags: [{ id: 'ENTITIES_WORKFLOW', enable: true }] },
       }),
     });
     const transition = { ...instance(null).allowedTransitions[0], closingReason: 'allowed' };
@@ -290,7 +288,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
 
 describe('WorkflowTransitionsForEntity blocked transitions', () => {
   it('shows a blocked transition as a disabled menu item', async () => {
-    const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+    const { relayEnv, user } = await setup(null, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
     vi.useRealTimers();
     await user.click(screen.getByRole('button', { name: 'Next status' }));
     expect(screen.getAllByRole('menuitem')).toHaveLength(2);
@@ -302,7 +300,7 @@ describe('WorkflowTransitionsForEntity blocked transitions', () => {
   });
 
   it('shows the blocked reason on hover', async () => {
-    const { user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
+    const { user } = await setup(null, 'edit', 'KNOWLEDGE_KNUPDATE', instance(null).allowedTransitions, null, [blockedAnswer]);
     vi.useRealTimers();
     await user.click(screen.getByRole('button', { name: 'Next status' }));
     await user.hover(screen.getByTestId('workflow-blocked-transition-answer'));
@@ -310,7 +308,7 @@ describe('WorkflowTransitionsForEntity blocked transitions', () => {
   });
 
   it('renders a disabled button when the only transition is blocked', async () => {
-    await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer]);
+    await setup(null, 'edit', 'KNOWLEDGE_KNUPDATE', [], null, [blockedAnswer]);
     const blocked = screen.getByRole('button', { name: 'answer' });
     expect(blocked).toBeDisabled();
     // A lock tells a blocked action apart from the status chip next to it

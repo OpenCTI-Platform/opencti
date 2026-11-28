@@ -19,7 +19,7 @@ vi.mock('../../../../relay/environment', async () => {
 });
 
 const NoLabelHarness = () => (
-  // the wiring of SubTypeWorkflowStatusAdd / SubTypeWorkflowStatusEdit: no label prop
+  // a caller that passes no label prop
   <StatusTemplateField name="statusTemplate" setFieldValue={() => {}} helpertext="" />
 );
 

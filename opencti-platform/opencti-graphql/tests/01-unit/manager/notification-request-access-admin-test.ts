@@ -14,12 +14,6 @@ vi.mock('../../../src/database/cache', () => ({
   getEntityFromCache: (...args: any[]) => getEntityFromCache(...args),
 }));
 
-// The entities workflow feature flag is on, as on a platform that may or may not have published a request access workflow
-vi.mock('../../../src/config/conf', async (importOriginal) => {
-  const original = await importOriginal<typeof import('../../../src/config/conf')>();
-  return { ...original, isFeatureEnabled: () => true };
-});
-
 import { getNotifications } from '../../../src/manager/notificationManager';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { ACCOUNT_STATUS_ACTIVE } from '../../../src/config/conf';

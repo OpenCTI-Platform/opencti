@@ -7,7 +7,7 @@ import nodeTypes from './NodeTypes';
 import edgeTypes from './EdgeTypes';
 import Button from '@common/button/Button';
 import { Box, Typography } from '@mui/material';
-import { getInitialState, NEW_STATUS_NAME, REQUEST_ACCESS_ENTITY_TYPE, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
+import { getInitialState, NEW_STATUS_NAME, NON_MIGRATABLE_ENTITY_TYPES, REQUEST_ACCESS_ENTITY_TYPE, transformToWorkflowDefinition, WorkflowNodeType } from './utils';
 import { graphql, PreloadedQuery, usePreloadedQuery, useMutation } from 'react-relay';
 import { workflowDependenciesQuery, workflowQuery, WorkflowScope } from '../SubTypeWorkflow';
 import { SubTypeWorkflowQuery, SubTypeWorkflowQuery$data } from '../__generated__/SubTypeWorkflowQuery.graphql';
@@ -31,7 +31,7 @@ import RestoreConfirmDialog from './RestoreConfirmDialog';
 import WorkflowScopeSwitch from './WorkflowScopeSwitch';
 import RequestAccessValidatorGroup from './RequestAccessValidatorGroup';
 import EntityStatusSyncSetting from '../global_workflow_request_access/EntityStatusSyncSetting';
-import RequestAccessMigrationDialog from './RequestAccessMigrationDialog';
+import WorkflowMigrationDialog from './WorkflowMigrationDialog';
 import { useSubTypeOutletContext } from '../SubTypeOutletContext';
 import useEnterpriseEdition from '../../../../../utils/hooks/useEnterpriseEdition';
 import { MESSAGING$ } from '../../../../../relay/environment';
@@ -446,8 +446,12 @@ const Workflow = ({
   const [open, setOpen] = useState<boolean>(false);
   const [emptyStateRestoreConfirmOpen, setEmptyStateRestoreConfirmOpen] = useState(false);
   const [migrationOpen, setMigrationOpen] = useState(false);
-  // The migration builds the request access workflow until one is published: it may replace a draft, never a published one.
-  const canMigrateRequestAccess = scope === 'REQUEST_ACCESS' && !workflowDefinitionStatus.hasPublishedVersion;
+  // The migration builds the workflow of the scope from its legacy statuses until one is published: it may replace a draft, never a published one.
+  // Offered only when the scope still has legacy statuses to read.
+  const legacyStatuses = scope === 'REQUEST_ACCESS' ? subType.statusesRequestAccess : subType.statuses;
+  const canMigrate = !workflowDefinitionStatus.hasPublishedVersion && !NON_MIGRATABLE_ENTITY_TYPES.includes(entityType)
+    && legacyStatuses.length > 0;
+  const migrateLabel = scope === 'REQUEST_ACCESS' ? t_i18n('Migrate request access statuses') : t_i18n('Migrate statuses');
   const [selectedElement, setSelectedElement] = useState<Node | Edge>(emptyElement);
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -563,9 +567,9 @@ const Workflow = ({
                 >
                   {t_i18n('Add Status')}
                 </Button>
-                {canMigrateRequestAccess && (
+                {canMigrate && (
                   <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
-                    {t_i18n('Migrate request access statuses')}
+                    {migrateLabel}
                   </Button>
                 )}
               </Panel>
@@ -580,10 +584,18 @@ const Workflow = ({
                   top: '40%',
                 }}
               >
-                <Typography variant="subtitle2" color={theme.palette.text.light}>
-                  {t_i18n('Start to define your workflow by adding a Status.')}
+                <Typography variant="subtitle2" color={theme.palette.text.light} sx={{ textAlign: 'center' }}>
+                  {canMigrate
+                    ? t_i18n('This type has legacy statuses: migrate them to start your workflow, or define a new one by adding a Status.')
+                    : t_i18n('Start to define your workflow by adding a Status.')}
                 </Typography>
+                {canMigrate && (
+                  <Button onClick={() => setMigrationOpen(true)}>
+                    {migrateLabel}
+                  </Button>
+                )}
                 <Button
+                  variant={canMigrate ? 'secondary' : 'primary'}
                   onClick={() => {
                     setSelectedElement({
                       id: NEW_STATUS_NAME,
@@ -603,11 +615,6 @@ const Workflow = ({
                 >
                   {t_i18n('Restore published version')}
                 </Button>
-                {canMigrateRequestAccess && (
-                  <Button variant="secondary" onClick={() => setMigrationOpen(true)}>
-                    {t_i18n('Migrate request access statuses')}
-                  </Button>
-                )}
               </Panel>
             )}
           </ReactFlow>
@@ -632,8 +639,10 @@ const Workflow = ({
           handleRestore();
         }}
       />
-      {canMigrateRequestAccess && (
-        <RequestAccessMigrationDialog
+      {canMigrate && (
+        <WorkflowMigrationDialog
+          entityType={entityType}
+          scope={scope}
           open={migrationOpen}
           onClose={() => setMigrationOpen(false)}
           onMigrated={onRefetch}

@@ -257,10 +257,10 @@ vi.mock('./RequestAccessValidatorGroup', () => ({
   default: () => <div data-testid="validator-group-field" />,
 }));
 
-vi.mock('./RequestAccessMigrationDialog', () => ({
-  default: ({ open, onClose, onMigrated }: { open: boolean; onClose: () => void; onMigrated: () => void }) => (
+vi.mock('./WorkflowMigrationDialog', () => ({
+  default: ({ scope, open, onClose, onMigrated }: { scope: string; open: boolean; onClose: () => void; onMigrated: () => void }) => (
     open ? (
-      <div data-testid="request-access-migration-dialog">
+      <div data-testid="workflow-migration-dialog" data-scope={scope}>
         <button onClick={onMigrated}>migrated</button>
         <button onClick={onClose}>close migration</button>
       </div>
@@ -291,7 +291,11 @@ describe('Workflow Component', () => {
     mockLoadedDefinition = mockWorkflowDefinition;
     vi.mocked(useEnterpriseEdition).mockReturnValue(true);
     vi.mocked(useSubTypeOutletContext).mockReturnValue({
-      subType: { settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] } },
+      subType: {
+        statuses: [{ id: 'legacy-status' }],
+        statusesRequestAccess: [{ id: 'legacy-request-access-status' }],
+        settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] },
+      },
     } as never);
     mockGetNode.mockReturnValue({ id: 'test-node' });
     mockSetNodes = vi.fn();
@@ -1162,7 +1166,7 @@ describe('Workflow Component', () => {
       // Case-Rfi without the request access setting.
       vi.mocked(useEnterpriseEdition).mockReturnValue(true);
       vi.mocked(useSubTypeOutletContext).mockReturnValue({
-        subType: { settings: { availableSettings: ['workflow_configuration'] } },
+        subType: { statuses: [], statusesRequestAccess: [], settings: { availableSettings: ['workflow_configuration'] } },
       } as never);
       renderRfi();
       expect(screen.queryByRole('radio', { name: 'Request access' })).not.toBeInTheDocument();
@@ -1239,10 +1243,10 @@ describe('Workflow Component', () => {
         const user = userEvent.setup();
         renderRfi({ scope: 'REQUEST_ACCESS' });
 
-        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('workflow-migration-dialog')).not.toBeInTheDocument();
         await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
 
-        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+        expect(screen.getByTestId('workflow-migration-dialog')).toBeInTheDocument();
       });
 
       it('shows the new workflow once the migration is done', async () => {
@@ -1262,14 +1266,58 @@ describe('Workflow Component', () => {
         await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
         await user.click(screen.getByText('close migration'));
 
-        expect(screen.queryByTestId('request-access-migration-dialog')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('workflow-migration-dialog')).not.toBeInTheDocument();
         expect(mockOnRefetch).not.toHaveBeenCalled();
       });
 
-      it('does not offer the migration on the Global scope', () => {
+      it('offers to migrate the statuses of the entity type on the Global scope', async () => {
+        const user = userEvent.setup();
         renderRfi({ scope: 'GLOBAL' });
 
         expect(screen.queryByRole('button', { name: 'Migrate request access statuses' })).not.toBeInTheDocument();
+        await user.click(screen.getByRole('button', { name: 'Migrate statuses' }));
+
+        expect(screen.getByTestId('workflow-migration-dialog')).toHaveAttribute('data-scope', 'GLOBAL');
+      });
+
+      it.each(['DraftWorkspace', 'stix-core-relationship', 'stix-sighting-relationship'])('does not offer the migration on %s, whose statuses cannot be migrated', (entityType) => {
+        mockLoadedDefinition = mockWorkflowDefinition;
+        renderRfi({ scope: 'GLOBAL', entityType });
+
+        expect(screen.queryByRole('button', { name: 'Migrate statuses' })).not.toBeInTheDocument();
+      });
+
+      it.each([
+        ['GLOBAL', 'statuses', 'Migrate statuses'],
+        ['REQUEST_ACCESS', 'statusesRequestAccess', 'Migrate request access statuses'],
+      ] as const)('does not offer the migration on the %s scope when it has no legacy status', (scope, field, label) => {
+        vi.mocked(useSubTypeOutletContext).mockReturnValue({
+          subType: {
+            statuses: [{ id: 'legacy-status' }],
+            statusesRequestAccess: [{ id: 'legacy-request-access-status' }],
+            [field]: [],
+            settings: { availableSettings: ['workflow_configuration', 'request_access_workflow'] },
+          },
+        } as never);
+        renderRfi({ scope });
+
+        expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument();
+        expect(screen.getByText('Start to define your workflow by adding a Status.')).toBeInTheDocument();
+      });
+
+      it('puts the migration first on the empty canvas and says legacy statuses exist', () => {
+        renderRfi({ scope: 'GLOBAL' });
+
+        expect(screen.getByText('This type has legacy statuses: migrate them to start your workflow, or define a new one by adding a Status.')).toBeInTheDocument();
+        const buttons = screen.getAllByRole('button').map((button) => button.textContent);
+        expect(buttons.indexOf('Migrate statuses')).toBeLessThan(buttons.indexOf('Add Status'));
+      });
+
+      it('does not offer the migration once the Global workflow has been published', () => {
+        mockLoadedDefinition = { ...mockWorkflowDefinition, hasPublishedVersion: true };
+        renderRfi({ scope: 'GLOBAL' });
+
+        expect(screen.queryByRole('button', { name: 'Migrate statuses' })).not.toBeInTheDocument();
       });
 
       it('still offers the migration over a request access workflow never published', async () => {
@@ -1279,7 +1327,7 @@ describe('Workflow Component', () => {
 
         await user.click(screen.getByRole('button', { name: 'Migrate request access statuses' }));
 
-        expect(screen.getByTestId('request-access-migration-dialog')).toBeInTheDocument();
+        expect(screen.getByTestId('workflow-migration-dialog')).toBeInTheDocument();
       });
 
       it('offers the migration next to a draft that already has statuses', () => {

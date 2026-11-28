@@ -32,7 +32,6 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security from '../../../../utils/Security';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useHelper from '../../../../utils/hooks/useHelper';
 import StixCoreObjectOpinions from '../../analyses/opinions/StixCoreObjectOpinions';
 import ProcessingStatusOverview from '../../cases/case_rfis/ProcessingStatusOverview';
 import ObjectAssigneeField from '../form/ObjectAssigneeField';
@@ -41,7 +40,6 @@ import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsV
 import { stixDomainObjectMutation } from './StixDomainObjectHeader';
 import { WorkflowClosingReasonForEntity, WorkflowStatusForEntity } from '../workflow/WorkflowStatus';
 import { WorkflowTransitionsForEntity } from '../workflow/WorkflowTransitions';
-import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 
 const StixDomainObjectOverview = ({
   stixDomainObject,
@@ -55,7 +53,6 @@ const StixDomainObjectOverview = ({
 }) => {
   const theme = useTheme();
   const { t_i18n, fldt } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [openStixIds, setOpenStixIds] = useState(false);
   const [openAddAssignee, setOpenAddAssignee] = useState(false);
   const [openAddParticipant, setOpenAddParticipant] = useState(false);
@@ -231,18 +228,14 @@ const StixDomainObjectOverview = ({
                 <Label sx={{ marginTop: withPattern ? 2 : 0 }}>
                   {t_i18n('Processing status')}
                 </Label>
-                {isWorkflowUiEnabledForType(stixDomainObject.entity_type, isFeatureEnable) ? (
-                  <>
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-                      <WorkflowStatusForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} fallback={legacyStatus}>
-                        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                          <WorkflowTransitionsForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
-                        </Security>
-                      </WorkflowStatusForEntity>
-                    </Box>
-                    <WorkflowClosingReasonForEntity data={stixDomainObject} entityType={stixDomainObject.entity_type} />
-                  </>
-                ) : legacyStatus}
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                  <WorkflowStatusForEntity data={stixDomainObject} fallback={legacyStatus}>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <WorkflowTransitionsForEntity data={stixDomainObject} />
+                    </Security>
+                  </WorkflowStatusForEntity>
+                </Box>
+                <WorkflowClosingReasonForEntity data={stixDomainObject} />
               </>
             )}
             {displayAssignees && (

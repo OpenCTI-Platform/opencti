@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { booleanConf, isFeatureEnabled, logApp } from '../../../src/config/conf';
+import { booleanConf, logApp } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
@@ -20,6 +20,7 @@ import { findByType } from '../../../src/modules/entitySetting/entitySetting-dom
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { addNotification } from '../../../src/modules/notification/notification-domain';
 import {
+  hasOnlyDefaultLegacyStatuses,
   __resetReadRepairRateLimitForTest,
   assertExternalStatusWriteAllowed,
   assertExternalStatusCreateAllowed,
@@ -231,7 +232,6 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
       warn: vi.fn(),
     },
     booleanConf: vi.fn(actual.booleanConf),
-    isFeatureEnabled: vi.fn().mockReturnValue(true),
   };
 });
 
@@ -266,7 +266,6 @@ describe('Workflow bypass', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
     entity = { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'status-open' };
     instance = { id: 'instance-id', internal_id: 'instance-id', entity_id: entity.id, currentState: 'open', scope: 'standard', history: '[]' };
@@ -495,15 +494,7 @@ describe('Workflow bypass', () => {
     expect(createEntity).not.toHaveBeenCalled();
   });
 
-  it('gates non-draft mutation and picker with ENTITIES_WORKFLOW', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
-    await expect(setWorkflowStatus(context, user, entity.id, target.id, false)).rejects.toThrow('ENTITIES_WORKFLOW');
-    await expect(getWorkflowBypassStatuses(context, user, entity.id)).rejects.toThrow('ENTITIES_WORKFLOW');
-    expect(createEntity).not.toHaveBeenCalled();
-  });
-
-  it('keeps DraftWorkspace bypass and picker available with flag off', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
+  it('keeps DraftWorkspace bypass and picker available', async () => {
     entity.entity_type = 'DraftWorkspace';
     target.type = 'DraftWorkspace';
     legacy.type = 'DraftWorkspace';
@@ -4616,14 +4607,6 @@ describe('getMassWorkflowTransitions', () => {
     expect(result).toEqual([]);
   });
 
-  it('should offer nothing when ENTITIES_WORKFLOW is disabled', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
-
-    const result = await getMassWorkflowTransitions(mockContext, mockUser, 'Report', { entityIds: ['report-a', 'report-b'] });
-
-    expect(result).toEqual([]);
-  });
-
   it('should offer nothing when the entity type has no published workflow', async () => {
     (findByType as any).mockResolvedValue(undefined);
 
@@ -4633,9 +4616,22 @@ describe('getMassWorkflowTransitions', () => {
   });
 });
 
+// The workflow guard of `initializeEntityWorkflow` / `cleanupEntityWorkflow` reads the entity settings from the cache,
+// the status lookup reads the statuses from the same cache: answer each by the requested type
+const WORKFLOW_ENTITY_SETTINGS = [
+  { target_type: 'Incident', workflow_id: 'workflow-def-id' },
+  { target_type: 'Case-Rfi', workflow_id: 'global-def', request_access_workflow: { workflow_definition_id: 'ra-def' } },
+];
+const mockCacheContent = (statuses: unknown[] = [], entitySettings: unknown[] = WORKFLOW_ENTITY_SETTINGS) => {
+  (getEntitiesListFromCache as any).mockImplementation((_context: unknown, _user: unknown, type: string) => {
+    return Promise.resolve(type === ENTITY_TYPE_ENTITY_SETTING ? entitySettings : statuses);
+  });
+};
+
 describe('cleanupEntityWorkflow', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCacheContent();
   });
 
   it('is a no-op when the deleted entity is itself a WorkflowInstance', async () => {
@@ -4661,6 +4657,25 @@ describe('cleanupEntityWorkflow', () => {
       },
     });
     expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('skips the instance search for a type that has no entity setting', async () => {
+    mockCacheContent([], []);
+    const entity = { id: 'rel-id', internal_id: 'rel-id', entity_type: 'uses' };
+
+    await cleanupEntityWorkflow(mockContext, mockUser, entity);
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(deleteElementById).not.toHaveBeenCalled();
+  });
+
+  it('keeps searching the instance of a type whose workflow was unlinked, so no instance is orphaned', async () => {
+    mockCacheContent([], [{ target_type: 'Incident' }]);
+    (loadEntity as any).mockResolvedValue({ id: 'inst-id', internal_id: 'inst-id', entity_type: ENTITY_TYPE_WORKFLOW_INSTANCE });
+
+    await cleanupEntityWorkflow(mockContext, mockUser, { id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident' });
+
+    expect(deleteElementById).toHaveBeenCalledWith(mockContext, mockUser, 'inst-id', ENTITY_TYPE_WORKFLOW_INSTANCE);
   });
 
   it('deletes the WorkflowInstance found for the deleted entity', async () => {
@@ -4705,6 +4720,7 @@ describe('cleanupEntityWorkflow', () => {
 describe('initializeEntityWorkflow — creation-time status resolution', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCacheContent();
   });
 
   const definitionContent = JSON.stringify({
@@ -4720,6 +4736,20 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
     (createRelation as any).mockResolvedValue({});
   };
 
+  it.each([
+    ['has no entity setting', []],
+    ['has an entity setting without a workflow', [{ target_type: 'Incident' }]],
+  ])('returns before any store search when the type %s', async (_label, entitySettings) => {
+    setupCommon();
+    mockCacheContent([], entitySettings);
+
+    await initializeEntityWorkflow(mockContext, mockUser, { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' });
+
+    expect(findByType).not.toHaveBeenCalled();
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
   it('case (a): an explicit status that resolves to a valid state starts the instance there, with no projection write', async () => {
     setupCommon();
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
@@ -4728,7 +4758,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(null);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([
+    mockCacheContent([
       { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
     ]);
 
@@ -4756,7 +4786,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(null);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([
+    mockCacheContent([
       { id: 'status-foreign-id', internal_id: 'status-foreign-id', template_id: 'some-other-state', scope: StatusScope.Global },
     ]);
 
@@ -4782,7 +4812,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(undefined);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([]); // status lookup misses entirely
+    mockCacheContent([]); // status lookup misses entirely
 
     const entity = {
       id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', x_opencti_workflow_id: 'status-does-not-exist',
@@ -4811,7 +4841,7 @@ describe('initializeEntityWorkflow — creation-time status resolution', () => {
       }
       return Promise.resolve(null);
     });
-    (getEntitiesListFromCache as any).mockResolvedValue([
+    mockCacheContent([
       { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
     ]);
 
@@ -4902,6 +4932,40 @@ describe('getWorkflowInstance — lazy backfill', () => {
 
     expect(createEntity).toHaveBeenCalled();
     expect(WorkflowFactory.getInstance).not.toHaveBeenCalled();
+  });
+
+  it('backfills an entity without status without writing one, and records the unset status as kept without a pendingError', async () => {
+    setupCommon();
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+    const input = (createEntity as any).mock.calls[0][2];
+    expect(input.pendingError).toBeUndefined();
+    expect(JSON.parse(input.history).at(-1)).toEqual(expect.objectContaining({ event: 'event_external_kept', status_id: null, reason: 'unset' }));
+  });
+
+  it('backfills an entity with a dangling status without overwriting it, and records it as kept', async () => {
+    setupCommon();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ id: 'entity-id', internal_id: 'entity-id', entity_type: 'Incident', x_opencti_workflow_id: 'legacy-status-id' });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue(null); // no pre-existing instance
+    (createEntity as any).mockResolvedValue({ id: 'backfilled-instance-id', internal_id: 'backfilled-instance-id', currentState: 'draft', history: '[]' });
+    (createRelation as any).mockResolvedValue({});
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+    const input = (createEntity as any).mock.calls[0][2];
+    expect(JSON.parse(input.history).at(-1)).toEqual(expect.objectContaining({ event: 'event_external_kept', status_id: 'legacy-status-id', reason: 'unmapped' }));
   });
 
   it('does not backfill, nor run initial state actions, when the entity is read from a draft', async () => {
@@ -5161,27 +5225,31 @@ describe('getWorkflowInstance — read-repair', () => {
     expect(resolveMappedStatusId).toHaveBeenCalledTimes(1);
   });
 
-  it('returns null without backfill nor repair for a non-DraftWorkspace entity when ENTITIES_WORKFLOW is disabled', async () => {
-    setup();
-    (isFeatureEnabled as any).mockReturnValue(false);
-    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
-
-    try {
-      const result = await getWorkflowInstance(mockContext, mockUser, 'entity-id');
-
-      expect(result).toBeNull();
-      expect(createEntity).not.toHaveBeenCalled();
-      expect(projectWorkflowState).not.toHaveBeenCalled();
-    } finally {
-      (isFeatureEnabled as any).mockReturnValue(true);
-    }
-  });
-
   it('keeps a Status recorded as a kept external write', async () => {
     setup();
     (loadEntity as any).mockResolvedValue({
       ...instance,
       history: JSON.stringify([{ state: 'reviewing', event: 'event_external_kept', status_id: 'stale-status-id', reason: 'unmapped' }]),
+    });
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
+  it('leaves an entity without status unset when its instance recorded the unset status as kept', async () => {
+    setup();
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-id') return Promise.resolve({ ...entity, x_opencti_workflow_id: undefined });
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+    (loadEntity as any).mockResolvedValue({
+      ...instance,
+      history: JSON.stringify([{ state: 'draft', event: 'event_external_kept', status_id: null, reason: 'unset' }]),
     });
     (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
 
@@ -5407,6 +5475,14 @@ describe('getWorkflowMigrationPreview', () => {
 
   it('rejects DraftWorkspace, whose workflow needs a validateDraft action', async () => {
     await expect(getWorkflowMigrationPreview(mockContext, mockUser, 'DraftWorkspace')).rejects.toThrow('DraftWorkspace statuses cannot be migrated');
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['stix-core-relationship', 'Relationship statuses cannot be migrated'],
+    ['stix-sighting-relationship', 'Sighting statuses cannot be migrated'],
+  ])('rejects the abstract relationship setting %s, whose workflow the engine never reads', async (entityType, message) => {
+    await expect(getWorkflowMigrationPreview(mockContext, mockUser, entityType)).rejects.toThrow(message);
     expect(fullEntitiesList).not.toHaveBeenCalled();
   });
 
@@ -5930,7 +6006,6 @@ describe('getWorkflowStatuses', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (storeLoadById as any).mockResolvedValue({ id: 'workflow-def-id', published_version: { id: 'v1', content: JSON.stringify(definition) } });
   });
@@ -5966,12 +6041,6 @@ describe('getWorkflowStatuses', () => {
 
   it('should list nothing when the entity type has no published workflow', async () => {
     (findByType as any).mockResolvedValue(undefined);
-
-    expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
-  });
-
-  it('should list nothing while ENTITIES_WORKFLOW is disabled', async () => {
-    vi.mocked(isFeatureEnabled).mockReturnValue(false);
 
     expect(await getWorkflowStatuses(mockContext, mockUser, 'Report')).toEqual([]);
   });
@@ -6408,7 +6477,6 @@ describe('migrateWorkflowFromStatuses', () => {
     const createdVersion = { id: 'v1', timestamp: '2024-01-01T00:00:00Z', createdBy: 'user-1', content: '{}', validation_errors: [] };
     (createEntity as any).mockResolvedValue({ id: 'workflow-id', draft_version: createdVersion, all_versions: [createdVersion] });
     (updateAttribute as any).mockResolvedValue({ element: { id: 'entity-setting-id', workflow_id: 'workflow-id' } });
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() } as any);
   });
 
@@ -6448,18 +6516,15 @@ describe('migrateWorkflowFromStatuses', () => {
     expect(updateAttribute).not.toHaveBeenCalled();
   });
 
-  it('refuses to publish while the ENTITIES_WORKFLOW feature is disabled, before taking any lock', async () => {
-    (findByType as any).mockResolvedValue({ id: 'entity-setting-id' });
-    vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
-
-    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'Grouping', true)).rejects.toThrow('ENTITIES_WORKFLOW feature is disabled');
-    expect(lockResources).not.toHaveBeenCalled();
-    expect(createEntity).not.toHaveBeenCalled();
-  });
-
   it('rejects DraftWorkspace before reading any data', async () => {
     await expect(migrateWorkflowFromStatuses(mockContext, mockUser, 'DraftWorkspace', false)).rejects.toThrow('DraftWorkspace statuses cannot be migrated');
     expect(findByType).not.toHaveBeenCalled();
+  });
+
+  it.each(['stix-core-relationship', 'stix-sighting-relationship'])('rejects the abstract relationship setting %s before reading any data', async (entityType) => {
+    await expect(migrateWorkflowFromStatuses(mockContext, mockUser, entityType, true)).rejects.toThrow('statuses cannot be migrated');
+    expect(findByType).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
   });
 
   // A store that reads back what was written, as the real one does: the rollback compares the stored
@@ -6910,28 +6975,6 @@ describe('scope-aware workflow definitions', () => {
     it('accepts Global on any type', () => {
       expect(() => assertScopeAllowed('Report', StatusScope.Global)).not.toThrow();
       expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
-    });
-
-    it('rejects a non-Global scope while ENTITIES_WORKFLOW is disabled, so the legacy request flow keeps its statuses', () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      try {
-        expect(() => assertScopeAllowed('Case-Rfi', StatusScope.RequestAccess)).toThrow('Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled');
-        expect(() => assertScopeAllowed('Case-Rfi', StatusScope.Global)).not.toThrow();
-        expect(() => assertScopeAllowed('DraftWorkspace', StatusScope.Global)).not.toThrow();
-      } finally {
-        vi.mocked(isFeatureEnabled).mockReturnValue(true);
-      }
-    });
-
-    it('refuses to save or publish a request access workflow while ENTITIES_WORKFLOW is disabled', async () => {
-      vi.mocked(isFeatureEnabled).mockReturnValue(false);
-      try {
-        const refusal = 'Workflow scope is not available while the ENTITIES_WORKFLOW feature is disabled';
-        await expect(setWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', '{}', StatusScope.RequestAccess)).rejects.toThrow(refusal);
-        await expect(publishWorkflowDefinition(mockContext, mockUser, 'Case-Rfi', StatusScope.RequestAccess)).rejects.toThrow(refusal);
-      } finally {
-        vi.mocked(isFeatureEnabled).mockReturnValue(true);
-      }
     });
   });
 
@@ -7434,7 +7477,7 @@ describe('Instance scope as the single source of truth', () => {
     __resetReadRepairRateLimitForTest();
     (booleanConf as any).mockReturnValue(false);
     (findStatusesByType as any).mockResolvedValue(statuses);
-    (getEntitiesListFromCache as any).mockResolvedValue(statuses);
+    mockCacheContent(statuses);
     (loadEntity as any).mockResolvedValue(null);
     (createEntity as any).mockResolvedValue({ id: 'instance-id', internal_id: 'instance-id' });
     (createRelation as any).mockResolvedValue({});
@@ -7495,7 +7538,7 @@ describe('Instance scope as the single source of truth', () => {
 
   it('creates the instance with the scope that resolved the definition, even when the status maps to no state', async () => {
     (findByType as any).mockResolvedValue(bothDefinitions);
-    (getEntitiesListFromCache as any).mockResolvedValue([status('ra-unmapped', 'unmapped', StatusScope.RequestAccess)]);
+    mockCacheContent([status('ra-unmapped', 'unmapped', StatusScope.RequestAccess)]);
 
     await initializeEntityWorkflow(mockContext, mockUser, { ...rfi, x_opencti_workflow_id: 'ra-unmapped' });
 
@@ -7616,7 +7659,7 @@ describe('Instance scope as the single source of truth', () => {
         return Promise.resolve(null);
       });
       const reviewStatuses = [...statuses, status('global-review', 'review', StatusScope.Global), status('ra-review', 'review', StatusScope.RequestAccess)];
-      (getEntitiesListFromCache as any).mockResolvedValue(reviewStatuses);
+      mockCacheContent(reviewStatuses);
       (findStatusesByType as any).mockResolvedValue(reviewStatuses);
     };
 
@@ -8305,13 +8348,11 @@ describe('assertExternalStatusWriteAllowed', () => {
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', forged)).rejects.toThrow(refusal);
     });
 
-    it('lets the request access form, a plain RFI, another type, the legacy flow or a disabled feature create', async () => {
+    it('lets the request access form, a plain RFI, another type or the legacy flow create', async () => {
       const record = JSON.stringify({ entities: ['malware-1'], members: ['org-1'], status: 'NEW' });
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, SYSTEM_USER, 'Case-Rfi', record)).resolves.toBeUndefined();
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', undefined)).resolves.toBeUndefined();
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Report', record)).resolves.toBeUndefined();
-      vi.mocked(isFeatureEnabled).mockReturnValueOnce(false);
-      await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', record)).resolves.toBeUndefined();
       (findByType as any).mockResolvedValue({ id: 'setting-id' });
       await expect(assertExternalRequestAccessCreateAllowed(mockContext, mockUser, 'Case-Rfi', record)).resolves.toBeUndefined();
     });
@@ -8409,7 +8450,6 @@ describe('Workflow mutations inside a draft', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(isFeatureEnabled).mockReturnValue(true);
     vi.mocked(lockResources).mockResolvedValue({ unlock: vi.fn() });
     vi.mocked(getDraftContext).mockReturnValue('draft-id');
   });
@@ -8581,5 +8621,64 @@ describe('getWorkflowTransitions – blocked transitions', () => {
 
     expect(instance.allowedTransitions).toEqual([]);
     expect(instance.blockedTransitions.map((t: any) => t.event)).toEqual(['review']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// hasOnlyDefaultLegacyStatuses
+// ---------------------------------------------------------------------------
+
+describe('hasOnlyDefaultLegacyStatuses', () => {
+  const SEEDED = ['NEW', 'IN_PROGRESS', 'ANALYZED', 'CLOSED'];
+  const status = (name: string, order: number, extra: Record<string, unknown> = {}) => (
+    { id: `status-${name}`, type: 'Report', scope: StatusScope.Global, template_id: `template-${name}`, order, ...extra }
+  );
+  const givenStatuses = (statuses: any[], names: Record<string, string> = {}) => {
+    vi.mocked(fullEntitiesList).mockResolvedValue(statuses as any);
+    vi.mocked(storeLoadByIds).mockImplementation((async (_ctx: any, _user: any, ids: string[]) => ids.map((id) => (
+      { id, name: names[id] ?? id.replace('template-', '') }
+    ))) as any);
+  };
+
+  beforeEach(() => {
+    vi.mocked(fullEntitiesList).mockReset();
+    vi.mocked(storeLoadByIds).mockReset();
+  });
+
+  it('is true for the 4 seeded Report statuses, whatever order they are listed in', async () => {
+    givenStatuses(SEEDED.map((name, index) => status(name, index + 1)).reverse());
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(true);
+  });
+
+  it('is false for another type, without reading its statuses', async () => {
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Grouping')).toBe(false);
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it('is false once a status is added', async () => {
+    givenStatuses([...SEEDED.map((name, index) => status(name, index + 1)), status('PENDING', 5)]);
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('is false once a status is removed or marked for deletion', async () => {
+    givenStatuses(SEEDED.slice(0, 3).map((name, index) => status(name, index + 1)));
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+    givenStatuses(SEEDED.map((name, index) => status(name, index + 1, index === 3 ? { to_be_deleted_at: new Date() } : {})));
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('is false once the statuses are reordered', async () => {
+    givenStatuses([status('NEW', 1), status('IN_PROGRESS', 3), status('ANALYZED', 2), status('CLOSED', 4)]);
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('is false once a status points at another template', async () => {
+    givenStatuses(SEEDED.map((name, index) => status(name, index + 1)), { 'template-ANALYZED': 'TO_BE_QUALIFIED' });
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(false);
+  });
+
+  it('ignores the statuses of another scope', async () => {
+    givenStatuses([...SEEDED.map((name, index) => status(name, index + 1)), status('APPROVED', 1, { scope: StatusScope.RequestAccess })]);
+    expect(await hasOnlyDefaultLegacyStatuses(mockContext, mockUser, 'Report')).toBe(true);
   });
 });

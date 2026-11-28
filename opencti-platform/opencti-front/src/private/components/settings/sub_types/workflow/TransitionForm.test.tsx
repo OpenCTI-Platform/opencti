@@ -36,10 +36,6 @@ vi.mock('../../../common/form/ObjectOrganizationField', () => ({
   default: () => <div data-testid="object-organization-field" />,
 }));
 
-vi.mock('../../../../../utils/hooks/useHelper', () => ({
-  default: () => ({ isFeatureEnable: () => true }),
-}));
-
 // ---------------------------------------------------------------------------
 // Helper: render TransitionForm inside a Formik context
 // ---------------------------------------------------------------------------

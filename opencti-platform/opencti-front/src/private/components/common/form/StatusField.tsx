@@ -11,8 +11,6 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { StatusScopeEnum } from '../../../../utils/statusConstants';
 import { FieldOption } from '../../../../utils/field';
 import useDebounceCallback from '../../../../utils/hooks/useDebounceCallback';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { isWorkflowUiEnabledForType } from '../workflow/workflowFeatureFlag';
 import type { StatusFieldStatusesSearchQuery$data } from './__generated__/StatusFieldStatusesSearchQuery.graphql';
 import type { StatusFieldWorkflowDefinitionPublishedQuery$data } from './__generated__/StatusFieldWorkflowDefinitionPublishedQuery.graphql';
 
@@ -104,7 +102,6 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
   workflowStatusesOnly = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const { isFeatureEnable } = useHelper();
   const [keyword, setKeyword] = useState<string>('');
   const [hasPublishedWorkflowDefinition, setHasPublishedWorkflowDefinition] = useState<boolean>(false);
   // Read by a search still in flight when the workflow statuses arrive
@@ -164,11 +161,9 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
 
   const debouncedSearchStatuses = useDebounceCallback(searchStatuses, 1500);
 
-  const isWorkflowUiEnabled = !!type && isWorkflowUiEnabledForType(type, isFeatureEnable);
-
   useEffect(() => {
     workflowListedRef.current = false;
-    if (!type || !isWorkflowUiEnabled) {
+    if (!type) {
       setHasPublishedWorkflowDefinition(false);
       return;
     }
@@ -192,7 +187,7 @@ const StatusField: FunctionComponent<StatusFieldProps> = ({
             })));
         }
       });
-  }, [type, isWorkflowUiEnabled, workflowStatusesOnly]);
+  }, [type, workflowStatusesOnly]);
 
   const isWorkflowManaged = hasPublishedWorkflowDefinition && !workflowStatusesOnly;
   // The workflow statuses are loaded once with the definition, searching would add the statuses outside the workflow

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEntity, createRelation, loadEntity } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
+import { getEntitiesListFromCache } from '../../../src/database/cache';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { initializeEntityWorkflow } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState } from '../../../src/modules/workflow/domain/workflow-projection';
@@ -22,6 +23,10 @@ vi.mock('../../../src/database/middleware', () => ({
   createRelation: vi.fn(),
   loadEntity: vi.fn(),
   updateAttribute: vi.fn(),
+}));
+
+vi.mock('../../../src/database/cache', () => ({
+  getEntitiesListFromCache: vi.fn(),
 }));
 
 vi.mock('../../../src/database/middleware-loader', () => ({
@@ -85,11 +90,13 @@ describe('initializeEntityWorkflow throughput benchmark', () => {
   });
 
   const mockNoWorkflowConfigured = () => {
+    (getEntitiesListFromCache as any).mockResolvedValue([]);
     (findByType as any).mockResolvedValue(undefined);
     (storeLoadById as any).mockResolvedValue(null);
   };
 
   const mockWorkflowConfigured = () => {
+    (getEntitiesListFromCache as any).mockResolvedValue([{ target_type: 'Incident', workflow_id: 'workflow-def-id' }]);
     (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
     (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
       if (id === 'workflow-def-id') {

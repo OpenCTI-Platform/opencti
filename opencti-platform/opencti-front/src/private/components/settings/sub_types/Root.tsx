@@ -20,10 +20,7 @@ import {
   useSubTypeOutletContext,
 } from './SubTypeOutletContext';
 import SubType from './SubType';
-import GlobalWorkflowSettingsCard from './global_workflow_request_access/GlobalWorkflowSettingsCard';
 import SubTypeWorkflow from './SubTypeWorkflow';
-import useHelper from '../../../../utils/hooks/useHelper';
-import { isWorkflowUiEnabledForType } from '../../common/workflow/workflowFeatureFlag';
 
 const SubTypeIndexRedirect = () => {
   const { tabs } = useSubTypeOutletContext();
@@ -48,8 +45,6 @@ const RootSubType = () => {
 
   if (!subTypeId) return <ErrorNotFound />;
 
-  const { isFeatureEnable } = useHelper();
-
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -57,11 +52,7 @@ const RootSubType = () => {
           <Route index element={<SubTypeIndexRedirect />} />
           <Route
             path={SUBTYPE_TAB_WORKFLOW}
-            element={isWorkflowUiEnabledForType(subTypeId, isFeatureEnable)
-              ? (
-                  <SubTypeWorkflow entityType={subTypeId} heightOffset={290} />
-                )
-              : <GlobalWorkflowSettingsCard />}
+            element={<SubTypeWorkflow entityType={subTypeId} heightOffset={290} />}
           />
           <Route path={SUBTYPE_TAB_TEMPLATES} element={<FintelTemplatesManager />} />
           <Route

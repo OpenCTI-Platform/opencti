@@ -26,9 +26,9 @@ testCreatedCounter['attack-pattern'] = 62;
 testCreatedCounter.campaign = 9;
 // 3 created by workflow-closing-reason-test merge and external status write cases
 testCreatedCounter['case-incident'] = 23;
-// 40 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
-testCreatedCounter['case-rfi'] = 49;
-testCreatedCounter['case-rft'] = 2;
+// 38 case-rfi and 1 case-rft created by the request access workflow tests (requestAccess-test, requestAccess-domain-test, workflow-test)
+testCreatedCounter['case-rfi'] = 47;
+testCreatedCounter['case-rft'] = 3; // includes 1 by workflow-migration-test (case on a legacy status)
 // 2 created and deleted by stixCoreObject-test (regardingOf on publishes)
 testCreatedCounter.channel = 3;
 testCreatedCounter['course-of-action'] = 4;
@@ -155,7 +155,7 @@ testUpdatedCounter['attack-pattern'] = 11;
 testUpdatedCounter['case-incident'] = 28;
 testUpdatedCounter.feedback = 1;
 // Includes 3 by the has-covered cleanup tests of securityCoverage-utils-test (objects removed)
-testUpdatedCounter.report = 36; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
+testUpdatedCounter.report = 35; // includes 2 by audit-test (audits breakdown), and 1 status written by a transition in workflow-entity-write-test
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -180,7 +180,7 @@ testUpdatedCounter.persona = 1;
 testUpdatedCounter['ssh-key'] = 1;
 // 43 case-rfi and 2 case-rft updated by the request access workflow tests (status transitions, decisions)
 testUpdatedCounter['case-rfi'] = 48;
-testUpdatedCounter['case-rft'] = 2;
+testUpdatedCounter['case-rft'] = 3; // includes 1 by workflow-migration-test (legacy status write)
 // 1 updated by stixCyberObservable-test (network traffic deduplication)
 testUpdatedCounter['ipv4-addr'] = 5;
 // 3 updated by stixCyberObservable-test (2 upserts and 1 contributing field update in network traffic deduplication)
@@ -228,9 +228,9 @@ testDeletedCounter['attack-pattern'] = 57;
 testDeletedCounter.campaign = 5; // 2 by upsert-limit-dates-test
 // 2 by workflow-closing-reason-test merge and external status write cases, the merged source has no delete event
 testDeletedCounter['case-incident'] = 20;
-// 39 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
-testDeletedCounter['case-rfi'] = 48;
-testDeletedCounter['case-rft'] = 2;
+// 37 case-rfi and 1 case-rft deleted by the request access workflow tests (1 more case-rfi is merged)
+testDeletedCounter['case-rfi'] = 46;
+testDeletedCounter['case-rft'] = 3; // includes 1 by workflow-migration-test
 testDeletedCounter.channel = 3; // 2 created and deleted by stixCoreObject-test (regardingOf on publishes)
 testDeletedCounter['course-of-action'] = 2;
 testDeletedCounter['data-component'] = 2;

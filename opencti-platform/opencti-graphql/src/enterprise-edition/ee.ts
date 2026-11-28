@@ -27,8 +27,10 @@ export const isEnterpriseEditionFromSettings = (settings?: Pick<BasicStoreSettin
   return settings?.valid_enterprise_edition === true;
 };
 
+export const ENTERPRISE_EDITION_REQUIRED_MESSAGE = 'Enterprise edition is not enabled';
+
 export const checkEnterpriseEdition = async (context: AuthContext) => {
   if (!(await isEnterpriseEdition(context))) {
-    throw UnsupportedError('Enterprise edition is not enabled');
+    throw UnsupportedError(ENTERPRISE_EDITION_REQUIRED_MESSAGE);
   }
 };

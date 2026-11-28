@@ -88,7 +88,7 @@ export const projectWorkflowState = async (
     } else {
       logApp.warn('[OPENCTI-MODULE] No Status mapped for workflow state, skipping projection', { entityType, scope, stateId });
     }
-    // Not registered on non domain objects, nor at all while the workflow engine is off
+    // The closing reason attribute is only registered on domain objects
     if (closingReason !== undefined && schemaAttributesDefinition.getAttribute(entityType, 'x_opencti_closing_reason')) {
       inputs.push({ key: 'x_opencti_closing_reason', value: [closingReason] });
     }

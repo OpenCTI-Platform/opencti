@@ -45,6 +45,9 @@ export const NEW_STATUS_NAME = 'NEW_STATUS';
 // Request access exists for Case-Rfi only; the backend rejects the REQUEST_ACCESS scope for any other type.
 export const REQUEST_ACCESS_ENTITY_TYPE = 'Case-Rfi';
 
+// Entity types whose legacy statuses never become a workflow (the API refuses to migrate them)
+export const NON_MIGRATABLE_ENTITY_TYPES = ['DraftWorkspace', 'stix-core-relationship', 'stix-sighting-relationship'];
+
 // Dynamic organization of a shareRequestedEntities action: the organization of the RFI author, i.e. the requesting one.
 export const REQUEST_ACCESS_AUTHOR_KEY = 'AUTHOR';
 
