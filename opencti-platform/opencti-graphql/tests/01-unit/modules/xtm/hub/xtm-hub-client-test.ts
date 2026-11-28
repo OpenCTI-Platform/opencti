@@ -20,10 +20,14 @@ vi.mock('../../../../../src/utils/http-client', async (importOriginal) => ({
   getHttpClient: vi.fn(() => ({ post: mockPost })),
 }));
 
+// These calls carry the token: the key, and the calls signed with it, are covered by xtm-hub-client-credentials-test.
+vi.mock('../../../../../src/modules/xtm/hub/xtm-hub-key', () => ({ getXtmHubKey: vi.fn() }));
+
 const PLATFORM_ID = 'platform-id';
 const TOKEN = 'platform-token';
 const PLATFORM_VERSION = '7.0.0';
-const REFRESH_INPUT = { platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformContract: 'EE' as const };
+const TOKEN_CREDENTIALS = { kind: 'token' as const, token: TOKEN };
+const REFRESH_INPUT = { platformId: PLATFORM_ID, credentials: TOKEN_CREDENTIALS, platformVersion: PLATFORM_VERSION, platformContract: 'EE' as const };
 const ECHOED_INPUT = '{ platformId: "platform-id", token: "platform-token", platformVersion: "7.0.0", platformIdentifier: "opencti", platformContract: "EE" }';
 const BASE_INPUT = { platformId: PLATFORM_ID, token: TOKEN, platformVersion: PLATFORM_VERSION, platformIdentifier: 'opencti' };
 const INPUT_ERROR = `Variable "$input" got invalid value ${ECHOED_INPUT}; Field "platformVersion" of required type "String!" was not provided.`;
@@ -273,7 +277,7 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
     await xtmHubClient.refreshRegistrationStatus(REFRESH_INPUT);
 
     // Then
-    expect(vi.mocked(logApp.warn).mock.calls).toEqual([['XTM Hub sent an error', { codes }]]);
+    expect(vi.mocked(logApp.warn).mock.calls).toEqual([['XTM Hub sent an error', { codes, refusal: null }]]);
   });
 
   it('should return inactive when the hub is unreachable', async () => {
