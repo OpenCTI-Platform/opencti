@@ -267,6 +267,36 @@ describe('JSON mapper extractWithRegexp', () => {
   });
 });
 
+describe('JSON mapper patternFromValue', () => {
+  const makeMapper = (formula) => ({
+    type: 'jsonMapper',
+    name: 'pattern-test',
+    variables: [],
+    representations: [{
+      id: 'rep1',
+      type: JsonMapperRepresentationType.Entity,
+      target: { entity_type: ENTITY_TYPE_MALWARE, path: '$[*]' },
+      identifier: undefined,
+      attributes: [
+        { key: 'name', mode: 'complex', complex_path: { variables: [{ variable: 'value', path: '$.value' }], formula } },
+        { key: 'is_family', mode: 'simple', default_values: ['true'] },
+      ],
+    }],
+  });
+
+  it('should build the pattern from the value as it is', async () => {
+    const data = JSON.stringify([{ value: '1.1.1.1' }, { value: ['1.1.1.1', '2.2.2.2'] }]);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('patternFromValue("IPv4-Addr", value)'));
+    expect(objects.map((o) => o.name)).toEqual(["[ipv4-addr:value = '1.1.1.1']", "[ipv4-addr:value IN ('1.1.1.1','2.2.2.2')]"]);
+  });
+
+  it('should return invalid when the pattern cannot be built', async () => {
+    const data = JSON.stringify([{ other: '1.1.1.1' }]);
+    const objects = await jsonMappingExecution(testContext, ADMIN_USER, data, makeMapper('patternFromValue("IPv4-Addr", value)'));
+    expect(objects[0].name).toBe('invalid');
+  });
+});
+
 describe('JSON mapper independent paths', () => {
   it('should evaluate an independent filter once per mapping execution', async () => {
     const source = "$.meta[?(@.k == 'source')].v";
@@ -300,7 +330,8 @@ describe('JSON mapper independent paths', () => {
       expect(objects.map((o) => o.name)).toEqual(['Sliver (feed)', 'Emotet (feed)', 'Qakbot (feed)']);
       expect(objects.map((o) => o.description)).toEqual(['feed', 'feed', 'feed']);
       // The filter does not depend on the record: the document goes to the worker once, not once per record and attribute
-      expect(postMessageSpy).toHaveBeenCalledTimes(1);
+      const jsonPathQueries = postMessageSpy.mock.calls.filter(([message]) => message && 'path' in message);
+      expect(jsonPathQueries).toHaveLength(1);
     } finally {
       postMessageSpy.mockRestore();
     }

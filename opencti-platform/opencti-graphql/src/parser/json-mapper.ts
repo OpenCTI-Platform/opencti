@@ -13,8 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import RE2 from 're2';
-
 import { v4 as uuidv4 } from 'uuid';
 import type { StixObject } from '../types/stix-2-1-common';
 import { logApp } from '../config/conf';
@@ -45,12 +43,22 @@ import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import { SYSTEM_USER } from '../utils/access';
-import { createSafeEjsSandbox, type SafeEjsSandbox } from '../utils/safeEjs';
+import { safeRender } from '../utils/safeEjs.client';
+import { registerSafeEjsHostCall } from '../utils/safeEjs.pool';
+import { checkJsonMapperFormula } from './json-mapper-formula';
 import { queryJsonPath } from '../utils/jsonPath.client';
 import { computeDefaultValue, formatValue, handleDefaultMarkings, handleRefEntities, type InputType } from './csv-mapper';
 import { getCustomFieldAttributeDefinitions, moveCustomFieldValuesToInput } from '../modules/customField/custom-field-attributes';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 import { pushAll } from '../utils/arrayUtil';
+
+registerSafeEjsHostCall('patternFromValue', (k, value) => {
+  try {
+    return createStixPatternSync(k, value);
+  } catch {
+    return 'invalid';
+  }
+});
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -86,7 +94,6 @@ const queryRecordOrBase = (base: MappingBase, record: JSON, path: string, indepe
 };
 
 const extractComplexPathFromJson = async (
-  sandbox: SafeEjsSandbox,
   base: MappingBase,
   metaData: Record<string, any>,
   record: JSON,
@@ -94,40 +101,20 @@ const extractComplexPathFromJson = async (
   attrDef?: AttributeDefinition,
 ) => {
   const { variables, formula } = attribute;
+  checkJsonMapperFormula(formula);
   const data: any = { ...metaData };
   for (let i = 0; i < (variables ?? []).length; i += 1) {
     const variable = (variables ?? [])[i];
     data[variable.variable] = await queryRecordOrBase(base, record, variable.path, variable.independent, attrDef?.multiple ?? false);
   }
-  data.patternFromValue = (k: string, value: string) => {
-    try {
-      return createStixPatternSync(k, value);
-    } catch {
-      return 'invalid';
-    }
-  };
-  data.extractWithRegexp = (regexp: string, groupIndex: number, value: string) => {
-    const myRegexp = new RE2(regexp, 'g');
-    const matches = myRegexp.exec(value);
-    if (matches != null && matches[groupIndex] != null) {
-      return matches[groupIndex];
-    }
-    return value;
-  };
-  data.decisionMatrix = (value: any, defaultValue: any, matrix: { value: any; result: any }[]) => {
-    for (let i = 0; i < matrix.length; i += 1) {
-      const v = matrix[i];
-      if (v.value === value) {
-        return v.result;
-      }
-    }
-    return defaultValue;
-  };
-  const val = await sandbox.safeRender(`<?- ${formula} ?>`, data, {
+  // Rendered in the worker pool like other templates, see withJsonMapperHelpers
+  const val = await safeRender(`<?- ${formula} ?>`, data, {
     delimiter: '?',
     async: true,
     maxExecutedStatementCount: 10000,
     maxExecutionDuration: 5000,
+    timeout: 5000,
+    useJsonMapperHelpers: true,
   });
   return attrDef ? format(val, attrDef, attribute) : val;
 };
@@ -205,7 +192,6 @@ const extractTargetIdentifierFromJson = async (base: MappingBase, record: JSON, 
 };
 
 const handleDirectAttribute = async (
-  sandbox: SafeEjsSandbox,
   base: MappingBase,
   metaData: Record<string, any>,
   attribute: RepresentationAttribute,
@@ -233,7 +219,7 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(sandbox, base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
@@ -375,7 +361,6 @@ const jsonMappingExecution = async (
 
   const finalObjects: StixObject[] = [];
   const seenIds = new Set<string>();
-  const ejsSandbox = createSafeEjsSandbox();
 
   const processInput = (representation: JsonMapperRepresentation, input: any) => {
     let stixObject: StixObject | undefined;
@@ -424,7 +409,7 @@ const jsonMappingExecution = async (
     const dataVars: any = { ...variables };
     for (let indexVar = 0; indexVar < (mapper.variables ?? []).length; indexVar += 1) {
       const variable = (mapper.variables ?? [])[indexVar];
-      dataVars[variable.name] = await extractComplexPathFromJson(ejsSandbox, mappingBase, {}, element, variable.path);
+      dataVars[variable.name] = await extractComplexPathFromJson(mappingBase, {}, element, variable.path);
     }
     // endregion
     // region representations
@@ -459,10 +444,10 @@ const jsonMappingExecution = async (
                 if (hashesNames.includes(attribute.key)) {
                   const definitionHash = (attributeDef as ObjectAttribute).mappings.find((definition) => (definition.name === attribute.key));
                   if (definitionHash) {
-                    await handleDirectAttribute(ejsSandbox, mappingBase, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
+                    await handleDirectAttribute(mappingBase, dataVars, attribute, input, baseDatum, attributeDef, hashesNames);
                   }
                 } else {
-                  await handleDirectAttribute(ejsSandbox, mappingBase, dataVars, attribute, input, baseDatum, attributeDef, []);
+                  await handleDirectAttribute(mappingBase, dataVars, attribute, input, baseDatum, attributeDef, []);
                 }
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });

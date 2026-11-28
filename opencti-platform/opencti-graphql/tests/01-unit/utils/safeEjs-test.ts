@@ -119,10 +119,8 @@ describe('check safeRender on invalid cases', () => {
     'sandbox escape via line comment: process.binding RCE': '<%//%><%- JSON.stringify(process.binding("spawn_sync")) %>',
     'sandbox escape via line comment with space': '<% // %><%= process.env %>',
     'sandbox escape via line comment: multi-fragment chain': '<%//%><%//%><%= process.env %>',
-    'sandbox escape via block comment': '<%/*%><%- process.env %><%*/%>',
     'sandbox escape via regex literal hiding comment': '<% /\\/\\// %><%- JSON.stringify(process.env) %>',
     'sandbox escape via line comment: end of expression': '<% const x = //%><%= process.env %>',
-    'split payload across tags fooling block comment': '<% /* %>filler text<% still comment */ this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\') %>',
     'comment-like sequence inside template literal substitution': '<% const x = `${/*z*/this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\')}`; %>',
   }).map(([name, template]) => ({ name, template }));
 
@@ -156,10 +154,11 @@ describe('check safeRender on invalid cases', () => {
     }
     expect(ejsError).toBeDefined();
     expect(safeError).toBeDefined();
-    // Identical source-position context => line numbers preserved through stripping.
-    expect(safeError).toEqual(ejsError);
-    // Sanity: the reported context really spans the multi-line comment region.
-    expect(safeError).toContain('4|  c */');
+    // Same position as ejs => line numbers preserved through stripping. The excerpt shows the
+    // compiled template, where comment text is blanked.
+    expect(safeError?.split('\n')[0]).toEqual(ejsError?.split('\n')[0]);
+    expect(safeError).toContain("Cannot read properties of undefined (reading 'bad')");
+    expect(safeError).not.toContain('c */');
   });
 
   it('safeRender should reject a "%>" inside a block comment as a tag boundary, same as ejs', () => {
@@ -185,10 +184,19 @@ describe('check safeRender on invalid cases', () => {
   const parsingErrorCases = Object.entries({
     'invalid EJS': ' <%= ',
     'invalid JS': ' <%= user( %>',
+    'HTML-like comment open in code': '<% let a = 2; a <!-- a %>',
+    'HTML-like comment close in code': '<% let a = 2; a-->0 %>',
+    // A block comment cut by a tag boundary is unterminated in its fragment: refused while parsing
+    'sandbox escape via block comment': '<%/*%><%- process.env %><%*/%>',
+    'split payload across tags fooling block comment': '<% /* %>filler text<% still comment */ this[\'pro\'+\'cess\'].mainModule[\'requ\'+\'ire\'](\'child_pr\'+\'ocess\')[\'e\'+\'xecSync\'](\'id\') %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(parsingErrorCases)('safeRender should fail with VerifierParsingError for "$name" case', ({ template }) => {
     expect(() => safeRender(template, data)).toThrowError(VerifierParsingError);
+  });
+
+  it('should explain why a template with HTML comment markers in its code is refused', () => {
+    expect(() => safeRender('<% let a = 2; a <!-- a %>', data)).toThrowError(/HTML comment markers/);
   });
 
   it('safeRender should fail with VerifierIllegalAccessError for invalid context', () => {
@@ -250,6 +258,8 @@ describe('check safeRender on valid cases', () => {
     'output tag with an expression and a trailing semicolon': '<%= 1 + 2; %>',
     'no-space output tag with a trailing semicolon': '<%=user.name;%>',
     'synchronous side effect of an async IIFE before output': '<% let v = 0; (async () => { v = 1; })(); %><%= v %>',
+    'quoted key in destructuring': '<% const { "name": n } = user; %><%= n %>',
+    'HTML comment in template text': '<!-- note --><%= user.name %>',
     // --- legitimate JS comments inside scriptlets must still work after fix ---
     'js line comment before code on next line': '<% // this.constructor\nconst z = 1; %><%= z %>',
     'js block comment inline': '<% const w = /* this.constructor */ 2; %><%= w %>',
@@ -592,6 +602,16 @@ describe('check safeRender with escape', () => {
 
   it('should let the template data shadow escape', () => {
     expect(safeRender('<%- escape("a b:c") %>', { escape: (s: string) => s.toUpperCase() })).toEqual('A B:C');
+  });
+
+  it('should surface the message of an error thrown by a custom escape function', () => {
+    const escape = (s: string) => {
+      if (s === 'bad') {
+        throw new Error('bad escape');
+      }
+      return s;
+    };
+    expect(safeRender('<% let m = "none"; try { %><%= "bad" %><% } catch (e) { m = e.message; } %><%= m %>', {}, { escape })).toEqual('bad escape');
   });
 });
 
@@ -1016,6 +1036,84 @@ describe('check createSafeEjsSandbox', () => {
     expect(await sandbox.safeRender('<% let i=0; while(i<10) i=i+1; %><%= i %>', {}, quotas)).toEqual('10');
     expect(() => sandbox.safeRender('<% while(true); %>', {}, quotas)).toThrow(VerifierProcessingQuotaExceededError);
     expect(await sandbox.safeRender('<%= 1 + 1 %>', {}, quotas)).toEqual('2');
+  });
+});
+
+describe('check safeRender with functions in data', () => {
+  it('should call a data function and render its result', () => {
+    expect(safeRender('<%= helper("a", "b") %>', { helper: (k: string, v: string) => `${k}=${v}` })).toEqual('a=b');
+  });
+
+  it('should keep the receiver of a data method', () => {
+    const user = {
+      name: 'test',
+      getName() {
+        return this.name;
+      },
+    };
+    expect(safeRender('<%= user.getName() %>', { user })).toEqual('test');
+  });
+
+  it('should surface the message of an error thrown by a data function', () => {
+    const template = '<% let m = "none"; try { fail(); } catch (e) { m = e.message; } %><%= m %>';
+    const failWithError = () => {
+      throw new Error('boom');
+    };
+    const failWithNull = () => {
+      throw null;
+    };
+    expect(safeRender(template, { fail: failWithError })).toEqual('boom');
+    expect(safeRender(template, { fail: failWithNull })).toEqual('');
+  });
+
+  it('should surface the message of an error thrown while reading the result of a data function', () => {
+    const data = {
+      read: () => ({
+        get value() {
+          throw new Error('unreadable');
+        },
+      }),
+    };
+    expect(safeRender('<% let m = "none"; try { read(); } catch (e) { m = e.message; } %><%= m %>', data)).toEqual('unreadable');
+  });
+
+  it('should give a template callback the values a data function passes and return its result', () => {
+    const data = { apply: (cb: (o: { v: number }) => unknown) => cb({ v: 41 }) };
+    expect(safeRender('<%= apply((o) => o.v + 1) %>', data)).toEqual('42');
+  });
+
+  it('should keep the identity of an object passed twice to a data function', () => {
+    expect(safeRender('<% const o = { a: 1 }; %><%= same(o, o) %>', { same: (a: unknown, b: unknown) => a === b })).toEqual('true');
+  });
+
+  it('should return usable copies of the objects a data function returns', () => {
+    const data = { obj: () => ({ a: 1 }), arr: () => [1, 2], map: () => new Map([['k', 1]]) };
+    expect(safeRender('<%- JSON.stringify([obj(), arr(), [...map()]]) %>', data)).toEqual('[{"a":1},[1,2],[["k",1]]]');
+  });
+
+  it('should not leak a write on a data function into the host', () => {
+    const helper = () => 'ok';
+    const sandbox = createSafeEjsSandbox();
+    expect(sandbox.safeRender('<% helper.note = "x"; %><%= helper() %>', { helper })).toEqual('ok');
+    expect((helper as unknown as Record<string, unknown>).note).toBeUndefined();
+    expect(sandbox.safeRender('<%= typeof helper.note %>', { helper })).toEqual('undefined');
+  });
+
+  it('should call data functions in an async render with a custom delimiter', async () => {
+    const data = { pick: (matrix: { value: string; result: number }[], value: string) => matrix.find((m) => m.value === value)?.result };
+    const options = { delimiter: '?', async: true, maxExecutedStatementCount: 10000, maxExecutionDuration: 5000 };
+    expect(await createSafeEjsSandbox().safeRender('<?- pick([{ value: "high", result: 90 }], "high") ?>', data, options)).toEqual('90');
+  });
+
+  it('should refuse a promise returned by a data function', () => {
+    const template = '<% let m = "none"; try { load(); } catch (e) { m = e.message; } %><%= m %>';
+    expect(safeRender(template, { load: async () => 42 })).toEqual('Promises are not supported in template data');
+  });
+
+  it('should refuse a promise passed in the data with a host error', () => {
+    const render = () => safeRender('<%= value %>', { value: Promise.resolve(42) });
+    expect(render).toThrowError(Error);
+    expect(render).toThrowError('Promises are not supported in template data');
   });
 });
 

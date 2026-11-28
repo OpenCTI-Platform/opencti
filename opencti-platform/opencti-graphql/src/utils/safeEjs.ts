@@ -145,7 +145,13 @@ const createSafeContext = (
     ]),
   );
 
-  const safeData = realm.clone(data ?? {});
+  let safeData: Record<string, unknown>;
+  try {
+    safeData = realm.clone(data ?? {});
+  } catch (error) {
+    // The copy runs in the sandbox realm: hand the caller a host error
+    throw restoreError(error as { name?: string; message?: string; stack?: string });
+  }
 
   const parts: Record<string, unknown>[] = [globals, safeData, guards];
   if (useNotificationTool) {
@@ -161,10 +167,15 @@ const createSafeContext = (
  * does. LS (U+2028) and PS (U+2029) are valid content inside a quoted string, where a raw LF is not,
  * so they are left untouched there (a template literal already allows a raw line terminator). One
  * character maps to one character, so positions stay aligned with the original template — which the
- * verifier edits by offset and EJS renders unchanged. This copy is used only by the lezer/AST verifier.
+ * verifier edits by offset and EJS renders unchanged. `verified` is the copy the lezer/AST verifier
+ * reads; `rendered` is the original fragment with the same comment ranges blanked (line terminators
+ * kept), so the code V8 compiles holds no comment the verifier skipped: a lezer/V8 disagreement on
+ * what is a comment can then only remove code, never hide it.
  */
-const stripJsComments = (code: string): string => {
+const stripJsComments = (code: string): { verified: string; rendered: string } => {
   const chars = code.split('');
+  const renderedChars = code.split('');
+  const isLineTerminator = (char: string) => char === '\n' || char === '\r' || char === '\u2028' || char === '\u2029';
   const inString = new Array<boolean>(chars.length).fill(false);
   const stringCursor = jsParser.parse(code).cursor();
   do {
@@ -183,28 +194,42 @@ const stripJsComments = (code: string): string => {
       chars[i] = '\n';
     }
   }
-  const cursor = jsParser.parse(chars.join('')).cursor();
+  const normalized = chars.join('');
+  const cursor = jsParser.parse(normalized).cursor();
   do {
     const { name } = cursor.type;
+    // lezer accepts an unterminated block comment without an error node; V8 refuses it. Refuse it
+    // here, since its content is blanked before V8 compiles the template.
+    if (name === 'BlockComment' && (cursor.to - cursor.from < 4 || !normalized.slice(cursor.from, cursor.to).endsWith('*/'))) {
+      throw new VerifierParsingError('Invalid javascript');
+    }
     if (name === 'LineComment' || name === 'BlockComment') {
       for (let i = cursor.from; i < cursor.to; i += 1) {
         if (chars[i] !== '\n') {
           chars[i] = ' ';
         }
+        if (!isLineTerminator(renderedChars[i])) {
+          renderedChars[i] = ' ';
+        }
       }
     }
   } while (cursor.next());
-  return chars.join('');
+  return { verified: chars.join(''), rendered: renderedChars.join('') };
 };
 
 const extractEJSCode = (template: string, openTag: string, closeTag: string) => {
   const fragments: string[] = [];
+  // The template EJS compiles: the original text, with the comments of every code fragment blanked
+  const renderFragments: string[] = [];
   const outputRanges: Array<{ start: number; end: number }> = [];
   const pushFragment = (text: string, isCode: boolean) => {
     if (text.length > 0) {
       if (isCode) {
-        fragments.push(stripJsComments(text));
+        const { verified, rendered } = stripJsComments(text);
+        fragments.push(verified);
+        renderFragments.push(rendered);
       } else {
+        renderFragments.push(text);
         // keep the same output size in order to permit to easy code edition
         // replace the first char by a line break, so multiple EJS tag on the same would not lead to invalid JS code
         const cleaned = `\n${text.replaceAll(/[^\r\n]/g, ' ').substring(1)}`;
@@ -286,8 +311,9 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
   }
 
   const code = fragments.join('');
+  const renderTemplate = renderFragments.join('');
   if (outputRanges.length === 0) {
-    return code;
+    return { code, renderTemplate };
   }
   const chars = code.split('');
   const isBlank = (i: number) => i >= 0 && i < chars.length && (chars[i] === ' ' || chars[i] === '\n' || chars[i] === '\r');
@@ -316,10 +342,14 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
       chars[end + 1] = ';';
     }
   }
-  return chars.join('');
+  return { code: chars.join(''), renderTemplate };
 };
 
 const transformTemplate = (template: string, code: string, context: string[], async: boolean, shouldYield: boolean) => {
+  if (code.includes('<!--') || code.includes('-->')) {
+    throw new VerifierParsingError('HTML comment markers (<!-- and -->) are not allowed inside template tags');
+  }
+
   context.forEach((name) => {
     if (forbiddenGlobals.includes(name) || name.startsWith(safeReservedPrefix)) {
       throw new VerifierIllegalAccessError(`Forbidden context variable ${JSON.stringify(name)}`);
@@ -508,7 +538,7 @@ const transformTemplate = (template: string, code: string, context: string[], as
 
   const processString = () => {
     const parentType = cursor.node.parent?.type.name;
-    if (parentType === 'Property') {
+    if (parentType === 'Property' || parentType === 'PatternProperty') {
       processPropertyDefinitionOrName();
     }
   };
@@ -666,12 +696,43 @@ interface SafeRealm {
 // Rebuilds the values a template can reach inside the sandbox realm, so none of them inherits from
 // the host realm's shared prototypes. The data deep copy, the guards, the Object substitute and the
 // octi wrapper are all made with the sandbox's own intrinsics, so a write a template leaves on an
-// inherited method dies with the per-render context instead of carrying to the next render. Function
-// values pass through by reference (a worker never receives any; the main-thread callers' helpers
-// keep working), so only those keep host-realm prototypes.
-const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
-  clone: sandbox.runInContext(`(value) => {
+// inherited method dies with the per-render context instead of carrying to the next render. A function
+// value (today only the JSON mapper helpers) is replaced by a sandbox-realm wrapper that copies its
+// receiver, arguments and result the same way, so a function passed along in either direction is
+// wrapped too. One sandbox-realm translator turns every host error a template could catch into a
+// sandbox error carrying only its name and message.
+const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => {
+  const translateError = sandbox.runInContext(`(error) => {
+    let message = '';
+    let name = 'Error';
+    try {
+      if (error != null) {
+        message = error.message == null ? '' : String(error.message);
+        name = error.name == null ? 'Error' : String(error.name);
+      }
+    } catch { /* keep the defaults */ }
+    const translated = new Error(message);
+    translated.name = name;
+    return translated;
+  }`);
+  const withTranslator = <T>(code: string) => (sandbox.runInContext(code) as (translate: unknown) => T)(translateError);
+  return {
+    clone: withTranslator<SafeRealm['clone']>(`(translateError) => (value) => {
     const brand = Object.prototype.toString;
+    const wrapFunction = (fn, seen) => {
+      const wrapper = function (...args) {
+        try {
+          const copies = new Map();
+          const receiver = this === globalThis ? undefined : clone(this, copies);
+          const copiedArgs = args.map((arg) => clone(arg, copies));
+          return clone(Reflect.apply(fn, receiver, copiedArgs), new Map());
+        } catch (error) {
+          throw translateError(error);
+        }
+      };
+      seen.set(fn, wrapper);
+      return wrapper;
+    };
     const copyInto = (source, target, seen) => {
       seen.set(source, target);
       const keys = Object.keys(source);
@@ -683,9 +744,11 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
       return target;
     };
     const clone = (value, seen) => {
+      if (typeof value === 'function') { return seen.get(value) ?? wrapFunction(value, seen); }
       if (value === null || typeof value !== 'object') { return value; }
       const existing = seen.get(value);
       if (existing) { return existing; }
+      if (typeof value.then === 'function') { throw new Error('Promises are not supported in template data'); }
       const tag = brand.call(value);
       if (tag === '[object Date]') { const copy = new Date(value.getTime()); seen.set(value, copy); return copy; }
       if (tag === '[object RegExp]') { const copy = new RegExp(value.source, value.flags); seen.set(value, copy); return copy; }
@@ -747,20 +810,14 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
       return copyInto(value, {}, seen);
     };
     return clone(value, new Map());
-  }`) as SafeRealm['clone'],
-  makeGuards: sandbox.runInContext(`(host) => {
+  }`),
+    makeGuards: withTranslator<SafeRealm['makeGuards']>(`(translateError) => (host) => {
     // A host check throws a host-realm error; a template could catch it and reach the worker's shared
-    // Error.prototype. Re-throw a sandbox-realm error carrying only the name and message (no host
-    // object, no cause), so a caught error belongs to the per-render context.
-    const rethrow = (error) => {
-      const translated = new Error(error == null ? '' : error.message);
-      translated.name = error == null ? 'Error' : error.name;
-      return translated;
-    };
+    // Error.prototype, so it is re-thrown as a sandbox-realm error.
     const guards = {};
-    guards[host.statementName] = () => { try { host.checkStatement(); } catch (error) { throw rethrow(error); } };
-    guards[host.statementAsyncName] = async () => { try { await host.checkStatementAsync(); } catch (error) { throw rethrow(error); } };
-    guards[host.propertyName] = (name) => { try { return host.checkProperty(name); } catch (error) { throw rethrow(error); } };
+    guards[host.statementName] = () => { try { host.checkStatement(); } catch (error) { throw translateError(error); } };
+    guards[host.statementAsyncName] = async () => { try { await host.checkStatementAsync(); } catch (error) { throw translateError(error); } };
+    guards[host.propertyName] = (name) => { try { return host.checkProperty(name); } catch (error) { throw translateError(error); } };
     guards[host.objectName] = Object.freeze({
       keys: Object.keys,
       values: Object.values,
@@ -773,7 +830,7 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
             const pairs = Object.entries(source);
             for (let j = 0; j < pairs.length; j += 1) {
               let key;
-              try { key = host.checkProperty(pairs[j][0]); } catch (error) { throw rethrow(error); }
+              try { key = host.checkProperty(pairs[j][0]); } catch (error) { throw translateError(error); }
               target[key] = pairs[j][1];
             }
           }
@@ -789,20 +846,17 @@ const createSafeRealm = (sandbox: EjsSandbox): SafeRealm => ({
     guards[host.iterateAsyncName] = async function* (iterable) { for await (const item of iterable) { statement(); yield item; } };
     guards[host.iterateKeysName] = function* (object) { for (const key in object) { statement(); yield key; } };
     return guards;
-  }`) as SafeRealm['makeGuards'],
-  makeOcti: sandbox.runInContext('(render) => ({ markdownToHtml: render })') as SafeRealm['makeOcti'],
-  // Wraps a host callback a template can reach (the markdown tool, the JSON escape, the include
-  // barrier) in a sandbox-realm function that translates a host exception into a sandbox-realm error,
-  // so a template that catches one cannot reach a host prototype through it.
-  wrapCallback: sandbox.runInContext(`(fn) => (...args) => {
-    try { return fn(...args); } catch (error) {
-      const translated = new Error(error == null ? '' : error.message);
-      translated.name = error == null ? 'Error' : error.name;
-      throw translated;
-    }
-  }`) as SafeRealm['wrapCallback'],
-  assemble: sandbox.runInContext('(parts) => Object.assign({}, ...parts)') as SafeRealm['assemble'],
-});
+  }`),
+    makeOcti: sandbox.runInContext('(render) => ({ markdownToHtml: render })') as SafeRealm['makeOcti'],
+    // Wraps a host callback a template can reach (the markdown tool, the JSON escape, the include
+    // barrier) in a sandbox-realm function that translates a host exception into a sandbox-realm error,
+    // so a template that catches one cannot reach a host prototype through it.
+    wrapCallback: withTranslator<SafeRealm['wrapCallback']>(`(translateError) => (fn) => (...args) => {
+    try { return fn(...args); } catch (error) { throw translateError(error); }
+  }`),
+    assemble: sandbox.runInContext('(parts) => Object.assign({}, ...parts)') as SafeRealm['assemble'],
+  };
+};
 
 const verifierErrorConstructors: Record<string, new (message: string) => VerifierError> = {
   VerifierParsingError,
@@ -834,12 +888,12 @@ export const createSafeEjsSandbox = (): SafeEjsSandbox => {
   return {
     safeRender: (template, data, options = {}) => {
       const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false, useNotificationTool = false } = options;
-      const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
+      const { code, renderTemplate } = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
       const contextVars = Object.keys(data ?? {});
       if (useNotificationTool) {
         contextVars.push('octi');
       }
-      const safeTemplate = transformTemplate(template, code, contextVars, async, options.yieldMethod !== undefined);
+      const safeTemplate = transformTemplate(renderTemplate, code, contextVars, async, options.yieldMethod !== undefined);
       const escape = options.escape ? realm.wrapCallback(options.escape) : options.escape;
       return sandbox.render(safeTemplate, createSafeContext(data ?? {}, options, sandboxGlobals, realm), { ...options, escape, includer });
     },

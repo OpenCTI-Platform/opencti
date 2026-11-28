@@ -1,7 +1,9 @@
-import { parentPort } from 'worker_threads';
+import { parentPort, workerData } from 'worker_threads';
 import type { Data } from 'ejs';
 import { safeRender } from './safeEjs';
 import type { SafeRenderOptions } from './safeEjs';
+import { createHostCall, type HostChannel } from './workerPool';
+import { withJsonMapperHelpers } from '../parser/json-mapper-helpers';
 
 export interface WorkerRequest {
   template: string;
@@ -9,7 +11,12 @@ export interface WorkerRequest {
   options?: SafeRenderOptions;
   useJsonEscape?: boolean;
   usePlainTextEscape?: boolean;
+  useJsonMapperHelpers?: boolean;
 }
+
+const HOST_CALL_TIMEOUT = 5000;
+const hostChannel = (workerData as { hostChannel?: HostChannel } | undefined)?.hostChannel;
+const hostCall = hostChannel ? createHostCall(hostChannel, HOST_CALL_TIMEOUT) : undefined;
 
 export interface WorkerReply {
   success: boolean;
@@ -35,7 +42,8 @@ export const plainTextEscapeFunction = (value: unknown): string => {
 // The worker stays alive and renders one request at a time, so the pool can hand it to the next
 // caller instead of paying for a thread per template.
 const executeRequest = async (request: WorkerRequest) => {
-  const { template, data, options, useJsonEscape, usePlainTextEscape } = request;
+  const { template, options, useJsonEscape, usePlainTextEscape, useJsonMapperHelpers } = request;
+  const data = useJsonMapperHelpers ? withJsonMapperHelpers(request.data, hostCall) : request.data;
 
   // Add escape function if needed
   const safeEjsOptions = { ...options };

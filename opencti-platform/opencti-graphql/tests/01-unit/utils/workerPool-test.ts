@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Worker } from 'worker_threads';
+import { MessageChannel, Worker } from 'worker_threads';
 import { FunctionalError } from '../../../src/config/errors';
 import type { JsonPathQuery } from '../../../src/utils/jsonPath.worker';
-import { createWorkerPool, type WorkerPoolOptions } from '../../../src/utils/workerPool';
+import type { WorkerRequest } from '../../../src/utils/safeEjs.worker';
+import { createHostCall, createWorkerPool, type WorkerPoolOptions } from '../../../src/utils/workerPool';
 
 const poolOptions: WorkerPoolOptions = {
   workerFile: 'jsonPath.worker.mjs',
@@ -75,5 +76,83 @@ describe('check createWorkerPool', () => {
     await pool.shutdown();
     expect(await waiting).toBe('Worker pool jsonPath.worker.mjs is shutting down');
     expect(await running).not.toBe('resolved');
+  });
+});
+
+// Stands in for the main thread: answers each host call after the delay given for it
+const RESPONDER = `
+const { workerData } = require('worker_threads');
+const { port, signal, delays } = workerData;
+let count = 0;
+port.on('message', (request) => {
+  const delay = delays[count] ?? 0;
+  count += 1;
+  setTimeout(() => {
+    const reply = request.name === 'fail'
+      ? { id: request.id, ok: false, error: 'failed' }
+      : { id: request.id, ok: true, value: request.name + ':' + request.args };
+    port.postMessage(reply);
+    Atomics.add(signal, 0, 1);
+    Atomics.notify(signal, 0);
+  }, delay);
+});
+`;
+
+const startResponder = (delays: number[], timeout: number) => {
+  const { port1, port2 } = new MessageChannel();
+  const signal = new Int32Array(new SharedArrayBuffer(4));
+  const responder = new Worker(RESPONDER, { eval: true, workerData: { port: port1, signal, delays }, transferList: [port1] });
+  const stop = () => {
+    port2.close();
+    return responder.terminate();
+  };
+  return { hostCall: createHostCall({ port: port2, signal }, timeout), stop };
+};
+
+describe('check host calls through the pool', () => {
+  it('answers an unknown host call with an error', async () => {
+    const pool = createWorkerPool<WorkerRequest, string>({ ...poolOptions, workerFile: 'safeEjs.worker.mjs', hostCalls: Object.create(null) });
+    try {
+      const request: WorkerRequest = { template: '<?- patternFromValue("IPv4-Addr", "1.1.1.1") ?>', data: {}, options: { delimiter: '?' }, useJsonMapperHelpers: true };
+      await expect(pool.run(request, 5000)).rejects.toThrow('Unknown host call "patternFromValue"');
+    } finally {
+      await pool.shutdown();
+    }
+  });
+});
+
+describe('check createHostCall', () => {
+  it('returns the reply and sends the arguments as JSON', async () => {
+    const { hostCall, stop } = startResponder([], 5000);
+    try {
+      expect(hostCall('echo', [1, 'a', null, ['x']])).toEqual('echo:[1,"a",null,["x"]]');
+      expect(() => hostCall('fail', [])).toThrow('failed');
+    } finally {
+      await stop();
+    }
+  });
+
+  it('drops a late reply waiting before the next call', async () => {
+    const { hostCall, stop } = startResponder([300, 0], 100);
+    try {
+      expect(() => hostCall('first', [])).toThrow(/timed out/);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 400);
+      });
+      expect(hostCall('second', [])).toEqual('second:[]');
+    } finally {
+      await stop();
+    }
+  });
+
+  it('drops a late reply arriving while the next call waits', async () => {
+    // first reply at ~1300 ms, after its timeout; second call sent at ~1000 ms, replied at ~1600 ms
+    const { hostCall, stop } = startResponder([1300, 600], 1000);
+    try {
+      expect(() => hostCall('first', [])).toThrow(/timed out/);
+      expect(hostCall('second', [])).toEqual('second:[]');
+    } finally {
+      await stop();
+    }
   });
 });
