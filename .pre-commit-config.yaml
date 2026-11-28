@@ -44,13 +44,11 @@ repos:
                 .github/(.*)|
                 yarn.lock|
                 LICENSE|
-                (.*)/requirements.txt|
                 opencti-platform/.dockerignore|
                 opencti-platform/opencti-graphql/static/(.*)|
                 opencti-platform/opencti-front/src/static/(.*)|
                 opencti-platform/eslint-plugin-custom-rules/(.*)
           )$
-      - id: requirements-txt-fixer
       # Excludes added so you can run against all files versus only changed files in your commit and not impact
       # files which you do not control or are not essential to be linted:
       #    pre-commit run --all-files
@@ -61,7 +59,6 @@ repos:
                 .github/(.*)|
                 yarn.lock|
                 LICENSE|
-                (.*)/requirements.txt|
                 opencti-platform/.dockerignore|
                 opencti-platform/opencti-graphql/static/(.*)|
                 opencti-platform/opencti-front/src/static/(.*)|

@@ -15,8 +15,8 @@
         }
       ],
       "options": {
-        "cwd": "opencti-worker",
-        "command": "pip install -r requirements.txt"
+        "cwd": ".",
+        "command": "uv sync --locked --inexact --package opencti-worker"
       },
       "metadata": {
         "description": "Install the OpenCTI worker dependencies"
@@ -35,7 +35,7 @@
       ],
       "options": {
         "cwd": "opencti-worker/src",
-        "command": "python worker.py"
+        "command": "uv run --no-sync --package opencti-worker python worker.py"
       },
       "metadata": {
         "description": "Run the OpenCTI worker in development mode"
@@ -77,7 +77,7 @@
       ],
       "options": {
         "cwd": "opencti-worker/src",
-        "command": "python worker.py"
+        "command": "uv run --no-sync --package opencti-worker python worker.py"
       },
       "metadata": {
         "description": "Run the OpenCTI worker in development mode"
@@ -96,7 +96,7 @@
       ],
       "options": {
         "cwd": "opencti-worker/src",
-        "command": "python worker.py"
+        "command": "uv run --no-sync --package opencti-worker python worker.py"
       },
       "metadata": {
         "description": "Run the OpenCTI worker in development mode with GraphQL hot reload"
