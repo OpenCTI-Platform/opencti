@@ -12,7 +12,7 @@ import type { BasicStoreEntityConnector } from '../modules/connector/connector-t
 import type { BasicStoreEntitySynchronizer } from '../types/connector';
 import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { FunctionalError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile, deleteWorkForSource, reportExpectation } from '../domain/work';
 import { isNotEmptyField, READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from './utils';
 import { connectorsForImport } from '../modules/connector/connector-domain';
@@ -164,6 +164,9 @@ export const validateSyncInflightStorageKey = (storageKey: unknown, expectedSync
   return { valid: true, normalizedKey: decoded };
 };
 
+// Same 404 whether the file does not exist or the caller is not allowed to see it
+const fileNotFoundError = (data?: { filename: string }) => ResourceNotFoundError('File not found or restricted', data);
+
 /**
  * Get file metadata from database, or else from S3.
  */
@@ -182,21 +185,21 @@ export const loadFile = async (
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted');
+      throw fileNotFoundError();
     }
     // 01. Check if user as enough capability to get support packages
     if (pathForPermissionChecks.startsWith(SUPPORT_STORAGE_PATH) && !isUserHasCapability(user, SETTINGS_SUPPORT)) {
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw fileNotFoundError({ filename: fileS3Path });
     }
     // 01.1. Check if user has enough capability to get configuration preset bundles
     if (isConfigPresetFileRestricted(user, fileS3Path)) {
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw fileNotFoundError({ filename: fileS3Path });
     }
     // 01.2. Check if user as enough capability to load import / export / template knowledge files
     if ((pathForPermissionChecks.startsWith(IMPORT_STORAGE_PATH)
@@ -207,14 +210,14 @@ export const loadFile = async (
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw fileNotFoundError({ filename: fileS3Path });
     }
     // 01.3. Check if user as enough capability to load import/global files
     if (pathForPermissionChecks.startsWith(`${IMPORT_STORAGE_PATH}/global`) && !isUserHasCapability(user, KNOWLEDGE_KNASKIMPORT)) {
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw fileNotFoundError({ filename: fileS3Path });
     }
     // 02. Check if the referenced document is accessible
     const draftContext = getDraftContext(context, user);
@@ -237,7 +240,7 @@ export const loadFile = async (
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw fileNotFoundError({ filename: fileS3Path });
     }
     // 02.1. The lookup ignores case and accents (Config_preset/... finds config_preset/...), so the configuration
     // preset rule is checked again on the path of the document actually found
@@ -245,13 +248,13 @@ export const loadFile = async (
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+      throw fileNotFoundError({ filename: fileS3Path });
     }
     if (isSyncInflightFile(document.internal_id)) {
       if (opts.dontThrow) {
         return undefined;
       }
-      throw FunctionalError('File not found or restricted');
+      throw fileNotFoundError();
     }
     // 03. Check if metadata contains an entity_id, we need to check if the user has real access to this instance
     const { metaData } = document;
@@ -260,14 +263,14 @@ export const loadFile = async (
         if (opts.dontThrow) {
           return undefined;
         }
-        throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+        throw fileNotFoundError({ filename: fileS3Path });
       }
       const instance = await internalLoadById(context, user, metaData.entity_id, { indices: [...READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS] });
       if (!instance) {
         if (opts.dontThrow) {
           return undefined;
         }
-        throw FunctionalError('File not found or restricted', { filename: fileS3Path });
+        throw fileNotFoundError({ filename: fileS3Path });
       }
     }
 
