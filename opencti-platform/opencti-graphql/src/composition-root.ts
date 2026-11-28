@@ -4,6 +4,33 @@ import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayo
 import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import { registerSettingsAttribute } from './modules/settings/settings-attributes';
+import channelModule from './modules/channel/channel-module';
+import catalogModule from './modules/catalog/catalog-module';
+import connectorModule from './modules/connector/connector-module';
+import ingestionHealthModule from './modules/ingestionHealth/ingestionHealth-module';
+import languageModule from './modules/language/language-module';
+import eventModule from './modules/event/event-module';
+import groupingModule from './modules/grouping/grouping-module';
+import narrativeModule from './modules/narrative/narrative-module';
+import notificationModule from './modules/notification/notification-module';
+import dataComponentModule from './modules/dataComponent/dataComponent-module';
+import dataSourceModule from './modules/dataSource/dataSource-module';
+import vocabularyModule from './modules/vocabulary/vocabulary-module';
+import administrativeAreaModule from './modules/administrativeArea/administrativeArea-module';
+import taskModule from './modules/task/task-module';
+import taskTemplateModule from './modules/task/task-template/task-template-module';
+import caseModule from './modules/case/case-module';
+import caseTemplateModule from './modules/case/case-template/case-template-module';
+import caseIncidentModule from './modules/case/case-incident/case-incident-module';
+import caseRfiModule from './modules/case/case-rfi/case-rfi-module';
+import caseRftModule from './modules/case/case-rft/case-rft-module';
+import feedbackModule from './modules/case/feedback/feedback-module';
+import entitySettingModule from './modules/entitySetting/entitySetting-module';
+import workflowModule from './modules/workflow/workflow-module';
+import workspaceModule from './modules/workspace/workspace-module';
+import malwareAnalysisModule from './modules/malwareAnalysis/malwareAnalysis-module';
+import managerConfigurationModule from './modules/managerConfiguration/managerConfiguration-module';
 import notifierModule from './modules/notifier/notifier-module';
 import threatActorIndividualModule from './modules/threatActorIndividual/threatActorIndividual-module';
 import playbookModule from './modules/playbook/playbook-module';
@@ -62,10 +89,37 @@ import vulnerabilityModule from './modules/vulnerability/vulnerability-module';
 import attackPatternModule from './modules/attackPattern/attackPattern-module';
 import courseOfActionModule from './modules/courseOfAction/courseOfAction-module';
 import customFieldModule from './modules/customField/custom-field-module';
+import configPresetModule from './modules/configPreset/configPreset-module';
 
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  channelModule,
+  catalogModule,
+  connectorModule,
+  ingestionHealthModule,
+  languageModule,
+  eventModule,
+  groupingModule,
+  narrativeModule,
+  notificationModule,
+  dataComponentModule,
+  dataSourceModule,
+  vocabularyModule,
+  administrativeAreaModule,
+  taskModule,
+  taskTemplateModule,
+  caseModule,
+  caseTemplateModule,
+  caseIncidentModule,
+  caseRfiModule,
+  caseRftModule,
+  feedbackModule,
+  entitySettingModule,
+  workflowModule,
+  workspaceModule,
+  malwareAnalysisModule,
+  managerConfigurationModule,
   notifierModule,
   threatActorIndividualModule,
   playbookModule,
@@ -124,12 +178,13 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
   attackPatternModule,
   courseOfActionModule,
   customFieldModule,
+  configPresetModule,
 ];
 
 let modulesRegistered = false;
 
 // Each phase runs for every module before the next phase starts: data model (overview layouts,
-// attributes, then definitions), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
+// attributes, definitions, then settings attributes), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
 // registered after the graphql of the modules still registered on import, against the order
 // modules/index documents. That is safe only while nothing reads the model at import time:
 // usageProtection catches an early read of types, attributes or refs, not of converters or validators.
@@ -139,10 +194,11 @@ export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIP
     return;
   }
   modulesRegistered = true;
-  descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [] }) => {
+  descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [], settingsAttributes = [] }) => {
     overviewLayouts.forEach(({ entityType, layout }) => registerEntityOverviewLayoutCustomization(entityType, layout));
     attributes.forEach((definition) => schemaAttributesDefinition.registerAttributes(definition.entityType, definition.attributes));
     dataModel.forEach((definition) => registerDefinition(definition));
+    settingsAttributes.forEach((attribute) => registerSettingsAttribute(attribute));
   });
   descriptors.forEach(({ graphqlSchemas = [] }) => graphqlSchemas.forEach((graphqlSchema) => registerGraphqlSchema(graphqlSchema)));
   descriptors.forEach(({ managers = [] }) => managers.forEach((manager) => registerManager(manager)));
