@@ -21,7 +21,7 @@ it.each([MARKING_TLP_AMBER, ...MARKING_TLP_OASIS_V2_ALIASES[MARKING_TLP_AMBER]])
   const reason = 'Id loading expect only one response';
   vi.mocked(internalLoadById).mockImplementation(async (_context, _user, id) => {
     if (id === duplicateId) throw DatabaseError(reason, { id, hits: 2 });
-    if (id && MARKING_TLP_OASIS_V2_ALIASES[id]) {
+    if (id && id in MARKING_TLP_OASIS_V2_ALIASES) {
       return { internal_id: id, entity_type: ENTITY_TYPE_MARKING_DEFINITION } as any;
     }
     return undefined as any;
@@ -37,4 +37,21 @@ it.each([MARKING_TLP_AMBER, ...MARKING_TLP_OASIS_V2_ALIASES[MARKING_TLP_AMBER]])
       .map(([id, aliases]) => [id, { x_opencti_stix_ids: aliases }]),
   );
   expect(next).toHaveBeenCalledTimes(1);
+});
+
+it.each([MARKING_TLP_AMBER, ...MARKING_TLP_OASIS_V2_ALIASES[MARKING_TLP_AMBER]])('rethrows non-duplicate error when loading %s', async (failingId) => {
+  const failure = DatabaseError('Connection lost');
+  vi.mocked(internalLoadById).mockImplementation(async (_context, _user, id) => {
+    if (id === failingId) throw failure;
+    if (id && id in MARKING_TLP_OASIS_V2_ALIASES) {
+      return { internal_id: id, entity_type: ENTITY_TYPE_MARKING_DEFINITION } as any;
+    }
+    return undefined as any;
+  });
+  const next = vi.fn();
+  await expect(up(next)).rejects.toBe(failure);
+
+  expect(logMigration.warn).not.toHaveBeenCalled();
+  expect(vi.mocked(patchAttribute).mock.calls.map(([, , id]) => id)).not.toContain(MARKING_TLP_AMBER);
+  expect(next).not.toHaveBeenCalled();
 });
