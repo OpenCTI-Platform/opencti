@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import '../../../../src/modules/index';
 
 import { completeEntity } from '../../../../src/modules/form/form-entity-builder';
+import { generateStandardId } from '../../../../src/schema/identifier';
 
 describe('completeEntity', () => {
   it('sets standard_id, internal_id and id', () => {
@@ -41,5 +43,36 @@ describe('completeEntity', () => {
 
     expect(result.created).toBeUndefined();
     expect(result.modified).toBeUndefined();
+  });
+
+  // The platform recomputes the id from the stored values: the bundle id must be the same, or refs to the entity are lost
+  it.each([
+    ['Task', { name: 'Form task' }],
+    ['Case-Incident', { name: 'Form incident response' }],
+    ['Note', { content: 'Form note' }],
+  ])('computes the standard_id of a %s from the created it sets', (type, input) => {
+    const result = completeEntity(type, { ...input } as any);
+
+    expect(result.standard_id).toEqual(generateStandardId(type, { ...input, created: result.created.toISOString() } as any));
+  });
+
+  // A date mapped from a field is a raw string: the platform parses it, the id must use the same canonical form
+  it('computes the standard_id of a Task from a created string not in canonical form', () => {
+    const result = completeEntity('Task', { name: 'Form task', created: '2026-01-01T00:00:00Z' } as any);
+
+    expect(result.created).toEqual(new Date('2026-01-01T00:00:00.000Z'));
+    expect(result.standard_id).toEqual(generateStandardId('Task', { name: 'Form task', created: '2026-01-01T00:00:00.000Z' } as any));
+  });
+
+  it('leaves a created string that is not a date for the platform to reject', () => {
+    const result = completeEntity('Task', { name: 'Form task', created: 'not a date' } as any);
+
+    expect(result.created).toEqual('not a date');
+  });
+
+  it('computes the standard_id of an identity from its identity_class', () => {
+    const result = completeEntity('Individual', { name: 'Form individual' } as any);
+
+    expect(result.standard_id).toEqual(generateStandardId('Individual', { name: 'Form individual', identity_class: 'individual' } as any));
   });
 });

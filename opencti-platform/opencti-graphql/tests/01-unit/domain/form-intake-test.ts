@@ -11,6 +11,12 @@ describe('Form Intake - Identity Class Conversion', () => {
       expect(entity.identity_class).toBe('individual');
     });
 
+    it('should set identity_class to "organization" for Organization entity type', () => {
+      const entity = { entity_type: 'Organization', name: 'Filigran' } as StoreEntity;
+      convertIdentityClass('Organization', entity);
+      expect(entity.identity_class).toBe('organization');
+    });
+
     it('should set identity_class to "class" for Sector entity type', () => {
       const entity = { entity_type: 'Sector', name: 'Finance' } as StoreEntity;
       convertIdentityClass('Sector', entity);
