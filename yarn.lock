@@ -2841,15 +2841,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/merge@npm:10.0.9, @graphql-tools/merge@npm:^10.0.2, @graphql-tools/merge@npm:^10.0.6, @graphql-tools/merge@npm:^10.0.9":
-  version: 10.0.9
-  resolution: "@graphql-tools/merge@npm:10.0.9"
+"@graphql-tools/merge@npm:10.0.10, @graphql-tools/merge@npm:^10.0.10, @graphql-tools/merge@npm:^10.0.2, @graphql-tools/merge@npm:^10.0.6":
+  version: 10.0.10
+  resolution: "@graphql-tools/merge@npm:10.0.10"
   dependencies:
-    "@graphql-tools/utils": "npm:^13.2.2"
+    "@graphql-tools/utils": "npm:^13.2.3"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/24d47641e43ae71e1debd74aef5e6de621eab94f06d5c4a88f63362e55effd3472ef22f6e602d06b1563271fd06c11bccc141a779d3ddb37b4ee5cb99cbc8e2b
+  checksum: 10c0/6e4921d6b9e2e688ed6ac4cfc7ee568a45726458fd5e86e5b360c5c3c2b4c9da983b7bf7363554f809cf09f2cd4da527722a6f95368c6988d15ab5336a636970
   languageName: node
   linkType: hard
 
@@ -2901,16 +2901,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/schema@npm:11.0.9, @graphql-tools/schema@npm:^11.0.2, @graphql-tools/schema@npm:^11.0.9":
-  version: 11.0.9
-  resolution: "@graphql-tools/schema@npm:11.0.9"
+"@graphql-tools/schema@npm:11.0.10, @graphql-tools/schema@npm:^11.0.2, @graphql-tools/schema@npm:^11.0.9":
+  version: 11.0.10
+  resolution: "@graphql-tools/schema@npm:11.0.10"
   dependencies:
-    "@graphql-tools/merge": "npm:^10.0.9"
-    "@graphql-tools/utils": "npm:^13.2.2"
+    "@graphql-tools/merge": "npm:^10.0.10"
+    "@graphql-tools/utils": "npm:^13.2.3"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/f713b5f0aa9c3ab87bc51f22f7e7ae5e7502a70a7a1f0eb476836cb38ff58997e8b69366d352388d1739d07d8dc0d00a882a9c78c2dd89cc07251e826d88f20f
+  checksum: 10c0/6184a5f9ae964df7ee4dcabdfcf4504690761ebfeffa3c6aa7cf20980276e5323eb2b70f431184afd745345ee554cab33ddebc1b01ece697fed01a9712adf071
   languageName: node
   linkType: hard
 
@@ -2962,16 +2962,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/utils@npm:13.2.2, @graphql-tools/utils@npm:^13.0.2, @graphql-tools/utils@npm:^13.1.3, @graphql-tools/utils@npm:^13.2.2":
-  version: 13.2.2
-  resolution: "@graphql-tools/utils@npm:13.2.2"
+"@graphql-tools/utils@npm:13.2.3, @graphql-tools/utils@npm:^13.0.2, @graphql-tools/utils@npm:^13.1.3, @graphql-tools/utils@npm:^13.2.2, @graphql-tools/utils@npm:^13.2.3":
+  version: 13.2.3
+  resolution: "@graphql-tools/utils@npm:13.2.3"
   dependencies:
     "@graphql-typed-document-node/core": "npm:^3.2.0"
-    "@whatwg-node/promise-helpers": "npm:^2.0.1"
+    "@whatwg-node/promise-helpers": "npm:^2.0.2"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^16.0.0 || ^17.0.0
-  checksum: 10c0/4a0aa75531f22ca5836507fcb4852dc8a657b30e86705c81cbe9fc7554ab71d18cbf596cd69cbb0e8b6e183cf5b8460526422fb47fa75375cf8958c1fd5eb1ef
+  checksum: 10c0/49245e09ca0de735daf017b3ac66abe420c86ea0d8686ddf660aa8901a93a0f989622b0a2d34a4a3cf256f6e5aa76ba7b0d064c89bf101af051b047b5d070d23
   languageName: node
   linkType: hard
 
@@ -18843,9 +18843,9 @@ __metadata:
     "@graphql-codegen/introspection": "npm:7.0.0"
     "@graphql-codegen/typescript": "npm:7.0.1"
     "@graphql-codegen/typescript-resolvers": "npm:7.0.1"
-    "@graphql-tools/merge": "npm:10.0.9"
-    "@graphql-tools/schema": "npm:11.0.9"
-    "@graphql-tools/utils": "npm:13.2.2"
+    "@graphql-tools/merge": "npm:10.0.10"
+    "@graphql-tools/schema": "npm:11.0.10"
+    "@graphql-tools/utils": "npm:13.2.3"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:1.5.1"
     "@langchain/mistralai": "npm:1.2.0"
