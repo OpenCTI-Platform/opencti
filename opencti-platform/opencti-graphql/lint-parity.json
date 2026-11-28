@@ -1,0 +1,14 @@
+{
+  "eslintOnly": [],
+  "allowlist": [
+    {
+      "rule": "no-unsafe-optional-chaining",
+      "reason": "Implementation difference: with the TypeScript parser, ESLint sees a TSAsExpression around `(a?.b as T).c` and does not flag it; oxlint looks through the cast and reports it. Not configurable. Repro: `(q.errors?.[0].extensions?.data as any).field` is flagged by oxlint only, while the same expression without the `as` is flagged by both."
+    },
+    {
+      "rule": "import/extensions",
+      "files": "tests/01-unit/modules/dataSharing/dataSharing-http-middleware-test.ts",
+      "reason": "One-off implementation difference: this test imports `../httpRollingFeed.js`, but the real file is httpRollingFeed.ts. ESLint resolves it to the .ts file and skips the check; oxlint does not resolve and flags the literal `.js`. The two real .js imports in the same file (lines 56, 59) carry eslint-disable comments that both tools honor."
+    }
+  ]
+}

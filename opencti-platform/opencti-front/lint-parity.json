@@ -1,0 +1,23 @@
+{
+  "eslintOnly": [],
+  "allowlist": [
+    {
+      "rule": "no-unsafe-optional-chaining",
+      "reason": "Implementation difference: with the TypeScript parser, ESLint does not flag `(a?.b as T).c` (nor `(a?.b satisfies T).c`); oxlint looks through the cast and reports it. Not configurable. All 7 findings are this shape (test files: `(lastMainEntityProps?.formData as FormBuilderData).fields`, `(timelineData[0]?.value as Record<string, unknown>)[KEY]`). Repro: `(q.errors?.[0]?.data as T).field` and `(arr[0]?.value as T)['k']` are flagged by oxlint only, while the same expression without the `as` is flagged by both."
+    },
+    {
+      "rule": "import/no-named-as-default",
+      "reason": "Config-driven difference: eslint.config.ts spreads only `importPlugin.configs.typescript.rules`, not its settings, so `import/extensions` is not set and eslint-plugin-import (eslint-module-utils/ignore.js) skips any imported file whose extension is not in its default list. Repro (default import named like a named export of the target, target also has a default export): ESLint flags .js and .mjs targets and nothing for .ts, .tsx and .jsx targets; oxlint flags all five. All 51 findings target .ts (11), .tsx (34) or .jsx (6) files. oxlint cannot be restricted by target extension."
+    },
+    {
+      "rule": "import/default",
+      "files": "src/utils/pdfWorker-setup.ts",
+      "reason": "Systemic cause, one file affected: tsconfig sets `esModuleInterop: true`, so eslint-plugin-import synthesizes a default export for every module and ESLint's `import/default` is inert across the whole package, while oxlint still reports it. Here: `import pdfWorkerUrl from 'pdfjs-dist/legacy/build/pdf.worker.min.mjs?url'` (a Vite `?url` import of a worker script with no default export). oxlint resolves it and reports no default export; ESLint reports no import/default there (its only finding with inline comments off is import/no-extraneous-dependencies, line 3). In a repro, ESLint reports no import/default for default imports of modules that only have named exports (.js, .mjs and .ts targets, with this config and with a plugin-only config), while oxlint reports all of them. The entry is file-level because this is the only file with a finding today; any new file hitting it needs its own entry."
+    },
+    {
+      "rule": "jsx-a11y/interactive-supports-focus",
+      "files": "src/components/graph/GraphToolbar.tsx",
+      "reason": "One-off: `<div role=\"toolbar\" onKeyDown onFocus>` (line 246) without tabIndex. ESLint does not flag role=\"toolbar\" with handlers (eslint-plugin-jsx-a11y lists toolbar as both interactive and, via aria-query, non-interactive, and the rule skips non-interactive roles); oxlint flags it. Repro: `<div role=\"toolbar\" onKeyDown={f} />` is flagged by oxlint only, `<div role=\"listbox\" onKeyDown={f} />` by both."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "eslintOnly": [
+    { "rule": "@stylistic/semi", "reason": "formatting rule with no oxlint counterpart" }
+  ],
+  "allowlist": [
+    { "rule": "no-debugger", "files": "src/b.ts", "reason": "known difference in the fixture" }
+  ]
+}
