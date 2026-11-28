@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
@@ -155,8 +156,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
     }
     if (patchOperations.length > 0) {
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
+      if (!isDeepStrictEqual(bundle, patchedBundle)) {
         return { output_port: 'out', bundle: patchedBundle };
       }
     }

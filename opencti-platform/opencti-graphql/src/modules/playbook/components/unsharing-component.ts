@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
@@ -6,7 +7,6 @@ import { INPUT_GRANTED_REFS } from '../../../schema/general';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { internalFindByIds } from '../../../database/middleware-loader';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
-import { isNotEmptyField } from '../../../database/utils';
 import { EditOperation } from '../../../generated/graphql';
 import { applyOperationFieldPatch, buildPlaybookEventContext, isBundleElementInScope, isBundleElementMatchFilters } from '../playbook-utils';
 
@@ -95,8 +95,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     }
     if (patchOperations.length > 0) {
       const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
-      const diff = jsonpatch.compare(bundle, patchedBundle);
-      if (isNotEmptyField(diff)) {
+      if (!isDeepStrictEqual(bundle, patchedBundle)) {
         return { output_port: 'out', bundle: patchedBundle };
       }
     }
