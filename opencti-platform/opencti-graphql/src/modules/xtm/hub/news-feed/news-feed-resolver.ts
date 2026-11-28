@@ -1,6 +1,6 @@
 import type { MutationMarkAllNewsFeedItemsAsReadArgs, QueryMyNewsFeedsArgs, QueryMyUnreadNewsFeedsCountArgs, Resolvers } from '../../../../generated/graphql';
 import type { AuthContext } from '../../../../types/user';
-import { markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount } from './news-feed-domain';
+import { markAllNewsFeedItemsAsRead, myNewsFeedsFind, myUnreadNewsFeedsCount, myUnreadNewsFeedsCounts } from './news-feed-domain';
 import { BUS_TOPICS } from '../../../../config/conf';
 import { ENTITY_TYPE_NEWS_FEED_ITEM, NEWS_FEED_NUMBER } from './news-feed-types';
 import { subscribeToUserEvents } from '../../../../graphql/subscriptionWrapper';
@@ -9,6 +9,7 @@ const newsFeedResolvers = {
   Query: {
     myNewsFeeds: (_: unknown, args: QueryMyNewsFeedsArgs, context: AuthContext) => myNewsFeedsFind(context, context.user!, args),
     myUnreadNewsFeedsCount: (_: unknown, args: QueryMyUnreadNewsFeedsCountArgs, context: AuthContext) => myUnreadNewsFeedsCount(context, context.user!, null, args.category),
+    myUnreadNewsFeedsCounts: (_: unknown, __: unknown, context: AuthContext) => myUnreadNewsFeedsCounts(context, context.user!, context.user!.id),
   },
   Mutation: {
     markAllNewsFeedItemsAsRead: (_: unknown, args: MutationMarkAllNewsFeedItemsAsReadArgs, context: AuthContext) => (

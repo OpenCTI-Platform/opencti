@@ -10125,12 +10125,14 @@ input NetworkTrafficAddInput {
 
 enum NewsFeedCategory {
   BLOG_POST
+  GITHUB_RELEASE
   RESOURCE
 }
 
 type NewsFeedCount {
   blog_post_count: Int
   count: Int
+  github_release_count: Int
   resource_count: Int
   user_id: String
 }
@@ -10167,6 +10169,7 @@ type NewsFeedItemMetadata {
 }
 
 enum NewsFeedItemsOrdering {
+  _score
   creation_date
   news_feed_type
   title
@@ -12210,6 +12213,7 @@ type Query {
   myNotifications(after: ID, filters: FilterGroup, first: Int, orderBy: NotificationsOrdering, orderMode: OrderingMode, search: String): NotificationConnection
   myOpinion(id: String!): Opinion
   myUnreadNewsFeedsCount(category: NewsFeedCategory): Int
+  myUnreadNewsFeedsCounts: NewsFeedCount
   myUnreadNotificationsCount: Int
   narrative(id: String!): Narrative
   narratives(after: ID, filters: FilterGroup, first: Int, orderBy: NarrativesOrdering, orderMode: OrderingMode, search: String): NarrativeConnection

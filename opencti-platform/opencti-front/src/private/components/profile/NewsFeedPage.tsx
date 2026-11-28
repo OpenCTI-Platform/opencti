@@ -14,11 +14,12 @@ import { NewsFeedPageSettings_settings$key } from './__generated__/NewsFeedPageS
 import { NewsFeedPageFieldPatchMutation$variables } from './__generated__/NewsFeedPageFieldPatchMutation.graphql';
 import type { NewsFeedPageQuery } from './__generated__/NewsFeedPageQuery.graphql';
 import NewsFeed from './NewsFeed';
+import NewsFeedGitHubReleases from './NewsFeedGitHubReleases';
 import NewsFeedSettings from './NewsFeedSettings';
 import XtmHubDisconnectedBanner from '../xtm_hub/XtmHubDisconnectedBanner';
-import { ArticleOutlined, CampaignOutlined } from '@mui/icons-material';
+import { ArticleOutlined, CampaignOutlined, SensorsOutlined } from '@mui/icons-material';
 import NewsFeedBlogPosts from './NewsFeedBlogPosts';
-import { NEWS_FEED_BLOG_POST_TYPE } from '../../../utils/NewsFeed';
+import { NEWS_FEED_BLOG_POST_TYPE, NEWS_FEED_GITHUB_RELEASE_TYPE } from '../../../utils/NewsFeed';
 
 const newsFeedPageFieldPatch = graphql`
   mutation NewsFeedPageFieldPatchMutation(
@@ -40,8 +41,11 @@ const newsFeedPageSettingsFragment = graphql`
 
 const newsFeedPageQuery = graphql`
   query NewsFeedPageQuery {
-    myUnreadResourcesCount: myUnreadNewsFeedsCount(category: RESOURCE)
-    myUnreadBlogPostsCount: myUnreadNewsFeedsCount(category: BLOG_POST)
+    myUnreadNewsFeedsCounts {
+      resource_count
+      blog_post_count
+      github_release_count
+    }
     settings {
       ...NewsFeedPageSettings_settings
     }
@@ -53,11 +57,20 @@ const newsFeedNumberSubscription = graphql`
     newsFeedsNumber {
       resource_count
       blog_post_count
+      github_release_count
     }
   }
 `;
 
-type NewsFeedTab = 'news-feed' | 'blog-posts' | 'settings';
+type NewsFeedTab = 'news-feed' | 'blog-posts' | 'last-releases' | 'settings';
+
+interface LiveCounts {
+  resources: number | null;
+  blogPosts: number | null;
+  gitHubReleases: number | null;
+}
+
+const EMPTY_LIVE_COUNTS: LiveCounts = { resources: null, blogPosts: null, gitHubReleases: null };
 
 const NewsFeedPage: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
@@ -70,21 +83,25 @@ const NewsFeedPage: FunctionComponent = () => {
 
   const data = useLazyLoadQuery<NewsFeedPageQuery>(newsFeedPageQuery, {});
   const [activeTab, setActiveTab] = useState<NewsFeedTab>('news-feed');
-  const [liveCounts, setLiveCounts] = useState<{ resources: number | null; blogPosts: number | null }>({ resources: null, blogPosts: null });
+  const [liveCounts, setLiveCounts] = useState<LiveCounts>(EMPTY_LIVE_COUNTS);
 
   const isUnsubscribedFromAllNewsFeeds = me.unsubscribed_news_feed_types?.includes('*') ?? false;
   const handleNewNewsFeedNumber = useCallback((
     response: NewsFeedPageNewsFeedNumberSubscription$data | null | undefined | unknown,
   ) => {
     const newsFeedsNumber = response ? (response as NewsFeedPageNewsFeedNumberSubscription$data).newsFeedsNumber : null;
-    setLiveCounts({ resources: newsFeedsNumber?.resource_count ?? null, blogPosts: newsFeedsNumber?.blog_post_count ?? null });
+    setLiveCounts({
+      resources: newsFeedsNumber?.resource_count ?? null,
+      blogPosts: newsFeedsNumber?.blog_post_count ?? null,
+      gitHubReleases: newsFeedsNumber?.github_release_count ?? null,
+    });
   }, [setLiveCounts]);
 
   const shouldSubscribeToNewsFeed = isXTMHubRegistered && !isUnsubscribedFromAllNewsFeeds;
   useEffect(() => {
     if (!shouldSubscribeToNewsFeed) {
       // the last live counts would be stale, and win over the query, once the feed is enabled again
-      setLiveCounts({ resources: null, blogPosts: null });
+      setLiveCounts(EMPTY_LIVE_COUNTS);
       return undefined;
     }
     const sub = requestSubscription({
@@ -95,9 +112,11 @@ const NewsFeedPage: FunctionComponent = () => {
     return () => sub.dispose();
   }, [shouldSubscribeToNewsFeed, handleNewNewsFeedNumber]);
 
-  // Resources and blogposts are counted, and read, independently: each tab shows its own unread count.
-  const unreadResourcesCount = shouldSubscribeToNewsFeed ? (liveCounts.resources ?? data.myUnreadResourcesCount ?? 0) : 0;
-  const unreadBlogPostsCount = shouldSubscribeToNewsFeed ? (liveCounts.blogPosts ?? data.myUnreadBlogPostsCount ?? 0) : 0;
+  // Resources, blogposts and GitHub releases are counted, and read, independently: each tab shows its own unread count.
+  const queryCounts = data.myUnreadNewsFeedsCounts;
+  const unreadResourcesCount = shouldSubscribeToNewsFeed ? (liveCounts.resources ?? queryCounts?.resource_count ?? 0) : 0;
+  const unreadBlogPostsCount = shouldSubscribeToNewsFeed ? (liveCounts.blogPosts ?? queryCounts?.blog_post_count ?? 0) : 0;
+  const unreadGitHubReleasesCount = shouldSubscribeToNewsFeed ? (liveCounts.gitHubReleases ?? queryCounts?.github_release_count ?? 0) : 0;
 
   const handleSubmitField = (name: string, value: string[]) => {
     const variables: NewsFeedPageFieldPatchMutation$variables = {
@@ -119,10 +138,14 @@ const NewsFeedPage: FunctionComponent = () => {
     newsFeedPageSettingsFragment,
     data.settings,
   );
+  const availableNewsFeedTypes = settingsFragmentData.xtm_hub_available_news_feed_types ?? [];
 
   // The blogposts tab only exists when the XTM Hub provisions blogposts for this platform version.
-  const isBlogPostAvailable = settingsFragmentData.xtm_hub_available_news_feed_types?.includes(NEWS_FEED_BLOG_POST_TYPE) ?? false;
-  const displayedTab = activeTab === 'blog-posts' && !isBlogPostAvailable ? 'news-feed' : activeTab;
+  const isBlogPostAvailable = availableNewsFeedTypes.includes(NEWS_FEED_BLOG_POST_TYPE);
+  const isLastReleasesAvailable = availableNewsFeedTypes.includes(NEWS_FEED_GITHUB_RELEASE_TYPE);
+  const isActiveTabUnavailable = (activeTab === 'blog-posts' && !isBlogPostAvailable)
+    || (activeTab === 'last-releases' && !isLastReleasesAvailable);
+  const displayedTab = isActiveTabUnavailable ? 'news-feed' : activeTab;
 
   return (
     <div>
@@ -163,6 +186,18 @@ const NewsFeedPage: FunctionComponent = () => {
               {t_i18n('Blogpost')}
             </TabsTrigger>
           )}
+          {isLastReleasesAvailable && (
+            <TabsTrigger
+              value="last-releases"
+              icon={<SensorsOutlined fontSize="small" />}
+              badge={unreadGitHubReleasesCount}
+              badgeMax={99}
+              badgeColor="error"
+              badgeInvisible={unreadGitHubReleasesCount === 0}
+            >
+              {t_i18n('Last releases')}
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="settings"
             icon={<SettingsOutlinedIcon fontSize="small" />}
@@ -172,13 +207,16 @@ const NewsFeedPage: FunctionComponent = () => {
         </TabsList>
       </Tabs>
       <div style={{ marginTop: 20 }}>
-        {displayedTab === 'news-feed' && <NewsFeed markBlogPostsAsRead={!isBlogPostAvailable} />}
+        {displayedTab === 'news-feed' && (
+          <NewsFeed markBlogPostsAsRead={!isBlogPostAvailable} markGitHubReleasesAsRead={!isLastReleasesAvailable} />
+        )}
         {displayedTab === 'blog-posts' && <NewsFeedBlogPosts />}
+        {displayedTab === 'last-releases' && <NewsFeedGitHubReleases />}
         {displayedTab === 'settings' && (
           <Stack spacing={3} sx={{ width: '50%' }}>
             <Card title={t_i18n('XTM Hub News Feed settings')}>
               <NewsFeedSettings
-                availableNewsFeedTypes={[...(settingsFragmentData.xtm_hub_available_news_feed_types ?? [])]}
+                availableNewsFeedTypes={[...availableNewsFeedTypes]}
                 unsubscribedNewsFeedTypes={me.unsubscribed_news_feed_types ? [...me.unsubscribed_news_feed_types] : []}
                 onSubmitField={handleSubmitField}
               />

@@ -2,6 +2,7 @@ enum NewsFeedItemsOrdering {
   title
   news_feed_type
   creation_date
+  _score
 }
 
 type NewsFeedItemMetadata {
@@ -38,6 +39,7 @@ type NewsFeedItemEdge {
 
 enum NewsFeedCategory {
   BLOG_POST
+  GITHUB_RELEASE
   RESOURCE
 }
 
@@ -46,6 +48,7 @@ type NewsFeedCount {
   count: Int
   blog_post_count: Int
   resource_count: Int
+  github_release_count: Int
 }
 
 type Query {
@@ -58,6 +61,7 @@ type Query {
     search: String
   ): NewsFeedItemConnection @auth
   myUnreadNewsFeedsCount(category: NewsFeedCategory): Int @auth
+  myUnreadNewsFeedsCounts: NewsFeedCount @auth
 }
 
 type Mutation {

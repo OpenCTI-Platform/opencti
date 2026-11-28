@@ -13,13 +13,19 @@ import { BUS_TOPICS, logApp } from '../../../../config/conf';
 import { ALREADY_DELETED_ERROR } from '../../../../config/errors';
 import { promiseMap } from '../../../../utils/promiseUtils';
 
-// Blogposts and resources are read independently: each one has its own tab in the news feed page.
+// Blogposts, GitHub releases and resources are read independently: each one has its own tab in the news feed page.
 const categoryFilters = (category?: NewsFeedCategory | null) => {
   if (category === NewsFeedCategory.BlogPost) {
     return [{ key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST] }];
   }
+  if (category === NewsFeedCategory.GithubRelease) {
+    return [{ key: ['news_feed_type'], values: [NewsFeedItemType.GITHUB_RELEASE] }];
+  }
   if (category === NewsFeedCategory.Resource) {
-    return [{ key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST], operator: FilterOperator.NotEq }];
+    return [
+      { key: ['news_feed_type'], values: [NewsFeedItemType.BLOG_POST], operator: FilterOperator.NotEq },
+      { key: ['news_feed_type'], values: [NewsFeedItemType.GITHUB_RELEASE], operator: FilterOperator.NotEq },
+    ];
   }
   return [];
 };
@@ -38,12 +44,23 @@ export const myUnreadNewsFeedsCount = (context: AuthContext, user: AuthUser, use
   return elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, queryArgs);
 };
 
-const notifyUnreadNewsFeedsCount = async (context: AuthContext, user: AuthUser, userId: string) => {
-  const [blogPostCount, resourceCount] = await Promise.all([
+export const myUnreadNewsFeedsCounts = async (context: AuthContext, user: AuthUser, userId: string) => {
+  const [blogPostCount, resourceCount, githubReleaseCount] = await Promise.all([
     myUnreadNewsFeedsCount(context, user, userId, NewsFeedCategory.BlogPost),
     myUnreadNewsFeedsCount(context, user, userId, NewsFeedCategory.Resource),
+    myUnreadNewsFeedsCount(context, user, userId, NewsFeedCategory.GithubRelease),
   ]);
-  const payload = { count: blogPostCount + resourceCount, blog_post_count: blogPostCount, resource_count: resourceCount, user_id: userId };
+  return {
+    count: blogPostCount + resourceCount + githubReleaseCount,
+    blog_post_count: blogPostCount,
+    resource_count: resourceCount,
+    github_release_count: githubReleaseCount,
+    user_id: userId,
+  };
+};
+
+const notifyUnreadNewsFeedsCount = async (context: AuthContext, user: AuthUser, userId: string) => {
+  const payload = await myUnreadNewsFeedsCounts(context, user, userId);
   await notify(BUS_TOPICS[NEWS_FEED_NUMBER].EDIT_TOPIC, payload, user);
 };
 

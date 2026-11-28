@@ -288,3 +288,36 @@ describe('xtmHubClient.refreshRegistrationStatus', () => {
     expect({ result, calls: mockPost.mock.calls.length }).toEqual({ result: { status: 'inactive', commercialModel: null, organizationName: null }, calls: 1 });
   });
 });
+
+describe('xtmHubClient.consumeProvisionedNewsFeedItems', () => {
+  beforeEach(() => {
+    mockPost.mockReset();
+  });
+
+  it('should return the items and the available types sent by the hub', async () => {
+    const { xtmHubClient } = await loadClient();
+    mockPost.mockResolvedValueOnce({ data: { data: { consumeProvisionedNewsFeedItems: { news_feed_items: [], available_news_feed_types: ['GITHUB_RELEASE'] } } } });
+
+    const result = await xtmHubClient.consumeProvisionedNewsFeedItems('platform-id', 'platform-token');
+
+    expect(result).toEqual({ news_feed_items: [], available_news_feed_types: ['GITHUB_RELEASE'] });
+  });
+
+  it('should return unknown available types, not an empty list, when the hub sends an error', async () => {
+    const { xtmHubClient } = await loadClient();
+    mockPost.mockResolvedValueOnce(graphqlErrorResponse('boom'));
+
+    const result = await xtmHubClient.consumeProvisionedNewsFeedItems('platform-id', 'platform-token');
+
+    expect(result).toEqual({ news_feed_items: [], available_news_feed_types: null });
+  });
+
+  it('should return unknown available types, not an empty list, when the hub is unreachable', async () => {
+    const { xtmHubClient } = await loadClient();
+    mockPost.mockRejectedValueOnce(new HttpClientError('connect ECONNREFUSED', 'ECONNREFUSED'));
+
+    const result = await xtmHubClient.consumeProvisionedNewsFeedItems('platform-id', 'platform-token');
+
+    expect(result).toEqual({ news_feed_items: [], available_news_feed_types: null });
+  });
+});

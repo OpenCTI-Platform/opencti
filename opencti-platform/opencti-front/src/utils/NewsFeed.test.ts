@@ -4,6 +4,7 @@ import {
   buildNewsFeedBlogSeeAllUrl,
   getNewsFeedIcon,
   getNewsFeedLabel,
+  getNewsFeedLinkLabel,
   getNewsFeedMetadataValue,
   isKnownNewsFeedType,
   parseNewsFeedAuthorNames,
@@ -17,6 +18,7 @@ describe('isKnownNewsFeedType', () => {
     ['RESOURCE_CUSTOM_VIEW', true],
     ['RESOURCE_INTEGRATION', true],
     ['BLOG_POST', true],
+    ['GITHUB_RELEASE', true],
     ['RESOURCE_SOMETHING_NEW', false],
     ['', false],
     ['resource_playbook', false], // case sensitive
@@ -35,6 +37,7 @@ describe('getNewsFeedIcon', () => {
     ['RESOURCE_CUSTOM_VIEW', InsightsOutlined],
     ['RESOURCE_INTEGRATION', IntegrationInstructionsOutlined],
     ['BLOG_POST', ArticleOutlined],
+    ['GITHUB_RELEASE', IntegrationInstructionsOutlined],
     ['RESOURCE_SOMETHING_NEW', NotificationsOutlined], // unknown type
     ['', NotificationsOutlined], // empty type
     ['toString', NotificationsOutlined], // inherited Object property
@@ -50,6 +53,7 @@ describe('getNewsFeedLabel', () => {
     ['RESOURCE_CUSTOM_VIEW', 'New Custom View'],
     ['RESOURCE_INTEGRATION', 'New Integration'],
     ['BLOG_POST', 'Blogpost'],
+    ['GITHUB_RELEASE', 'New GitHub release'],
     ['RESOURCE_SOMETHING_NEW', undefined], // unknown type
     ['', undefined], // empty type
   ])('returns the correct label for %s', (type, expectedLabel) => {
@@ -145,5 +149,16 @@ describe('buildNewsFeedBlogSeeAllUrl', () => {
 
   it('does not forge a utm_source when the platform identifier is missing', () => {
     expect(new URL(buildNewsFeedBlogSeeAllUrl(undefined, null)).searchParams.has('utm_source')).toBe(false);
+  });
+});
+
+describe('getNewsFeedLinkLabel', () => {
+  it.each([
+    ['GITHUB_RELEASE', 'Open the GitHub release'],
+    ['RESOURCE_PLAYBOOK', 'Open in XTM Hub'],
+    ['RESOURCE_SOMETHING_NEW', 'Open in XTM Hub'], // unknown type
+    ['toString', 'Open in XTM Hub'], // inherited Object property
+  ])('returns the correct link label for %s', (type, expectedLabel) => {
+    expect(getNewsFeedLinkLabel(type)).toBe(expectedLabel);
   });
 });
