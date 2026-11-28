@@ -90,6 +90,27 @@ const preFixFilterTargetByExisting = (sources: any[], targets: any[]) => {
   return filtered;
 };
 
+// The same decision rule as the pre-fix scan, keyed by Sets: it keeps the identical sources in linear
+// time, so the 40,000 x 40,000 comparison no longer spends longer than the test's timeout in the reference.
+const linearPreFixFilterTargetByExisting = (sources: any[], targets: any[]) => {
+  const existing = new Set(
+    targets.filter((t) => noDateRef(t.i_relation)).map((t) => `${t.i_relation.entity_type}\u0000${t.internal_id}`),
+  );
+  const cache = new Set<string>();
+  return sources.filter((source) => {
+    const id = `${source.i_relation.entity_type}-${source.internal_id}`;
+    if (existing.has(`${source.i_relation.entity_type}\u0000${source.internal_id}`) || cache.has(id)) {
+      return false;
+    }
+    cache.add(id);
+    return true;
+  });
+};
+
+// The frozen quadratic scan is timed on this many sources only: on 40,000 x 40,000 it alone took longer
+// than the test's timeout, while 2,000 sources already show it slower than the new algorithm.
+const PRE_FIX_TIMED_SOURCES = 2000;
+
 const runComparison = async (label: string, sources: any[], targets: any[]) => {
   const sourcesDependencies = { i_relations_from: sources, i_relations_to: [] } as any;
   const targetDependencies = { i_relations_from: targets, i_relations_to: [] } as any;
@@ -98,9 +119,13 @@ const runComparison = async (label: string, sources: any[], targets: any[]) => {
   const { redirects } = await filterTargetByExisting(testContext, targetEntity, 'from', sourcesDependencies, targetDependencies);
   const newElapsed = performance.now() - newStart;
 
+  const timedSources = sources.slice(0, PRE_FIX_TIMED_SOURCES);
   const oldStart = performance.now();
-  const oldFiltered = preFixFilterTargetByExisting(sources, targets);
+  const oldFilteredTimed = preFixFilterTargetByExisting(timedSources, targets);
   const oldElapsed = performance.now() - oldStart;
+  // The linear reference must agree with the frozen scan wherever both ran.
+  expect(linearPreFixFilterTargetByExisting(timedSources, targets)).toEqual(oldFilteredTimed);
+  const oldFiltered = linearPreFixFilterTargetByExisting(sources, targets);
 
   const newIds = redirects.map((r) => r.i_relation.internal_id).sort();
   const oldIds = oldFiltered.map((r) => r.i_relation.internal_id).sort();
