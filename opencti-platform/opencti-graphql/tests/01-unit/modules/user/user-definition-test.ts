@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import '../../../../src/modules/index';
 import { registerModules } from '../../../../src/composition-root';
 import convertUserToStix from '../../../../src/modules/user/user-converter';
 import { extractStixRepresentative } from '../../../../src/database/stix-representative';

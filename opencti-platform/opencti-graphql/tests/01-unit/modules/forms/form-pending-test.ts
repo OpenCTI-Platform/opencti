@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Readable } from 'stream';
-import '../../../../src/modules/index'; // registers the entity types and their attributes
 import { registerModules } from '../../../../src/composition-root';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import {
@@ -28,6 +27,7 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../../src/types/stix-2-1
 import type { FormSchemaDefinition } from '../../../../src/modules/form/form-types';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
+// Registers the entity types and their attributes
 registerModules();
 
 vi.mock('../../../../src/database/middleware-loader', () => ({

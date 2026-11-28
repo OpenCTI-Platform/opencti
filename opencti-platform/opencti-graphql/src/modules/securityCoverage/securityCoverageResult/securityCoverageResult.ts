@@ -1,5 +1,4 @@
 import type { ModuleDefinition } from '../../../schema/module';
-import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { normalizeName } from '../../../schema/identifier';
 import { createdAt, creators, coverageInformation, updatedAt } from '../../../schema/attribute-definition';
@@ -99,6 +98,3 @@ export const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySe
   converter_2_1: convertSecurityCoverageResultToStix,
   converter_2_0: convertSecurityCoverageResultToStix_2_0,
 };
-
-// The coverage information of a tested entity is carried by its has-covered relationship only
-schemaAttributesDefinition.registerAttributes(RELATION_HAS_COVERED, [coverageInformation]);

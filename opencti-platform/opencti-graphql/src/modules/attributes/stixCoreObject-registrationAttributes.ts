@@ -7,8 +7,10 @@ const stixCoreObjectAttributes: Array<AttributeDefinition> = [
   opinionsMetrics,
 ];
 
-schemaTypesDefinition.add(
-  ABSTRACT_STIX_CORE_OBJECT,
-  [ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE],
-);
-schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CORE_OBJECT, stixCoreObjectAttributes);
+export const registerStixCoreObjectAttributes = () => {
+  schemaTypesDefinition.add(
+    ABSTRACT_STIX_CORE_OBJECT,
+    [ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_CYBER_OBSERVABLE],
+  );
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CORE_OBJECT, stixCoreObjectAttributes);
+};

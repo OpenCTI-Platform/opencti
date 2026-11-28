@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { EXPECTED_MALWARE, MALWARE_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/arsenal/malware';
 import { EXPECTED_REPORT, REPORT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/report';

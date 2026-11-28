@@ -11,4 +11,6 @@ const stixRefRelationshipsAttributes: AttributeDefinition[] = [
   { name: 'stop_time', label: 'End date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
 ];
 
-schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_REF_RELATIONSHIP, stixRefRelationshipsAttributes);
+export const registerStixRefRelationshipAttributes = () => {
+  schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_REF_RELATIONSHIP, stixRefRelationshipsAttributes);
+};

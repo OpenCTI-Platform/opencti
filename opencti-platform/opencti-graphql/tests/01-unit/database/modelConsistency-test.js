@@ -99,7 +99,6 @@ import {
   ENTITY_TYPE_IDENTITY,
 } from '../../../src/schema/general';
 
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { isDateNumericOrBooleanAttribute, isMultipleAttribute, isObjectAttribute, isObjectFlatAttribute, schemaAttributesDefinition } from '../../../src/schema/schema-attributes';

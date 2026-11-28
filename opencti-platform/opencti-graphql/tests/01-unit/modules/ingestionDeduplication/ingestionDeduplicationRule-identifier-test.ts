@@ -2,9 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE } from '../../../../src/modules/ingestionDeduplication/ingestionDeduplicationRule-types';
 import { generateStandardId } from '../../../../src/schema/identifier';
 import { registerModules } from '../../../../src/composition-root';
-import ingestionDeduplicationRuleModule from '../../../../src/modules/ingestionDeduplication/ingestionDeduplicationRule-module';
 
-registerModules([ingestionDeduplicationRuleModule]);
+registerModules();
 
 describe('IngestionDeduplicationRule identifier', () => {
   const generateId = (userId: string, targetType: string) => generateStandardId(

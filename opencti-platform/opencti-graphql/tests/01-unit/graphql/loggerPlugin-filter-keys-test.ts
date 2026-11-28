@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 // Registers all entity/relation modules so the filter keys of the schema are known
 // without requiring a live DB/ES stack.
-import '../../../src/modules/index';
 import { registerModules } from '../../../src/composition-root';
 
 // loggerPlugin.js decides the log severity of a GraphQL error from its extensions.code.

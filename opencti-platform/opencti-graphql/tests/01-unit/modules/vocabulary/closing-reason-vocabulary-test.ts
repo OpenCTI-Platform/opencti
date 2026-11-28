@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import '../../../../src/modules/index';
 import { registerModules } from '../../../../src/composition-root';
 import { getVocabulariesCategories, isEntityFieldAnOpenVocabulary, openVocabularies } from '../../../../src/modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../../src/schema/stixDomainObject';
