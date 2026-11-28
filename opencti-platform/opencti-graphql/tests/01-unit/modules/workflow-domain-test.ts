@@ -3047,6 +3047,46 @@ describe('Workflow Domain', () => {
   });
 
   // Tests for successful triggerWorkflowEvent (lines 566-577, 585-612)
+  it.each([
+    { label: 'the entity reloaded after the sync actions', reload: async () => ({ id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', name: 'after actions' }), expected: 'after actions' },
+    { label: 'the loaded entity when the reload fails', reload: async () => Promise.reject(new Error('reload failed')), expected: 'before actions' },
+  ])('should return $label from a completed transition', async ({ reload, expected }) => {
+    const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident', name: 'before actions' };
+    const workflowContent = {
+      id: 'workflow-1',
+      name: 'Test Workflow',
+      initialState: 'open',
+      states: [{ statusId: 'open' }, { statusId: 'closed' }],
+      transitions: [{ from: 'open', to: 'closed', event: 'close' }],
+    };
+    const version = { id: 'v1', content: JSON.stringify(workflowContent), validation_errors: [] };
+    // After the state is persisted the entity is loaded twice: by getWorkflowInstance, then by the reload
+    const stateWritten = () => vi.mocked(updateAttribute).mock.calls.some((call) => (call[4] as { key: string }[]).some((input) => input.key === 'currentState'));
+    let loadsAfterWrite = 0;
+    (storeLoadById as any).mockImplementation(async (ctx: any, user: any, id: any, type: any) => {
+      if (type === 'Basic-Object') {
+        if (!stateWritten()) return entity;
+        loadsAfterWrite += 1;
+        return loadsAfterWrite === 2 ? reload() : entity;
+      }
+      if (type === 'WorkflowDefinition') {
+        return { id: 'workflow-id', name: 'Workflow', published_version: version, all_versions: [version] };
+      }
+      if (type === 'WorkflowInstance') return { id: 'instance-1', currentState: 'closed', history: '[]' };
+      return null;
+    });
+    (findByType as any).mockResolvedValue({ id: 'entity-setting-id', workflow_id: 'workflow-id' });
+    (loadEntity as any).mockResolvedValue(null);
+    (createEntity as any).mockResolvedValue({ id: 'instance-1', internal_id: 'instance-1', currentState: 'open', history: '[]' });
+    (createRelation as any).mockResolvedValue({ id: 'rel-1' });
+    (updateAttribute as any).mockResolvedValue({ element: { id: 'instance-1' } });
+
+    const result = await triggerWorkflowEvent(mockContext, mockUser, 'entity-1', 'close');
+
+    expect(result.success).toBe(true);
+    expect(result.entity.name).toBe(expected);
+  });
+
   it('should successfully trigger workflow event and create instance', async () => {
     const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
     const workflowContent = {
