@@ -2,6 +2,9 @@ import '../src/modules/index';
 import { cleanInconsistentRelations } from '../src/utils/clean-relations';
 import { logApp } from '../src/config/conf';
 import { executionContext } from '../src/utils/access';
+import { registerModules } from '../src/composition-root';
+
+registerModules();
 
 const context = executionContext('script');
 await cleanInconsistentRelations(context);

@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { convertStoreToStix_2_1 } from '../../../src/database/stix-2-1-converter';
 import type { StixReport } from '../../../src/types/stix-2-1-sdo';
 import { REPORT_INSTANCE } from './stix-2-0-converter-fixtures/SDOs/containers/report';
+
+registerModules();
 
 // Regression test for #17947: Report updates silently dropped when published
 // is the epoch placeholder (1970-01-01).

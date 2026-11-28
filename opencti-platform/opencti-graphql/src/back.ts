@@ -16,10 +16,14 @@ import './manager/index';
 import './config/tracing';
 // endregion
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { registerModules } from './composition-root';
 import { platformStart } from './boot';
 import { ENABLED_TRACING, logApp } from './config/conf';
 import { isNotEmptyField } from './database/utils';
 import { sanitizeExporterUrl } from './telemetry/otel-diag-logger';
+
+// -- Register modules (definitions, graphql schemas, managers) before anything reads them
+registerModules();
 
 // -- Apply telemetry
 // ------- Tracing

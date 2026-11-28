@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../src/modules/index';
+import { registerModules } from '../../../src/composition-root';
 import { ATTRIBUTE_DESCRIPTIONS, ATTRIBUTE_DESCRIPTIONS_BY_TYPE, isDescribedType, resolveAttributeDescription } from '../../../src/schema/attribute-descriptions';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
@@ -14,6 +15,8 @@ import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../../../src/modules/secur
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../../../src/modules/workflow/types/workflow-types';
 import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE, ENTITY_MEDIA_CONTENT, ENTITY_SOFTWARE, ENTITY_SSH_KEY } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
+
+registerModules();
 
 // Every attribute and ref of the described types, with their type
 const describedFields = () => schemaAttributesDefinition.getRegisteredTypes().filter(isDescribedType).flatMap((type) => {
