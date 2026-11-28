@@ -82,32 +82,8 @@ import './savedFilter/savedFilter';
 import './pir/pir';
 import './fintelDesign/fintelDesign';
 import './securityPlatform/securityPlatform';
-import './emailTemplate/emailTemplate';
-import './form/form';
-import './securityCoverage/securityCoverage';
-import './securityCoverage/securityCoverageResult/securityCoverageResult';
-import './authenticationProvider/authenticationProvider';
-import './customView/customView';
-import './retentionRules/retentionRules';
-import './xtm/hub/news-feed/news-feed';
-import './user/user';
 
 // incomplete modules
-import './report/report';
-import './note/note';
-import './externalReference/externalReference';
-import './incident/incident';
-import './observedData/observedData';
-import './stixCyberObservable/stixCyberObservable';
-import './threatActorGroup/threatActorGroup';
-import './intrusionSet/intrusionSet';
-import './campaign/campaign';
-import './malware/malware';
-import './tool/tool';
-import './vulnerability/vulnerability';
-import './attackPattern/attackPattern';
-import './courseOfAction/courseOfAction';
-import './customField/custom-field';
 // endregion
 // region graphql registration
 import './channel/channel-graphql';
@@ -144,7 +120,6 @@ import './ingestion/ingestion-taxii-collection-graphql';
 import './ingestion/ingestion-csv-graphql';
 import './ingestion/ingestion-json-graphql';
 import './indicator/indicator-graphql';
-import './vulnerability/vulnerability-graphql';
 import './decayRule/decayRule-graphql';
 import './decayRule/exclusions/decayExclusionRule-graphql';
 import './ingestionDeduplication/ingestionDeduplicationRule-graphql';
@@ -166,28 +141,9 @@ import './requestAccess/requestAccess-graphql';
 import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
-import './securityCoverage/securityCoverage-graphql';
-import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql';
-import './auth/auth-graphql';
-import './emailTemplate/emailTemplate-graphql';
-import './form/form-graphql';
-import './xtm/hub/xtm-hub-graphql';
-import './xtm/hub/news-feed/news-feed-graphql';
-import './xtm/counterpart/core/counterpart-graphql';
-// Each XTM product registers its counterpart provider; the order is the order of the answers
-// and of the emblems (Contract v3: XTM One, OpenAEV, OpenCRQ).
-import './xtm/counterpart/xtmone/xtmone-provider';
-import './xtm/counterpart/openaev/openaev-provider';
-import './xtm/counterpart/opencrq/opencrq-provider';
-import './metrics/metrics-graphql';
-import './authenticationProvider/authenticationProvider-graphql';
-import './customView/customView-graphql';
 import './dataSharing/taxiiCollection-graphql';
 import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
-import './retentionRules/retentionRules-graphql';
-import './user/user-graphql';
 import './workflow/api/workflow-graphql';
-import './customField/custom-field-graphql';
 import './configPreset/configPreset-graphql';
 // endregion

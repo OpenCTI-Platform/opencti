@@ -29,9 +29,18 @@ vi.mock('../../../../../../src/utils/http-client', () => ({
 
 vi.mock('../../../../../../src/domain/xtm-auth', () => ({ issueXtmJwt: vi.fn(async () => 'jwt') }));
 
-import { findXtmCounterpartsByIds, MAX_COUNTERPART_IDS, resetCounterpartCache } from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
-import '../../../../../../src/modules/xtm/counterpart/openaev/openaev-provider';
-import '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-provider';
+import {
+  findXtmCounterpartsByIds,
+  MAX_COUNTERPART_IDS,
+  registerCounterpartProvider,
+  resetCounterpartCache,
+} from '../../../../../../src/modules/xtm/counterpart/core/counterpart-domain';
+import { openAevProvider } from '../../../../../../src/modules/xtm/counterpart/openaev/openaev-provider';
+import { openCrqProvider } from '../../../../../../src/modules/xtm/counterpart/opencrq/opencrq-provider';
+
+// What the counterpart module descriptor registers at boot
+registerCounterpartProvider(openAevProvider);
+registerCounterpartProvider(openCrqProvider);
 
 const context = {} as any;
 const user = { id: 'alice', user_email: 'alice@example.com' } as any;

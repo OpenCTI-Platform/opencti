@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
 import { checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../domain/xtm-hub';
@@ -62,7 +62,7 @@ export const hubRegistrationManager = async () => {
   }
 };
 
-const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
+export const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'HUB_REGISTRATION_MANAGER',
   label: 'XTM Hub registration manager',
   executionContext: 'hub_registration_manager',
@@ -79,4 +79,3 @@ const HUB_REGISTRATION_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-registerManager(HUB_REGISTRATION_MANAGER_DEFINITION);

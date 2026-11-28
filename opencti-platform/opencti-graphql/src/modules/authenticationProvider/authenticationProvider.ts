@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_AUTHENTICATION_PROVIDER, type StixAuthenticationProvider, type StoreEntityAuthenticationProvider } from './authenticationProvider-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertAuthenticationProviderToStix from './authenticationProvider-converter';
@@ -8,7 +8,7 @@ import { refreshedAt } from '../../schema/attribute-definition';
 
 const AuthenticationProviderTypeList = Object.values(AuthenticationProviderType);
 
-const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthenticationProvider, StixAuthenticationProvider> = {
+export const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthenticationProvider, StixAuthenticationProvider> = {
   type: {
     id: 'authenticationProvider',
     name: ENTITY_TYPE_AUTHENTICATION_PROVIDER,
@@ -36,5 +36,3 @@ const AUTHENTICATION_PROVIDER_DEFINITION: ModuleDefinition<StoreEntityAuthentica
   },
   converter_2_1: convertAuthenticationProviderToStix,
 };
-
-registerDefinition(AUTHENTICATION_PROVIDER_DEFINITION);

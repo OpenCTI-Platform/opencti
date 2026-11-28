@@ -1,4 +1,4 @@
-import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
+import type { ModuleDefinition } from '../../../schema/module';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { normalizeName } from '../../../schema/identifier';
@@ -24,7 +24,7 @@ import {
 } from './securityCoverageResult-types';
 import convertSecurityCoverageResultToStix, { convertSecurityCoverageResultToStix_2_0 } from './securityCoverageResult-converter';
 
-const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverageResult, StixSecurityCoverageResult, Stix2SecurityCoverageResult> = {
+export const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverageResult, StixSecurityCoverageResult, Stix2SecurityCoverageResult> = {
   type: {
     id: 'security-coverage-result',
     name: ENTITY_TYPE_SECURITY_COVERAGE_RESULT,
@@ -100,6 +100,5 @@ const SECURITY_COVERAGE_RESULT_DEFINITION: ModuleDefinition<StoreEntitySecurityC
   converter_2_0: convertSecurityCoverageResultToStix_2_0,
 };
 
-registerDefinition(SECURITY_COVERAGE_RESULT_DEFINITION);
 // The coverage information of a tested entity is carried by its has-covered relationship only
 schemaAttributesDefinition.registerAttributes(RELATION_HAS_COVERED, [coverageInformation]);

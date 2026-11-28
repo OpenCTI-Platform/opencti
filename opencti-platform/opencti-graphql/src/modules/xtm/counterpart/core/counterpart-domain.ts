@@ -168,8 +168,8 @@ export const counterpartsOfAnswer = (
     }));
 };
 
-// The registry: each product registers its provider from its own folder (openaev/, opencrq/),
-// imported by counterpart-graphql.ts, so core imports nothing from a product folder. The order of
+// The registry: the counterpart module descriptor registers each product's provider, defined in its own
+// folder (xtmone/, openaev/, opencrq/), so core imports nothing from a product folder. The order of
 // registration is the order of the answers and of xtmConnections.
 const PROVIDERS: CounterpartProvider[] = [];
 
