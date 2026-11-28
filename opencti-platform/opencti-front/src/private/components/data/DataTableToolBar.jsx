@@ -232,6 +232,7 @@ const typesWithRftTypes = ['Case-Rft'];
 const typesWithDetection = ['Indicator'];
 const typesWithKillChains = ['Indicator'];
 const typesWithIndicatorTypes = ['Indicator'];
+const typesWithReportTypes = ['Report'];
 const typesWithPlatforms = ['Indicator'];
 const typesWithTemporalRange = ['stix-core-relationship'];
 
@@ -420,6 +421,7 @@ class DataTableToolBar extends Component {
         request_for_information_types_ov: [],
         request_for_takedown_types_ov: [],
         indicator_type_ov: [],
+        report_types_ov: [],
         platforms_ov: [],
       },
       navOpen: localStorage.getItem('navOpen') === 'true',
@@ -610,6 +612,7 @@ class DataTableToolBar extends Component {
       request_for_information_types_ov: 'information_types',
       request_for_takedown_types_ov: 'takedown_types',
       indicator_type_ov: 'indicator_types',
+      report_types_ov: 'report_types',
       platforms_ov: 'x_mitre_platforms',
     };
 
@@ -942,6 +945,10 @@ class DataTableToolBar extends Component {
         checkTypes(typesWithIndicatorTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
           label: t('Indicator types'),
           value: 'indicator_type_ov',
+        },
+        checkTypes(typesWithReportTypes) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
+          label: t('Report types'),
+          value: 'report_types_ov',
         },
         checkTypes(typesWithPlatforms) && (actionsInputs[i]?.type === 'ADD' || actionsInputs[i]?.type === 'REPLACE' || actionsInputs[i]?.type === 'REMOVE') && {
           label: t('Platforms'),
@@ -1895,6 +1902,7 @@ class DataTableToolBar extends Component {
           </Combobox>
         );
       case 'indicator_type_ov':
+      case 'report_types_ov':
       case 'platforms_ov':
         return (
           <Combobox
