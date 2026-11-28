@@ -40,13 +40,15 @@ Draft is the first entity (object) in the platform supporting advanced workflow 
 
 ### Workflow on all other entities 
 
-For now, OpenCTI has a simple workflow approach. They're represented by the "Processing status" field embedded in each object. By default, this field is disabled for most objects but can be activated through the platform settings:
+The progress of an object is shown in its "Processing status" field. The statuses of each entity type, the transitions between them, who can take them and the automatic actions are defined in a workflow:
 
-1. Navigate to "Settings > Customization > Entity types > [Desired object type]."
-2. Click on the small pink pen icon next to "Workflow" to access the object customization window.
-3. Add and configure the desired statuses, defining their order within the workflow.
+1. Navigate to "Settings > Customization > Entity types > [Desired object type]".
+2. Open the "Workflow" tab.
+3. Add statuses and transitions, then publish the workflow.
 
-![Workflow status](./assets/workflow-configuration.png)
+See [Entities workflow](../usage/entities-workflow.md) for the full guide. Statuses configured before entities workflow (legacy statuses) are migrated on upgrade, or from the **Migrate statuses** button: see [Legacy statuses and migration](../usage/entities-workflow.md#legacy-statuses-and-migration).
+
+![Published workflow of an entity type](../usage/assets/entities-workflow-04b-published.jpg)
 
 In addition, the available statuses are defined by a collection of status templates visible in "Settings > Taxonomies > Status templates". This collection can be customized.
 
@@ -60,7 +62,7 @@ Enable **Entity status sync** to keep the processing status consistent across pl
 To enable it:
 
 1. Navigate to "Settings > Customization > Entity types > [Desired object type]".
-2. Under the "Workflow" section, turn on "Update entities' statuses by name match".
+2. Open the "Workflow" tab and turn on "Entity status sync" on the canvas.
 
 Once enabled, every time this platform receives an entity of this type through a live stream synchronizer, it looks up a local status sharing the same name as the one set on the remote platform:
 
