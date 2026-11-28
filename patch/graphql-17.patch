@@ -1,5 +1,49 @@
+diff --git a/jsutils/instanceOf.js b/jsutils/instanceOf.js
+index 496da6e..259ed5b 100644
+--- a/jsutils/instanceOf.js
++++ b/jsutils/instanceOf.js
+@@ -31,7 +31,16 @@ spurious results.`);
+     return false;
+ }
+ function prodInstanceOf(value, symbol) {
+-    return value?.__kind === symbol;
++    if (value?.__kind === symbol) {
++        return true;
++    }
++    // Fall back to comparing the symbol's description: within a single test process,
++    // Vitest's SSR module runner can evaluate this exact same graphql package through
++    // two independent module realms (its own inlined evaluator vs Node's native loader),
++    // producing type-kind brand symbols that carry the same meaning but fail strict
++    // identity. This never happens outside that harness, and a genuine version/shape
++    // mismatch would still fail elsewhere (different description or missing members).
++    return typeof value?.__kind === 'symbol' && value.__kind.description === symbol.description;
+ }
+ exports.instanceOf = prodInstanceOf;
+ function enableDevInstanceOf() {
+diff --git a/jsutils/instanceOf.mjs b/jsutils/instanceOf.mjs
+index cb7962f..97093b5 100644
+--- a/jsutils/instanceOf.mjs
++++ b/jsutils/instanceOf.mjs
+@@ -27,7 +27,16 @@ spurious results.`);
+     return false;
+ }
+ function prodInstanceOf(value, symbol) {
+-    return value?.__kind === symbol;
++    if (value?.__kind === symbol) {
++        return true;
++    }
++    // Fall back to comparing the symbol's description: within a single test process,
++    // Vitest's SSR module runner can evaluate this exact same graphql package through
++    // two independent module realms (its own inlined evaluator vs Node's native loader),
++    // producing type-kind brand symbols that carry the same meaning but fail strict
++    // identity. This never happens outside that harness, and a genuine version/shape
++    // mismatch would still fail elsewhere (different description or missing members).
++    return typeof value?.__kind === 'symbol' && value.__kind.description === symbol.description;
+ }
+ export let instanceOf = prodInstanceOf;
+ export function enableDevInstanceOf() {
 diff --git a/package.json b/package.json
-index ea6af5445a2b1a3088efed30e331af83933b7e2e..677105fb1eb08c6beed88d4540c45b787a83dfc2 100644
+index 5e44e14..98686af 100644
 --- a/package.json
 +++ b/package.json
 @@ -38,166 +38,76 @@
@@ -223,47 +267,33 @@ index ea6af5445a2b1a3088efed30e331af83933b7e2e..677105fb1eb08c6beed88d4540c45b78
      }
    }
  }
-diff --git a/jsutils/instanceOf.js b/jsutils/instanceOf.js
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/jsutils/instanceOf.js
-+++ b/jsutils/instanceOf.js
-@@ -31,7 +31,16 @@
-     return false;
- }
- function prodInstanceOf(value, symbol) {
--    return value?.__kind === symbol;
-+    if (value?.__kind === symbol) {
-+        return true;
-+    }
-+    // Fall back to comparing the symbol's description: within a single test process,
-+    // Vitest's SSR module runner can evaluate this exact same graphql package through
-+    // two independent module realms (its own inlined evaluator vs Node's native loader),
-+    // producing type-kind brand symbols that carry the same meaning but fail strict
-+    // identity. This never happens outside that harness, and a genuine version/shape
-+    // mismatch would still fail elsewhere (different description or missing members).
-+    return typeof value?.__kind === 'symbol' && value.__kind.description === symbol.description;
- }
- exports.instanceOf = prodInstanceOf;
- function enableDevInstanceOf() {
-diff --git a/jsutils/instanceOf.mjs b/jsutils/instanceOf.mjs
-index 0000000000000000000000000000000000000000..0000000000000000000000000000000000000000 100644
---- a/jsutils/instanceOf.mjs
-+++ b/jsutils/instanceOf.mjs
-@@ -27,7 +27,16 @@
-     return false;
- }
- function prodInstanceOf(value, symbol) {
--    return value?.__kind === symbol;
-+    if (value?.__kind === symbol) {
-+        return true;
-+    }
-+    // Fall back to comparing the symbol's description: within a single test process,
-+    // Vitest's SSR module runner can evaluate this exact same graphql package through
-+    // two independent module realms (its own inlined evaluator vs Node's native loader),
-+    // producing type-kind brand symbols that carry the same meaning but fail strict
-+    // identity. This never happens outside that harness, and a genuine version/shape
-+    // mismatch would still fail elsewhere (different description or missing members).
-+    return typeof value?.__kind === 'symbol' && value.__kind.description === symbol.description;
- }
- export let instanceOf = prodInstanceOf;
- export function enableDevInstanceOf() {
+diff --git a/validation/rules/OverlappingFieldsCanBeMergedRule.js b/validation/rules/OverlappingFieldsCanBeMergedRule.js
+index e5bcca3..e582cfa 100644
+--- a/validation/rules/OverlappingFieldsCanBeMergedRule.js
++++ b/validation/rules/OverlappingFieldsCanBeMergedRule.js
+@@ -12,7 +12,9 @@ const validationAbortedError_ts_1 = require("../validationAbortedError.js");
+ const MAX_CONFLICT_DETAIL_LENGTH = 1000;
+ const MAX_CONFLICT_NODES = 20;
+ const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
+-const MAX_COMPLEXITY_BUDGET = 500_000;
++// No complexity budget: some operations of the OpenCTI front spend several million units,
++// so the 500_000 budget added in graphql 17.1.0 aborts their validation.
++const MAX_COMPLEXITY_BUDGET = Infinity;
+ function OverlappingFieldsCanBeMergedRule(validationContext) {
+     const ruleContext = {
+         comparedFieldsAndFragmentPairs: new Map(),
+diff --git a/validation/rules/OverlappingFieldsCanBeMergedRule.mjs b/validation/rules/OverlappingFieldsCanBeMergedRule.mjs
+index 64ad43f..8ee456e 100644
+--- a/validation/rules/OverlappingFieldsCanBeMergedRule.mjs
++++ b/validation/rules/OverlappingFieldsCanBeMergedRule.mjs
+@@ -9,7 +9,9 @@ import { validationAbortedError } from "../validationAbortedError.mjs";
+ const MAX_CONFLICT_DETAIL_LENGTH = 1000;
+ const MAX_CONFLICT_NODES = 20;
+ const MAX_FRAGMENT_ARGUMENT_SIZE = 256;
+-const MAX_COMPLEXITY_BUDGET = 500_000;
++// No complexity budget: some operations of the OpenCTI front spend several million units,
++// so the 500_000 budget added in graphql 17.1.0 aborts their validation.
++const MAX_COMPLEXITY_BUDGET = Infinity;
+ export function OverlappingFieldsCanBeMergedRule(validationContext) {
+     const ruleContext = {
+         comparedFieldsAndFragmentPairs: new Map(),
