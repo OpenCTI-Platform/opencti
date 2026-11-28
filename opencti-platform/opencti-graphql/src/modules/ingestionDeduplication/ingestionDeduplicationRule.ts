@@ -1,11 +1,11 @@
 import { ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE, type StixIngestionDeduplicationRule, type StoreEntityIngestionDeduplicationRule } from './ingestionDeduplicationRule-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
-import { type ModuleDefinition, registerDefinition } from '../../schema/module';
+import type { ModuleDefinition } from '../../schema/module';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { INGESTION_DEDUPLICATION_FEATURE_FLAG } from '../../config/conf';
 import convertIngestionDeduplicationRuleToStix from './ingestionDeduplicationRule-converter';
 
-const INGESTION_DEDUPLICATION_RULE_DEFINITION: ModuleDefinition<StoreEntityIngestionDeduplicationRule, StixIngestionDeduplicationRule> = {
+export const INGESTION_DEDUPLICATION_RULE_DEFINITION: ModuleDefinition<StoreEntityIngestionDeduplicationRule, StixIngestionDeduplicationRule> = {
   type: {
     id: 'ingestionDeduplicationRule',
     name: ENTITY_TYPE_INGESTION_DEDUPLICATION_RULE,
@@ -31,5 +31,3 @@ const INGESTION_DEDUPLICATION_RULE_DEFINITION: ModuleDefinition<StoreEntityInges
   },
   converter_2_1: convertIngestionDeduplicationRuleToStix,
 };
-
-registerDefinition(INGESTION_DEDUPLICATION_RULE_DEFINITION);

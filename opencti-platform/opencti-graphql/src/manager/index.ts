@@ -1,10 +1,6 @@
 import './connectorManager';
-import './exclusionListCacheBuildManager';
-import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
-import './indicatorDecayManager';
 import './ingestionHealthManager';
-import './pirManager';
 import './platformUsageMetricsManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';

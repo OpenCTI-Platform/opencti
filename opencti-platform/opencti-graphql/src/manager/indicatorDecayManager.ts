@@ -1,4 +1,4 @@
-import { type ManagerDefinition, registerManager } from './managerModule';
+import type { ManagerDefinition } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { DECAY_MANAGER_USER, executionContext } from '../utils/access';
 import { findIndicatorsForDecay, updateIndicatorDecayScore } from '../modules/indicator/indicator-domain';
@@ -36,7 +36,7 @@ export const indicatorDecayHandler = async () => {
   }
 };
 
-const INDICATOR_DECAY_MANAGER_DEFINITION: ManagerDefinition = {
+export const INDICATOR_DECAY_MANAGER_DEFINITION: ManagerDefinition = {
   id: 'INDICATOR_DECAY_MANAGER',
   label: 'Indicator decay manager',
   executionContext: 'indicator_decay_manager',
@@ -53,5 +53,3 @@ const INDICATOR_DECAY_MANAGER_DEFINITION: ManagerDefinition = {
     return this.enabledByConfig;
   },
 };
-
-registerManager(INDICATOR_DECAY_MANAGER_DEFINITION);

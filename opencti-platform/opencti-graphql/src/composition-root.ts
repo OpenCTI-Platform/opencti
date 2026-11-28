@@ -1,8 +1,37 @@
 import type { ModuleDescriptor } from './modules/module-descriptor';
 import { registerDefinition } from './schema/module';
 import { registerEntityOverviewLayoutCustomization } from './schema/overviewLayoutCustomization-register';
+import { schemaAttributesDefinition } from './schema/schema-attributes';
 import { registerGraphqlSchema } from './graphql/schema';
 import { registerManager } from './manager/managerModule';
+import notifierModule from './modules/notifier/notifier-module';
+import threatActorIndividualModule from './modules/threatActorIndividual/threatActorIndividual-module';
+import playbookModule from './modules/playbook/playbook-module';
+import ingestionModule from './modules/ingestion/ingestion-module';
+import dataSharingModule from './modules/dataSharing/dataSharing-module';
+import indicatorModule from './modules/indicator/indicator-module';
+import decayRuleModule from './modules/decayRule/decayRule-module';
+import decayExclusionRuleModule from './modules/decayRule/exclusions/decayExclusionRule-module';
+import ingestionDeduplicationRuleModule from './modules/ingestionDeduplication/ingestionDeduplicationRule-module';
+import organizationModule from './modules/organization/organization-module';
+import csvMapperModule from './modules/internal/csvMapper/csvMapper-module';
+import jsonMapperModule from './modules/internal/jsonMapper/jsonMapper-module';
+import documentModule from './modules/internal/document/document-module';
+import publicDashboardModule from './modules/publicDashboard/publicDashboard-module';
+import themeModule from './modules/theme/theme-module';
+import aiModule from './modules/ai/ai-module';
+import deleteOperationModule from './modules/deleteOperation/deleteOperation-module';
+import supportModule from './modules/support/support-module';
+import exclusionListModule from './modules/exclusionList/exclusionList-module';
+import smtpConfigurationModule from './modules/smtpConfiguration/smtpConfiguration-module';
+import draftWorkspaceModule from './modules/draftWorkspace/draftWorkspace-module';
+import fintelTemplateModule from './modules/fintelTemplate/fintelTemplate-module';
+import disseminationListModule from './modules/disseminationList/disseminationList-module';
+import savedFilterModule from './modules/savedFilter/savedFilter-module';
+import requestAccessModule from './modules/requestAccess/requestAccess-module';
+import pirModule from './modules/pir/pir-module';
+import fintelDesignModule from './modules/fintelDesign/fintelDesign-module';
+import securityPlatformModule from './modules/securityPlatform/securityPlatform-module';
 import emailTemplateModule from './modules/emailTemplate/emailTemplate-module';
 import formModule from './modules/form/form-module';
 import securityCoverageModule from './modules/securityCoverage/securityCoverage-module';
@@ -37,6 +66,34 @@ import customFieldModule from './modules/customField/custom-field-module';
 // Modules migrated to explicit registration.
 // The others still register themselves on import, through modules/index and manager/index.
 export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
+  notifierModule,
+  threatActorIndividualModule,
+  playbookModule,
+  ingestionModule,
+  dataSharingModule,
+  indicatorModule,
+  decayRuleModule,
+  decayExclusionRuleModule,
+  ingestionDeduplicationRuleModule,
+  organizationModule,
+  csvMapperModule,
+  jsonMapperModule,
+  documentModule,
+  publicDashboardModule,
+  themeModule,
+  aiModule,
+  deleteOperationModule,
+  supportModule,
+  exclusionListModule,
+  smtpConfigurationModule,
+  draftWorkspaceModule,
+  fintelTemplateModule,
+  disseminationListModule,
+  savedFilterModule,
+  requestAccessModule,
+  pirModule,
+  fintelDesignModule,
+  securityPlatformModule,
   emailTemplateModule,
   formModule,
   securityCoverageModule,
@@ -71,8 +128,8 @@ export const MODULE_DESCRIPTORS: ModuleDescriptor[] = [
 
 let modulesRegistered = false;
 
-// Each phase runs for every module before the next phase starts: data model (overview layouts, then
-// definitions), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
+// Each phase runs for every module before the next phase starts: data model (overview layouts,
+// attributes, then definitions), graphql schemas, managers, then init. The whole of it runs after modules/index, so a migrated definition is
 // registered after the graphql of the modules still registered on import, against the order
 // modules/index documents. That is safe only while nothing reads the model at import time:
 // usageProtection catches an early read of types, attributes or refs, not of converters or validators.
@@ -82,8 +139,9 @@ export const registerModules = (descriptors: ModuleDescriptor[] = MODULE_DESCRIP
     return;
   }
   modulesRegistered = true;
-  descriptors.forEach(({ overviewLayouts = [], dataModel = [] }) => {
+  descriptors.forEach(({ overviewLayouts = [], attributes = [], dataModel = [] }) => {
     overviewLayouts.forEach(({ entityType, layout }) => registerEntityOverviewLayoutCustomization(entityType, layout));
+    attributes.forEach((definition) => schemaAttributesDefinition.registerAttributes(definition.entityType, definition.attributes));
     dataModel.forEach((definition) => registerDefinition(definition));
   });
   descriptors.forEach(({ graphqlSchemas = [] }) => graphqlSchemas.forEach((graphqlSchema) => registerGraphqlSchema(graphqlSchema)));
