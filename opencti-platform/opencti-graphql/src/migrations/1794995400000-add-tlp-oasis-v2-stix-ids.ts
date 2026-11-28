@@ -17,7 +17,13 @@ export const up = async (next: () => void) => {
   const entries = Object.entries(MARKING_TLP_OASIS_V2_ALIASES);
   for (let index = 0; index < entries.length; index += 1) {
     const [standardId, aliasIds] = entries[index];
-    const marking = await internalLoadById(context, SYSTEM_USER, standardId) as any;
+    let marking;
+    try {
+      marking = await internalLoadById(context, SYSTEM_USER, standardId) as any;
+    } catch (error) {
+      logMigration.warn(`${message} > failed to load ${standardId}: ${error instanceof Error ? error.message : error}, skipped`);
+      continue;
+    }
     // A static marking can be deleted on some platforms
     if (marking && marking.entity_type === ENTITY_TYPE_MARKING_DEFINITION) {
       const currentStixIds: string[] = marking.x_opencti_stix_ids ?? [];
@@ -26,7 +32,13 @@ export const up = async (next: () => void) => {
         const aliasId = aliasIds[aliasIndex];
         if (!currentStixIds.includes(aliasId)) {
           // Never take an id another element already answers to
-          const holder = await internalLoadById(context, SYSTEM_USER, aliasId) as any;
+          let holder;
+          try {
+            holder = await internalLoadById(context, SYSTEM_USER, aliasId) as any;
+          } catch (error) {
+            logMigration.warn(`${message} > failed to load ${aliasId}: ${error instanceof Error ? error.message : error}, skipped`);
+            continue;
+          }
           if (!holder || holder.internal_id === marking.internal_id) {
             idsToAdd.push(aliasId);
           } else {
